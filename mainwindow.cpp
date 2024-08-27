@@ -4,7 +4,9 @@
 #include "component/filemanagerwidget.h"
 #include "component/toolwidget.h"
 #include "component/unknownwidget.h"
-#include "component/vtkwindowreportwidget.h"
+#include "component/vtkwidget.h"
+#include "component/ReportWidget.h"
+#include "component/LogWidget.h"
 
 #include <QSettings>
 #include <QLabel>
@@ -37,12 +39,24 @@ void MainWindow::setupUi(){
     spRightup=new QSplitter(Qt::Vertical,spMainWindow);
 
     spLeft->addWidget(pWinElementListWidget);
-    spMiddleup->addWidget(pWinVtkWindowReportWidget);
+
+    QTabWidget *mainTabWidget=new QTabWidget(spMiddleup);
+    mainTabWidget->setTabPosition(QTabWidget::South);
+    mainTabWidget->addTab(pWinVtkWidget,"图形");
+    mainTabWidget->addTab(pWinReportWidget,"报表");
+    spMiddleup->addWidget(mainTabWidget);
+
     spRightup->addWidget(pWinFileManagerWidget);
 
     spMiddledown=new QSplitter(Qt::Horizontal,spMiddleup);
     spMiddleup->addWidget(spMiddledown);
-    spMiddledown->addWidget(pWinDataWidget);
+
+    QTabWidget *MiddledownTabWidget=new QTabWidget(spMiddleup);
+    MiddledownTabWidget->setTabPosition(QTabWidget::South);
+    MiddledownTabWidget->addTab(pWinDataWidget,"数据结果");
+    MiddledownTabWidget->addTab(pWinLogWidget,"Log查看");
+    spMiddledown->addWidget(MiddledownTabWidget);
+
     spMiddledown->addWidget(pWinToolWidget);
 
     spRightdown=new QSplitter(Qt::Horizontal,spRightup);
@@ -65,7 +79,9 @@ void MainWindow::LoadWidgets(){
     pWinFileManagerWidget=new FileManagerWidget(this);
     pWinToolWidget=new ToolWidget(this);
     pWinUnknownWidget=new UnknownWidget(this);
-    pWinVtkWindowReportWidget=new VtkWindowReportWidget(this);
+    pWinVtkWidget=new VtkWidget(this);
+    pWinReportWidget=new ReportWidget(this);
+    pWinLogWidget=new LogWidget(this);
 }
 
 void MainWindow::RestoreWidgets() {
@@ -94,4 +110,5 @@ MainWindow::~MainWindow() {
     settings.setValue("spMiddledown/state", spMiddledown->saveState());
     settings.setValue("spRightdown/state", spRightdown->saveState());
 }
+
 

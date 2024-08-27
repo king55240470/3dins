@@ -11,7 +11,10 @@ class ElementListWidget;
 class FileManagerWidget;
 class ToolWidget;
 class UnknownWidget;
-class VtkWindowReportWidget;
+class VtkWidget;
+class ReportWidget;
+class LogWidget;
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -28,7 +31,9 @@ private:
     FileManagerWidget *pWinFileManagerWidget;
     ToolWidget *pWinToolWidget;
     UnknownWidget *pWinUnknownWidget;
-    VtkWindowReportWidget *pWinVtkWindowReportWidget;
+    VtkWidget *pWinVtkWidget;
+    ReportWidget *pWinReportWidget;
+    LogWidget *pWinLogWidget;
 
     QMenuBar * bar;
     QStatusBar *stbar;
