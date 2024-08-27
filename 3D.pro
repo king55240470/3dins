@@ -12,9 +12,11 @@ SOURCES += \
     component/datawidget.cpp \
     component/elementlistwidget.cpp \
     component/filemanagerwidget.cpp \
+    component/logwidget.cpp \
+    component/reportwidget.cpp \
     component/toolwidget.cpp \
     component/unknownwidget.cpp \
-    component/vtkwindowreportwidget.cpp \
+    component/vtkwidget.cpp \
     main.cpp \
     mainwindow.cpp
 
@@ -22,9 +24,11 @@ HEADERS += \
     component/datawidget.h \
     component/elementlistwidget.h \
     component/filemanagerwidget.h \
+    component/logwidget.h \
+    component/reportwidget.h \
     component/toolwidget.h \
     component/unknownwidget.h \
-    component/vtkwindowreportwidget.h \
+    component/vtkwidget.h \
     mainwindow.h
 
 # Default rules for deployment.
