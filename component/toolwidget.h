@@ -26,6 +26,9 @@ public:
    static const int FirstToolBarActions_Num=59;
     static const int SecondToolBarActions_Num=88;
    static const int ThirdToolBarActions_Num=6;
+    static const int SingalToolBarActionNum=12;
+   static const int ActionSize_Length=20;
+    static const int ActionSize_Width=20;
 
 private:
     void createToolBars();
@@ -37,8 +40,7 @@ private:
     ToolAction * cuboidActions[eachToolActionNum];
      ToolAction * sphereActions[eachToolActionNum];
      ToolAction * coneActions[eachToolActionNum];
-     QToolBar * toolBars[4];
+     QToolBar ** toolBars;
 
 };
-
 #endif // TOOLWIDGET_H
