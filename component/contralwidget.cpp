@@ -54,8 +54,9 @@ ContralWidget::ContralWidget(ToolWidget* toolWidget_,QWidget *parent) : QDialog(
         saveCheckBoxState();
         toolWidget->clear();
         for(int i=0;i<59;i++){
-            if(ActionIsChecked[0][i])
+            if(ActionIsChecked[0][i]){
                 toolWidget->addToolAction(FirstToolBarAction,iconNames_First[i]);
+            }
         }
         for(int i=0;i<88;i++){
             if(ActionIsChecked[1][i])

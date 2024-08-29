@@ -51,11 +51,11 @@ void ToolWidget::createToolBars() {
     ToolActionKind actionKinds[4]={FirstToolBarAction,SecondToolBarAction,
     ThirdToolBarAction,FourthToolBarAction};
     QString ToolBarTitle[4]={"第一栏","第二栏","第三栏","第四栏"};
-    QString iconPaths_First[59]={":/icon/all.png", ":/icon/angle.png", ":/icon/arcLength.png", ":/icon/arclong.png", ":/icon/arclong1.png", ":/icon/axes.png", ":/icon/chongzhi.png", ":/icon/diameter.png", ":/icon/dista.png", ":/icon/distance.png", ":/icon/download.png", ":/icon/end.png", ":/icon/file.png", ":/icon/front.png", ":/icon/full.png", ":/icon/guide.png", ":/icon/half.png", ":/icon/icon.zip", ":/icon/isometric.png", ":/icon/jia.png", ":/icon/jian.png", ":/icon/jiaodu.png", ":/icon/label.png", ":/icon/move.png", ":/icon/noxuanzhuan.png", ":/icon/pause.png", ":/icon/piliang.png", ":/icon/point.png", ":/icon/point3.png", ":/icon/position.png", ":/icon/qinkong.png", ":/icon/radius.png", ":/icon/rectangle.png", ":/icon/right.png", ":/icon/settings.png", ":/icon/setup.png", ":/icon/shang.png", ":/icon/start.png", ":/icon/tole.png", ":/icon/tolerance.png", ":/icon/up.png", ":/icon/x.png", ":/icon/x1.png", ":/icon/x2.png", ":/icon/xia.png", ":/icon/xian.png", ":/icon/xmove.png", ":/icon/xuanzhuan.png", ":/icon/y.png", ":/icon/y1.png", ":/icon/Y2.png", ":/icon/you.png", ":/icon/yuan.png", ":/icon/z1.png", ":/icon/Z2.png", ":/icon/zhuan.png", ":/icon/zoomin.png", ":/icon/zoomout.png", ":/icon/zuo.png"};;
-    QString iconPaths_Second[88]={":/iconhxt/1.1.png", ":/iconhxt/1.10.png", ":/iconhxt/1.11.png", ":/iconhxt/1.12.png", ":/iconhxt/1.13.png", ":/iconhxt/1.14.png", ":/iconhxt/1.15.png", ":/iconhxt/1.16.png", ":/iconhxt/1.17.png", ":/iconhxt/1.18.png", ":/iconhxt/1.19.png", ":/iconhxt/1.2.png", ":/iconhxt/1.20.png", ":/iconhxt/1.21.png", ":/iconhxt/1.22.png", ":/iconhxt/1.23.png", ":/iconhxt/1.3.png", ":/iconhxt/1.4.png", ":/iconhxt/1.5.png", ":/iconhxt/1.6.png", ":/iconhxt/1.7.png", ":/iconhxt/1.8.png", ":/iconhxt/1.9.png", ":/iconhxt/2,16.png", ":/iconhxt/2.1.png", ":/iconhxt/2.10.png", ":/iconhxt/2.11.png", ":/iconhxt/2.12.png", ":/iconhxt/2.13.png", ":/iconhxt/2.14.png", ":/iconhxt/2.15.png", ":/iconhxt/2.16.png", ":/iconhxt/2.17.png", ":/iconhxt/2.18.png", ":/iconhxt/2.19.png", ":/iconhxt/2.2.png", ":/iconhxt/2.20.png", ":/iconhxt/2.21.png", ":/iconhxt/2.22.png", ":/iconhxt/2.23.png", ":/iconhxt/2.3.png", ":/iconhxt/2.4.png", ":/iconhxt/2.5.png", ":/iconhxt/2.6.png", ":/iconhxt/2.7.png", ":/iconhxt/2.8.png", ":/iconhxt/2.9.png", ":/iconhxt/3.1.png", ":/iconhxt/3.10.png", ":/iconhxt/3.11.png", ":/iconhxt/3.12.png", ":/iconhxt/3.13.png", ":/iconhxt/3.14.png", ":/iconhxt/3.15.png", ":/iconhxt/3.16.png", ":/iconhxt/3.17.png", ":/iconhxt/3.18.png", ":/iconhxt/3.19.png", ":/iconhxt/3.2.png", ":/iconhxt/3.20.png", ":/iconhxt/3.3.png", ":/iconhxt/3.4.png", ":/iconhxt/3.5.png", ":/iconhxt/3.6.png", ":/iconhxt/3.7.png", ":/iconhxt/3.8.png", ":/iconhxt/3.9.png", ":/iconhxt/4.1.png", ":/iconhxt/4.2.png", ":/iconhxt/4.3.png", ":/iconhxt/4.4.png", ":/iconhxt/4.5.png", ":/iconhxt/4.6.png", ":/iconhxt/5.1.png", ":/iconhxt/6.1.png", ":/iconhxt/continue.png", ":/iconhxt/false.png", ":/iconhxt/miss.png", ":/iconhxt/pause.png", ":/iconhxt/plusMinus.png", ":/iconhxt/position.png", ":/iconhxt/recycle.png", ":/iconhxt/right.png", ":/iconhxt/round.png", ":/iconhxt/start.png", ":/iconhxt/stop.png", ":/iconhxt/zhankai.png", ":/iconhxt/zhedie.png"};
-    QString iconPaths_Third[6]={":/iconJW/icon1.jpg", ":/iconJW/icon2.jpg", ":/iconJW/icon3.jpg", ":/iconJW/icon4.jpg", ":/iconJW/lefthand.jpeg", ":/iconJW/righthand.jpeg"};
-    QString IconNames_First[59]={"all", "angle", "arcLength", "arclong", "arclong1", "axes", "chongzhi", "diameter", "dista", "distance", "download", "end", "file", "front", "full", "guide", "half", "isometric", "jia", "jian", "jiaodu", "label", "move", "noxuanzhuan", "pause", "piliang", "point", "point3", "position", "qinkong", "radius", "rectangle", "right", "settings", "setup", "shang", "start", "tole", "tolerance", "up", "x", "x1", "x2", "xia", "xian", "xmove", "xuanzhuan", "y", "y1", "Y2", "you", "yuan", "z1", "Z2", "zhuan", "zoomin", "zoomout", "zuo"};
-    QString IconNames_Second[88]={"1.1", "1.10", "1.11", "1.12", "1.13", "1.14", "1.15",
+    QString iconPaths_First[FirstToolBarActions_Num]={":/icon/all.png", ":/icon/angle.png", ":/icon/arcLength.png", ":/icon/arclong.png", ":/icon/arclong1.png", ":/icon/axes.png", ":/icon/chongzhi.png", ":/icon/diameter.png", ":/icon/dista.png", ":/icon/distance.png", ":/icon/download.png", ":/icon/end.png", ":/icon/file.png", ":/icon/front.png", ":/icon/full.png", ":/icon/guide.png", ":/icon/half.png", ":/icon/icon.zip", ":/icon/isometric.png", ":/icon/jia.png", ":/icon/jian.png", ":/icon/jiaodu.png", ":/icon/label.png", ":/icon/move.png", ":/icon/noxuanzhuan.png", ":/icon/pause.png", ":/icon/piliang.png", ":/icon/point.png", ":/icon/point3.png", ":/icon/position.png", ":/icon/qinkong.png", ":/icon/radius.png", ":/icon/rectangle.png", ":/icon/right.png", ":/icon/settings.png", ":/icon/setup.png", ":/icon/shang.png", ":/icon/start.png", ":/icon/tole.png", ":/icon/tolerance.png", ":/icon/up.png", ":/icon/x.png", ":/icon/x1.png", ":/icon/x2.png", ":/icon/xia.png", ":/icon/xian.png", ":/icon/xmove.png", ":/icon/xuanzhuan.png", ":/icon/y.png", ":/icon/y1.png", ":/icon/Y2.png", ":/icon/you.png", ":/icon/yuan.png", ":/icon/z1.png", ":/icon/Z2.png", ":/icon/zhuan.png", ":/icon/zoomin.png", ":/icon/zoomout.png", ":/icon/zuo.png"};;
+    QString iconPaths_Second[SecondToolBarActions_Num]={":/iconhxt/1.1.png", ":/iconhxt/1.10.png", ":/iconhxt/1.11.png", ":/iconhxt/1.12.png", ":/iconhxt/1.13.png", ":/iconhxt/1.14.png", ":/iconhxt/1.15.png", ":/iconhxt/1.16.png", ":/iconhxt/1.17.png", ":/iconhxt/1.18.png", ":/iconhxt/1.19.png", ":/iconhxt/1.2.png", ":/iconhxt/1.20.png", ":/iconhxt/1.21.png", ":/iconhxt/1.22.png", ":/iconhxt/1.23.png", ":/iconhxt/1.3.png", ":/iconhxt/1.4.png", ":/iconhxt/1.5.png", ":/iconhxt/1.6.png", ":/iconhxt/1.7.png", ":/iconhxt/1.8.png", ":/iconhxt/1.9.png", ":/iconhxt/2,16.png", ":/iconhxt/2.1.png", ":/iconhxt/2.10.png", ":/iconhxt/2.11.png", ":/iconhxt/2.12.png", ":/iconhxt/2.13.png", ":/iconhxt/2.14.png", ":/iconhxt/2.15.png", ":/iconhxt/2.16.png", ":/iconhxt/2.17.png", ":/iconhxt/2.18.png", ":/iconhxt/2.19.png", ":/iconhxt/2.2.png", ":/iconhxt/2.20.png", ":/iconhxt/2.21.png", ":/iconhxt/2.22.png", ":/iconhxt/2.23.png", ":/iconhxt/2.3.png", ":/iconhxt/2.4.png", ":/iconhxt/2.5.png", ":/iconhxt/2.6.png", ":/iconhxt/2.7.png", ":/iconhxt/2.8.png", ":/iconhxt/2.9.png", ":/iconhxt/3.1.png", ":/iconhxt/3.10.png", ":/iconhxt/3.11.png", ":/iconhxt/3.12.png", ":/iconhxt/3.13.png", ":/iconhxt/3.14.png", ":/iconhxt/3.15.png", ":/iconhxt/3.16.png", ":/iconhxt/3.17.png", ":/iconhxt/3.18.png", ":/iconhxt/3.19.png", ":/iconhxt/3.2.png", ":/iconhxt/3.20.png", ":/iconhxt/3.3.png", ":/iconhxt/3.4.png", ":/iconhxt/3.5.png", ":/iconhxt/3.6.png", ":/iconhxt/3.7.png", ":/iconhxt/3.8.png", ":/iconhxt/3.9.png", ":/iconhxt/4.1.png", ":/iconhxt/4.2.png", ":/iconhxt/4.3.png", ":/iconhxt/4.4.png", ":/iconhxt/4.5.png", ":/iconhxt/4.6.png", ":/iconhxt/5.1.png", ":/iconhxt/6.1.png", ":/iconhxt/continue.png", ":/iconhxt/false.png", ":/iconhxt/miss.png", ":/iconhxt/pause.png", ":/iconhxt/plusMinus.png", ":/iconhxt/position.png", ":/iconhxt/recycle.png", ":/iconhxt/right.png", ":/iconhxt/round.png", ":/iconhxt/start.png", ":/iconhxt/stop.png", ":/iconhxt/zhankai.png", ":/iconhxt/zhedie.png"};
+    QString iconPaths_Third[ThirdToolBarActions_Num]={":/iconJW/icon1.jpg", ":/iconJW/icon2.jpg", ":/iconJW/icon3.jpg", ":/iconJW/icon4.jpg", ":/iconJW/lefthand.jpeg", ":/iconJW/righthand.jpeg"};
+    QString IconNames_First[FirstToolBarActions_Num]={"all", "angle", "arcLength", "arclong", "arclong1", "axes", "chongzhi", "diameter", "dista", "distance", "download", "end", "file", "front", "full", "guide", "half", "isometric", "jia", "jian", "jiaodu", "label", "move", "noxuanzhuan", "pause", "piliang", "point", "point3", "position", "qinkong", "radius", "rectangle", "right", "settings", "setup", "shang", "start", "tole", "tolerance", "up", "x", "x1", "x2", "xia", "xian", "xmove", "xuanzhuan", "y", "y1", "Y2", "you", "yuan", "z1", "Z2", "zhuan", "zoomin", "zoomout", "zuo"};
+    QString IconNames_Second[SecondToolBarActions_Num]={"1.1", "1.10", "1.11", "1.12", "1.13", "1.14", "1.15",
      "1.16", "1.17", "1.18", "1.19", "1.2", "1.20", "1.21",
      "1.22", "1.23", "1.3", "1.4", "1.5", "1.6", "1.7", "1.8", "1.9",
     "2,16", "2.1", "2.10", "2.11", "2.12", "2.13", "2.14", "2.15", "2.16", "2.17",
@@ -66,47 +66,55 @@ void ToolWidget::createToolBars() {
      "continue", "false", "miss", "pause", "plusMinus",
      "position", "recycle", "right", "round", "start",
     "stop", "zhankai", "zhedie"};
-    QString IconNames_Third[6]={"icon1","icon2","icon3","icon4","lefthamd","righthand"};
-    for(int i=0;i<59;i++)iconNames_First[i]=IconNames_First[i];
-    for(int i=0;i<88;i++)iconNames_Second[i]=IconNames_Second[i];
-    for(int i=0;i<6;i++)iconNames_Third[i]=iconNames_Third[i];
+    QString IconNames_Third[ThirdToolBarActions_Num]={"icon1","icon2","icon3","icon4","lefthamd","righthand"};
+    for(int i=0;i<FirstToolBarActions_Num;i++)iconNames_First[i]=IconNames_First[i];
+    for(int i=0;i<SecondToolBarActions_Num;i++)iconNames_Second[i]=IconNames_Second[i];
+    for(int i=0;i<ThirdToolBarActions_Num;i++)iconNames_Third[i]=iconNames_Third[i];
     QString dirPaths[3]={":/icon",":/iconhxt",":/iconJW"};
+
+    //初始化toolBars
+    int allActionNum=FirstToolBarActions_Num+SecondToolBarActions_Num+ThirdToolBarActions_Num;
+    toolBars=new QToolBar*[allActionNum/SingalToolBarActionNum+3];
+    int toolBarCount=0;
+    int toolBarIndex=-1;
     for(int j=0;j<3;j++){
-
-
-        toolBars[j] = new QToolBar(ToolBarTitle[j], this);
-
-        toolBars[j]->setMovable(true);
-        toolBars[j]->setFloatable(true);
-        toolBars[j]->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-        toolBars[j]->setIconSize(QSize(32, 32));
         // QWidget *toolBarWidget = new QWidget(toolBars[j]);
         // QGridLayout* gridLayout=new QGridLayout(toolBarWidget);
         // gridLayout->setColumnStretch(12,0);
         // toolBarWidget->setLayout(gridLayout);
-        layout()->addWidget(toolBars[j]);
+
         QString* iconPaths,*iconNames;
         int Num=0;
         if(j==0){
             iconPaths=iconPaths_First;
             iconNames=iconNames_First;
-            Num=59;
+            Num=FirstToolBarActions_Num;
         }else if(j==1){
             iconPaths=iconPaths_Second;
             iconNames=iconNames_Second;
-            Num=88;
+            Num=SecondToolBarActions_Num;
         }
         else if(j==2){
             iconPaths=iconPaths_Third;
             iconNames=iconNames_Third;
-            Num=6;
+            Num=ThirdToolBarActions_Num;
         }
         if(j==0)FirstToolBarActions=new ToolAction*[Num+1];
         else  if(j==1)SecondToolBarActions=new ToolAction*[Num+1];
         else  if(j==2)ThirdToolBarActions=new ToolAction*[Num+1];
+        int actionCount=0;
         for(int i=0;i<Num;i++){
-
-            ToolAction * action=new ToolAction(actionKinds[j],this,iconPaths[i],j,iconNames[i]);
+            if(actionCount%SingalToolBarActionNum==0){
+                toolBarCount++;
+                toolBarIndex++;
+                toolBars[toolBarIndex] = new QToolBar(ToolBarTitle[j], this);
+                toolBars[toolBarIndex]->setMovable(true);
+                toolBars[toolBarIndex]->setFloatable(true);
+                toolBars[toolBarIndex]->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+                toolBars[toolBarIndex]->setIconSize(QSize( ActionSize_Length, ActionSize_Width));
+                layout()->addWidget(toolBars[toolBarIndex]);
+            }
+            ToolAction * action=new ToolAction(actionKinds[j],this,iconPaths[i],toolBarIndex,iconNames[i]);
             action->setToolTip(iconNames[i]);
 
             // toolBars[j]->addAction(action);
@@ -119,8 +127,9 @@ void ToolWidget::createToolBars() {
             else if(j==2){
                 ThirdToolBarActions[i]=action;
             }
-         toolBars[j]->addAction(action);
-         if((i+1)%12==0)toolBars[j]->addSeparator();
+        //更新actionCount
+            actionCount++;
+         toolBars[toolBarIndex]->addAction(action);
         }
     }
     // QString qs[4]={"Cube","Cuboid","Sphere","Cone"};
