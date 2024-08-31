@@ -18,8 +18,11 @@ SOURCES += \
     component/toolwidget.cpp \
     component/unknownwidget.cpp \
     component/vtkwidget.cpp \
+    geometry/cobject.cpp \
+    geometry/cshape.cpp \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    manager/cobjectmgr.cpp
 
 HEADERS += \
     component/datawidget.h \
@@ -31,7 +34,10 @@ HEADERS += \
     component/toolwidget.h \
     component/unknownwidget.h \
     component/vtkwidget.h \
-    mainwindow.h
+    geometry/cobject.h \
+    geometry/cshape.h \
+    mainwindow.h \
+    manager/cobjectmgr.h
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
