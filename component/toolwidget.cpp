@@ -13,8 +13,7 @@ ToolWidget::ToolWidget(QWidget *parent)
     createToolBars();
 
 
-
-
+    m_nToolbarNum = 3;
 
 }
 bool getImagePaths(const QString& directory,QStringList &iconPaths,QStringList & iconNames ) {
