@@ -11,6 +11,11 @@ ToolWidget::ToolWidget(QWidget *parent)
     setLayout(layout);
     // 创建工具栏
     createToolBars();
+
+
+
+
+
 }
 bool getImagePaths(const QString& directory,QStringList &iconPaths,QStringList & iconNames ) {
     // 指定图片所在目录

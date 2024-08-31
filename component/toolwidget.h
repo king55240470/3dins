@@ -1,4 +1,3 @@
-
 #ifndef TOOLWIDGET_H
 #define TOOLWIDGET_H
 #include <QWidget>
@@ -10,7 +9,6 @@
 const unsigned int eachToolActionNum=50;
 class ToolWidget : public QWidget {
     Q_OBJECT
-
 public:
     explicit ToolWidget(QWidget *parent = nullptr);
     ~ToolWidget();
@@ -38,9 +36,9 @@ private:
     ToolAction** FourthToolBarActions;
     ToolAction* cubeActions[eachToolActionNum];
     ToolAction * cuboidActions[eachToolActionNum];
-     ToolAction * sphereActions[eachToolActionNum];
-     ToolAction * coneActions[eachToolActionNum];
-     QToolBar ** toolBars;
+    ToolAction * sphereActions[eachToolActionNum];
+    ToolAction * coneActions[eachToolActionNum];
+    QToolBar ** toolBars;
 
 };
 #endif // TOOLWIDGET_H

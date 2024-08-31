@@ -14,6 +14,7 @@ SOURCES += \
     component/filemanagerwidget.cpp \
     component/logwidget.cpp \
     component/reportwidget.cpp \
+    component/toolaction.cpp \
     component/toolwidget.cpp \
     component/unknownwidget.cpp \
     component/vtkwidget.cpp \
@@ -26,6 +27,7 @@ HEADERS += \
     component/filemanagerwidget.h \
     component/logwidget.h \
     component/reportwidget.h \
+    component/toolaction.h \
     component/toolwidget.h \
     component/unknownwidget.h \
     component/vtkwidget.h \
