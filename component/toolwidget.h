@@ -13,36 +13,35 @@ public:
     explicit ToolWidget(QWidget *parent = nullptr);
     ~ToolWidget();
     void deleteToolAction(ToolActionKind,QString);
-    void addToolAction(ToolActionKind,QString);
     void deleteToolActions(ToolActionKind);
-    void addToolActions(ToolActionKind);
-    void recreateToolBars(ToolActionKind* ,int );
+    int  addToolActions(ToolActionKind ,QString * ,int ,int =-1);//返回添加后最后toolBar的索引
     void clear();
-    QString iconNames_First[59];
-    QString iconNames_Second[88];
-    QString iconNames_Third[6];
+    QString * geticonNames_First() const;
+    QString * geticonNames_Second()const;
+    QString * geticonNames_Third()const;
    static const int FirstToolBarActions_Num=59;
     static const int SecondToolBarActions_Num=88;
    static const int ThirdToolBarActions_Num=6;
     static const int SingalToolBarActionNum=12;
    static const int ActionSize_Length=20;
     static const int ActionSize_Width=20;
-
+  static const int FirstToolBarIndex=0;
+  static  const int SecondToolBarIndex=1;
+  static const int ThirdToolBarIndex=2;
+  static const int ToolBarCount=3;
    int nToolbarNum() const;
    void setNToolbarNum(int newNToolbarNum);
 
-   private:
-    void createToolBars();
+ private:
+    void createToolBars();//内部函数,在构造时使用
     ToolAction** FirstToolBarActions;
     ToolAction** SecondToolBarActions;
     ToolAction** ThirdToolBarActions;
     ToolAction** FourthToolBarActions;
-    ToolAction* cubeActions[eachToolActionNum];
-    ToolAction * cuboidActions[eachToolActionNum];
-    ToolAction * sphereActions[eachToolActionNum];
-    ToolAction * coneActions[eachToolActionNum];
     QToolBar ** toolBars;
-
+    QString* iconNames_First;
+    QString* iconNames_Second;
+    QString* iconNames_Third;
     int m_nToolbarNum;
 
 };

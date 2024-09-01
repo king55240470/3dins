@@ -7,6 +7,8 @@
 #include "component/vtkwidget.h"
 #include "component/ReportWidget.h"
 #include "component/LogWidget.h"
+#include"component/contralwidget.h"
+
 
 #include <QSettings>
 #include <QLabel>
@@ -24,7 +26,8 @@ void MainWindow::setupUi(){
     bar=menuBar();
     setMenuBar(bar);
     QMenu *fileMenu=bar->addMenu("文件");
-
+    QAction * contralAction=new QAction("控制图标");
+    bar->addAction(contralAction);
     //状态栏
     stbar=statusBar();
     setStatusBar(stbar);
@@ -71,6 +74,11 @@ void MainWindow::setupUi(){
     spMainWindow->setHandleWidth(5);
 
     setCentralWidget(spMainWindow);
+
+
+    ContralWidget * contralWidget=new ContralWidget(pWinToolWidget,this);
+    connect(contralAction,&QAction::triggered,[=](){contralWidget->show();});
+
 }
 
 void MainWindow::LoadWidgets(){

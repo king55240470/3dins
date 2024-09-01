@@ -18,13 +18,15 @@ public:
     void loadCheckBoxState();
 protected:
     void closeEvent(QCloseEvent* event)override;
-    bool  ActionIsChecked[4][100];
-    QString ActionName[10][10];
-    QString iconNames_First[59];
-    QString iconNames_Second[88];
-    QString iconNames_Third[6];
+    bool  ActionIsChecked[ToolWidget::ToolBarCount][100];
+    QString ActionName[ToolWidget::ToolBarCount][100];
+    QString* iconNames_First;
+    QString* iconNames_Second;
+    QString* iconNames_Third;
     QTreeWidget *treeWidget;
     ToolWidget* toolWidget;
+    QTreeWidgetItem** fatherItems;
+    ~ContralWidget();
 };
 
 

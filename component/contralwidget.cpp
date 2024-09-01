@@ -1,80 +1,109 @@
-   #include "contralwidget.h"
-#include "ui_contralwidget.h"
+#include "contralwidget.h"
 #include"toolwidget.h"
 ContralWidget::ContralWidget(ToolWidget* toolWidget_,QWidget *parent) : QDialog(parent) {
     toolWidget=toolWidget_;
+    QVBoxLayout *layout = new QVBoxLayout;
+    QPushButton * ensureButton=new  QPushButton("确认",this);
+    QPushButton* cancelButton=new QPushButton("取消",this);
+    QHBoxLayout * layout2=new QHBoxLayout;
+    fatherItems=new QTreeWidgetItem*[ToolWidget::ToolBarCount];
+    iconNames_First=toolWidget->geticonNames_First();
+    iconNames_Second=toolWidget->geticonNames_Second();
+    iconNames_Third=toolWidget->geticonNames_Third();
+    treeWidget = new QTreeWidget(this);
+
     memset(ActionIsChecked,true,sizeof(ActionIsChecked));
     setWindowTitle("图标控制");
     resize(300, 200);
 
-    for(int i=0;i<59;i++)iconNames_First[i]=toolWidget->iconNames_First[i];
-    for(int i=0;i<88;i++)iconNames_Second[i]=toolWidget->iconNames_Second[i];
-    for(int i=0;i<6;i++)iconNames_Third[i]=toolWidget->iconNames_Third[i];
-    // 创建一个垂直布局
-    QVBoxLayout *layout = new QVBoxLayout;
-    // 创建一个 QTreeWidget
-    treeWidget = new QTreeWidget(this);
-     treeWidget->setHeaderLabel("所有图标"); // 设置树形控件的头标签
-    // 添加一些示例节点
-    QString rootItemNames[4]={"第一栏","第二栏","第三栏","第四栏"};
-    //初始化父节点
-    QTreeWidgetItem* fatherItems[4];
-    for(int i=0;i<4;i++){
+    treeWidget->setHeaderLabel("所有图标"); // 设置树形控件的头标签
+    // 添加一些父节点
+    QString rootItemNames[ToolWidget::ToolBarCount]={"第一栏","第二栏","第三栏"};
+    for(int i=0;i<ToolWidget::ToolBarCount;i++){
         QTreeWidgetItem *fatherItem = new QTreeWidgetItem(treeWidget,QStringList()<<(rootItemNames[i]));
         fatherItems[i]=fatherItem;
         fatherItems[i]->setExpanded(false);
     }
     //将子节点加入父节点
-    for(int i=0;i<59;i++){
-        QTreeWidgetItem *iconItem = new QTreeWidgetItem(fatherItems[0],QStringList()<< iconNames_First[i]);
+    for(int i=0;i<ToolWidget::FirstToolBarActions_Num;i++){
+        QTreeWidgetItem *iconItem = new QTreeWidgetItem(fatherItems[ToolWidget::FirstToolBarIndex],QStringList()<< iconNames_First[i]);
         iconItem->setFlags(iconItem->flags() | Qt::ItemIsUserCheckable); // 设置为复选框
         iconItem->setCheckState(0, Qt::Checked); // 设置为选中状态
     }
-    for(int i=0;i<88;i++){
-        QTreeWidgetItem *iconItem = new QTreeWidgetItem(fatherItems[1],QStringList()<< iconNames_First[i]);
+    for(int i=0;i<ToolWidget::SecondToolBarActions_Num;i++){
+        QTreeWidgetItem *iconItem = new QTreeWidgetItem(fatherItems[ToolWidget::SecondToolBarIndex],QStringList()<< iconNames_Second[i]);
         iconItem->setFlags(iconItem->flags() | Qt::ItemIsUserCheckable); // 设置为复选框
         iconItem->setCheckState(0, Qt::Checked); // 设置为选中状态
     }
-    for(int i=0;i<6;i++){
-        QTreeWidgetItem *iconItem = new QTreeWidgetItem(fatherItems[2],QStringList()<< iconNames_First[i]);
+    for(int i=0;i<ToolWidget::ThirdToolBarActions_Num;i++){
+        QTreeWidgetItem *iconItem = new QTreeWidgetItem(fatherItems[ToolWidget::ThirdToolBarIndex],QStringList()<< iconNames_Third[i]);
         iconItem->setFlags(iconItem->flags() | Qt::ItemIsUserCheckable); // 设置为复选框
         iconItem->setCheckState(0, Qt::Checked); // 设置为选中状态
     }
-    // 将树形控件添加到布局中
+
     layout->addWidget(treeWidget);
-    //确认和取消按钮
-    QPushButton * ensureButton=new  QPushButton("确认",this);
-    QPushButton* cancelButton=new QPushButton("取消",this);
-    QHBoxLayout * layout2=new QHBoxLayout;
     layout2->addWidget(ensureButton);
     layout2->addWidget(cancelButton);
     layout->addLayout(layout2);
+   // 确认和取消按钮的信号槽函数
     connect(cancelButton,&QPushButton::clicked,this,[this](){loadCheckBoxState();});
     connect(ensureButton,&QPushButton::clicked,this,[this](){
         saveCheckBoxState();
         toolWidget->clear();
-        for(int i=0;i<59;i++){
-            if(ActionIsChecked[0][i]){
-                toolWidget->addToolAction(FirstToolBarAction,iconNames_First[i]);
+        QString* Names1=new QString[ToolWidget::FirstToolBarActions_Num];
+        QString* Names2=new QString[ToolWidget::SecondToolBarActions_Num];
+        if(Names2==nullptr){
+            qDebug()<<"Names2 is nullptr";
+        }
+        QString* Names3=new QString[ToolWidget::ThirdToolBarActions_Num];
+        if(Names2==nullptr){
+            qDebug()<<"Names3 is nullptr";
+        }
+        int index=-1;
+        int lastToolBarIndex=-1;
+        for(int i=0;i<ToolWidget::FirstToolBarActions_Num;i++){
+            if(ActionIsChecked[ToolWidget::FirstToolBarIndex][i])
+            {
+                // toolWidget->addToolAction(FirstToolBarAction,iconNames_First[i]);
+                Names1[++index]=iconNames_First[i];
+
             }
         }
-        for(int i=0;i<88;i++){
-            if(ActionIsChecked[1][i])
-                toolWidget->addToolAction(SecondToolBarAction,iconNames_Second[i]);
-        }
-        for(int i=0;i<6;i++){
-            if(ActionIsChecked[2][i])
-                toolWidget->addToolAction(ThirdToolBarAction,iconNames_Third[i]);
+        lastToolBarIndex=toolWidget->addToolActions(FirstToolBarAction,Names1,index+1, lastToolBarIndex);
+        index=-1;
+        for(int i=0;i<ToolWidget::SecondToolBarActions_Num;i++){
+            if(ActionIsChecked[ToolWidget::SecondToolBarIndex][i])
+            {
+                // toolWidget->addToolAction(SecondToolBarAction,iconNames_Second[i]);
+              Names2[++index]=iconNames_Second[i];
+            }
         }
 
+
+         lastToolBarIndex=toolWidget->addToolActions(SecondToolBarAction,Names2,index+1, lastToolBarIndex);
+        index=-1;
+        for(int i=0;i<ToolWidget::ThirdToolBarActions_Num;i++){
+            if(ActionIsChecked[ToolWidget::ThirdToolBarIndex][i])
+            {
+                // toolWidget->addToolAction(ThirdToolBarAction,iconNames_Third[i]);
+                 Names3[++index]=iconNames_Third[i];
+            }
+        }
+
+         lastToolBarIndex=toolWidget->addToolActions(ThirdToolBarAction,Names3,index+1,  lastToolBarIndex);
+        delete[] Names1;
+        delete[] Names2;
+        delete[] Names3;
 
     });
+
     setLayout(layout); // 设置窗口的布局
 }
 void ContralWidget::closeEvent(QCloseEvent* event){
     loadCheckBoxState();
 }
 void ContralWidget:: saveCheckBoxState() {
+    //保存复选框状态
     for(int i=0;i<treeWidget->topLevelItemCount();i++){
         QTreeWidgetItem *rootWidget = treeWidget->topLevelItem(i);
         QTreeWidgetItem* item;
@@ -89,6 +118,7 @@ void ContralWidget:: saveCheckBoxState() {
 
 }
 void ContralWidget:: loadCheckBoxState() {
+    //将复选框状态还原
     for(int i=0;i<treeWidget->topLevelItemCount();i++){
         QTreeWidgetItem *rootWidget = treeWidget->topLevelItem(i);
         QTreeWidgetItem* item;
@@ -100,4 +130,7 @@ void ContralWidget:: loadCheckBoxState() {
                 item->setCheckState(0,Qt::Unchecked);
         }
     }
+}
+ContralWidget::~ContralWidget(){
+    if(fatherItems)delete []fatherItems;
 }
