@@ -26,7 +26,7 @@ VtkWidget::VtkWidget(QWidget *parent)
     cloudptr.reset(new PointCloudT);
 
     // 从指定路径加载 PCD 文件到点云对象中
-    pcl::io::loadPCDFile("E:\\3d\\bunny.pcd", *cloudptr);
+    pcl::io::loadPCDFile("C:/Users/Lenovo/Desktop/computerprogram/PCL/pcl/bunny.pcd", *cloudptr);
 
     // 定义颜色处理的轴
     const std::string axis ="z";

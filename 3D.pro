@@ -17,6 +17,7 @@ SOURCES += \
     component/toolwidget.cpp \
     component/unknownwidget.cpp \
     component/vtkwidget.cpp \
+    component/vtkwindowreportwidget.cpp \
     geometry/cobject.cpp \
     geometry/cshape.cpp \
     main.cpp \
@@ -34,6 +35,7 @@ HEADERS += \
     component/toolwidget.h \
     component/unknownwidget.h \
     component/vtkwidget.h \
+    component/vtkwindowreportwidget.h \
     geometry/cobject.h \
     geometry/cshape.h \
     mainwindow.h \

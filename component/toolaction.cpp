@@ -1,11 +1,9 @@
 #include "toolaction.h"
-
-ToolAction::ToolAction(ToolActionKind ActionKind,QWidget* parent,QString iconPath,
-    int AddLine,QString Name)
-    :QAction(parent) {
-    actionKind=ActionKind;
-    addLine=AddLine;
-    setIcon(QIcon(iconPath));
-    setText(Name);
-    name=Name;
+ToolAction::ToolAction(QWidget* parent):QAction(parent){
+}
+void ToolAction::setToolActionKind(ToolActionKind action_kind){
+    action_kind_=action_kind;
+}
+void ToolAction::setName(QString name) {
+    name_=name;
 }
