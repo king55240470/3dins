@@ -18,10 +18,14 @@ SOURCES += \
     component/unknownwidget.cpp \
     component/vtkwidget.cpp \
     geometry/cobject.cpp \
+    geometry/cpcs.cpp \
+    geometry/cpcsnode.cpp \
+    geometry/cposition.cpp \
     geometry/cshape.cpp \
     main.cpp \
     mainwindow.cpp \
-    manager/cobjectmgr.cpp
+    manager/cobjectmgr.cpp \
+    manager/cpcsmgr.cpp
 
 HEADERS += \
     component/contralwidget.h \
@@ -35,9 +39,13 @@ HEADERS += \
     component/unknownwidget.h \
     component/vtkwidget.h \
     geometry/cobject.h \
+    geometry/cpcs.h \
+    geometry/cpcsnode.h \
+    geometry/cposition.h \
     geometry/cshape.h \
     mainwindow.h \
-    manager/cobjectmgr.h
+    manager/cobjectmgr.h \
+    manager/cpcsmgr.h
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
