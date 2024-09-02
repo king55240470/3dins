@@ -9,196 +9,391 @@
 #include <QStringList>
 #include <QDebug>
 #include<QResource>
+#include<QLabel>
+int getImagePaths(const QString& directory, QStringList &iconPaths, QStringList &iconNames);
+
 ToolWidget::ToolWidget(QWidget *parent)
     : QWidget(parent) {
-    // 设置布局
     QVBoxLayout *layout = new QVBoxLayout(this);
+
+
+       resize(400,250);
+
+        m_nSaveActionNum=4;
+        m_nConstructActionNum=8;
+        m_nFindActionNum=8;
+        m_nCoordActionNum=3;
+
+        //静态保存图片路径和名称
+        save_action_iconpath_list_<<":/component/save/excel.png"<< ":/component/save/pdf.jpg"<< ":/component/save/txt.jpg"<< ":/component/save/word.jpg";
+        construct_action_iconpath_list_<<":/component/construct/point.jpg"<<":/component/construct/line.jpg"<<":/component/construct/circle.jpg"<<   ":/component/construct/plan.jpg"<<  ":/component/construct/rectangle.jpg"<<":/component/construct/cylinder.jpg"<< ":/component/construct/cone.jpg"<< ":/component/construct/sphere.jpg";
+        find_action_iconpath_list_<<":/component/construct/point.jpg"<<":/component/construct/line.jpg"<<":/component/construct/circle.jpg"<<   ":/component/construct/plan.jpg"<<  ":/component/construct/rectangle.jpg"<<":/component/construct/cylinder.jpg"<< ":/component/construct/cone.jpg"<< ":/component/construct/sphere.jpg";
+        coord_action_iconpath_list_<<":/component/coord/create.png"<<  ":/component/coord/spin.jpg"<<":/component/coord/save.png";
+
+        save_action_name_list_<<"excel"<< "pdf"<< "txt"<< "word";
+        construct_action_name_list_<<"点"<<"线"<<"圆"<<"平面"<<"矩形"<<"圆柱"<<"圆锥"<<"球形";
+        find_action_name_list_<<"点"<<"线"<<"圆"<<"平面"<<"矩形"<<"圆柱"<<"圆锥"<<"球形";;
+        coord_action_name_list_<<"创建坐标系"<<"旋转坐标系"<<"保存坐标系";
+
+
+        save_actions_      =new ToolAction * [m_nSaveActionNum];
+        construct_actions_ =new ToolAction * [m_nConstructActionNum];
+        find_actions_ =    new ToolAction * [m_nFindActionNum];
+        coord_actions_     =new ToolAction * [m_nCoordActionNum];
+
+
+    //创建工具栏
+    int allActionNum=  m_nSaveActionNum+m_nConstructActionNum+m_nFindActionNum+m_nCoordActionNum;
+
+    m_nToolbarNum =(allActionNum/SingalToolBarActionNum)+4;
+
+    toolBars=new QToolBar*[m_nToolbarNum];
+
+
+    for(int i=0;i<m_nToolbarNum;i++){
+
+        toolBars[i]=new QToolBar(this);
+        toolBars[i]->setIconSize(QSize(45,45));
+        toolBars[i]->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+    }
+
+    //为工具栏添加QAction
+    for(int i=0;i<m_nSaveActionNum;i++){
+
+        ToolAction* action=new ToolAction(this);
+        action->setToolActionKind(SaveAction);
+        action->setName(save_action_name_list_[i]);
+        action->setIcon(QIcon(save_action_iconpath_list_[i]));
+        action->setToolTip(save_action_name_list_[i]);
+        save_actions_[i]=action;
+
+    }
+
+    for(int i=0;i<m_nConstructActionNum;i++){
+
+        ToolAction* action=new ToolAction(this);
+        action->setToolActionKind(ConstructAction);
+        action->setName(construct_action_name_list_[i]);
+        action->setIcon(QIcon(construct_action_iconpath_list_[i]));
+        action->setToolTip(construct_action_name_list_[i]);
+        construct_actions_[i]=action;
+
+    }
+
+    for(int i=0;i<m_nCoordActionNum;i++){
+
+        ToolAction* action=new ToolAction(this);
+        action->setToolActionKind(CoordAction);
+        action->setName(coord_action_name_list_[i]);
+        action->setIcon(QIcon(coord_action_iconpath_list_[i]));
+        action->setToolTip(coord_action_name_list_[i]);
+        coord_actions_[i]=action;
+
+    }
+
+    for(int i=0;i<m_nFindActionNum;i++){
+
+        ToolAction* action=new ToolAction(this);
+        action->setToolActionKind(FindAction);
+        action->setName(find_action_name_list_[i]);
+        action->setIcon(QIcon(find_action_iconpath_list_[i]));
+        action->setToolTip(find_action_name_list_[i]);
+        find_actions_[i]=action;
+
+    }
+
+    //设置布局
     setLayout(layout);
-    m_nToolbarNum = 3;
-    int allActionNum=FirstToolBarActions_Num+SecondToolBarActions_Num+ThirdToolBarActions_Num;
-     toolBars=new QToolBar*[(allActionNum/SingalToolBarActionNum)+3];
-     FirstToolBarActions=new ToolAction*[FirstToolBarActions_Num];
-     SecondToolBarActions=new ToolAction*[SecondToolBarActions_Num];
-     ThirdToolBarActions=new ToolAction*[ThirdToolBarActions_Num];
-     iconNames_First=new QString[FirstToolBarActions_Num];
-     iconNames_Second=new QString[SecondToolBarActions_Num];
-     iconNames_Third=new QString[ThirdToolBarActions_Num];
-    createToolBars();//调用createToolBar函数进一步构造
+
+    //设置工具栏窗口
+    createToolWidget();
+
+    //设置QAction信号槽
+    connectActionWithF();
+
+
 
 }
-QString * ToolWidget::geticonNames_First()const{
-    return iconNames_First;
-}
-QString * ToolWidget::geticonNames_Second()const{
-    return iconNames_Second;
-}
-QString * ToolWidget::geticonNames_Third()const{
-    return iconNames_Third;
-}
 
-//创建工具栏函数，是内部函数，不对外开放，在调用构造函数时使用
-void ToolWidget::createToolBars() {
-    ToolActionKind actionKinds[4]={FirstToolBarAction,SecondToolBarAction,
-    ThirdToolBarAction,FourthToolBarAction};
-    QString ToolBarTitle[4]={"第一栏","第二栏","第三栏","第四栏"};
-    //动态只能读取图标的路径，有些图标的名字无法读取，只能存储在静态中
-    //暂时无法保存到本地文件中,只能先放在这里了
-    QString iconPaths_First[FirstToolBarActions_Num]={":/component/icon/1.png", ":/component/icon/2.png", ":/component/icon/3.png", ":/component/icon/4.png", ":/component/icon/5.png", ":/component/icon/all.png", ":/component/icon/angle.png", ":/component/icon/arcLength.png", ":/component/icon/arclong.png", ":/component/icon/arclong1.png", ":/component/icon/axes.png", ":/component/icon/chongzhi.png", ":/component/icon/diameter.png", ":/component/icon/dista.png", ":/component/icon/distance.png", ":/component/icon/end.png", ":/component/icon/front.png", ":/component/icon/full.png", ":/component/icon/guide.png", ":/component/icon/half.png", ":/component/icon/icon.zip", ":/component/icon/isometric.png", ":/component/icon/jia.png", ":/component/icon/jian.png", ":/component/icon/jiaodu.png", ":/component/icon/label.png", ":/component/icon/noxuanzhuan.png", ":/component/icon/pause.png", ":/component/icon/piliang.png", ":/component/icon/point.png", ":/component/icon/point3.png", ":/component/icon/qinkong.png", ":/component/icon/radius.png", ":/component/icon/rectangle.png", ":/component/icon/right.png", ":/component/icon/setup.png", ":/component/icon/shang.png", ":/component/icon/start.png", ":/component/icon/tole.png", ":/component/icon/tolerance.png", ":/component/icon/up.png", ":/component/icon/x.png", ":/component/icon/x1.png", ":/component/icon/x2.png", ":/component/icon/xia.png", ":/component/icon/xian.png", ":/component/icon/xmove.png", ":/component/icon/xuanzhuan.png", ":/component/icon/y.png", ":/component/icon/y1.png", ":/component/icon/Y2.png", ":/component/icon/you.png", ":/component/icon/yuan.png", ":/component/icon/z1.png", ":/component/icon/Z2.png", ":/component/icon/zhuan.png", ":/component/icon/zoomin.png", ":/component/icon/zoomout.png", ":/component/icon/zuo.png"};
-    QString iconPaths_Second[SecondToolBarActions_Num]={":/component/iconhxt/1.1.png", ":/component/iconhxt/1.10.png", ":/component/iconhxt/1.11.png", ":/component/iconhxt/1.12.png", ":/component/iconhxt/1.13.png", ":/component/iconhxt/1.14.png", ":/component/iconhxt/1.15.png", ":/component/iconhxt/1.16.png", ":/component/iconhxt/1.17.png", ":/component/iconhxt/1.18.png", ":/component/iconhxt/1.19.png", ":/component/iconhxt/1.2.png", ":/component/iconhxt/1.20.png", ":/component/iconhxt/1.21.png", ":/component/iconhxt/1.22.png", ":/component/iconhxt/1.23.png", ":/component/iconhxt/1.3.png", ":/component/iconhxt/1.4.png", ":/component/iconhxt/1.5.png", ":/component/iconhxt/1.6.png", ":/component/iconhxt/1.7.png", ":/component/iconhxt/1.8.png", ":/component/iconhxt/1.9.png", ":/component/iconhxt/2,16.png", ":/component/iconhxt/2.1.png", ":/component/iconhxt/2.10.png", ":/component/iconhxt/2.11.png", ":/component/iconhxt/2.12.png", ":/component/iconhxt/2.13.png", ":/component/iconhxt/2.14.png", ":/component/iconhxt/2.15.png", ":/component/iconhxt/2.16.png", ":/component/iconhxt/2.17.png", ":/component/iconhxt/2.18.png", ":/component/iconhxt/2.19.png", ":/component/iconhxt/2.2.png", ":/component/iconhxt/2.20.png", ":/component/iconhxt/2.21.png", ":/component/iconhxt/2.22.png", ":/component/iconhxt/2.23.png", ":/component/iconhxt/2.3.png", ":/component/iconhxt/2.4.png", ":/component/iconhxt/2.5.png", ":/component/iconhxt/2.6.png", ":/component/iconhxt/2.7.png", ":/component/iconhxt/2.8.png", ":/component/iconhxt/2.9.png", ":/component/iconhxt/3.1.png", ":/component/iconhxt/3.10.png", ":/component/iconhxt/3.11.png", ":/component/iconhxt/3.12.png", ":/component/iconhxt/3.13.png", ":/component/iconhxt/3.14.png", ":/component/iconhxt/3.15.png", ":/component/iconhxt/3.16.png", ":/component/iconhxt/3.17.png", ":/component/iconhxt/3.18.png", ":/component/iconhxt/3.19.png", ":/component/iconhxt/3.2.png", ":/component/iconhxt/3.20.png", ":/component/iconhxt/3.3.png", ":/component/iconhxt/3.4.png", ":/component/iconhxt/3.5.png", ":/component/iconhxt/3.6.png", ":/component/iconhxt/3.7.png", ":/component/iconhxt/3.8.png", ":/component/iconhxt/3.9.png", ":/component/iconhxt/4.1.png", ":/component/iconhxt/4.2.png", ":/component/iconhxt/4.3.png", ":/component/iconhxt/4.4.png", ":/component/iconhxt/4.5.png", ":/component/iconhxt/4.6.png", ":/component/iconhxt/5.1.png", ":/component/iconhxt/6.1.png", ":/component/iconhxt/continue.png", ":/component/iconhxt/false.png", ":/component/iconhxt/miss.png", ":/component/iconhxt/pause.png", ":/component/iconhxt/plusMinus.png", ":/component/iconhxt/position.png", ":/component/iconhxt/recycle.png", ":/component/iconhxt/right.png", ":/component/iconhxt/round.png", ":/component/iconhxt/start.png", ":/component/iconhxt/stop.png", ":/component/iconhxt/zhankai.png", ":/component/iconhxt/zhedie.png"};
-    QString iconPaths_Third[ThirdToolBarActions_Num]={":/component/iconJW/icon1.jpg", ":/component/iconJW/icon2.jpg", ":/component/iconJW/icon3.jpg", ":/component/iconJW/icon4.jpg", ":/component/iconJW/lefthand.jpeg", ":/component/iconJW/righthand.jpeg"};
-    QString IconNames_First[FirstToolBarActions_Num]={"all", "angle", "arcLength", "arclong", "arclong1", "axes", "chongzhi", "diameter", "dista", "distance", "download", "end", "file", "front", "full", "guide", "half", "isometric", "jia", "jian", "jiaodu", "label", "move", "noxuanzhuan", "pause", "piliang", "point", "point3", "position", "qinkong", "radius", "rectangle", "right", "settings", "setup", "shang", "start", "tole", "tolerance", "up", "x", "x1", "x2", "xia", "xian", "xmove", "xuanzhuan", "y", "y1", "Y2", "you", "yuan", "z1", "Z2", "zhuan", "zoomin", "zoomout", "zuo"};
-    QString IconNames_Second[SecondToolBarActions_Num]={"1.1", "1.10", "1.11", "1.12", "1.13", "1.14", "1.15","1.16", "1.17", "1.18", "1.19", "1.2", "1.20", "1.21", "1.22", "1.23", "1.3", "1.4", "1.5", "1.6", "1.7", "1.8", "1.9", "2,16", "2.1", "2.10", "2.11", "2.12", "2.13", "2.14", "2.15", "2.16", "2.17","2.18", "2.19", "2.2","2.20", "2.21", "2.22","2.23", "2.3", "2.4", "2.5", "2.6", "2.7", "2.8", "2.9","3.1", "3.10", "3.11", "3.12", "3.13", "3.14", "3.15", "3.16", "3.17", "3.18", "3.19", "3.20", "3.3", "3.4", "3.5", "3.6", "3.7","3.8","3.9", "4.1", "4.2", "4.3", "4.4", "4.5", "4.6", "5.1", "6.1", "continue", "false", "miss", "pause", "plusMinus", "position", "recycle", "right", "round", "start","stop", "zhankai", "zhedie"};
-    QString IconNames_Third[ThirdToolBarActions_Num]={"icon1","icon2","icon3","icon4","lefthamd","righthand"};
+void ToolWidget::clearToolWidget(){
 
-    QString* iconPaths,*iconNames;//记录当前的图片路径和图片名，用于循环
-    int Num=0;//Qaction的图片总数，每栏不同
-    int toolBarIndex=-1;//记录toolBar索引
-    int actionCount=0;//记录QAaction数目，便于分行
-    ToolAction * action;//暂时存储新申请的QAction
-
-    for(int i=0;i<FirstToolBarActions_Num;i++)iconNames_First[i]=IconNames_First[i];
-    for(int i=0;i<SecondToolBarActions_Num;i++)iconNames_Second[i]=IconNames_Second[i];
-    for(int i=0;i<ThirdToolBarActions_Num;i++)iconNames_Third[i]=IconNames_Third[i];
-
-    for(int j=0;j< m_nToolbarNum;j++){
-        if(j==FirstToolBarIndex){//处理第一栏的toolBarAcrion
-            iconPaths=iconPaths_First;
-            iconNames=iconNames_First;
-            Num=FirstToolBarActions_Num;
-        }else if(j==SecondToolBarIndex){//处理第二栏的
-            iconPaths=iconPaths_Second;
-            iconNames=iconNames_Second;
-            Num=SecondToolBarActions_Num;
-        }
-        else if(j==ThirdToolBarIndex){//处理第三栏的
-            iconPaths=iconPaths_Third;
-            iconNames=iconNames_Third;
-            Num=ThirdToolBarActions_Num;
-        }
-        actionCount=0;
-        for(int i=0;i<Num;i++){
-            if(actionCount%SingalToolBarActionNum==0){//每行固定图标数
-                toolBarIndex++;
-                toolBars[toolBarIndex] = new QToolBar(ToolBarTitle[j], this);//动态分配空间
-                toolBars[toolBarIndex]->setIconSize(QSize( ActionSize_Length, ActionSize_Width));
-                layout()->addWidget(toolBars[toolBarIndex]);
-            }
-            action=new ToolAction(actionKinds[j],this,iconPaths[i],toolBarIndex,iconNames[i]);
-            action->setToolTip(iconNames[i]);
-            if(j==FirstToolBarIndex){//把QActin存入数组中，表示总共的QAction（与显示的QAction相对）
-                FirstToolBarActions[i]=action;
-            }
-            else if(j==SecondToolBarIndex){
-                SecondToolBarActions[i]=action;
-            }
-            else if(j==ThirdToolBarIndex){
-                ThirdToolBarActions[i]=action;
-            }
-        //更新actionCount
-         actionCount++;
-        //把QAction加入工具栏
-         toolBars[toolBarIndex]->addAction(action);
-        }
+    //清空
+    for(int i=0;i<m_nToolbarNum;i++){
+        clearToolBar(toolBars[i]);
     }
-}
-void ToolWidget::clear(){
-    deleteToolActions(FirstToolBarAction);
-    deleteToolActions(SecondToolBarAction);
-    deleteToolActions(ThirdToolBarAction);
-}
 
-void ToolWidget::deleteToolActions(ToolActionKind actionKind){
-    if(actionKind==FirstToolBarAction){
-        for(int i=0;i<FirstToolBarActions_Num;i++){
-            int addLine=FirstToolBarActions[i]->addLine;
-            toolBars[addLine]->removeAction(FirstToolBarActions[i]);
-        }
-    }else if(actionKind==SecondToolBarAction){
-        for(int i=0;i<SecondToolBarActions_Num;i++){
-            int addLine=SecondToolBarActions[i]->addLine;
-            toolBars[addLine]->removeAction(SecondToolBarActions[i]);
-        }
-    }
-    else if(actionKind==ThirdToolBarAction){
-        for(int i=0;i<ThirdToolBarActions_Num;i++){
-            int addLine=ThirdToolBarActions[i]->addLine;
-            toolBars[addLine]->removeAction(ThirdToolBarActions[i]);
-        }
-     }
 }
+void ToolWidget::createToolWidget(){
+    int toolbar_index=-1;
+    int lastToolBar_index=0;
 
-void ToolWidget::deleteToolAction(ToolActionKind actionKind,QString name){
-    int addLine;//QAction将要加入的ToolBar行数
-    if(actionKind==FirstToolBarAction){
-        for(int i=0;i<FirstToolBarActions_Num;i++){
-            if(FirstToolBarActions[i]->name==name){
-                addLine=FirstToolBarActions[i]->addLine;
-                toolBars[addLine]->removeAction(FirstToolBarActions[i]);
-                break;
-            }
-        }
+
+    layout()->addWidget(new QLabel("识别:"));
+    toolbar_index= addFindActions(find_action_name_list_,m_nFindActionNum, toolbar_index);
+    for(int i=lastToolBar_index;i<=toolbar_index;i++){
+        layout()->addWidget(toolBars[i]);
     }
-    else if(actionKind==SecondToolBarAction){
-        for(int i=0;i<SecondToolBarActions_Num;i++){
-            if(SecondToolBarActions[i]->name==name){
-                addLine=SecondToolBarActions[i]->addLine;
-                toolBars[addLine]->removeAction(SecondToolBarActions[i]);
-                break;
-            }
-        }
+    lastToolBar_index=toolbar_index+1;
+
+
+    layout()->addWidget(new QLabel("构造:"));
+    toolbar_index= addConstructActions(construct_action_name_list_,m_nConstructActionNum, toolbar_index);
+    for(int i=lastToolBar_index;i<=toolbar_index;i++){
+        layout()->addWidget(toolBars[i]);
     }
-    else if(actionKind==ThirdToolBarAction){
-        for(int i=0;i<ThirdToolBarActions_Num;i++){
-            if(ThirdToolBarActions[i]->name==name){
-                 addLine=ThirdToolBarActions[i]->addLine;
-                toolBars[addLine]->removeAction(ThirdToolBarActions[i]);
-                break;
-            }
-        }
+    lastToolBar_index=toolbar_index+1;
+
+
+    layout()->addWidget(new QLabel("保存:"));
+    toolbar_index= addSaveActions(save_action_name_list_,m_nSaveActionNum, toolbar_index);
+    for(int i=lastToolBar_index;i<=toolbar_index;i++){
+        layout()->addWidget(toolBars[i]);
+    }
+    lastToolBar_index=toolbar_index+1;
+
+
+    layout()->addWidget(new QLabel("坐标系:"));
+    toolbar_index= addCoordActions(coord_action_name_list_,m_nCoordActionNum, toolbar_index);
+    for(int i=lastToolBar_index;i<m_nToolbarNum;i++){
+        layout()->addWidget(toolBars[i]);
+    }
+
+}
+void ToolWidget::clearToolBar(QToolBar *toolbar) {
+    //找出每一个控件然后移除
+    QList<QAction*> actions = toolbar->actions();
+    for (QAction *action : actions) {
+        toolbar->removeAction(action);
     }
 }
 ToolWidget::~ToolWidget(){
-    if(FirstToolBarActions!=nullptr)delete FirstToolBarActions;
-    if(SecondToolBarActions!=nullptr)delete SecondToolBarActions;
-    if(ThirdToolBarActions!=nullptr)delete ThirdToolBarActions;
+
 }
-int  ToolWidget::addToolActions(ToolActionKind actionKind ,QString * ToolActionNames,int actionNum,int lastToolBarIndex){
-    int actionCount=0;
-    int ToolBarIndex=lastToolBarIndex;
-    QString name;//当前检测的QAction的name
-    for(int j=0;j<actionNum;j++){
-        name=ToolActionNames[j];
-        if(actionCount%SingalToolBarActionNum==0)
-            ToolBarIndex++;
-        actionCount++;
-        if(actionKind==FirstToolBarAction){
-            for(int i=0;i<FirstToolBarActions_Num;i++){
-                if(FirstToolBarActions[i]->name==name){
-                    toolBars[ToolBarIndex]->addAction(FirstToolBarActions[i]);
-                    FirstToolBarActions[i]->addLine=ToolBarIndex;
-                    break;
-                }
+int ToolWidget::addSaveActions(QStringList& action_name_list ,int action_num,int toolbar_index){
+    int action_count=0;
+    int index_=0;
+    for(int i=0;i<action_num;i++){
+        //更新工具栏行数
+        if(action_count%SingalToolBarActionNum==0){
+            toolbar_index++;
+        }
+        for(index_=0;index_<m_nSaveActionNum;index_++){
+            if(action_name_list[i]==save_action_name_list_[index_]){
+                action_count++;
+                toolBars[toolbar_index]->addAction(save_actions_[index_]);
             }
         }
-        else if(actionKind==SecondToolBarAction){
-            for(int i=0;i<SecondToolBarActions_Num;i++){
-                if(SecondToolBarActions[i]->name==name){
-                    toolBars[ToolBarIndex]->addAction(SecondToolBarActions[i]);
-                   SecondToolBarActions[i]->addLine=ToolBarIndex;
-                    break;
-                }
+    }
+    return toolbar_index;
+}
+int ToolWidget::addConstructActions(QStringList& action_name_list ,int action_num,int toolbar_index){
+    int action_count=0;
+    int index_=0;
+    for(int i=0;i<action_num;i++){
+        //更新工具栏行数
+        if(action_count%SingalToolBarActionNum==0){
+            toolbar_index++;
+        }
+        for(index_=0;index_<m_nConstructActionNum;index_++){
+            if(action_name_list[i]==construct_action_name_list_[index_]){
+                action_count++;
+                toolBars[toolbar_index]->addAction(construct_actions_[index_]);
             }
         }
-        else if(actionKind==ThirdToolBarAction){
-            for(int i=0;i<ThirdToolBarActions_Num;i++){
-                if(ThirdToolBarActions[i]->name==name){
-                    toolBars[ToolBarIndex]->addAction(ThirdToolBarActions[i]);
-                    ThirdToolBarActions[i]->addLine=ToolBarIndex;
-                    break;
-                }
+    }
+    return toolbar_index;
+}
+int ToolWidget::addFindActions(QStringList& action_name_list ,int action_num,int toolbar_index){
+    int action_count=0;
+    int index_=0;
+    for(int i=0;i<action_num;i++){
+        //更新工具栏行数
+        if(action_count%SingalToolBarActionNum==0){
+            toolbar_index++;
+        }
+        for(index_=0;index_<m_nFindActionNum;index_++){
+            if(action_name_list[i]==find_action_name_list_[index_]){
+                action_count++;
+                toolBars[toolbar_index]->addAction(find_actions_[index_]);
+
+                break;
             }
         }
 
     }
-    return ToolBarIndex;
+    return toolbar_index;
+}
+int ToolWidget::addCoordActions(QStringList& action_name_list ,int action_num,int toolbar_index){
+    int action_count=0;
+    int index_=0;
+    for(int i=0;i<action_num;i++){
+        //更新工具栏行数
+        if(action_count%SingalToolBarActionNum==0){
+            toolbar_index++;
+        }
+        for(index_=0;index_<m_nCoordActionNum;index_++){
+            if(action_name_list[i]==coord_action_name_list_[index_]){
+                action_count++;
+                toolBars[toolbar_index]->addAction(coord_actions_[index_]);
+            }
+        }
+    }
+    return toolbar_index;
+}
+
+
+QStringList* ToolWidget::getSaveActionNames(){
+
+    return &save_action_name_list_;
+
+}
+
+QStringList* ToolWidget:: getConstructActionNames(){
+
+    return &construct_action_name_list_;
+
+}
+
+QStringList* ToolWidget::getFindActionNames(){
+
+    return &find_action_name_list_;
+
+}
+
+QStringList* ToolWidget::getCoordActionNames(){
+
+    return &coord_action_name_list_;
+
+}
+
+
+int ToolWidget::getToolbarNum(){
+
+    return m_nToolbarNum;
+
+}
+
+int ToolWidget::getSaveActionNum(){
+
+    return m_nSaveActionNum;
+
+}
+
+int ToolWidget::getConstructActionNum(){
+
+    return m_nConstructActionNum;
+
+}
+
+int ToolWidget::getCoordActionNum(){
+
+    return m_nCoordActionNum;
+
+}
+
+int ToolWidget::getFindActionNum(){
+
+    return m_nFindActionNum;
+
+}
+
+void ToolWidget::connectActionWithF(){
+    //识别
+    connect(find_actions_[find_action_name_list_.indexOf("点")],&QAction::triggered,[]{
+        qDebug()<<"点击了识别点";
+    });
+    connect(find_actions_[find_action_name_list_.indexOf("线")],&QAction::triggered,[]{
+        qDebug()<<"点击了识别线";
+    });
+    connect(find_actions_[find_action_name_list_.indexOf("圆")],&QAction::triggered,[]{
+        qDebug()<<"点击了识别圆";
+    });
+    connect(find_actions_[find_action_name_list_.indexOf("平面")],&QAction::triggered,[]{
+        qDebug()<<"点击了识别平面";
+    });
+    connect(find_actions_[find_action_name_list_.indexOf("矩形")],&QAction::triggered,[]{
+        qDebug()<<"点击了识别矩形";
+    });
+    connect(find_actions_[find_action_name_list_.indexOf("圆柱")],&QAction::triggered,[]{
+        qDebug()<<"点击了识别圆柱";
+    });
+    connect(find_actions_[find_action_name_list_.indexOf("圆锥")],&QAction::triggered,[]{
+        qDebug()<<"点击了识别圆锥";
+    });
+    connect(find_actions_[find_action_name_list_.indexOf("球形")],&QAction::triggered,[]{
+        qDebug()<<"点击了识别球形";
+    });
+
+    //构造
+    connect(construct_actions_[construct_action_name_list_.indexOf("点")],&QAction::triggered,[]{
+        qDebug()<<"点击了构造点";
+    });
+    connect(construct_actions_[construct_action_name_list_.indexOf("线")],&QAction::triggered,[]{
+        qDebug()<<"点击了构造线";
+    });
+    connect(construct_actions_[construct_action_name_list_.indexOf("圆")],&QAction::triggered,[]{
+        qDebug()<<"点击了构造圆";
+    });
+    connect(construct_actions_[construct_action_name_list_.indexOf("平面")],&QAction::triggered,[]{
+        qDebug()<<"点击了构造平面";
+    });
+    connect(construct_actions_[construct_action_name_list_.indexOf("矩形")],&QAction::triggered,[]{
+        qDebug()<<"点击了构造矩形";
+    });
+    connect(construct_actions_[construct_action_name_list_.indexOf("圆柱")],&QAction::triggered,[]{
+        qDebug()<<"点击了构造圆柱";
+    });
+    connect(construct_actions_[construct_action_name_list_.indexOf("圆锥")],&QAction::triggered,[]{
+        qDebug()<<"点击了构造圆锥";
+    });
+    connect(construct_actions_[construct_action_name_list_.indexOf("球形")],&QAction::triggered,[]{
+        qDebug()<<"点击了构造球形";
+    });
+
+    //保存
+    connect(save_actions_[save_action_name_list_.indexOf("excel")],&QAction::triggered,[]{
+        qDebug()<<"点击了excel";
+    });
+    connect(save_actions_[save_action_name_list_.indexOf("word")],&QAction::triggered,[]{
+        qDebug()<<"点击了word";
+    });
+    connect(save_actions_[save_action_name_list_.indexOf("txt")],&QAction::triggered,[]{
+        qDebug()<<"点击了txt";
+    });
+    connect(save_actions_[save_action_name_list_.indexOf("pdf")],&QAction::triggered,[]{
+        qDebug()<<"点击了pdf";
+    });
+
+
+    //坐标系
+    connect(coord_actions_[coord_action_name_list_.indexOf("创建坐标系")],&QAction::triggered,[]{
+        qDebug()<<"点击了创建坐标系";
+    });
+    connect(coord_actions_[coord_action_name_list_.indexOf("旋转坐标系")],&QAction::triggered,[]{
+        qDebug()<<"点击了旋转坐标系";
+    });
+    connect(coord_actions_[coord_action_name_list_.indexOf("保存坐标系")],&QAction::triggered,[]{
+        qDebug()<<"点击了保存坐标系";
+    });
+
+}
+int getImagePaths(const QString& directory, QStringList &iconPaths, QStringList &iconNames) {
+    QDir dir(directory);
+    QFileInfoList fileInfoList = dir.entryInfoList(QDir::Files | QDir::NoSymLinks , QDir::Name);
+    int imageCount = 0;
+
+    for (const QFileInfo &fileInfo : fileInfoList) {
+        if (fileInfo.suffix() == "jpg" || fileInfo.suffix() == "jpeg" || fileInfo.suffix() == "png" || fileInfo.suffix() == "gif") {
+            QString path = fileInfo.absoluteFilePath();
+            QString name = fileInfo.fileName();
+            iconPaths.append(path);
+            iconNames.append(name.left(name.lastIndexOf('.')));
+
+            imageCount++;
+        }
+    }
+    // qDebug()<<iconPaths;
+    // qDebug()<<iconNames;
+    return imageCount;
 }
