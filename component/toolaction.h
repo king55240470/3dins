@@ -4,29 +4,21 @@
 #include<QString>
 #include<QWidget>
 enum ToolActionKind{
-    Cube,//立方体
-    Cuboid,//长方体
-    Sphere,//球体
-    Cylinder,//圆柱体
-    Cone,//圆锥
-    Pyramid,//金字塔
-    Prism,//棱柱体
-    Ellipsoid,//椭球体
-    Hyperboloid,//双曲面
-    Conic ,//锥形体
-    FirstToolBarAction,
-    SecondToolBarAction,
-    ThirdToolBarAction,
-    FourthToolBarAction
-
+    SaveAction,
+    ConstructAction,
+    CoordAction,
+    FindAction
 };
 class ToolAction :public QAction
 {
+    Q_OBJECT
 public:
-    ToolAction(ToolActionKind ActionKind ,QWidget* parent=nullptr,QString iconPath="",int AddLine=0,QString Name="");
-    ToolActionKind actionKind;
-    int addLine;
-    QString name;
+    ToolAction(QWidget* parent=nullptr);
+    void setToolActionKind(ToolActionKind);
+    void setName(QString ) ;
+private:
+    ToolActionKind action_kind_;
+    QString name_;
 };
 
 #endif // TOOLACTION_H
