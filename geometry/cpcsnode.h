@@ -2,8 +2,9 @@
 #define CPCSNODE_H
 
 #include"cpcs.h"
+#include "cobject.h"
 
-class CPcsNode
+class CPcsNode : public CObject
 {
 public:
     CPcsNode();
