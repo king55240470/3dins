@@ -31,15 +31,15 @@ public:
     void SetCurCoordSystem(CPcs*);
     CPcs* GetBaseCoordSystem();
     CPcs* GetCurCoordSystem();
-    CPcs* GetWorldCoordSystem();
+    //CPcs* GetWorldCoordSystem();
     CPcs* Find(int);
     CPcs* Find(QString);
 
     //节点管理
     CPcsNode* FindNode(int); //ID
     CPcsNode* FindNode(CPcs const*);
-    CPcsNode* FindNode(QString); //名称
-    CPcsNode* GetAt(int); //索引
+    CPcsNode* FindNode(QString);
+    // CPcsNode* GetAt(int); //索引
     CPcsNode* findPreviousNode(CPcsNode* currentNode);
     CPcsNode* GetHeadNode(); //获得头节点
     CPcsNode* GetTailNode(); //获得尾节点
@@ -47,9 +47,9 @@ public:
 
     //坐标系转换
     void MoveCurrentCoordSystem(CPosition); //移动
-    void RotateCurrentCoordSystem(double); //旋转
+    void RotateCurrentCoordSystem(double,QString); //旋转
     void SaveCurrentCoord(); //保存
-    void SelectAll(int); //全部选中
+    void SelectAll(int); //选中所有与当前坐标系相关的实体
 
     //其他
     bool IsMultiCoordSys() const; //多坐标系判断
