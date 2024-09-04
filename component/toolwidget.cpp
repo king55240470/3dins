@@ -300,84 +300,70 @@ int ToolWidget::getFindActionNum(){
 
 void ToolWidget::connectActionWithF(){
     //识别
-    connect(find_actions_[find_action_name_list_.indexOf("点")],&QAction::triggered,[]{
-        qDebug()<<"点击了识别点";
-    });
-    connect(find_actions_[find_action_name_list_.indexOf("线")],&QAction::triggered,[]{
-        qDebug()<<"点击了识别线";
-    });
-    connect(find_actions_[find_action_name_list_.indexOf("圆")],&QAction::triggered,[]{
-        qDebug()<<"点击了识别圆";
-    });
-    connect(find_actions_[find_action_name_list_.indexOf("平面")],&QAction::triggered,[]{
-        qDebug()<<"点击了识别平面";
-    });
-    connect(find_actions_[find_action_name_list_.indexOf("矩形")],&QAction::triggered,[]{
-        qDebug()<<"点击了识别矩形";
-    });
-    connect(find_actions_[find_action_name_list_.indexOf("圆柱")],&QAction::triggered,[]{
-        qDebug()<<"点击了识别圆柱";
-    });
-    connect(find_actions_[find_action_name_list_.indexOf("圆锥")],&QAction::triggered,[]{
-        qDebug()<<"点击了识别圆锥";
-    });
-    connect(find_actions_[find_action_name_list_.indexOf("球形")],&QAction::triggered,[]{
-        qDebug()<<"点击了识别球形";
-    });
+    connect(find_actions_[find_action_name_list_.indexOf("点")],&QAction::triggered,&tool_widget::onFindPoint);
+    connect(find_actions_[find_action_name_list_.indexOf("线")],&QAction::triggered,&tool_widget::onFindLine);
+    connect(find_actions_[find_action_name_list_.indexOf("圆")],&QAction::triggered,&tool_widget::onFindCircle);
+    connect(find_actions_[find_action_name_list_.indexOf("平面")],&QAction::triggered,&tool_widget::onFindPlan);
+    connect(find_actions_[find_action_name_list_.indexOf("矩形")],&QAction::triggered,&tool_widget::onFindRectangle);
+    connect(find_actions_[find_action_name_list_.indexOf("圆柱")],&QAction::triggered,&tool_widget::onFindCylinder);
+    connect(find_actions_[find_action_name_list_.indexOf("圆锥")],&QAction::triggered,&tool_widget::onFindCone);
+    connect(find_actions_[find_action_name_list_.indexOf("球形")],&QAction::triggered,&tool_widget::onFindSphere);
 
     //构造
-    connect(construct_actions_[construct_action_name_list_.indexOf("点")],&QAction::triggered,[]{
-        qDebug()<<"点击了构造点";
-    });
-    connect(construct_actions_[construct_action_name_list_.indexOf("线")],&QAction::triggered,[]{
-        qDebug()<<"点击了构造线";
-    });
-    connect(construct_actions_[construct_action_name_list_.indexOf("圆")],&QAction::triggered,[]{
-        qDebug()<<"点击了构造圆";
-    });
-    connect(construct_actions_[construct_action_name_list_.indexOf("平面")],&QAction::triggered,[]{
-        qDebug()<<"点击了构造平面";
-    });
-    connect(construct_actions_[construct_action_name_list_.indexOf("矩形")],&QAction::triggered,[]{
-        qDebug()<<"点击了构造矩形";
-    });
-    connect(construct_actions_[construct_action_name_list_.indexOf("圆柱")],&QAction::triggered,[]{
-        qDebug()<<"点击了构造圆柱";
-    });
-    connect(construct_actions_[construct_action_name_list_.indexOf("圆锥")],&QAction::triggered,[]{
-        qDebug()<<"点击了构造圆锥";
-    });
-    connect(construct_actions_[construct_action_name_list_.indexOf("球形")],&QAction::triggered,[]{
-        qDebug()<<"点击了构造球形";
-    });
+    connect(construct_actions_[construct_action_name_list_.indexOf("点")],&QAction::triggered,&tool_widget::onConstructPoint);
+    connect(construct_actions_[construct_action_name_list_.indexOf("线")],&QAction::triggered,&tool_widget::onConstructLine);
+    connect(construct_actions_[construct_action_name_list_.indexOf("圆")],&QAction::triggered,&tool_widget::onConstructCircle);
+    connect(construct_actions_[construct_action_name_list_.indexOf("平面")],&QAction::triggered,&tool_widget::onConstructPlan);
+    connect(construct_actions_[construct_action_name_list_.indexOf("矩形")],&QAction::triggered,&tool_widget::onConstructRectangle);
+    connect(construct_actions_[construct_action_name_list_.indexOf("圆柱")],&QAction::triggered,&tool_widget::onConstructCylinder);
+    connect(construct_actions_[construct_action_name_list_.indexOf("圆锥")],&QAction::triggered,&tool_widget::onConstructCone);
+    connect(construct_actions_[construct_action_name_list_.indexOf("球形")],&QAction::triggered,&tool_widget::onConstructSphere);
 
     //保存
-    connect(save_actions_[save_action_name_list_.indexOf("excel")],&QAction::triggered,[]{
-        qDebug()<<"点击了excel";
-    });
-    connect(save_actions_[save_action_name_list_.indexOf("word")],&QAction::triggered,[]{
-        qDebug()<<"点击了word";
-    });
-    connect(save_actions_[save_action_name_list_.indexOf("txt")],&QAction::triggered,[]{
-        qDebug()<<"点击了txt";
-    });
-    connect(save_actions_[save_action_name_list_.indexOf("pdf")],&QAction::triggered,[]{
-        qDebug()<<"点击了pdf";
-    });
+    connect(save_actions_[save_action_name_list_.indexOf("excel")],&QAction::triggered,&tool_widget::onSaveExcel);
+    connect(save_actions_[save_action_name_list_.indexOf("word")],&QAction::triggered,&tool_widget::onSaveWord);
+    connect(save_actions_[save_action_name_list_.indexOf("txt")],&QAction::triggered,&tool_widget::onSaveTxt);
+    connect(save_actions_[save_action_name_list_.indexOf("pdf")],&QAction::triggered,&tool_widget::onSavePdf);
 
 
     //坐标系
-    connect(coord_actions_[coord_action_name_list_.indexOf("创建坐标系")],&QAction::triggered,[]{
-        qDebug()<<"点击了创建坐标系";
-    });
-    connect(coord_actions_[coord_action_name_list_.indexOf("旋转坐标系")],&QAction::triggered,[]{
-        qDebug()<<"点击了旋转坐标系";
-    });
-    connect(coord_actions_[coord_action_name_list_.indexOf("保存坐标系")],&QAction::triggered,[]{
-        qDebug()<<"点击了保存坐标系";
-    });
+    connect(coord_actions_[coord_action_name_list_.indexOf("创建坐标系")],&QAction::triggered,&tool_widget::onCreateCoord);
+    connect(coord_actions_[coord_action_name_list_.indexOf("旋转坐标系")],&QAction::triggered,&tool_widget::onSpinCoord);
+    connect(coord_actions_[coord_action_name_list_.indexOf("保存坐标系")],&QAction::triggered,&tool_widget::onSaveCoord);
 
 }
+
+
+namespace tool_widget{
+//Find
+void onFindPoint(){ qDebug()<<"点击了识别点";}
+void onFindLine(){  qDebug()<<"点击了识别线";}
+void onFindCircle(){ qDebug()<<"点击了识别圆";}
+void onFindPlan(){qDebug()<<"点击了识别平面";}
+void onFindRectangle(){qDebug()<<"点击了识别矩形";}
+void onFindCylinder(){qDebug()<<"点击了识别圆柱";}
+void onFindCone(){qDebug()<<"点击了识别圆锥";}
+void onFindSphere(){qDebug()<<"点击了识别球形";}
+//Construct
+void onConstructPoint(){qDebug()<<"点击了构造点";}
+void onConstructLine(){qDebug()<<"点击了构造线";}
+void onConstructCircle(){qDebug()<<"点击了构造圆";}
+void onConstructPlan(){qDebug()<<"点击了构造平面";}
+void onConstructRectangle(){qDebug()<<"点击了构造矩形";}
+void onConstructCylinder(){qDebug()<<"点击了构造圆柱";}
+void onConstructCone(){qDebug()<<"点击了构造圆锥";}
+void onConstructSphere(){qDebug()<<"点击了构造球形";}
+//Coord
+void onCreateCoord(){qDebug()<<"点击了创建坐标系";}
+void onSpinCoord(){qDebug()<<"点击了旋转坐标系";}
+void onSaveCoord(){qDebug()<<"点击了保存坐标系";}
+//Save
+void onSavePdf(){ qDebug()<<"点击了pdf";}
+void onSaveExcel(){ qDebug()<<"点击了excel";}
+void onSaveTxt(){ qDebug()<<"点击了txt";}
+void onSaveWord(){ qDebug()<<"点击了word";}
+}
+
 int getImagePaths(const QString& directory, QStringList &iconPaths, QStringList &iconNames) {
     QDir dir(directory);
     QFileInfoList fileInfoList = dir.entryInfoList(QDir::Files | QDir::NoSymLinks , QDir::Name);
