@@ -140,13 +140,15 @@ void MainWindow::openFile(){
     if (filePath.isEmpty()) { // 如果没有选择文件，返回
         return;
     }
-    if (filePath.endsWith("docx")) {
+    if (filePath.endsWith("stp")) {
         QFileInfo fileInfo(filePath);
         QString fileName = fileInfo.fileName();
-        //QDir dir(fileName);
-        //QString dirPath = dir.absolutePath();
         pWinFileManagerWidget->openModelFile(fileName,filePath);
-    }
+    }else if(filePath.endsWith("stl")||filePath.endsWith("pcd")||filePath.endsWith("ply")){
+        QFileInfo fileInfo(filePath);
+        QString fileName = fileInfo.fileName();
+        pWinFileManagerWidget->openMeasuredFile(fileName,filePath);
+        }
 }
 void MainWindow::saveFile(){
 

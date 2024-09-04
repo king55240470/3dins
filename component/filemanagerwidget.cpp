@@ -45,13 +45,19 @@ void FileManagerWidget::openModelFile(QString fileName,QString filePath){
     modelFile->appendRow(newFileItem);
 }
 
+void FileManagerWidget::openMeasuredFile(QString fileName,QString filePath){
+    QStandardItem *newFileItem = new QStandardItem(fileName);
+    newFileItem->setData(filePath, Qt::UserRole);//在QTreeView的子节点中存储文件路径
+    measuredFile->appendRow(newFileItem);
+}
+
 void FileManagerWidget::clickFile(const QModelIndex &index){
     QStandardItem *item = model->itemFromIndex(index);//获取被点击的项
     QString filePath = item->data(Qt::UserRole).toString();//从子节点中获取文件路径
-    getFileContent(filePath);
+    //getFileContent(filePath);
 }
 
-void FileManagerWidget::getFileContent(const QString &path){
+/*void FileManagerWidget::getFileContent(const QString &path){
     QFile file(path);
     if (!file.open(QIODevice::ReadOnly)) {
         qDebug() << "无法打开文件:" << file.errorString();
@@ -60,10 +66,10 @@ void FileManagerWidget::getFileContent(const QString &path){
     QTextStream in(&file);
     QString content = in.readAll();
     file.close();
-    /*if (pWinVtkWidget) {
-        delete pWinVtkWidget;//如果已经创建了pWinVtkWidget，先删除
-    }*/
+    //if (pWinVtkWidget) {
+        //delete pWinVtkWidget;//如果已经创建了pWinVtkWidget，先删除
+    //}
     pWinVtkWidget=new VtkWidget();
     //pWinVtkWidget->setContent(content);
     //file.close();
-}
+}*/
