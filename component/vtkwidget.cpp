@@ -40,6 +40,7 @@ VtkWidget::VtkWidget(QWidget *parent)
 
     // 将点云添加到 PCLViewer 中
     cloud_viewer->addPointCloud(cloudptr, color_handler, "cloud");
+
 }
 
 VtkWidget::~VtkWidget()
