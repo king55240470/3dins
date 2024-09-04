@@ -28,7 +28,8 @@ private:
     VtkWidget *pWinVtkWidget;
 public:
     void openModelFile(QString,QString);
-    void getFileContent(const QString &);
+    void openMeasuredFile(QString,QString);
+    //void getFileContent(const QString &);
 private slots:
     void clickFile(const QModelIndex &);
 private:
