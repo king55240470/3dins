@@ -19,6 +19,7 @@ SOURCES += \
     component/unknownwidget.cpp \
     component/vtkwidget.cpp \
     component/vtkwindowreportwidget.cpp \
+    geometry/centity.cpp \
     geometry/cobject.cpp \
     geometry/cpcs.cpp \
     geometry/cpcsnode.cpp \
@@ -41,11 +42,13 @@ HEADERS += \
     component/unknownwidget.h \
     component/vtkwidget.h \
     component/vtkwindowreportwidget.h \
+    geometry/centity.h \
     geometry/cobject.h \
     geometry/cpcs.h \
     geometry/cpcsnode.h \
     geometry/cposition.h \
     geometry/cshape.h \
+    geometry/globes.h \
     mainwindow.h \
     manager/cobjectmgr.h \
     manager/cpcsmgr.h

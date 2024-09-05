@@ -25,7 +25,6 @@ class VtkWidget : public QWidget
 public:
     VtkWidget(QWidget *parent = nullptr);
     ~VtkWidget();
-
 private:
     PointCloudPtr cloudptr; // 点云智能指针
     PCLViewer::Ptr cloud_viewer; // PCL 可视化器的智能指针

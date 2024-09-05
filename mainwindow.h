@@ -38,6 +38,13 @@ private:
     QMenuBar * bar;
     QStatusBar *stbar;
 
+//私有的槽函数
+/*private slots:
+    void open_clicked();
+    void save_clicked();*/
+private:
+    void openFile();
+    void saveFile();
 
 public:
     MainWindow(QWidget *parent = nullptr);
