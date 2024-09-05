@@ -1,5 +1,32 @@
 #include"toolwidget.h"
 #include"toolaction.h"
+#include <QtWidgets/QMainWindow>
+#include <QMenu>
+#include<QString>
+
+#include <QMessageBox>
+#include<QMenuBar>
+// 打开文件
+
+#include <QFile>
+#include <QFileDialog>
+
+// 加载office驱动，导入导出excel
+
+#include <ActiveQt/QAxObject>
+
+// 文本流导出word、pdf
+
+#include <QTextDocument>
+#include <QTextCursor>
+#include <QTextStream>
+#include <QTextTable>
+
+// 转为pdf类型
+#include <QPrinter>
+#include <QPdfWriter>
+
+
 #include <QDir>
 #include <QStringList>
 #include <QFileInfo>
@@ -358,10 +385,298 @@ void onCreateCoord(){qDebug()<<"点击了创建坐标系";}
 void onSpinCoord(){qDebug()<<"点击了旋转坐标系";}
 void onSaveCoord(){qDebug()<<"点击了保存坐标系";}
 //Save
-void onSavePdf(){ qDebug()<<"点击了pdf";}
-void onSaveExcel(){ qDebug()<<"点击了excel";}
-void onSaveTxt(){ qDebug()<<"点击了txt";}
-void onSaveWord(){ qDebug()<<"点击了word";}
+void onSavePdf(){
+    QString path = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("Pdf(*.pdf)"));
+    if (path.isEmpty()){
+        return ;
+    }
+    int row = 5, col = 3;
+    QList<QList<QString>> values;
+    for (int i = 0; i < row; i++) {
+        QList<QString> inLst;
+        for (int j = 0; j < col; j++) {
+            inLst.append(QString::number(i) + QString::number(j));
+        }
+        values.append(inLst);
+    }
+
+    if (QFileInfo(path).suffix().isEmpty())
+        path.append(".pdf");
+
+    // 只读和追加的方式打开文件
+    QFile pdfFile(path);
+    if (!pdfFile.open(QIODevice::WriteOnly | QIODevice::Append))
+        return;
+
+    QPdfWriter *m_pdfWriter = new QPdfWriter(&pdfFile);
+    m_pdfWriter->setPageSize(QPageSize::A4);
+    m_pdfWriter->setResolution(QPrinter::ScreenResolution);
+
+
+    //添加标题
+    //添加标题
+    QString html;
+    html.append("<h1 style='text-align:center;'>导出为pdf</h1><br />");
+    // QString html = addHtmlTable("T1主标题", "T1主标题", row, col, values);
+    //m_html.append(html);
+    // 表格主标题T1
+    html.append("<table border='0.5' cellspacing='0' cellpadding='3' width:100%>");
+    html.append(QString("<tr><td align='center' style='vertical-align:middle;font-weight:bold;' colspan='%1'>").arg(col));
+    html.append("T1主标题");
+    html.append("</td></tr>");
+
+    // 表格主标题T2
+    //html.append(QString("<tr><td align='left' style='vertical-align:middle;font-weight:bold;' colspan='%1'>").arg(col));
+    //html.append("T2主标题");
+    //html.append("</td></tr>");
+
+    // 添加表格数值 字段/字段值
+    // 遍历表格的每个单元格，将数据插入到表格中
+    for (int i = 0; i < row; ++i) {
+        html.append("<tr>");
+        for (int j = 0; j < col; ++j) {
+            // 表头用<th></th>,有加粗效果
+            //html.append(QString("<th valign='center' style='vertical-align:middle;font-size:100px;'>"));
+
+            int index = col + 1;
+            // 设置单元格的文本
+            html.append(QString("<td valign='center' style='vertical-align:middle;font-size:100px;'>"));
+            html.append(values[i][j] + "</td>");
+        }
+        html.append("</tr>");
+    }
+    html.append("</table><br /><br />");
+
+    //加入图片
+    //QPainter painter;
+    //painter.begin(m_pdfWriter);
+    //QPixmap pixmap("./qtLogo.png");
+    //painter.scale(10, 10);   //放大10倍
+    //painter.drawPixmap(0, 0, pixmap);
+    //painter.end();
+
+    QTextDocument textDocument;
+    textDocument.setHtml(html);
+    textDocument.print(m_pdfWriter);
+    textDocument.end();
+
+    pdfFile.close();
+}
+void onSaveExcel(){
+    QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("Excel(*.xlsx *.xls)"));
+    if (filePath.isEmpty()){
+        return ;
+    }
+    QStringList headers;
+    headers << "表头1" << "表头2" << "表头3" << "表头4" << "表头5" ;
+    int col = headers.size();
+    int row = 6;
+    QList<QList<QString>> dataAll;
+    for (int i = 0; i < row; i++) {
+        QList<QString> inLst;
+        for (int j = 0; j < col; j++) {
+            inLst.append(QString::number(i) + QString::number(j));
+        }
+        dataAll.append(inLst);
+    }
+
+    QAxObject excel("Excel.Application");						  //加载Excel驱动
+    excel.dynamicCall("SetVisible (bool Visible)", "false");	  //不显示窗体
+    excel.setProperty("DisplayAlerts", true);					  //不显示任何警告信息。如果为true那么在关闭是会出现类似“文件已修改，是否保存”的提示
+
+    QAxObject *workBooks = excel.querySubObject("WorkBooks");	  //获取工作簿集合
+    workBooks->dynamicCall("Add");								  //新建一个工作簿
+    QAxObject *workBook = excel.querySubObject("ActiveWorkBook"); //获取当前工作簿
+        //QAxObject *workBook = excel.querySubObject("Open(QString&)", filePath); //获取当前工作簿
+    QAxObject *workSheet = workBook->querySubObject("Sheets(int)", 1); //设置为 获取第一页 数据
+
+    // 大标题行
+    QAxObject *cell;
+    cell = workSheet->querySubObject("Cells(int,int)", 1, 1);
+    cell->dynamicCall("SetValue(const QString&)", "excel导出示例");
+    cell->querySubObject("Font")->setProperty("Size", 11);
+    // 合并标题行
+    QString cellTitle;
+    cellTitle.append("A1:");
+    cellTitle.append(QChar(col - 1 + 'A'));
+    cellTitle.append(QString::number(1));
+    QAxObject *range = workSheet->querySubObject("Range(const QString&)", cellTitle);
+    range->setProperty("WrapText", true);
+    range->setProperty("MergeCells", true);
+    range->setProperty("HorizontalAlignment", -4108);
+    range->setProperty("VertivcalAlignment", -4108);
+
+    // 行高
+    workSheet->querySubObject("Range(const QString&)", "1:1")->setProperty("RowHeight", 30);
+
+    //列标题
+    QString lastCars = QChar('A');
+    for (int i = 0; i < col; i++)
+    {
+        // excel表格 A:A第一列到第一列,B:B第二列到第二列
+        // A B C D...X Y Z AA AB AC...AX AY AZ BA BB BC...
+        QString columnName;
+        QString cars;
+        if (i < 26) {
+            // 列数少于26个字母A B C D...X Y Z
+            cars = QChar(i + 'A');
+        } else {
+            // 列数大于26个字母 AA AB AC...AX AY AZ BA BB BC...
+            cars = QChar(i / 26 - 1 + 'A');
+            cars.append(QChar(i % 26 + 'A'));
+        }
+        columnName = cars + ":" + cars;
+        lastCars = cars;
+        // 有大标题，列标题从第二行开始("Cells(int, int)", 2, i+1)
+        // 无大标题，列标题从第一行开始("Cells(int, int)", 1, i+1)
+        QAxObject *col = workSheet->querySubObject("Columns(const QString&)", columnName);
+        QAxObject *cell = workSheet->querySubObject("Cells(int, int)", 2, i+1);
+        cell->dynamicCall("SetValue(const QString&)", headers[i]);
+        cell->querySubObject("Font")->setProperty("Bold", true);
+        cell->querySubObject("Interior")->setProperty("Color", QColor(191, 191, 191));
+        cell->setProperty("WrapText", true);						//内容过多，自动换行
+        cell->setProperty("HorizontalAlignment", -4108);
+        cell->setProperty("VertivcalAlignment", -4108);
+    }
+
+    //处理数据
+    int curRow = 3;
+    foreach(QList<QString> inLst, dataAll) {
+        for (int j = 0; j < col; j++) {
+            // ("Cells(int, int)", row, col)单元格的行和列从开始
+            QAxObject *cell = workSheet->querySubObject("Cells(int, int)", curRow, j+1);
+            cell->dynamicCall("SetValue(const QString&)", inLst[j]);
+            QAxObject* border = cell->querySubObject("Borders");
+            border->setProperty("Color", QColor(0, 0, 0));		 //设置单元格边框色（黑色）
+        }
+        curRow++;
+    }
+
+    //保存至filepath，注意一定要用QDir::toNativeSeparators将路径中的"/"转换为"\"，不然一定保存不了。
+    workBook->dynamicCall("SaveAs(const QString&)", QDir::toNativeSeparators(filePath));
+    workBook->dynamicCall("Close()");	//关闭工作簿
+    excel.dynamicCall("Quit()");		//关闭excel
+    QMessageBox::information(nullptr, "提示", "保存成功");
+}
+void onSaveTxt(){
+    QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("txt(*.txt )"));
+    if (filePath.isEmpty()){
+        return ;
+    }
+    if (QFileInfo(filePath).suffix().isEmpty())
+        filePath.append(".txt");
+
+    // 创建 QFile 对象
+    QFile file(filePath);
+
+    // 打开文件以进行写入
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        qWarning() << "无法打开文件:" << file.errorString();
+        return;
+    }
+
+    // 创建 QTextStream 对象
+    QTextStream out(&file);
+
+    // 写入内容
+    out << "Hello, World!" ;
+    out << "This is a line of text." ;
+
+    // 关闭文件
+    file.close();
+    QMessageBox::information(nullptr, "提示", "保存成功");
+
+    }
+void onSaveWord(){
+    QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("word(*.doc *.docx)"));
+    if (filePath.isEmpty()){
+        return ;
+    }
+    QStringList headers;
+    headers << "表头1" << "表头2" << "表头3" << "表头4" << "表头5";
+    int col = headers.size();
+    int row = 6;
+    QList<QList<QString>> dataAll;
+    for (int i = 0; i < row; i++) {
+        QList<QString> inLst;
+        for (int j = 0; j < col; j++) {
+            inLst.append(QString::number(i) + QString::number(j));
+        }
+        dataAll.append(inLst);
+    }
+
+    // 创建一个QTextDocument对象
+    QTextDocument doc;
+
+    QTextCharFormat formatTitle;
+    formatTitle.setFontPointSize(16); // 设置字体大小
+    formatTitle.setFontWeight(QFont::Bold); // 设置字体加粗
+
+    // 创建一个QTextCursor对象
+    QTextCursor cursor(&doc);
+    // 标题和参数信息
+    //cursor.insertHtml(QString("<a style='text-align：center; font-weight:bold; font-size:30px;'>%1</a>").arg(title));
+    cursor.setCharFormat(formatTitle);
+    cursor.insertText("导出word示例");
+    cursor.insertBlock(); // 换行
+
+    QTextCharFormat format;
+    format.setFontPointSize(10);
+    format.setFontWeight(QFont::Bold);
+
+    cursor.setCharFormat(format);
+    cursor.insertText("提示信息，表格之前的文字描述");
+
+    // 插入一个表格，行头占一行
+    QTextTable *table = cursor.insertTable(row + 1, col);
+
+    //获取表格的格式
+    QTextTableFormat tableFormat = table->format();
+    //表格格式设置宽度
+    tableFormat.setWidth(QTextLength(QTextLength::FixedLength, 500));
+
+    //设置表格的columnWidthConstraints约束
+    QVector<QTextLength> colLength = tableFormat.columnWidthConstraints();
+    for (int i = 0; i < col; ++i) {
+        colLength.append(QTextLength(QTextLength::FixedLength, tableFormat.width().rawValue() / col));
+    }
+    tableFormat.setColumnWidthConstraints(colLength);
+    tableFormat.setBorder(5);
+    tableFormat.setBorderBrush(Qt::black);
+
+    QTextTableCellFormat titleFormat;
+    titleFormat.setBackground(QColor("moccasin"));
+    titleFormat.setFontWeight(QFont::Bold);
+    // 设置表头 第一行下标为1
+    for (int i = 0; i < col; ++i) {
+        QTextTableCell cell = table->cellAt(0, i);
+        cell.firstCursorPosition().insertText(headers[i]);
+        cell.setFormat(titleFormat);
+    }
+
+    //定义单元格格式
+    QTextTableCellFormat cellFormat;
+    cellFormat.setBottomPadding(2);
+
+    // 遍历表格的每个单元格，将数据插入到表格中
+    for (int i = 0; i < row; ++i) {
+        for (int j = 0; j < col; ++j) {
+            // 将文本插入到表格中,第二行开始下标为2
+            QTextTableCell cell = table->cellAt(i + 1, j);
+            cell.firstCursorPosition().insertText(dataAll[i][j]);
+            cell.setFormat(cellFormat);
+        }
+    }
+
+    // 保存为Word文件
+    QFile file(filePath);
+    if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QTextStream stream(&file);
+        //stream.setCodec("UTF-8");
+        stream << doc.toHtml();
+        file.close();
+        QMessageBox::information(nullptr, "提示", "保存成功");
+    }}
 }
 
 int getImagePaths(const QString& directory, QStringList &iconPaths, QStringList &iconNames) {
