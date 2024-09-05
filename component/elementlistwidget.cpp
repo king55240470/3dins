@@ -76,10 +76,10 @@ ElementListWidget::ElementListWidget(QWidget *parent)
 
     // 初始化已删除ID的集合
     //deletedIds.insert(std::numeric_limits<int>::max());
-    for(int i=0; i<vct.count(); ++i)
-    {
-        onCreateEllipse();
-    }
+    //for(int i=0; i<vct.count(); ++i)
+    //{
+        //onCreateEllipse();
+    //}
 }
 void ElementListWidget::onCreateEllipse() {
     int id = getNextId();
@@ -98,10 +98,26 @@ void ElementListWidget::onCreateEllipse() {
     infoItem->setText(2, QString::number(y));
     infoItem->setText(3, QString(size));
 
-    // 可以在这里添加元素到图形界面等其他操作
+    CObject obj ("",name,id);
+    CEntity * entity;
+
+    entity->GetConstructList().append(&obj);
+    itemToIndexMap[nameItem] =entity->GetConstructList().size() - 1;
 }
 
-void ElementListWidget::onDeleteEllipse() {
+void ElementListWidget::CreateEllipse(CEntity & entity)
+{   //非自动,
+
+    int id= getNextId();
+    for (CObject *obj : entity.GetConstructList()){
+        QTreeWidgetItem *item = new QTreeWidgetItem(treeWidgetNames);
+        item->setText(0,obj->getname());
+        item->setText(0,QString::number(id));
+    }
+}
+
+void ElementListWidget::onDeleteEllipse()
+{
     QList<QTreeWidgetItem*> selectedItems = treeWidgetNames->selectedItems();
     if (!selectedItems.isEmpty()) {
         QTreeWidgetItem *selectedItem = selectedItems.first();
@@ -114,11 +130,31 @@ void ElementListWidget::onDeleteEllipse() {
 
         // 将ID添加到已删除ID集合
         deletedIds.insert(id);
+
+        if (itemToIndexMap.find(selectedItem) != itemToIndexMap.end()) {
+            // 获取ConstructList中的索引
+            CEntity * entity;
+            size_t index = itemToIndexMap[selectedItem];
+            if (!entity->GetConstructList().isEmpty()) {
+                auto constructList = entity->GetConstructList(); // 获取引用
+                auto & list=constructList;
+                if (index < list.size()) {
+                    list.removeAt(index); // 使用 removeAt 删除元素
+                } else {
+                    qDebug() << "Index out of bounds for construct list!";
+                }
+
+                // 从映射中删除条目
+                itemToIndexMap.erase(selectedItem);
+            } else {
+                qDebug() << "Entity not found for ID:" << id;
+            }
+        }
     }
 }
 
-int ElementListWidget::getNextId() {
-    // 查找下一个可用的ID
+int ElementListWidget::getNextId()
+{
     if (!deletedIds.empty()) {
         int minDeletedId = *deletedIds.begin();
         deletedIds.erase(deletedIds.begin());
@@ -130,8 +166,6 @@ int ElementListWidget::getNextId() {
 void ElementListWidget::onCustomContextMenuRequested(const QPoint &pos)
 {
     QTreeWidgetItem* curItem=treeWidgetNames->itemAt(pos);
-
-
     QMenu *popMenu = new QMenu(this);
     QAction *actionNew = new QAction(tr("新增(N)"),popMenu);
     connect(actionNew, &QAction::triggered, this, &ElementListWidget::deal_actionNew_triggered);
@@ -140,6 +174,4 @@ void ElementListWidget::onCustomContextMenuRequested(const QPoint &pos)
 }
 
 void ElementListWidget::deal_actionNew_triggered()
-{
-    qDebug()<<"hhhhhh";
-}
+{}

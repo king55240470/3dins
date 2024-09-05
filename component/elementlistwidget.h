@@ -1,6 +1,6 @@
 #ifndef ELEMENTLISTWIDGET_H
 #define ELEMENTLISTWIDGET_H
-
+#include "geometry/centity.h"
 #include <QWidget>
 #include <QLabel>
 #include <QPushButton>
@@ -17,13 +17,15 @@
 #include <QDebug>
 #include <QContextMenuEvent>
 #include<QToolBar>
+#include <QVector>
+#include <unordered_map>
 class ElementListWidget : public QWidget
 {
     Q_OBJECT
 public:
     explicit ElementListWidget(QWidget *parent = nullptr);
-private slots:
     void onCreateEllipse();
+    void CreateEllipse(CEntity & entity);
     void onDeleteEllipse();
     int getNextId();
     void onCustomContextMenuRequested(const QPoint &pos);
@@ -37,7 +39,8 @@ private:
     int nextEllipseIndex=0;
     std::set<int> deletedIds;
     QToolBar * toolBar;
-    QVector<QString> vct ={"11","22"};//假设，作为例子
+    CEntity * centity;
+    std::unordered_map<QTreeWidgetItem*, size_t> itemToIndexMap;
 signals:
 };
 
