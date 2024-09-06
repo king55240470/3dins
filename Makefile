@@ -392,6 +392,7 @@ Makefile: 3D.pro C:\Qt\6.6.0\msvc2019_64\mkspecs\win32-msvc\qmake.conf C:\Qt\6.6
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\features\moc.prf \
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\features\win32\opengl.prf \
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\features\uic.prf \
+		C:\Qt\6.6.0\msvc2019_64\mkspecs\features\win32\dumpcpp.prf \
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\features\qmake_use.prf \
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\features\file_copies.prf \
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\features\win32\windows.prf \
@@ -400,12 +401,16 @@ Makefile: 3D.pro C:\Qt\6.6.0\msvc2019_64\mkspecs\win32-msvc\qmake.conf C:\Qt\6.6
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\features\yacc.prf \
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\features\lex.prf \
 		3D.pro \
+		C:\Qt\6.6.0\msvc2019_64\lib\Qt6PrintSupport.prl \
+		C:\Qt\6.6.0\msvc2019_64\lib\Qt6AxContainer.prl \
 		C:\Qt\6.6.0\msvc2019_64\lib\Qt6Widgets.prl \
 		C:\Qt\6.6.0\msvc2019_64\lib\Qt6Gui.prl \
 		C:\Qt\6.6.0\msvc2019_64\lib\Qt6Core.prl \
 		C:\Qt\6.6.0\msvc2019_64\lib\Qt6EntryPoint.prl \
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\features\build_pass.prf \
 		toolwidget.qrc \
+		C:\Qt\6.6.0\msvc2019_64\lib\Qt6PrintSupportd.prl \
+		C:\Qt\6.6.0\msvc2019_64\lib\Qt6AxContainerd.prl \
 		C:\Qt\6.6.0\msvc2019_64\lib\Qt6Widgetsd.prl \
 		C:\Qt\6.6.0\msvc2019_64\lib\Qt6Guid.prl \
 		C:\Qt\6.6.0\msvc2019_64\lib\Qt6Cored.prl \
@@ -719,6 +724,7 @@ C:\Qt\6.6.0\msvc2019_64\mkspecs\features\resources.prf:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\features\moc.prf:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\features\win32\opengl.prf:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\features\uic.prf:
+C:\Qt\6.6.0\msvc2019_64\mkspecs\features\win32\dumpcpp.prf:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\features\qmake_use.prf:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\features\file_copies.prf:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\features\win32\windows.prf:
@@ -727,12 +733,16 @@ C:\Qt\6.6.0\msvc2019_64\mkspecs\features\exceptions.prf:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\features\yacc.prf:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\features\lex.prf:
 3D.pro:
+C:\Qt\6.6.0\msvc2019_64\lib\Qt6PrintSupport.prl:
+C:\Qt\6.6.0\msvc2019_64\lib\Qt6AxContainer.prl:
 C:\Qt\6.6.0\msvc2019_64\lib\Qt6Widgets.prl:
 C:\Qt\6.6.0\msvc2019_64\lib\Qt6Gui.prl:
 C:\Qt\6.6.0\msvc2019_64\lib\Qt6Core.prl:
 C:\Qt\6.6.0\msvc2019_64\lib\Qt6EntryPoint.prl:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\features\build_pass.prf:
 toolwidget.qrc:
+C:\Qt\6.6.0\msvc2019_64\lib\Qt6PrintSupportd.prl:
+C:\Qt\6.6.0\msvc2019_64\lib\Qt6AxContainerd.prl:
 C:\Qt\6.6.0\msvc2019_64\lib\Qt6Widgetsd.prl:
 C:\Qt\6.6.0\msvc2019_64\lib\Qt6Guid.prl:
 C:\Qt\6.6.0\msvc2019_64\lib\Qt6Cored.prl:
