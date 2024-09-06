@@ -3,7 +3,7 @@
 #include "component/elementlistwidget.h"
 #include "component/filemanagerwidget.h"
 #include "component/toolwidget.h"
-#include "component/unknownwidget.h"
+#include "component/vtkpresetwidget.h"
 #include "component/vtkwidget.h"
 #include "component/ReportWidget.h"
 #include "component/LogWidget.h"
@@ -79,7 +79,7 @@ void MainWindow::setupUi(){
 
     spRightdown=new QSplitter(Qt::Horizontal,spRightup);
     spRightup->addWidget(spRightdown);
-    spRightdown->addWidget(pWinUnknownWidget);
+    spRightdown->addWidget(pWinVtkPresetWidget);
 
     spMainWindow->addWidget(spLeft);
     spMainWindow->addWidget(spMiddleup);
@@ -101,7 +101,7 @@ void MainWindow::LoadWidgets(){
     pWinElementListWidget=new ElementListWidget(this);
     pWinFileManagerWidget=new FileManagerWidget(this);
     pWinToolWidget=new ToolWidget(this);
-    pWinUnknownWidget=new UnknownWidget(this);
+    pWinVtkPresetWidget=new VtkPresetWidget(this);
     pWinVtkWidget=new VtkWidget(this);
     pWinReportWidget=new ReportWidget(this);
     pWinLogWidget=new LogWidget(this);
