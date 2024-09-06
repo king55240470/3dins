@@ -48,7 +48,6 @@ PresetElemWidget::PresetElemWidget(QWidget *parent)
     connect(pointBtn, &QPushButton::clicked, this, &PresetElemWidget::btnPointClicked);
 
 
-
     // 创建第二个tab的内容
     QWidget *secondTab = new QWidget();
     // 创建第2个tab的内容
