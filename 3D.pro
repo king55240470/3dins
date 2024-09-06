@@ -16,7 +16,7 @@ SOURCES += \
     component/reportwidget.cpp \
     component/toolaction.cpp \
     component/toolwidget.cpp \
-    component/unknownwidget.cpp \
+    component/vtkpresetwidget.cpp \
     component/vtkwidget.cpp \
     component/vtkwindowreportwidget.cpp \
     geometry/centity.cpp \
@@ -39,7 +39,7 @@ HEADERS += \
     component/reportwidget.h \
     component/toolaction.h \
     component/toolwidget.h \
-    component/unknownwidget.h \
+    component/vtkpresetwidget.h \
     component/vtkwidget.h \
     component/vtkwindowreportwidget.h \
     geometry/centity.h \

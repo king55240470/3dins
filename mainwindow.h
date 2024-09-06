@@ -10,7 +10,7 @@ class DataWidget;
 class ElementListWidget;
 class FileManagerWidget;
 class ToolWidget;
-class UnknownWidget;
+class VtkPresetWidget;
 class VtkWidget;
 class ReportWidget;
 class LogWidget;
@@ -30,7 +30,7 @@ private:
     ElementListWidget *pWinElementListWidget;
     FileManagerWidget *pWinFileManagerWidget;
     ToolWidget *pWinToolWidget;
-    UnknownWidget *pWinUnknownWidget;
+    VtkPresetWidget *pWinVtkPresetWidget;
     VtkWidget *pWinVtkWidget;
     ReportWidget *pWinReportWidget;
     LogWidget *pWinLogWidget;
