@@ -12,6 +12,7 @@ SOURCES += \
     component/elementlistwidget.cpp \
     component/filemanagerwidget.cpp \
     component/logwidget.cpp \
+    component/presetelemwidget.cpp \
     component/reportwidget.cpp \
     component/toolaction.cpp \
     component/toolwidget.cpp \
@@ -34,6 +35,7 @@ HEADERS += \
     component/elementlistwidget.h \
     component/filemanagerwidget.h \
     component/logwidget.h \
+    component/presetelemwidget.h \
     component/reportwidget.h \
     component/toolaction.h \
     component/toolwidget.h \
