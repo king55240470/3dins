@@ -1,8 +1,7 @@
 #include "cshape.h"
 
-CShape::CShape() {
-
-}
+CShape::CShape()
+{}
 
 bool CShape::IsUnderCursor(){
     return m_bUnderCursor;
