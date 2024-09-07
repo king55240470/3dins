@@ -4,7 +4,7 @@
 VtkWindowReportWidget::VtkWindowReportWidget(QWidget *parent)
     : QWidget{parent}
 {
-    //QTextEdit *textedit=new QTextEdit("v",this);
-    //QListWidget *label=new QListWidget(this);
-    //label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    QTextEdit *textedit=new QTextEdit("v",this);
+    QListWidget *label=new QListWidget(this);
+    label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 }
