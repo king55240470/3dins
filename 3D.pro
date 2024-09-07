@@ -13,10 +13,11 @@ SOURCES += \
     component/elementlistwidget.cpp \
     component/filemanagerwidget.cpp \
     component/logwidget.cpp \
+    component/presetelemwidget.cpp \
     component/reportwidget.cpp \
     component/toolaction.cpp \
     component/toolwidget.cpp \
-    component/unknownwidget.cpp \
+    component/vtkpresetwidget.cpp \
     component/vtkwidget.cpp \
     component/vtkwindowreportwidget.cpp \
     geometry/centity.cpp \
@@ -38,10 +39,11 @@ HEADERS += \
     component/elementlistwidget.h \
     component/filemanagerwidget.h \
     component/logwidget.h \
+    component/presetelemwidget.h \
     component/reportwidget.h \
     component/toolaction.h \
     component/toolwidget.h \
-    component/unknownwidget.h \
+    component/vtkpresetwidget.h \
     component/vtkwidget.h \
     component/vtkwindowreportwidget.h \
     geometry/centity.h \
