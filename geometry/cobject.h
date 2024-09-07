@@ -23,9 +23,6 @@ public:
 public:
     CObject()
     {};
-    QString getname(){
-        return this->m_strCName;
-    };
     ~CObject();//基类指针指向动态派生类的对象
 
     void AddObjectCount();

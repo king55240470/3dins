@@ -1,5 +1,5 @@
 #include "elementlistwidget.h"
-
+#include <algorithm>
 ElementListWidget::ElementListWidget(QWidget *parent)
     : QWidget{parent}
 {
@@ -57,29 +57,22 @@ ElementListWidget::ElementListWidget(QWidget *parent)
     layout->addWidget(xInput);
     layout->addWidget(new QLabel("Y:"));
     layout->addWidget(yInput);
-    layout->addWidget(new QLabel("Size:"));
+    layout->addWidget(new QLabel("Z"));
     layout->addWidget(sizeInput);
     // 保存输入框的指针
     xLineEdit = xInput;
     yLineEdit = yInput;
     sizeLineEdit = sizeInput;
-    connect(treeWidgetNames, &QTreeWidget::customContextMenuRequested,
+    /*connect(treeWidgetNames, &QTreeWidget::customContextMenuRequested,
             this, &ElementListWidget::onCustomContextMenuRequested);
-    //treeWidgetNames->setContextMenuPolicy(Qt::CustomContextMenu);
-    //QMenu *m_menu = new QMenu(this);
-    //QAction* m_action1 = new QAction(tr("计划1"), this);
-    //QAction* m_action2 = new QAction(tr("计划2"), this);
-    //m_menu->addAction(m_action1);
-    //m_menu->addAction(m_action2);
-    //connect(m_action1, &QAction::triggered, this, &MainWindow::slot_checkPlan1);
-    //connect(m_action2, &QAction::triggered, this, &MainWindow::slot_checkPlan2);
-
-    // 初始化已删除ID的集合
-    //deletedIds.insert(std::numeric_limits<int>::max());
-    //for(int i=0; i<vct.count(); ++i)
-    //{
-        //onCreateEllipse();
-    //}
+    treeWidgetNames->setContextMenuPolicy(Qt::CustomContextMenu);
+    QMenu *m_menu = new QMenu(this);
+    QAction* m_action1 = new QAction(tr("计划1"), this);
+    QAction* m_action2 = new QAction(tr("计划2"), this);
+    m_menu->addAction(m_action1);
+    m_menu->addAction(m_action2);
+    connect(m_action1, &QAction::triggered, this, &MainWindow::slot_checkPlan1);
+    connect(m_action2, &QAction::triggered, this, &MainWindow::slot_checkPlan2);*/
 }
 void ElementListWidget::onCreateEllipse() {
     int id = getNextId();
@@ -97,22 +90,19 @@ void ElementListWidget::onCreateEllipse() {
     infoItem->setText(1, QString::number(x));
     infoItem->setText(2, QString::number(y));
     infoItem->setText(3, QString(size));
-
-    //CObject obj ("",name,id);
-    //CEntity * entity;
-    //entity->GetConstructList().push_back(&obj);
-    //itemToIndexMap[nameItem] =entity->GetConstructList().size() - 1;
 }
 
-void ElementListWidget::CreateEllipse(CEntity & entity)
-{   //非自动,
-
-    int id= getNextId();
-    for (CObject *obj : entity.GetConstructList()){
-        QTreeWidgetItem *item = new QTreeWidgetItem(treeWidgetNames);
-        item->setText(0,obj->getname());
-        item->setText(0,QString::number(id));
-    }
+void ElementListWidget::CreateEllipse(CObject * obj)
+{
+    int id=getNextId();
+    QTreeWidgetItem *item = new QTreeWidgetItem(treeWidgetNames);
+    item->setText(0,QString::number(id));
+    item->setText(0,obj->GetObjectCName());
+    QTreeWidgetItem *infoItem = new QTreeWidgetItem(treeWidgetInfo);
+    infoItem->setText(0, QString::number(id));
+    infoItem->setText(1, QString::number(1));
+    infoItem->setText(2, QString::number(1));
+    infoItem->setText(3, QString::number(1));
 }
 
 void ElementListWidget::onDeleteEllipse()
@@ -120,8 +110,10 @@ void ElementListWidget::onDeleteEllipse()
     QList<QTreeWidgetItem*> selectedItems = treeWidgetNames->selectedItems();
     if (!selectedItems.isEmpty()) {
         QTreeWidgetItem *selectedItem = selectedItems.first();
-        int id = selectedItem->text(0).mid(2).toInt(); // 假设名称格式为"元素X"
-
+        QString text=selectedItem->text(0);
+        std::reverse(text.begin(), text.end());
+        QString t=text[0];
+        int id = t.toInt(); // 假设名称格式为"元素X"
         // 删除两个TreeWidget中的对应项
         int row = treeWidgetNames->indexOfTopLevelItem(selectedItem);
         treeWidgetNames->takeTopLevelItem(row);
@@ -129,26 +121,6 @@ void ElementListWidget::onDeleteEllipse()
 
         // 将ID添加到已删除ID集合
         deletedIds.insert(id);
-
-        if (itemToIndexMap.find(selectedItem) != itemToIndexMap.end()) {
-            // 获取ConstructList中的索引
-            CEntity * entity;
-            size_t index = itemToIndexMap[selectedItem];
-            if (!entity->GetConstructList().isEmpty()) {
-                auto constructList = entity->GetConstructList(); // 获取引用
-                auto & list=constructList;
-                if (index < list.size()) {
-                    list.removeAt(index); // 使用 removeAt 删除元素
-                } else {
-                    qDebug() << "Index out of bounds for construct list!";
-                }
-
-                // 从映射中删除条目
-                itemToIndexMap.erase(selectedItem);
-            } else {
-                qDebug() << "Entity not found for ID:" << id;
-            }
-        }
     }
 }
 
@@ -162,7 +134,7 @@ int ElementListWidget::getNextId()
     static int lastId = 0;
     return ++lastId;
 }
-void ElementListWidget::onCustomContextMenuRequested(const QPoint &pos)
+/*void ElementListWidget::onCustomContextMenuRequested(const QPoint &pos)
 {
     QTreeWidgetItem* curItem=treeWidgetNames->itemAt(pos);
     QMenu *popMenu = new QMenu(this);
@@ -170,7 +142,7 @@ void ElementListWidget::onCustomContextMenuRequested(const QPoint &pos)
     connect(actionNew, &QAction::triggered, this, &ElementListWidget::deal_actionNew_triggered);
     popMenu->addAction(actionNew);
     popMenu->exec(QCursor::pos());
-}
+}*/
 
 void ElementListWidget::deal_actionNew_triggered()
 {}
