@@ -80,7 +80,7 @@ public:
         }*/
 
         if (index.parent().isValid()) {//确保不是头节点
-            bool isOpen=index.data(Qt::UserRole).toBool();//根据索引的数据决定是否绘制按钮
+            bool isOpen=index.data(Qt::UserRole+1).toBool();//根据索引的数据决定是否绘制按钮
             QStyleOptionButton btn;
             btn.rect=option.rect.adjusted(280,0,-5,0);
             btn.icon=isOpen ? QIcon(":/component/eye/openeye.png") : QIcon(":/component/eye/closeeye.png");
@@ -95,8 +95,8 @@ public:
             QRect buttonRect=option.rect.adjusted(280,0,-5,0);
             //buttonRect.moveRight(option.rect.right());//将按钮移动到右侧
             if(buttonRect.contains(mouseEvent->pos())){
-                bool isOpen=index.data(Qt::UserRole).toBool();
-                model->setData(index, !isOpen, Qt::UserRole);
+                bool isOpen=index.data(Qt::UserRole+1).toBool();
+                model->setData(index, !isOpen, Qt::UserRole+1);
                 QString message = !isOpen ? "显示文件内容" : "不显示文件内容";
                 qDebug() << message; //根据按钮状态输出不同的消息
                 return true;
