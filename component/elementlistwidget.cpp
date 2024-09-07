@@ -98,11 +98,10 @@ void ElementListWidget::onCreateEllipse() {
     infoItem->setText(2, QString::number(y));
     infoItem->setText(3, QString(size));
 
-    CObject obj ("",name,id);
-    CEntity * entity;
-
-    entity->GetConstructList().append(&obj);
-    itemToIndexMap[nameItem] =entity->GetConstructList().size() - 1;
+    //CObject obj ("",name,id);
+    //CEntity * entity;
+    //entity->GetConstructList().push_back(&obj);
+    //itemToIndexMap[nameItem] =entity->GetConstructList().size() - 1;
 }
 
 void ElementListWidget::CreateEllipse(CEntity & entity)
