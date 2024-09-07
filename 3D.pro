@@ -1,5 +1,6 @@
 QT       += core gui
-
+QT += printsupport
+QT += axcontainer
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++17
@@ -19,6 +20,7 @@ SOURCES += \
     component/vtkwidget.cpp \
     component/vtkwindowreportwidget.cpp \
     geometry/centity.cpp \
+    geometry/centitytypes.cpp \
     geometry/cobject.cpp \
     geometry/cpcs.cpp \
     geometry/cpcsnode.cpp \
@@ -26,6 +28,7 @@ SOURCES += \
     geometry/cshape.cpp \
     main.cpp \
     mainwindow.cpp \
+    manager/centitymgr.cpp \
     manager/cobjectmgr.cpp \
     manager/cpcsmgr.cpp
 
@@ -42,12 +45,15 @@ HEADERS += \
     component/vtkwidget.h \
     component/vtkwindowreportwidget.h \
     geometry/centity.h \
+    geometry/centitytypes.h \
     geometry/cobject.h \
     geometry/cpcs.h \
     geometry/cpcsnode.h \
     geometry/cposition.h \
     geometry/cshape.h \
+    geometry/globes.h \
     mainwindow.h \
+    manager/centitymgr.h \
     manager/cobjectmgr.h \
     manager/cpcsmgr.h
 

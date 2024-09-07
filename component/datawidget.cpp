@@ -4,7 +4,7 @@ DataWidget::DataWidget(QWidget *parent)
     : QWidget{parent}
 {
     vlayout=new QVBoxLayout(this);
-    hlayout=new QHBoxLayout(this);
+    hlayout=new QHBoxLayout();
 
     label1=new QLabel("目前元素:");
     label2=new QLabel();

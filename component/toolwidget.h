@@ -5,6 +5,37 @@
 #include <QAction>
 #include <QVBoxLayout>
 #include"toolaction.h"
+
+namespace tool_widget{
+//Find
+void onFindPoint();
+void onFindLine();
+void onFindCircle();
+void onFindPlan();
+void onFindRectangle();
+void onFindCylinder();
+void onFindCone();
+void onFindSphere();
+//Construct
+void onConstructPoint();
+void onConstructLine();
+void onConstructCircle();
+void onConstructPlan();
+void onConstructRectangle();
+void onConstructCylinder();
+void onConstructCone();
+void onConstructSphere();
+//Coord
+void onCreateCoord();
+void onSpinCoord();
+void onSaveCoord();
+//Save
+void onSavePdf();
+void onSaveExcel();
+void onSaveTxt();
+void onSaveWord();
+}
+
 class ToolWidget : public QWidget {
     Q_OBJECT
 public:
