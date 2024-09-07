@@ -1,11 +1,9 @@
 #include "centity.h"
+#include <QString>
 
-CEntity::CEntity() {
-
-}
-CEntity::~CEntity() {
-
-}
+//QList<CEntity*> CEntity::m_ConstructList;
+CEntity::CEntity() {}
+CEntity::~CEntity() {}
 CPcs *CEntity::GetRefCoord(){
     return m_pRefCoord;
 }
@@ -15,7 +13,6 @@ CPcs *CEntity::GetCurCoord(){
 CPcs *CEntity::GetExtCoord(){
     return m_pExtCoord;
 }
-
 void CEntity::SetRefCoord(CPcs *pRefCs){
     m_pRefCoord = pRefCs;
 }
