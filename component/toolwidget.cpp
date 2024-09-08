@@ -4,6 +4,8 @@
 #include <QMenu>
 #include<QString>
 
+#include<QPainter>
+#include<QTableWidget>
 #include <QMessageBox>
 #include<QMenuBar>
 // 打开文件
@@ -46,22 +48,23 @@ ToolWidget::ToolWidget(QWidget *parent)
 
        resize(400,250);
 
-        m_nSaveActionNum=4;
+        m_nSaveActionNum=5;
         m_nConstructActionNum=8;
         m_nFindActionNum=8;
         m_nCoordActionNum=3;
 
         //静态保存图片路径和名称
-        save_action_iconpath_list_<<":/component/save/excel.png"<< ":/component/save/pdf.jpg"<< ":/component/save/txt.jpg"<< ":/component/save/word.jpg";
+        save_action_iconpath_list_<<":/component/save/excel.png"<< ":/component/save/pdf.jpg"<< ":/component/save/txt.jpg"<< ":/component/save/word.jpg"<<":/component/save/image.jpg";
         construct_action_iconpath_list_<<":/component/construct/point.jpg"<<":/component/construct/line.jpg"<<":/component/construct/circle.jpg"<<   ":/component/construct/plan.jpg"<<  ":/component/construct/rectangle.jpg"<<":/component/construct/cylinder.jpg"<< ":/component/construct/cone.jpg"<< ":/component/construct/sphere.jpg";
         find_action_iconpath_list_<<":/component/construct/point.jpg"<<":/component/construct/line.jpg"<<":/component/construct/circle.jpg"<<   ":/component/construct/plan.jpg"<<  ":/component/construct/rectangle.jpg"<<":/component/construct/cylinder.jpg"<< ":/component/construct/cone.jpg"<< ":/component/construct/sphere.jpg";
         coord_action_iconpath_list_<<":/component/coord/create.png"<<  ":/component/coord/spin.jpg"<<":/component/coord/save.png";
 
-        save_action_name_list_<<"excel"<< "pdf"<< "txt"<< "word";
+        save_action_name_list_<<"excel"<< "pdf"<< "txt"<< "word"<<"image";
         construct_action_name_list_<<"点"<<"线"<<"圆"<<"平面"<<"矩形"<<"圆柱"<<"圆锥"<<"球形";
         find_action_name_list_<<"点"<<"线"<<"圆"<<"平面"<<"矩形"<<"圆柱"<<"圆锥"<<"球形";;
         coord_action_name_list_<<"创建坐标系"<<"旋转坐标系"<<"保存坐标系";
 
+        m_nSaveActionNum=save_action_name_list_.count();
 
         save_actions_      =new ToolAction * [m_nSaveActionNum];
         construct_actions_ =new ToolAction * [m_nConstructActionNum];
@@ -351,8 +354,7 @@ void ToolWidget::connectActionWithF(){
     connect(save_actions_[save_action_name_list_.indexOf("word")],&QAction::triggered,&tool_widget::onSaveWord);
     connect(save_actions_[save_action_name_list_.indexOf("txt")],&QAction::triggered,&tool_widget::onSaveTxt);
     connect(save_actions_[save_action_name_list_.indexOf("pdf")],&QAction::triggered,&tool_widget::onSavePdf);
-
-
+    connect(save_actions_[save_action_name_list_.indexOf("image")],&QAction::triggered,&tool_widget::onSaveImage);
     //坐标系
     connect(coord_actions_[coord_action_name_list_.indexOf("创建坐标系")],&QAction::triggered,&tool_widget::onCreateCoord);
     connect(coord_actions_[coord_action_name_list_.indexOf("旋转坐标系")],&QAction::triggered,&tool_widget::onSpinCoord);
@@ -677,6 +679,45 @@ void onSaveWord(){
         file.close();
         QMessageBox::information(nullptr, "提示", "保存成功");
     }}
+void onSaveImage(){
+    QString imagePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("Excel(*.png *.jpg)"));
+    if (imagePath.isEmpty()){
+        return ;
+    }
+
+    QTableWidget TableWidget(4, 3); // 4 行 3 列
+    TableWidget.setHorizontalHeaderLabels({"Column 1", "Column 2", "Column 3"});
+    for (int row = 0; row < 4; ++row) {
+        for (int col = 0; col < 3; ++col) {
+            TableWidget.setItem(row, col, new QTableWidgetItem(QString("Item %1-%2").arg(row).arg(col)));
+        }
+    }
+    QTableWidget * tableWidget=&TableWidget;
+    // 调整表格大小以适应内容
+    int totalWidth = 0;
+    int totalHeight = 0;
+
+    // 计算总宽度
+    for (int i = 0; i < tableWidget->columnCount(); ++i) {
+        totalWidth += tableWidget->columnWidth(i)+10;
+    }
+
+    // 计算总高度
+    for (int i = 0; i < tableWidget->rowCount(); ++i) {
+        totalHeight += tableWidget->rowHeight(i)+10;
+    }
+    tableWidget->setFixedSize(totalWidth,totalHeight);
+    // 创建一个 QPixmap 对象以适应整个表格
+    QPixmap pixmap(totalWidth, totalHeight);
+    pixmap.fill(Qt::white);  // 设置背景为白色
+    QPainter painter(&pixmap);
+
+    // 将表格内容绘制到 QPixmap 上
+    tableWidget->render(&painter);
+
+    // 保存为图片
+    pixmap.save(imagePath);
+}
 }
 
 int getImagePaths(const QString& directory, QStringList &iconPaths, QStringList &iconNames) {
