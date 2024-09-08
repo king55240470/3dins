@@ -3,37 +3,38 @@
 
 #include <QDataStream>
 
+//用什么方式创建
 enum CREATE_FORM : int
 {
-    eMeasure = 0x0,
-    eConstruct = 0x1,
-    ePreset = 0x2,
-    eCopy = 0x3
+    eMeasure = 0x0,//测量
+    eConstruct = 0x1,//
+    ePreset = 0x2,//预设
+    eCopy = 0x3//复制
 };
 
 enum ENTITY_TYPE : int
 {
     enNone          = -1,
-    enPoint         = 0x0,
-    enLine          = 0x1,
-    enArc           = 0x2,
-    enCircle        = 0x3,
-    enEllipse       = 0x4,
-    enSlot          = 0x5,
-    enRing          = 0x6,
-    enRectangle     = 0x7,
-    enAngle         = 0x8,
-    enDistance      = 0x9,
-    enSpline        = 0xA,
-    enFocusPlane    = 0xB,
-    enHeight        = 0xC,
-    enInflexion     = 0xD,
-    enPlane         = 0xE,
-    enSphere        = 0xF,
-    enCylinder      = 0x10,
-    enCone          = 0x11,
-    enOpenCurve     = 0x12,
-    enCloseCurve    = 0x13,
+    enPoint         = 0x0,//点
+    enLine          = 0x1,//线
+    enArc           = 0x2,//弧
+    enCircle        = 0x3,//圆
+    enEllipse       = 0x4,//椭圆
+    enSlot          = 0x5,//槽
+    enRing          = 0x6,//环
+    enRectangle     = 0x7,//矩形
+    enAngle         = 0x8,//夹角
+    enDistance      = 0x9,//距离
+    enSpline        = 0xA,//曲线
+    enFocusPlane    = 0xB,//焦点
+    enHeight        = 0xC,//高度
+    enInflexion     = 0xD,//拐点
+    enPlane         = 0xE,//面
+    enSphere        = 0xF,//球
+    enCylinder      = 0x10,//圆柱
+    enCone          = 0x11,//圆锥
+    enOpenCurve     = 0x12,//开放曲线
+    enCloseCurve    = 0x13,//封闭曲线
     enCalculation   = 0x14,
     en3Pdistance    = 0x15,
     en4Pangle       = 0x16,
@@ -51,6 +52,7 @@ enum ENTITY_TYPE : int
     enTotalCount    = 0x22,
 };
 
+//校正偏差
 enum COMPENSATE_TYPE : int
 {
     eCompensateHit = 0x0,

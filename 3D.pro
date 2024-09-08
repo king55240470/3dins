@@ -13,13 +13,15 @@ SOURCES += \
     component/elementlistwidget.cpp \
     component/filemanagerwidget.cpp \
     component/logwidget.cpp \
+    component/presetelemwidget.cpp \
     component/reportwidget.cpp \
     component/toolaction.cpp \
     component/toolwidget.cpp \
-    component/unknownwidget.cpp \
+    component/vtkpresetwidget.cpp \
     component/vtkwidget.cpp \
     component/vtkwindowreportwidget.cpp \
     geometry/centity.cpp \
+    geometry/centitytypes.cpp \
     geometry/cobject.cpp \
     geometry/cpcs.cpp \
     geometry/cpcsnode.cpp \
@@ -27,6 +29,7 @@ SOURCES += \
     geometry/cshape.cpp \
     main.cpp \
     mainwindow.cpp \
+    manager/centitymgr.cpp \
     manager/cobjectmgr.cpp \
     manager/cpcsmgr.cpp
 
@@ -36,13 +39,15 @@ HEADERS += \
     component/elementlistwidget.h \
     component/filemanagerwidget.h \
     component/logwidget.h \
+    component/presetelemwidget.h \
     component/reportwidget.h \
     component/toolaction.h \
     component/toolwidget.h \
-    component/unknownwidget.h \
+    component/vtkpresetwidget.h \
     component/vtkwidget.h \
     component/vtkwindowreportwidget.h \
     geometry/centity.h \
+    geometry/centitytypes.h \
     geometry/cobject.h \
     geometry/cpcs.h \
     geometry/cpcsnode.h \
@@ -50,6 +55,7 @@ HEADERS += \
     geometry/cshape.h \
     geometry/globes.h \
     mainwindow.h \
+    manager/centitymgr.h \
     manager/cobjectmgr.h \
     manager/cpcsmgr.h
 
@@ -59,6 +65,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 RESOURCES += \
+    filemanagerwidget.qrc \
     toolwidget.qrc
 
 

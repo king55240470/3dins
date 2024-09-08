@@ -3,17 +3,12 @@
 
 #include "cobject.h"
 #include "globes.h"
-#include "CPosition.h"
 #include "CPcs.h"
-
 #include <QVector>
 
 class CEntity:public CObject
 {
 public:
-    CEntity();
-    virtual ~CEntity();
-
     CPcs* m_pRefCoord;//参考坐标系
     CPcs* m_pCurCoord;//当前坐标系
     CPcs* m_pExtCoord;
@@ -30,7 +25,9 @@ public:
     enum CREATE_FORM m_CreateForm;
     enum ENTITY_TYPE m_EntityType;
     enum COMPENSATE_TYPE m_CompenType;
-
+public:
+    CEntity();
+    ~CEntity();
     CPcs* GetRefCoord() override;//使用override关键字时，如果派生类的函数签名与基类的虚函数不匹配，编译器会报错,这有助于确保正确地重写基类函数
     CPcs* GetCurCoord() override;
     CPcs* GetExtCoord() override;
@@ -39,8 +36,7 @@ public:
     void SetCurCoord(CPcs *)override;
     void SetExtCoord(CPcs *)override;
 
-    QVector<CEntity*> GetConstructList();
-
+    QVector<CEntity*>GetConstructList();
     //void SetImageToolList(QVector<CImageTool *>);
     //QVector<CImageTool *> GetImageToolList();
 
@@ -67,6 +63,9 @@ public:
 
     void SetCreateForm(CREATE_FORM);
     CREATE_FORM GetCreateForm();
+
+
+
 
     //序列化
     QDataStream& serialize(QDataStream& out) const override{

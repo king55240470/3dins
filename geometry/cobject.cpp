@@ -1,10 +1,16 @@
 #include "cobject.h"
 
-CObject::CObject() {
 
+CObject::~CObject() {}
+
+void CObject::AddObjectCount()
+{
+    ++m_nObjectCount;
 }
-CObject::~CObject() {
 
+void CObject::SetID(int id)
+{
+    m_nObjectID=id;
 }
 
 bool CObject::IsMeasured(){
@@ -85,3 +91,4 @@ int CObject::InOOCRange()
     // return nominal_base::GetEntityIsInOOCRange;
     return 0;
 }
+
