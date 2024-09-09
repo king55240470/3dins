@@ -1,13 +1,10 @@
 <RCC>
     <qresource prefix="/">
-        <file>component/construct/circle.jpg</file>
-        <file>component/construct/cone.jpg</file>
-        <file>component/construct/cylinder.jpg</file>
-        <file>component/construct/line.jpg</file>
-        <file>component/construct/plan.jpg</file>
-        <file>component/construct/point.jpg</file>
-        <file>component/construct/rectangle.jpg</file>
-        <file>component/construct/sphere.jpg</file>
+        <file>component/save/excel.png</file>
+        <file>component/save/image.jpg</file>
+        <file>component/save/pdf.jpg</file>
+        <file>component/save/txt.jpg</file>
+        <file>component/save/word.jpg</file>
         <file>component/coord/create.png</file>
         <file>component/coord/save.png</file>
         <file>component/coord/spin.jpg</file>
@@ -19,9 +16,13 @@
         <file>component/find/point.jpg</file>
         <file>component/find/rectangle.jpg</file>
         <file>component/find/sphere.jpg</file>
-        <file>component/save/excel.png</file>
-        <file>component/save/pdf.jpg</file>
-        <file>component/save/txt.jpg</file>
-        <file>component/save/word.jpg</file>
+        <file>component/construct/circle.jpg</file>
+        <file>component/construct/cone.jpg</file>
+        <file>component/construct/cylinder.jpg</file>
+        <file>component/construct/line.jpg</file>
+        <file>component/construct/plan.jpg</file>
+        <file>component/construct/point.jpg</file>
+        <file>component/construct/rectangle.jpg</file>
+        <file>component/construct/sphere.jpg</file>
     </qresource>
 </RCC>

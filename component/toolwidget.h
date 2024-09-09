@@ -34,6 +34,7 @@ void onSavePdf();
 void onSaveExcel();
 void onSaveTxt();
 void onSaveWord();
+void onSaveImage();
 }
 
 class ToolWidget : public QWidget {
@@ -41,7 +42,7 @@ class ToolWidget : public QWidget {
 public:
     explicit ToolWidget(QWidget *parent = nullptr);
 
-    static const int SingalToolBarActionNum=6;
+    static const int SingalToolBarActionNum=9;
     static const int ActionKindNum=4;
 
     QStringList* getSaveActionNames();
