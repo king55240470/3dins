@@ -31,7 +31,7 @@ VtkWidget::VtkWidget(QWidget *parent)
 
     pcl::io::loadPCDFile("D:\\Lenovo\\Acun\\3din\\bunny.pcd", *cloudptr);
 
-    pcl::io::loadPCDFile("E:\\pcl\\room_scan1.pcd", *cloudptr);
+    pcl::io::loadPCDFile("E:\\pcl\\bunny.pcd", *cloudptr);
 
     // 定义颜色处理的轴
     const std::string axis ="z";
