@@ -19,6 +19,7 @@
 #include<QToolBar>
 #include <QVector>
 //#include <unordered_map>
+#include "geometry/globes.h"
 class ElementListWidget : public QWidget
 {
     Q_OBJECT
@@ -30,9 +31,11 @@ public:
     int getNextId();
     void onCustomContextMenuRequested(const QPoint &pos);
     void deal_actionNew_triggered();
+    void judgetype(CEntity*);
 private:
     QTreeWidget *treeWidgetNames;
     QTreeWidget *treeWidgetInfo;
+    QTreeWidgetItem * liItem1;
     QLineEdit *xLineEdit;
     QLineEdit *yLineEdit;
     QLineEdit *sizeLineEdit;
@@ -40,6 +43,8 @@ private:
     std::set<int> deletedIds;
     QToolBar * toolBar;
     CEntity * centity;
+    ENTITY_TYPE m_EntityType;
+
     //std::unordered_map<QTreeWidgetItem*, size_t> itemToIndexMap;
 };
 
