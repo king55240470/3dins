@@ -2,6 +2,8 @@
 #define CENTITYMGR_H
 
 #include <geometry/centity.h>
+#include "component/elementlistwidget.h"
+
 
 class CEntityMgr : public CEntity
 {
