@@ -65,8 +65,6 @@ public:
     CREATE_FORM GetCreateForm();
 
 
-
-
     //序列化
     QDataStream& serialize(QDataStream& out) const override{
         CObject::serialize(out);//序列化基类部分
