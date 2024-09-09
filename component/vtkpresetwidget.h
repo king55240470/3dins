@@ -13,17 +13,14 @@ public:
     explicit VtkPresetWidget(QWidget *parent = nullptr);
 
     // 获取m_renWin
-    vtkSmartPointer<vtkRenderWindow> GetRenderWindow();
+    vtkSmartPointer<vtkRenderWindow> getRenderWindow();
 
-    // 由centity对象生成一个actor
-    vtkSmartPointer<vtkActor> CreateActorFromEntity(CEntity* entity);
-
-    // 为m_entityList的新元素分配actor并存入m_vtkActors
-    void addActor(vtkSmartPointer<vtkActor> new_actor);
+    // 将draw返回的actor添加到渲染器中
+    void addActor(vtkSmartPointer<vtkActor>& actor);
 
 private:
     QLabel* label;
-    CEntityMgr* m_entityMgr;
+    CEntityMgr* m_entityMgr; // 创建一个管理器对象用于操作预置的元素
 
     // 为m_entityList创建Qvector用来封装执行器，每个元素都有一个自己的actor，用于显示图形
     QVector<vtkSmartPointer<vtkActor>> m_vtkActors;

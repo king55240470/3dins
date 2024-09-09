@@ -7,6 +7,11 @@ void CEntityMgr::Add(CEntity* pEntity){
 
 }
 
+CEntity* CEntityMgr::getLatestEntity(){
+    return m_entityList.back();
+}
+
+
 int CEntityMgr::FindEntity(CEntity *pEntity)
 {
     int idx = m_entityList.indexOf(pEntity);
@@ -58,6 +63,3 @@ void CEntityMgr::RemoveAll()
     m_entityList.clear();
 }
 
-CEntity* CEntityMgr::getLatestEntity(){
-    return m_entityList.back();
-}
