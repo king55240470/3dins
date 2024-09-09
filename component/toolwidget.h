@@ -34,6 +34,7 @@ void onSavePdf();
 void onSaveExcel();
 void onSaveTxt();
 void onSaveWord();
+void onSaveImage();
 }
 
 class ToolWidget : public QWidget {

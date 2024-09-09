@@ -1,6 +1,6 @@
 #ifndef COBJECTMGR_H
 #define COBJECTMGR_H
-#include "geometry/centity.h"
+#include "geometry/cobject.h"
 #include "component/elementlistwidget.h"
 
 class CObjectMgr
@@ -22,9 +22,7 @@ public:
     //bool IsHideInvalid();
     void RemoveAll();
     void SelectAll(bool);
-
     CObject* findObject();
-
 };
 
 #endif // COBJECTMGR_H
