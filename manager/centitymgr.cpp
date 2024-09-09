@@ -1,12 +1,11 @@
 #include "centitymgr.h"
 
 CEntityMgr::CEntityMgr() {}
-void CEntityMgr::Add(CEntity* pEntity){
 
+void CEntityMgr::Add(CEntity* pEntity){
     m_entityList.push_back(pEntity);
 
 }
-
 
 int CEntityMgr::FindEntity(CEntity *pEntity)
 {
@@ -50,10 +49,15 @@ int CEntityMgr::GetCount()
 {
     return m_entityList.count();
 }
+
 void CEntityMgr::RemoveAll()
 {
     for (CEntity *pEntityTemp : m_entityList) {
         delete pEntityTemp;
     }
     m_entityList.clear();
+}
+
+CEntity* CEntityMgr::getLatestEntity(){
+    return m_entityList.back();
 }

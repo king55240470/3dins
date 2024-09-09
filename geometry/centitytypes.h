@@ -4,6 +4,7 @@
 #include "centity.h"
 #include <QSettings>
 #include "cposition.h"
+
 class CLine  : public CEntity
 {
 public:
@@ -36,7 +37,6 @@ public:
         m_strCName = QString("线%1").arg(currentLineId);
     }
     int GetUniqueType() {
-
         return enLine;
     }
     void SetPosition(CPosition pt1,CPosition pt2)
