@@ -2,6 +2,7 @@
 #define COBJECTMGR_H
 #include "geometry/cobject.h"
 #include "component/elementlistwidget.h"
+
 class CObjectMgr
 {
 private:
