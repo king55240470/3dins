@@ -12,7 +12,7 @@ public:
     double m_b;
 
     static int lineCount;
-    int currentLineId;
+    static int currentLineId;
 
     double k;
     double b;

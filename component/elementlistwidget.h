@@ -18,14 +18,14 @@
 #include <QContextMenuEvent>
 #include<QToolBar>
 #include <QVector>
-#include <unordered_map>
+//#include <unordered_map>
 class ElementListWidget : public QWidget
 {
     Q_OBJECT
 public:
     explicit ElementListWidget(QWidget *parent = nullptr);
     void onCreateEllipse();
-    void CreateEllipse(CEntity & entity);
+    void CreateEllipse(CObject*);
     void onDeleteEllipse();
     int getNextId();
     void onCustomContextMenuRequested(const QPoint &pos);
@@ -40,8 +40,7 @@ private:
     std::set<int> deletedIds;
     QToolBar * toolBar;
     CEntity * centity;
-    std::unordered_map<QTreeWidgetItem*, size_t> itemToIndexMap;
-signals:
+    //std::unordered_map<QTreeWidgetItem*, size_t> itemToIndexMap;
 };
 
 #endif // ELEMENTLISTWIDGET_H
