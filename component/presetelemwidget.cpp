@@ -2,7 +2,7 @@
 #include"mainwindow.h"
 #include<QGridLayout>
 #include<QLabel>
-#include"geometry/cposition.h"
+#include"geometry/globes.h"
 #include<QMessageBox>
 #include<QGroupBox>
 #include<QVector4D>

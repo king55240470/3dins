@@ -25,7 +25,6 @@ SOURCES += \
     geometry/cobject.cpp \
     geometry/cpcs.cpp \
     geometry/cpcsnode.cpp \
-    geometry/cposition.cpp \
     geometry/cshape.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -51,7 +50,6 @@ HEADERS += \
     geometry/cobject.h \
     geometry/cpcs.h \
     geometry/cpcsnode.h \
-    geometry/cposition.h \
     geometry/cshape.h \
     geometry/globes.h \
     mainwindow.h \

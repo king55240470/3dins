@@ -107,8 +107,6 @@ public:
     void btnConeClicked();
 
 
-
-
 signals:
 };
 
