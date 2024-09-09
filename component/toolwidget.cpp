@@ -83,8 +83,20 @@ ToolWidget::ToolWidget(QWidget *parent)
     for(int i=0;i<m_nToolbarNum;i++){
 
         toolBars[i]=new QToolBar(this);
-        toolBars[i]->setIconSize(QSize(45,45));
+        toolBars[i]->setIconSize(QSize(30,30));
         toolBars[i]->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+        toolBars[i]->setStyleSheet(
+            "QToolButton {"
+            "    border: 2px solid lightgray;" // 浅灰色边框
+            "    padding: 5px;"
+            "}"
+            "QToolButton:pressed {"
+            "    border: 2px solid gray;" // 按下状态下的灰色边框
+            "}"
+            "QToolButton:hover {"
+            "    border: 2px solid darkgray;" // 悬浮状态下的深灰色边框
+            "}"
+            );
 
     }
 
