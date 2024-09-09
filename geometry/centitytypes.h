@@ -3,7 +3,7 @@
 
 #include "centity.h"
 #include <QSettings>
-#include "cposition.h"
+#include "globes.h"
 class CLine  : public CEntity
 {
 public:

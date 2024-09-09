@@ -15,6 +15,8 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QWidget>
+#include "geometry/centitytypes.h"
+#include "component/presetelemwidget.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -42,6 +44,22 @@ void MainWindow::setupUi(){
 
     QAction * contralAction=new QAction("控制图标");
     bar->addAction(contralAction);
+
+    QMenu *presetMenu=bar->addMenu("预置元素");
+    QAction* pointAction =presetMenu->addAction("点");
+    //connect(pointAction,&QAction::triggered,this,&PresetElemWidget::show);
+    // QAction* lineAction =presetMenu->addAction("线");
+    // connect(pointAction,&QAction::triggered,this,&)
+    // QAction* circleAction =presetMenu->addAction("圆");
+    // connect(pointAction,&QAction::triggered,this,&)
+    // QAction* planeAction =presetMenu->addAction("平面");
+    // connect(pointAction,&QAction::triggered,this,&)
+    // QAction* sphereAction =presetMenu->addAction("球");
+    // connect(pointAction,&QAction::triggered,this,&)
+    // QAction* cylinderAction =presetMenu->addAction("圆柱");
+    // connect(pointAction,&QAction::triggered,this,&)
+    // QAction* coneAction =presetMenu->addAction("圆锥");
+    // connect(pointAction,&QAction::triggered,this,&)
 
     //状态栏
     stbar=statusBar();
@@ -222,3 +240,214 @@ void MainWindow::save_clicked() {
         }
     }
 }*/
+
+void MainWindow::NotifySubscribe(){
+
+}
+
+CEntity* MainWindow::CreateEntity(int nType){
+    CEntity *pTempEntity = NULL;
+    switch (nType) {
+    case enCircle:
+        pTempEntity = new CCircle();
+        pTempEntity->setEntityType(enCircle);
+        break;
+    case enPoint:
+        pTempEntity = new CPoint();
+        pTempEntity->setEntityType(enPoint);
+        break;
+    case enLine:
+        pTempEntity = new CLine();
+        pTempEntity->setEntityType(enLine);
+        break;
+    case enPlane:
+        pTempEntity = new CPlane();
+        pTempEntity->setEntityType(enPlane);
+        break;
+    case enSphere:
+        pTempEntity = new CSphere();
+        pTempEntity->setEntityType(enSphere);
+        break;
+    case enCylinder:
+        pTempEntity = new CCylinder();
+        pTempEntity->setEntityType(enCylinder);
+        break;
+    case enCone:
+        pTempEntity = new CCone();
+        pTempEntity->setEntityType(enCone);
+        break;
+    default:
+        break;
+    }
+    pTempEntity->setDwAddress((uintptr_t)(pTempEntity));
+    return pTempEntity;
+}
+
+void MainWindow::OnPresetPoint(CPosition pt){
+    //qDebug()<<"clicked3.1";
+    CPoint *pPoint = (CPoint *)CreateEntity(enPoint);
+    pPoint->SetPosition(pt);
+    pPoint->m_CreateForm = ePreset;
+    pPoint->m_pRefCoord = m_pcsListMgr->m_pPcsCurrent;
+    pPoint->m_pCurCoord = m_pcsListMgr->m_pPcsCurrent;
+    pPoint->m_pExtCoord = m_pcsListMgr->m_pPcsCurrent;
+    // pPoint->SetNominal();
+    // 加入Entitylist 和 ObjectList
+    m_EntityListMgr->Add(pPoint);
+    m_ObjectListMgr->Add(pPoint);
+
+    //qDebug()<<"clicked3.2";
+    //NotifySubscribe();
+}
+
+// void MainWindow::OnPresetLine(CPosition ptStart, CPosition ptEnd)
+// {
+//     CLine *pLine = (CLine *)CreateEntity(enLine);
+//     pLine->setBegin(ptStart);
+//     pLine->setEnd(ptEnd);
+//     pLine->m_CreateForm = ePreset;
+//     pLine->m_pRefCoord = m_pcsListMgr->m_pPcsCurrent;
+//     pLine->m_pCurCoord = m_pcsListMgr->m_pPcsCurrent;
+//     pLine->m_pExtCoord = m_pcsListMgr->m_pPcsCurrent;
+//     // pLine->SetNominal();
+
+//     // 加入Entitylist 和 ObjectList
+//     m_EntityListMgr->Add(pLine);
+//     m_ObjectListMgr->Add(pLine);
+
+//     //NotifySubscribe();
+// }
+
+// void MainWindow::OnPresetCircle(CPosition pt, double diameter)
+// {
+//     //CPosition pt(1,1,1);
+//     //double diameter = 1.5;
+
+//     CCircle *pCircle = (CCircle *)CreateEntity(enCircle);
+//     pCircle->SetCenter(pt);
+//     pCircle->SetDiameter(diameter);
+//     pCircle->m_CreateForm = ePreset;
+//     pCircle->m_pRefCoord = m_pcsListMgr->m_pPcsCurrent;
+//     pCircle->m_pCurCoord = m_pcsListMgr->m_pPcsCurrent;
+//     pCircle->m_pExtCoord = m_pcsListMgr->m_pPcsCurrent;
+
+//     pCircle->SetNominal();
+
+//     std::vector<QPointF> points;
+
+//     pCircle->addToolArray((CircleGraphics*)CreateImgTool(eImgCircleGraphics,points,data));
+//     // 加入Entitylist 和 ObjectList
+//     m_EntityListMgr->Add(pCircle);
+//     if(m_ObjectListMgr->GetInsertPos()==-1){
+//         m_ObjectListMgr->Add(pCircle);
+//         //pWinElementListWidget->updateInsertIndicatorPosition();
+
+//     }else{
+//         m_ObjectListMgr->Insert(pCircle, m_ObjectListMgr->m_nInsertPos);
+//         m_ObjectListMgr->m_nInsertPos++;
+//         //pWinElementListWidget->updateInsertIndicatorPosition();
+//     }
+
+//     //选中元素,取消其他元素选中
+//     for(auto const &object:m_ObjectListMgr->m_objectList){
+//         object->SetSelected(false);
+//     }
+//     pCircle->SetSelected(true);
+
+//     //NotifySubscribe();
+// }
+
+// void MainWindow::OnPresetPlane(CPosition posCenter, QVector4D normal, QVector4D direction, double length, double width)
+// {
+//     CPlane *pPlane = (CPlane *)CreateEntity(enPlane);
+//     pPlane->setCenter(posCenter);
+//     pPlane->setDir_long_edge(direction);
+//     pPlane->setNormal(normal);
+//     pPlane->setLength(length);
+//     pPlane->setWidth(width);
+
+//     pPlane->m_CreateForm = ePreset;
+//     pPlane->SetCurCoord(m_pcsListMgr->m_pPcsCurrent);
+//     pPlane->SetRefCoord(m_pcsListMgr->m_pPcsCurrent);
+//     pPlane->SetExtCoord(m_pcsListMgr->m_pPcsCurrent);
+
+//     // pPlane->SetNominal();
+
+//     // 加入Entitylist 和 ObjectList
+//     m_EntityListMgr->Add(pPlane);
+//     m_ObjectListMgr->Add(pPlane);
+
+//     //NotifySubscribe();
+
+// }
+
+// void MainWindow::OnPresetSphere(CPosition posCenter, double diametre)
+// {
+//     CSphere *pSphere = (CSphere *)CreateEntity(enSphere);
+//     pSphere->setCenter(posCenter);
+//     pSphere->setDiameter(diametre);
+
+//     pSphere->m_CreateForm = ePreset;
+//     pSphere->SetCurCoord(m_pcsListMgr->m_pPcsCurrent);
+//     pSphere->SetRefCoord(m_pcsListMgr->m_pPcsCurrent);
+//     pSphere->SetExtCoord(m_pcsListMgr->m_pPcsCurrent);
+
+//     // pSphere->SetNominal();
+
+//     // 加入Entitylist 和 ObjectList
+//     m_EntityListMgr->Add(pSphere);
+//     m_ObjectListMgr->Add(pSphere);
+//     qDebug()<<"add a sphere";
+//     //NotifySubscribe();
+// }
+
+// void MainWindow::OnPresetCylinder(CPosition pos, QVector4D vec, double height, double diametre)
+// {
+//     CCylinder *pCylinder = (CCylinder *)CreateEntity(enCylinder);
+//     pCylinder->setAxis(vec);
+//     pCylinder->setBtm_center(pos);
+//     pCylinder->setDiameter(diametre);
+//     pCylinder->setHeight(height);
+
+//     pCylinder->m_CreateForm = ePreset;
+//     pCylinder->SetCurCoord(m_pcsListMgr->m_pPcsCurrent);
+//     pCylinder->SetRefCoord(m_pcsListMgr->m_pPcsCurrent);
+//     pCylinder->SetExtCoord(m_pcsListMgr->m_pPcsCurrent);
+
+//     // pCylinder->SetNominal();
+
+//     // 加入Entitylist 和 ObjectList
+//     m_EntityListMgr->Add(pCylinder);
+//     m_ObjectListMgr->Add(pCylinder);
+
+//     qDebug()<<"add a Cone";
+//     //NotifySubscribe();
+
+// }
+
+
+// void MainWindow::OnPresetCone(CPosition posCenter, QVector4D axis, double partH, double fullH, double angle)
+
+// {
+//     CCone *pCone = (CCone *)CreateEntity(enCone);
+//     pCone->setCone_height(partH);
+//     pCone->setHeight(fullH);
+//     pCone->setAxis(axis);
+//     pCone->setRadian(angle);
+//     pCone->setVertex(posCenter);
+
+//     pCone->m_CreateForm = ePreset;
+//     pCone->SetCurCoord(m_pcsListMgr->m_pPcsCurrent);
+//     pCone->SetRefCoord(m_pcsListMgr->m_pPcsCurrent);
+//     pCone->SetExtCoord(m_pcsListMgr->m_pPcsCurrent);
+
+//     // pCone->SetNominal();
+
+//     // 加入Entitylist 和 ObjectList
+//     m_EntityListMgr->Add(pCone);
+//     m_ObjectListMgr->Add(pCone);
+
+//     qDebug()<<"add a Cone";
+//     //NotifySubscribe();
+// }
+

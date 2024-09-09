@@ -5,6 +5,11 @@
 #include <QSplitter>
 #include <QMenuBar>
 #include <QStatusbar>
+#include "geometry/globes.h"
+#include "geometry/centity.h"
+#include "manager/centitymgr.h"
+#include "manager/cobjectmgr.h"
+#include "manager/cpcsmgr.h"
 
 class DataWidget;
 class ElementListWidget;
@@ -45,6 +50,22 @@ private:
 private:
     void openFile();
     void saveFile();
+
+public:
+    CPcsMgr* m_pcsListMgr;
+    CObjectMgr* m_ObjectListMgr;
+    CEntityMgr* m_EntityListMgr;
+    //预置
+    void OnPresetPoint(CPosition pt);
+    void OnPresetLine(CPosition ptStart, CPosition ptEnd);
+    void OnPresetCircle(CPosition pt, double diameter);
+    void OnPresetPlane(CPosition posCenter, QVector4D normal, QVector4D direction, double length, double width);
+    void OnPresetSphere(CPosition posCenter, double diametre);
+    void OnPresetCylinder(CPosition pos, QVector4D vec, double height, double diametre);
+    void OnPresetCone(CPosition posCenter, QVector4D axis, double partH, double fullH, double angle);
+
+    CEntity* CreateEntity(int nType);
+    void NotifySubscribe();
 
 public:
     MainWindow(QWidget *parent = nullptr);

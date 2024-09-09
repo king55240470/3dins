@@ -4,7 +4,7 @@
 #include "component/elementlistwidget.h"
 class CObjectMgr
 {
-private:
+public:
     QVector<CObject*> m_objectList;
 public:
     CObjectMgr();
