@@ -8,7 +8,6 @@
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
 
-
 class CEntityMgr : public CEntity
 {
 private:
@@ -31,9 +30,8 @@ public:
     int GetCount();
     void RemoveAll();
 
-    // 获取m_entityList最新加入的元素
+    // 获取m_entityList中新加入的元素
     CEntity* getLatestEntity();
-
 };
 
 #endif // CENTITYMGR_H
