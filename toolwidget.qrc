@@ -23,5 +23,6 @@
         <file>component/save/pdf.jpg</file>
         <file>component/save/txt.jpg</file>
         <file>component/save/word.jpg</file>
+        <file>component/save/image.jpg</file>
     </qresource>
 </RCC>
