@@ -31,6 +31,8 @@ public:
     void setUnderCursor(bool);
     virtual void SetSelected(bool);
     virtual void SetDeleted(bool);
+    virtual int GetUniqueType()
+    { return 0;};
     void setShow(bool);
     void SetGroup(bool);
 

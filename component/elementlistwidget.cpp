@@ -16,23 +16,22 @@ ElementListWidget::ElementListWidget(QWidget *parent)
 
     // 元素名称列表
     treeWidgetNames = new QTreeWidget(this);
-    treeWidgetNames->setHeaderLabel("面/坐标系");
-    QTreeWidgetItem * liItem1 = new QTreeWidgetItem(QStringList()<<"type");
-    treeWidgetNames->addTopLevelItem(liItem1);
-    //treeWidgetNames->setColumnCount(1);
+    treeWidgetNames->setHeaderLabel("元素");
+    //设置为多选模式
+    treeWidgetNames->setSelectionMode(QAbstractItemView::MultiSelection);
 
     // 元素信息列表
     treeWidgetInfo = new QTreeWidget(this);
     treeWidgetInfo->setHeaderLabel("元素信息");
-    treeWidgetInfo->setColumnCount(4);
+    //treeWidgetInfo->setColumnCount(4);
     QStringList headers;
-    headers << "ID" << "X" << "Y" << "Size";
+    headers << "元素：";
     treeWidgetInfo->setHeaderLabels(headers);
 
     // 元素坐标输入
-    QLineEdit *xInput = new QLineEdit(this);
-    QLineEdit *yInput = new QLineEdit(this);
-    QLineEdit *sizeInput = new QLineEdit(this);
+    //QLineEdit *xInput = new QLineEdit(this);
+    //QLineEdit *yInput = new QLineEdit(this);
+    //QLineEdit *sizeInput = new QLineEdit(this);
 
     //工具栏
     toolBar = new QToolBar(this);
@@ -55,16 +54,16 @@ ElementListWidget::ElementListWidget(QWidget *parent)
     layout->addWidget(deleteButton);
     layout->addWidget(treeWidgetNames);
     layout->addWidget(treeWidgetInfo);
-    layout->addWidget(new QLabel("X:"));
-    layout->addWidget(xInput);
-    layout->addWidget(new QLabel("Y:"));
-    layout->addWidget(yInput);
-    layout->addWidget(new QLabel("Z"));
-    layout->addWidget(sizeInput);
+    //layout->addWidget(new QLabel("X:"));
+    //layout->addWidget(xInput);
+    //layout->addWidget(new QLabel("Y:"));
+    //layout->addWidget(yInput);
+    //layout->addWidget(new QLabel("Z"));
+    //layout->addWidget(sizeInput);
     // 保存输入框的指针
-    xLineEdit = xInput;
-    yLineEdit = yInput;
-    sizeLineEdit = sizeInput;
+    //xLineEdit = xInput;
+    //yLineEdit = yInput;
+    //sizeLineEdit = sizeInput;
     connect(treeWidgetNames, &QTreeWidget::customContextMenuRequested,
             this, &ElementListWidget::onCustomContextMenuRequested);
     treeWidgetNames->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -80,20 +79,11 @@ void ElementListWidget::onCreateEllipse() {
     int id = getNextId();
     QString name = QString("元素%1").arg(id);
 
-    //QTreeWidgetItem *nameItem = new QTreeWidgetItem(treeWidgetNames);
-    QTreeWidgetItem * l1 = new QTreeWidgetItem(liItem1);
-    l1->setText(0,name);
-    //nameItem->setText(0, name);
-
-    int x = xLineEdit->text().toInt();
-    int y = yLineEdit->text().toInt();
-    QString size = sizeLineEdit->text();
+    QTreeWidgetItem *nameItem = new QTreeWidgetItem(treeWidgetNames);
+    nameItem->setText(0, name);
 
     QTreeWidgetItem *infoItem = new QTreeWidgetItem(treeWidgetInfo);
     infoItem->setText(0, QString::number(id));
-    infoItem->setText(1, QString::number(x));
-    infoItem->setText(2, QString::number(y));
-    infoItem->setText(3, QString(size));
 }
 
 void ElementListWidget::CreateEllipse(CObject * obj)
@@ -105,9 +95,6 @@ void ElementListWidget::CreateEllipse(CObject * obj)
     item->setText(0,obj->GetObjectCName());
     QTreeWidgetItem *infoItem = new QTreeWidgetItem(treeWidgetInfo);
     infoItem->setText(0, QString::number(id));
-    infoItem->setText(1, QString::number(1));
-    infoItem->setText(2, QString::number(1));
-    infoItem->setText(3, QString::number(1));
 }
 
 void ElementListWidget::onDeleteEllipse()
@@ -161,4 +148,14 @@ void ElementListWidget::deal_actionNew_triggered()
 void ElementListWidget::judgetype(CEntity *entity)
 {
     m_EntityType=entity->getEntityType();
+}
+
+void ElementListWidget::removeall()
+{
+    treeWidgetNames->clear();
+}
+
+void ElementListWidget::updateInsertIndicatorPosition()
+{
+
 }

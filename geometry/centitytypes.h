@@ -35,7 +35,7 @@ public:
         m_strAutoName = QString("线%1").arg(currentLineId);
         m_strCName = QString("线%1").arg(currentLineId);
     }
-    int GetUniqueType() {
+    int GetUniqueType() override {
 
         return enLine;
     }
@@ -95,7 +95,7 @@ public:
         m_strAutoName = QString("点%1").arg(currentPointId);
         m_strCName = QString("点%1").arg(currentPointId);
     }
-    int GetUniqueType() {
+    int GetUniqueType() override{
         return enPoint;
     }
 
@@ -161,7 +161,9 @@ public:
     void SetCenter(CPosition pt);
     CPosition getCenter();
     double getDiameter();
-    int GetUniqueType() ;
+    int GetUniqueType() override{
+        return enCircle;
+    }
     static int getCircleCount() {
         return circleCount;
     }
@@ -223,7 +225,7 @@ public:
         m_strCName = QString("平面%1").arg(currentPlainId);
     }
 
-    int GetUniqueType() {
+    int GetUniqueType() override {
 
         return enPlane;
     }
@@ -259,7 +261,7 @@ public:
         m_strAutoName = QString("球%1").arg(currentSphereId);
         m_strCName = QString("球%1").arg(currentSphereId);
     }
-    int GetUniqueType() {
+    int GetUniqueType() override{
 
         return enSphere;
     }
@@ -303,7 +305,7 @@ public:
     CPosition getBtm_center() const;
     void setBtm_center(const CPosition &newBtm_center);
 
-    int GetUniqueType() {
+    int GetUniqueType() override {
 
         return enCylinder;
     }
@@ -337,7 +339,7 @@ public:
         m_strAutoName = QString("圆柱%1").arg(currentConeId);
         m_strCName = QString("圆柱%1").arg(currentConeId);
     }
-    int GetUniqueType() {
+    int GetUniqueType() override {
         return enCone;
     }
     CPosition GetObjectCenterLocalPoint()
