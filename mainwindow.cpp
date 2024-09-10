@@ -48,19 +48,33 @@ void MainWindow::setupUi(){
 
     QMenu *presetMenu=bar->addMenu("预置元素");
     QAction* pointAction =presetMenu->addAction("点");
-    connect(pointAction,&QAction::triggered,this,&MainWindow::showPresetElemWidget);
+    connect(pointAction,&QAction::triggered,this,[&](){
+        showPresetElemWidget(0);
+    });
     QAction* lineAction =presetMenu->addAction("线");
-    connect(lineAction,&QAction::triggered,this,&MainWindow::showPresetElemWidget);
+    connect(lineAction,&QAction::triggered,this,[&](){
+        showPresetElemWidget(1);
+    });
     QAction* circleAction =presetMenu->addAction("圆");
-    connect(circleAction,&QAction::triggered,this,&MainWindow::showPresetElemWidget);
+    connect(circleAction,&QAction::triggered,this,[&](){
+        showPresetElemWidget(2);
+    });
     QAction* planeAction =presetMenu->addAction("平面");
-    connect(planeAction,&QAction::triggered,this,&MainWindow::showPresetElemWidget);
+    connect(planeAction,&QAction::triggered,this,[&](){
+        showPresetElemWidget(3);
+    });
     QAction* sphereAction =presetMenu->addAction("球");
-    connect(sphereAction,&QAction::triggered,this,&MainWindow::showPresetElemWidget);
+    connect(sphereAction,&QAction::triggered,this,[&](){
+        showPresetElemWidget(4);
+    });
     QAction* cylinderAction =presetMenu->addAction("圆柱");
-    connect(cylinderAction,&QAction::triggered,this,&MainWindow::showPresetElemWidget);
+    connect(cylinderAction,&QAction::triggered,this,[&](){
+        showPresetElemWidget(5);
+    });
     QAction* coneAction =presetMenu->addAction("圆锥");
-    connect(coneAction,&QAction::triggered,this,&MainWindow::showPresetElemWidget);
+    connect(coneAction,&QAction::triggered,this,[&](){
+        showPresetElemWidget(6);
+    });
 
     //状态栏
     stbar=statusBar();
@@ -452,7 +466,23 @@ CEntity* MainWindow::CreateEntity(int nType){
 //     //NotifySubscribe();
 // }
 
-void MainWindow::showPresetElemWidget(){
+void MainWindow::showPresetElemWidget(int index){
     pWinPresetElemWidget=new PresetElemWidget(this);
+    switch(index){
+    case 0:pWinPresetElemWidget->tabWidget->setCurrentIndex(0);
+        break;
+    case 1:pWinPresetElemWidget->tabWidget->setCurrentIndex(1);
+        break;
+    case 2:pWinPresetElemWidget->tabWidget->setCurrentIndex(2);
+        break;
+    case 3:pWinPresetElemWidget->tabWidget->setCurrentIndex(3);
+        break;
+    case 4:pWinPresetElemWidget->tabWidget->setCurrentIndex(4);
+        break;
+    case 5:pWinPresetElemWidget->tabWidget->setCurrentIndex(5);
+        break;
+    case 6:pWinPresetElemWidget->tabWidget->setCurrentIndex(6);
+        break;
+    }
     pWinPresetElemWidget->show();
 }

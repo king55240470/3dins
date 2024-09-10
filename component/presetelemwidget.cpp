@@ -10,6 +10,8 @@
 PresetElemWidget::PresetElemWidget(QWidget *parent)
     : QWidget{parent}
 {
+    setWindowTitle("预置元素");
+
     //保留当前窗口标志中的所有特性，并设置为具有对话框特性的窗口
     setWindowFlags(windowFlags()|Qt::Dialog);
     resize(480,320);
@@ -417,7 +419,7 @@ PresetElemWidget::PresetElemWidget(QWidget *parent)
     // 显示tab widget
     tabWidget->setAttribute(Qt::WA_DeleteOnClose); // 关闭窗口时释放资源
     tabWidget->resize(480, 320);  // 设置宽度为400，高度为300
-    tabWidget->setCurrentIndex(2);
+    tabWidget->setCurrentIndex(0);
     tabWidget->show();
 
 }
