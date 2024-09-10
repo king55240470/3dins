@@ -54,7 +54,6 @@ public:
 
     bool IsType(ENTITY_TYPE);
 
-    virtual ENTITY_TYPE GetEntityType(){return enNone;};
     void setEntityType(ENTITY_TYPE);
     ENTITY_TYPE getEntityType() const;
 

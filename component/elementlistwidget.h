@@ -32,10 +32,11 @@ public:
     void onCustomContextMenuRequested(const QPoint &pos);
     void deal_actionNew_triggered();
     void judgetype(CEntity*);
+    void removeall();
+    void updateInsertIndicatorPosition();
 private:
     QTreeWidget *treeWidgetNames;
     QTreeWidget *treeWidgetInfo;
-    QTreeWidgetItem * liItem1;
     QLineEdit *xLineEdit;
     QLineEdit *yLineEdit;
     QLineEdit *sizeLineEdit;
