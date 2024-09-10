@@ -75,6 +75,6 @@ public:
     void LoadWidgets();
     void RestoreWidgets();
     void setupUi();
-    void showPresetElemWidget();
+    void showPresetElemWidget(int);
 };
 #endif // MAINWINDOW_H
