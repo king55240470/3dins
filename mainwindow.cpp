@@ -256,9 +256,7 @@ void MainWindow::save_clicked() {
     }
 }*/
 
-void MainWindow::NotifySubscribe(){
 
-}
 
 CEntity* MainWindow::CreateEntity(int nType){
     CEntity *pTempEntity = NULL;
@@ -298,7 +296,13 @@ CEntity* MainWindow::CreateEntity(int nType){
     return pTempEntity;
 }
 
-/*void MainWindow::OnPresetPoint(CPosition pt){
+void MainWindow::NotifySubscribe()
+{
+    m_ObjectListMgr->upadteelementlist();
+}
+
+void MainWindow::OnPresetPoint(CPosition pt){
+
     //qDebug()<<"clicked3.1";
     CPoint *pPoint = (CPoint *)CreateEntity(enPoint);
     pPoint->SetPosition(pt);
@@ -313,7 +317,7 @@ CEntity* MainWindow::CreateEntity(int nType){
 
     //qDebug()<<"clicked3.2";
     //NotifySubscribe();
-}*/
+}
 
 // void MainWindow::OnPresetLine(CPosition ptStart, CPosition ptEnd)
 // {
