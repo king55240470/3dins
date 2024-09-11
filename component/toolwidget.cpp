@@ -91,7 +91,7 @@ ToolWidget::ToolWidget(QWidget *parent)
         toolBars[i]->setStyleSheet(
             "QToolButton {"
             "    border: 2px solid lightgray;" // 浅灰色边框
-            "    padding: 5px;"
+            "    padding: 5px;" // 内部填充
             "}"
             "QToolButton:pressed {"
             "    border: 2px solid gray;" // 按下状态下的灰色边框
@@ -99,7 +99,13 @@ ToolWidget::ToolWidget(QWidget *parent)
             "QToolButton:hover {"
             "    border: 2px solid darkgray;" // 悬浮状态下的深灰色边框
             "}"
-            "QToolBar::item { margin: 5px; }"
+            "QToolBar::item {"
+            "    margin: 10px;" // 工具栏项之间的间隔
+            "}"
+            "QToolBar::separator {"
+            "    width: 3px;" // 设置分隔符的宽度
+            "    background: transparent;" // 分隔符背景颜色
+            "}"
             );
 
     }
@@ -228,6 +234,7 @@ int ToolWidget::addSaveActions(QStringList& action_name_list ,int action_num,int
             if(action_name_list[i]==save_action_name_list_[index_]){
                 action_count++;
                 toolBars[toolbar_index]->addAction(save_actions_[index_]);
+                toolBars[toolbar_index]->addSeparator();
             }
         }
     }
@@ -245,6 +252,7 @@ int ToolWidget::addConstructActions(QStringList& action_name_list ,int action_nu
             if(action_name_list[i]==construct_action_name_list_[index_]){
                 action_count++;
                 toolBars[toolbar_index]->addAction(construct_actions_[index_]);
+                toolBars[toolbar_index]->addSeparator();
             }
         }
     }
@@ -262,7 +270,7 @@ int ToolWidget::addFindActions(QStringList& action_name_list ,int action_num,int
             if(action_name_list[i]==find_action_name_list_[index_]){
                 action_count++;
                 toolBars[toolbar_index]->addAction(find_actions_[index_]);
-
+                 toolBars[toolbar_index]->addSeparator();
                 break;
             }
         }
@@ -282,6 +290,7 @@ int ToolWidget::addCoordActions(QStringList& action_name_list ,int action_num,in
             if(action_name_list[i]==coord_action_name_list_[index_]){
                 action_count++;
                 toolBars[toolbar_index]->addAction(coord_actions_[index_]);
+                toolBars[toolbar_index]->addSeparator();
             }
         }
     }
