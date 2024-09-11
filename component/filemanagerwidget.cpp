@@ -12,6 +12,14 @@ FileManagerWidget::FileManagerWidget(QWidget *parent)
     layout=new QVBoxLayout(this);
 
     filetree=new QTreeView(this);
+    filetree->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    //设置QTreeView的字体大小
+    int width = filetree->width();
+    int height = filetree->height();
+    int newFontSize = qMin(width/2, height/3);
+    QFont font = this->font();
+    font.setPointSize(newFontSize);
+    filetree->setFont(font);
 
     delegate = new ButtonDelegate(filetree);
     filetree->setItemDelegate(delegate);

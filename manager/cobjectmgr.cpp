@@ -5,8 +5,6 @@ void CObjectMgr::Add(CObject* pObject)
     m_objectList.push_back(pObject);
     pObject->AddObjectCount();
     pObject->SetID(m_objectList.size());
-    ElementListWidget * element = nullptr;
-    element->CreateEllipse(pObject);
 }
 void CObjectMgr::Insert(CObject* newObject, int index) {
     if (index >= 0 && index <= m_objectList.size()) {
@@ -18,6 +16,10 @@ void CObjectMgr::Insert(CObject* newObject, int index) {
 int CObjectMgr::FindIndex(CObject *obj)
 {
     return m_objectList.indexOf(obj);
+}
+int CObjectMgr::GetInsertPos()
+{
+    return m_nInsertPos;
 }
 
 
@@ -52,6 +54,16 @@ void CObjectMgr::SelectAll(bool bVal)
 {
     for (CObject *pObj : m_objectList)
         pObj->m_bSel= bVal;
+}
+
+void CObjectMgr::upadteelementlist()
+{
+    ElementListWidget * remove;
+    remove->removeall();
+    for(const auto& element :m_objectList){
+        ElementListWidget*creat;
+        creat->CreateEllipse(element);
+    }
 }
 
 

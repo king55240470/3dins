@@ -7,7 +7,7 @@
 #include <vtkLineSource.h>
 #include <vtkCellArray.h>
 #include <vtkEllipseArcSource.h>
-#include <vtkEllipseArcSource.h>
+#include <vtkPlaneSource.h>
 #include <vtkProperty.h>
 
 // 点类的draw()
@@ -65,49 +65,70 @@ vtkSmartPointer<vtkActor> CLine::draw(){
 
 
 // 圆类的draw()
-vtkSmartPointer<vtkActor> CCircle::draw(){
-    // 创建圆上的点集
-    vtkSmartPointer<vtkPoints> points;
-    const int numPoints = 100; // 圆的点数，更多点数会更平滑
-    const double radius = getDiameter()/2; // 圆的半径
-    for (int i = 0; i < numPoints; ++i)
-    {
-        double theta = 2.0 * vtkMath::Pi() * static_cast<double>(i) / static_cast<double>(numPoints);
-        double x = radius * cos(theta);
-        double y = radius * sin(theta);
-        points->InsertNextPoint(x, y, 0.0); // Z坐标设为0
-    }
+// vtkSmartPointer<vtkActor> CCircle::draw(){
+//     // 创建圆上的点集
+//     vtkSmartPointer<vtkPoints> points;
+//     const int numPoints = 100; // 圆的点数，更多点数会更平滑
+//     const double radius = getDiameter()/2; // 圆的半径
+//     for (int i = 0; i < numPoints; ++i)
+//     {
+//         double theta = 2.0 * vtkMath::Pi() * static_cast<double>(i) / static_cast<double>(numPoints);
+//         double x = radius * cos(theta);
+//         double y = radius * sin(theta);
+//         points->InsertNextPoint(x, y, 0.0); // Z坐标设为0
+//     }
 
-    // 创建一个线源来表示圆的线（多段线）
-    vtkSmartPointer<vtkCellArray> lines;
-    vtkIdType pointIds[2];
-    for (int i = 0; i < numPoints - 1; ++i)
-    {
-        pointIds[0] = i;
-        pointIds[1] = i + 1;
-        lines->InsertNextCell(2, pointIds);
-    }
-    // 闭环：将最后一个点与第一个点连接起来
-    pointIds[0] = numPoints - 1;
-    pointIds[1] = 0;
-    lines->InsertNextCell(2, pointIds);
+//     // 创建一个线源来表示圆的线（多段线）
+//     vtkSmartPointer<vtkCellArray> lines;
+//     vtkIdType pointIds[2];
+//     for (int i = 0; i < numPoints - 1; ++i)
+//     {
+//         pointIds[0] = i;
+//         pointIds[1] = i + 1;
+//         lines->InsertNextCell(2, pointIds);
+//     }
+//     // 闭环：将最后一个点与第一个点连接起来
+//     pointIds[0] = numPoints - 1;
+//     pointIds[1] = 0;
+//     lines->InsertNextCell(2, pointIds);
 
-    // 创建PolyData并设置点和线
-    vtkNew<vtkPolyData> polyData;
-    polyData->SetPoints(points);
-    polyData->SetLines(lines);
+//     // 创建PolyData并设置点和线
+//     vtkNew<vtkPolyData> polyData;
+//     polyData->SetPoints(points);
+//     polyData->SetLines(lines);
 
-    // 创建映射器和actor
-    vtkSmartPointer<vtkPolyDataMapper> mapper;
-    mapper->SetInputData(polyData);
-    vtkSmartPointer<vtkActor> actor;
+//     // 创建映射器和actor
+//     vtkSmartPointer<vtkPolyDataMapper> mapper;
+//     mapper->SetInputData(polyData);
+//     vtkSmartPointer<vtkActor> actor;
+//     actor->SetMapper(mapper);
+
+//     VtkPresetWidget::addActor(actor);
+//     return actor;
+// }
+
+// 平面的draw()
+vtkSmartPointer<vtkActor> draw(){
+    // 创建平面源
+    vtkSmartPointer<vtkPlaneSource> planeSource = vtkSmartPointer<vtkPlaneSource>::New();
+    planeSource->SetCenter(CPlane::getCenter().x, CPlane::getCenter().y, CPlane::getCenter().z); // 设置平面中心
+    // planeSource->SetNormal(CPlane::getNormal().x, CPlane::getNormal().y, CPlane::getNormal().z); // 设置平面法线
+
+    // 设置平面的X和Y分辨率
+    planeSource->SetXResolution(50);
+    planeSource->SetYResolution(50);
+
+    // 创建映射器
+    vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    mapper->SetInputConnection(planeSource->GetOutputPort());
+
+    // 创建执行器
+    vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
 
     VtkPresetWidget::addActor(actor);
     return actor;
 }
-
-// 平面的draw()
 
 
 
