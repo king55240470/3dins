@@ -447,8 +447,8 @@ void PresetElemWidget::btnCircleClicked()
         QMessageBox::critical(this, "输入错误", "直径D需要是双精度浮点类型数。");
         return;
     }
-    //m_pMainWin->OnPresetCircle(mypt, d);
-    // qDebug()<<"clicked";
+    // m_pMainWin->OnPresetCircle(mypt, d);
+    qDebug()<<"clicked";
 
 }
 
@@ -473,7 +473,7 @@ void PresetElemWidget::btnPointClicked()
         return;
     }
     qDebug()<<"clicked1";
-    //m_pMainWin->OnPresetPoint(mypt);
+    m_pMainWin->OnPresetPoint(mypt);
     qDebug()<<"clicked2";
 }
 
@@ -516,7 +516,7 @@ void PresetElemWidget::btnLineClicked()
     }
     qDebug()<<ptEnd.x<<ptEnd.y<<ptEnd.z;
     qDebug()<<"clicked1";
-    //m_pMainWin->OnPresetLine(ptBegin, ptEnd);
+    // m_pMainWin->OnPresetLine(ptBegin, ptEnd);
     qDebug()<<"clicked2##";
 
 }
