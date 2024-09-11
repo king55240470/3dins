@@ -42,6 +42,9 @@ public:
         m_strCName = QString("线%1").arg(currentLineId);
     }
 
+    // 线类的draw()
+    vtkSmartPointer<vtkActor> draw() override;
+
     int GetUniqueType() override {
         return enLine;
     }
@@ -133,7 +136,6 @@ public:
     {
         return GetWorldPcsPos(m_pt);
     }
-
 };
 
 class CCircle  : public CEntity
@@ -200,6 +202,9 @@ public:
     {
         return GetWorldPcsPos(m_pt);
     }
+
+    // 圆类的draw()
+    vtkSmartPointer<vtkActor> draw() override;
 };
 
 class CPlane : public CEntity
@@ -247,6 +252,8 @@ public:
     {
         return GetWorldPcsPos(center);
     }
+
+    // vtkSmartPointer<vtkActor> draw() override;
 };
 
 class CSphere : public CEntity{
@@ -283,6 +290,9 @@ public:
     {
         return GetWorldPcsPos(center);
     }
+
+    // 球类的draw()
+    // vtkSmartPointer<vtkActor> draw() override;
 };
 
 
@@ -327,6 +337,9 @@ public:
     {
         return GetWorldPcsPos(btm_center);
     }
+
+    // 圆柱体的draw()
+    // vtkSmartPointer<vtkActor> draw() override;
 };
 
 class CCone : public CEntity{
@@ -360,6 +373,9 @@ public:
     {
         return GetWorldPcsPos(vertex);
     }
+
+    // 圆锥的draw()
+    // vtkSmartPointer<vtkActor> draw() override;
 
 public:
     QVector4D getAxis() const;

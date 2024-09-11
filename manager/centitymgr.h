@@ -4,9 +4,6 @@
 #include <geometry/centity.h>
 #include <vtkActor.h>
 #include <vtkSmartPointer.h>
-#include <vtkRenderer.h>
-#include <vtkRenderWindow.h>
-#include <vtkRenderWindowInteractor.h>
 
 class CEntityMgr : public CEntity
 {
