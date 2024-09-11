@@ -63,8 +63,8 @@ enum COMPENSATE_TYPE : int
     eCompensateNone = 0x5
 };
 
-/*class CPosition{
-private:
+class CPosition{
+public:
     double x;
     double y;
     double z;
@@ -94,6 +94,6 @@ public:
         in>>pos.x>>pos.y>>pos.z;
         return in;
     }
-};*/
+};
 
 #endif // GLOBES_H

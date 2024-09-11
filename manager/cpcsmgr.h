@@ -3,6 +3,8 @@
 
 #include"geometry/cpcsnode.h"
 #include<list>
+#include "centitymgr.h"
+#include "cobjectmgr.h"
 
 class CPcsMgr
 {
@@ -12,6 +14,8 @@ public:
     CPcs* m_pPcsCurrent; //当前坐标系
     CPcsNode* m_pNodeTemporary; //临时坐标系节点
     bool m_bTempPcsNodeInUse; //临时坐标系节点是否使用
+    CEntityMgr* m_pEntityListMgr;
+    CObjectMgr* m_pObjectList;
     CPcsNode* m_pHeadPcsNode; //头节点
     CPcsNode* m_pTailPcsNode; //尾节点
     std::list<CPcsNode*> m_PcsNodeList; //存储坐标系节点的链表
@@ -31,6 +35,7 @@ public:
     void SetCurCoordSystem(CPcs*);
     CPcs* GetBaseCoordSystem();
     CPcs* GetCurCoordSystem();
+    //CREATE_TYPE GetBaseCoordType();
     //CPcs* GetWorldCoordSystem();
     CPcs* Find(int);
     CPcs* Find(QString);
@@ -55,6 +60,15 @@ public:
     bool IsMultiCoordSys() const; //多坐标系判断
     bool bTempPcsNodeInUse() const; //临时坐标系节点是否使用
     void setBTempPcsNodeInUse(bool newBTempPcsNodeInUse); //设置使用
+    // void SetEntityList(CEntityMgr*);
+    // bool IsEntityInBaseCoordSystem(CEntity const*);
+
+    // void TransEntityToCurrentCoordSys();
+    // void TransEnts2CorrectCoord();
+    // void TransEntsToExtCoordSystem();
+    // void TransEntsToRefCoordSystem();
+    // void Transform2CorrectCoord(CEntity*, bool);
+
 
 
 };

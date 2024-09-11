@@ -2,7 +2,7 @@
 #define CPCS_H
 
 #include<QMatrix4x4>
-#include"cposition.h"
+#include"globes.h"
 
 class CPcs
 {

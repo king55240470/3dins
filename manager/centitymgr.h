@@ -3,12 +3,17 @@
 
 #include <geometry/centity.h>
 #include "component/elementlistwidget.h"
-
+#include <vtkActor.h>
+#include <vtkSmartPointer.h>
+#include <vtkRenderer.h>
+#include <vtkRenderWindow.h>
+#include <vtkRenderWindowInteractor.h>
 
 class CEntityMgr : public CEntity
 {
 private:
-    QVector<CEntity*> m_entityList;
+    QVector<CEntity*> m_entityList; // 封装centity对象的数组
+
     int m_nSize;
     int m_nCount;
     bool m_bRedraw;
@@ -26,8 +31,8 @@ public:
     int GetCount();
     void RemoveAll();
 
-
-
+    // 获取m_entityList中新加入的元素
+    CEntity* getLatestEntity();
 };
 
 #endif // CENTITYMGR_H
