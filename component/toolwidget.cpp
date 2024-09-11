@@ -65,6 +65,9 @@ ToolWidget::ToolWidget(QWidget *parent)
         coord_action_name_list_<<"创建坐标系"<<"旋转坐标系"<<"保存坐标系";
 
         m_nSaveActionNum=save_action_name_list_.count();
+        m_nConstructActionNum=construct_action_name_list_.count();
+        m_nFindActionNum=find_action_name_list_.count();
+        m_nCoordActionNum=coord_action_name_list_.count();
 
         save_actions_      =new ToolAction * [m_nSaveActionNum];
         construct_actions_ =new ToolAction * [m_nConstructActionNum];
@@ -96,6 +99,7 @@ ToolWidget::ToolWidget(QWidget *parent)
             "QToolButton:hover {"
             "    border: 2px solid darkgray;" // 悬浮状态下的深灰色边框
             "}"
+            "QToolBar::item { margin: 5px; }"
             );
 
     }
@@ -732,6 +736,9 @@ void onSaveImage(){
 }
 }
 
+void ToolWidget::NotifySubscribe(){
+    qDebug()<<"ToolWidget::NotifySubscribe()";
+}
 int getImagePaths(const QString& directory, QStringList &iconPaths, QStringList &iconNames) {
     QDir dir(directory);
     QFileInfoList fileInfoList = dir.entryInfoList(QDir::Files | QDir::NoSymLinks , QDir::Name);
