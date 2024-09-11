@@ -80,11 +80,17 @@ public:
         }*/
 
         if (index.parent().isValid()) {//确保不是头节点
-            bool isOpen=index.data(Qt::UserRole+1).toBool();//根据索引的数据决定是否绘制按钮
+            bool isOpen=index.data(Qt::UserRole+1).toBool();//根据索引的数据决定给按钮添加哪种图标
             QStyleOptionButton btn;
-            btn.rect=option.rect.adjusted(280,0,-5,0);
+            QRect itemRect  = option.rect;
+            int buttonHeight = itemRect.height();
+            int buttonWidth = buttonHeight + 10;
+            int buttonX = itemRect.right() - buttonWidth - 10;//按钮水平位置的起始点
+                                    //确保按钮在项的顶部对齐
+            QRect buttonRect(buttonX, itemRect.top(), buttonWidth, buttonHeight);
+            btn.rect = buttonRect;
             btn.icon=isOpen ? QIcon(":/component/eye/openeye.png") : QIcon(":/component/eye/closeeye.png");
-            btn.iconSize = QSize(20,20);
+            btn.iconSize = QSize(buttonWidth, buttonHeight);
             QApplication::style()->drawControl(QStyle::CE_PushButton, &btn, painter);//绘制按钮
         }
     }
@@ -92,7 +98,11 @@ public:
     bool editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option, const QModelIndex &index) override {
         if(event->type()==QEvent::MouseButtonRelease&&index.parent().isValid()){
             QMouseEvent *mouseEvent=static_cast<QMouseEvent*>(event);
-            QRect buttonRect=option.rect.adjusted(280,0,-5,0);
+            QRect itemRect = option.rect;
+            int buttonHeight = itemRect.height();
+            int buttonWidth = buttonHeight + 10;
+            int buttonX = itemRect.right() - buttonWidth - 10;
+            QRect buttonRect(buttonX, itemRect.top(), buttonWidth, buttonHeight);
             //buttonRect.moveRight(option.rect.right());//将按钮移动到右侧
             if(buttonRect.contains(mouseEvent->pos())){
                 bool isOpen=index.data(Qt::UserRole+1).toBool();

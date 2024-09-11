@@ -19,6 +19,7 @@ class VtkPresetWidget;
 class VtkWidget;
 class ReportWidget;
 class LogWidget;
+class PresetElemWidget;
 
 class MainWindow : public QMainWindow
 {
@@ -39,6 +40,7 @@ private:
     VtkWidget *pWinVtkWidget;
     ReportWidget *pWinReportWidget;
     LogWidget *pWinLogWidget;
+    PresetElemWidget *pWinPresetElemWidget;
 
     QMenuBar * bar;
     QStatusBar *stbar;
@@ -73,5 +75,6 @@ public:
     void LoadWidgets();
     void RestoreWidgets();
     void setupUi();
+    void showPresetElemWidget(int);
 };
 #endif // MAINWINDOW_H

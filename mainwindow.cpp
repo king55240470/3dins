@@ -8,15 +8,16 @@
 #include "component/ReportWidget.h"
 #include "component/LogWidget.h"
 #include"component/contralwidget.h"
-
+#include "geometry/centitytypes.h"
+#include "component/presetelemwidget.h"
 
 #include <QSettings>
 #include <QLabel>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QWidget>
-#include "geometry/centitytypes.h"
-#include "component/presetelemwidget.h"
+
+class PresetElemWidget;
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -47,19 +48,33 @@ void MainWindow::setupUi(){
 
     QMenu *presetMenu=bar->addMenu("预置元素");
     QAction* pointAction =presetMenu->addAction("点");
-    //connect(pointAction,&QAction::triggered,this,&PresetElemWidget::show);
-    // QAction* lineAction =presetMenu->addAction("线");
-    // connect(pointAction,&QAction::triggered,this,&)
-    // QAction* circleAction =presetMenu->addAction("圆");
-    // connect(pointAction,&QAction::triggered,this,&)
-    // QAction* planeAction =presetMenu->addAction("平面");
-    // connect(pointAction,&QAction::triggered,this,&)
-    // QAction* sphereAction =presetMenu->addAction("球");
-    // connect(pointAction,&QAction::triggered,this,&)
-    // QAction* cylinderAction =presetMenu->addAction("圆柱");
-    // connect(pointAction,&QAction::triggered,this,&)
-    // QAction* coneAction =presetMenu->addAction("圆锥");
-    // connect(pointAction,&QAction::triggered,this,&)
+    connect(pointAction,&QAction::triggered,this,[&](){
+        showPresetElemWidget(0);
+    });
+    QAction* lineAction =presetMenu->addAction("线");
+    connect(lineAction,&QAction::triggered,this,[&](){
+        showPresetElemWidget(1);
+    });
+    QAction* circleAction =presetMenu->addAction("圆");
+    connect(circleAction,&QAction::triggered,this,[&](){
+        showPresetElemWidget(2);
+    });
+    QAction* planeAction =presetMenu->addAction("平面");
+    connect(planeAction,&QAction::triggered,this,[&](){
+        showPresetElemWidget(3);
+    });
+    QAction* sphereAction =presetMenu->addAction("球");
+    connect(sphereAction,&QAction::triggered,this,[&](){
+        showPresetElemWidget(4);
+    });
+    QAction* cylinderAction =presetMenu->addAction("圆柱");
+    connect(cylinderAction,&QAction::triggered,this,[&](){
+        showPresetElemWidget(5);
+    });
+    QAction* coneAction =presetMenu->addAction("圆锥");
+    connect(coneAction,&QAction::triggered,this,[&](){
+        showPresetElemWidget(6);
+    });
 
     //状态栏
     stbar=statusBar();
@@ -287,6 +302,7 @@ void MainWindow::NotifySubscribe()
 }
 
 void MainWindow::OnPresetPoint(CPosition pt){
+
     //qDebug()<<"clicked3.1";
     CPoint *pPoint = (CPoint *)CreateEntity(enPoint);
     pPoint->SetPosition(pt);
@@ -454,3 +470,23 @@ void MainWindow::OnPresetPoint(CPosition pt){
 //     //NotifySubscribe();
 // }
 
+void MainWindow::showPresetElemWidget(int index){
+    pWinPresetElemWidget=new PresetElemWidget(this);
+    switch(index){
+    case 0:pWinPresetElemWidget->tabWidget->setCurrentIndex(0);
+        break;
+    case 1:pWinPresetElemWidget->tabWidget->setCurrentIndex(1);
+        break;
+    case 2:pWinPresetElemWidget->tabWidget->setCurrentIndex(2);
+        break;
+    case 3:pWinPresetElemWidget->tabWidget->setCurrentIndex(3);
+        break;
+    case 4:pWinPresetElemWidget->tabWidget->setCurrentIndex(4);
+        break;
+    case 5:pWinPresetElemWidget->tabWidget->setCurrentIndex(5);
+        break;
+    case 6:pWinPresetElemWidget->tabWidget->setCurrentIndex(6);
+        break;
+    }
+    pWinPresetElemWidget->show();
+}
