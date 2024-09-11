@@ -9,6 +9,10 @@
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
 
+#include <vtkGenericRenderWindowInteractor.h>
+#include <vtkGenericOpenGLRenderWindow.h>
+
+
 class VtkPresetWidget : public QWidget
 {
     Q_OBJECT
@@ -27,8 +31,8 @@ private:
 
     // 为所有的actor创建渲染器、渲染窗口和交互器
     static vtkSmartPointer<vtkRenderer> m_renderer;
-    static vtkSmartPointer<vtkRenderWindow> m_renWin;
-    static vtkSmartPointer<vtkRenderWindowInteractor> m_interactor;
+    static vtkSmartPointer<vtkGenericOpenGLRenderWindow> m_renWin;
+    static vtkSmartPointer<vtkGenericRenderWindowInteractor> m_interactor;
 
 signals:
 };

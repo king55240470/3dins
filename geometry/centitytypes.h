@@ -107,9 +107,9 @@ public:
         m_strCName = QString("点%1").arg(currentPointId);
     }
 
+
     // 点类的draw
     vtkSmartPointer<vtkActor> draw() override;
-
     int GetUniqueType() override {
         return enPoint;
     }
@@ -176,7 +176,7 @@ public:
     double getDiameter();
     int GetUniqueType() override{
         return enCircle;
-    };
+    }
     static int getCircleCount() {
         return circleCount;
     }
@@ -204,7 +204,7 @@ public:
     }
 
     // 圆类的draw()
-    vtkSmartPointer<vtkActor> draw() override;
+    // vtkSmartPointer<vtkActor> draw() override;
 };
 
 class CPlane : public CEntity
@@ -220,15 +220,15 @@ private:
     int currentPlainId;
 
 public:
-    CPosition getCenter() const;
+    static CPosition getCenter();
     void setCenter(const CPosition &newCenter);
-    QVector4D getNormal() const;
+    static QVector4D getNormal();
     void setNormal(const QVector4D &newNormal);
-    QVector4D getDir_long_edge() const;
+    static QVector4D getDir_long_edge();
     void setDir_long_edge(const QVector4D &newDir_long_edge);
-    double getLength() const;
+    static double getLength();
     void setLength(double newLength);
-    double getWidth() const;
+    static double getWidth();
     void setWidth(double newWidth);
 
     CPlane(){
@@ -240,7 +240,6 @@ public:
         m_strAutoName = QString("平面%1").arg(currentPlainId);
         m_strCName = QString("平面%1").arg(currentPlainId);
     }
-
     int GetUniqueType() override{
         return enPlane;
     }
@@ -253,7 +252,8 @@ public:
         return GetWorldPcsPos(center);
     }
 
-    // vtkSmartPointer<vtkActor> draw() override;
+    // 平面的draw()
+    vtkSmartPointer<vtkActor> draw() override;
 };
 
 class CSphere : public CEntity{
@@ -324,9 +324,7 @@ public:
     void setHeight(double newHeight);
     CPosition getBtm_center() const;
     void setBtm_center(const CPosition &newBtm_center);
-
     int GetUniqueType() override{
-
         return enCylinder;
     }
     CPosition GetObjectCenterLocalPoint()

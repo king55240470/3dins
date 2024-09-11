@@ -1,7 +1,6 @@
 #include "vtkpresetwidget.h"
 #include "manager/centitymgr.h"
 
-#include <QVTKOpenGLWidget.h>
 #include <QVTKOpenGLNativeWidget.h>
 #include <vtkSphereSource.h>
 #include <vtkPolyDataMapper.h>
@@ -13,8 +12,8 @@ VTK_MODULE_INIT(vtkInteractionStyle);
 
 // 定义并初始化渲染器、渲染窗口和交互器
 vtkSmartPointer<vtkRenderer> VtkPresetWidget::m_renderer = vtkSmartPointer<vtkRenderer>::New();
-vtkSmartPointer<vtkRenderWindow> VtkPresetWidget::m_renWin = vtkSmartPointer<vtkRenderWindow>::New();
-vtkSmartPointer<vtkRenderWindowInteractor> VtkPresetWidget::m_interactor= vtkSmartPointer<vtkRenderWindowInteractor>::New();
+vtkSmartPointer<vtkGenericOpenGLRenderWindow> VtkPresetWidget::m_renWin = vtkSmartPointer<vtkGenericOpenGLRenderWindow>::New();
+vtkSmartPointer<vtkGenericRenderWindowInteractor> VtkPresetWidget::m_interactor= vtkSmartPointer<vtkGenericRenderWindowInteractor>::New();
 
 VtkPresetWidget::VtkPresetWidget(QWidget *parent)
     : QWidget{parent}
@@ -39,9 +38,8 @@ VtkPresetWidget::VtkPresetWidget(QWidget *parent)
     auto actor_2 = vtkSmartPointer<vtkActor>::New();
     actor_2->SetMapper(mapper_2);
     actor_2->GetProperty()->SetColor(0.7, 0.3, 0.3);
-    // actor_2->GetProperty()->SetRepresentationToWireframe(); // 设置成线框模式
 
-    m_renderer->SetBackground(0, 0, 0);
+    m_renderer->SetBackground(0.1, 0.2, 0.7);
     m_renderer->AddActor(actor_2); // 添加到渲染器
     m_renWin->AddRenderer(m_renderer);  // 将渲染器添加到渲染窗口
 

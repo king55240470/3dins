@@ -4,13 +4,9 @@ CEntityMgr::CEntityMgr() {}
 
 void CEntityMgr::Add(CEntity* pEntity){
     m_entityList.push_back(pEntity);
-
+    ElementListWidget *element;
+    element->judgetype(pEntity);
 }
-
-CEntity* CEntityMgr::getLatestEntity(){
-    return m_entityList.back();
-}
-
 
 int CEntityMgr::FindEntity(CEntity *pEntity)
 {
@@ -62,4 +58,9 @@ void CEntityMgr::RemoveAll()
     }
     m_entityList.clear();
 }
+
+// 遍历m_entityList重新绘制
+// void reDraw(){
+
+// }
 
