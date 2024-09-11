@@ -139,7 +139,7 @@ class CCircle  : public CEntity
 {
     CPosition m_pt;
 
-    double m_d;
+    double m_d;//直径
     static int circleCount;
     int currentCircleId;
     QDataStream& serialize(QDataStream& out) const override {
