@@ -16,6 +16,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QWidget>
+#include "manager/cpcsmgr.h"
 
 class PresetElemWidget;
 
@@ -25,6 +26,7 @@ MainWindow::MainWindow(QWidget *parent)
     LoadWidgets();
     setupUi();
     RestoreWidgets();
+    loadManager();
 }
 
 void MainWindow::setupUi(){
@@ -256,7 +258,14 @@ void MainWindow::save_clicked() {
     }
 }*/
 
+void MainWindow::loadManager()
+{
+    m_pcsListMgr=new CPcsMgr();
+    m_ObjectListMgr=new CObjectMgr();
+    m_EntityListMgr=new CEntityMgr();
 
+    m_pcsListMgr->Initialize();
+}
 
 CEntity* MainWindow::CreateEntity(int nType){
     CEntity *pTempEntity = NULL;
@@ -319,156 +328,158 @@ void MainWindow::OnPresetPoint(CPosition pt){
     //NotifySubscribe();
 }
 
-// void MainWindow::OnPresetLine(CPosition ptStart, CPosition ptEnd)
-// {
-//     CLine *pLine = (CLine *)CreateEntity(enLine);
-//     pLine->setBegin(ptStart);
-//     pLine->setEnd(ptEnd);
-//     pLine->m_CreateForm = ePreset;
-//     pLine->m_pRefCoord = m_pcsListMgr->m_pPcsCurrent;
-//     pLine->m_pCurCoord = m_pcsListMgr->m_pPcsCurrent;
-//     pLine->m_pExtCoord = m_pcsListMgr->m_pPcsCurrent;
-//     // pLine->SetNominal();
+void MainWindow::OnPresetLine(CPosition ptStart, CPosition ptEnd)
+{
+    CLine *pLine = (CLine *)CreateEntity(enLine);
+    pLine->setBegin(ptStart);
+    pLine->setEnd(ptEnd);
+    pLine->m_CreateForm = ePreset;
+    pLine->m_pRefCoord = m_pcsListMgr->m_pPcsCurrent;
+    pLine->m_pCurCoord = m_pcsListMgr->m_pPcsCurrent;
+    pLine->m_pExtCoord = m_pcsListMgr->m_pPcsCurrent;
+    // pLine->SetNominal();
 
-//     // 加入Entitylist 和 ObjectList
-//     m_EntityListMgr->Add(pLine);
-//     m_ObjectListMgr->Add(pLine);
+    // 加入Entitylist 和 ObjectList
+    m_EntityListMgr->Add(pLine);
+    m_ObjectListMgr->Add(pLine);
 
-//     //NotifySubscribe();
-// }
+    NotifySubscribe();
+}
 
-// void MainWindow::OnPresetCircle(CPosition pt, double diameter)
-// {
-//     //CPosition pt(1,1,1);
-//     //double diameter = 1.5;
+void MainWindow::OnPresetCircle(CPosition pt, double diameter)
+{
+    //CPosition pt(1,1,1);
+    //double diameter = 1.5;
 
-//     CCircle *pCircle = (CCircle *)CreateEntity(enCircle);
-//     pCircle->SetCenter(pt);
-//     pCircle->SetDiameter(diameter);
-//     pCircle->m_CreateForm = ePreset;
-//     pCircle->m_pRefCoord = m_pcsListMgr->m_pPcsCurrent;
-//     pCircle->m_pCurCoord = m_pcsListMgr->m_pPcsCurrent;
-//     pCircle->m_pExtCoord = m_pcsListMgr->m_pPcsCurrent;
+    CCircle *pCircle = (CCircle *)CreateEntity(enCircle);
+    pCircle->SetCenter(pt);
+    pCircle->SetDiameter(diameter);
+    pCircle->m_CreateForm = ePreset;
+    pCircle->m_pRefCoord = m_pcsListMgr->m_pPcsCurrent;
+    pCircle->m_pCurCoord = m_pcsListMgr->m_pPcsCurrent;
+    pCircle->m_pExtCoord = m_pcsListMgr->m_pPcsCurrent;
 
-//     pCircle->SetNominal();
+    // pCircle->SetNominal();
 
-//     std::vector<QPointF> points;
+    std::vector<QPointF> points;
 
-//     pCircle->addToolArray((CircleGraphics*)CreateImgTool(eImgCircleGraphics,points,data));
-//     // 加入Entitylist 和 ObjectList
-//     m_EntityListMgr->Add(pCircle);
-//     if(m_ObjectListMgr->GetInsertPos()==-1){
-//         m_ObjectListMgr->Add(pCircle);
-//         //pWinElementListWidget->updateInsertIndicatorPosition();
+    //pCircle->addToolArray((CircleGraphics*)CreateImgTool(eImgCircleGraphics,points,data));
 
-//     }else{
-//         m_ObjectListMgr->Insert(pCircle, m_ObjectListMgr->m_nInsertPos);
-//         m_ObjectListMgr->m_nInsertPos++;
-//         //pWinElementListWidget->updateInsertIndicatorPosition();
-//     }
+    // 加入Entitylist 和 ObjectList
+    m_EntityListMgr->Add(pCircle);
 
-//     //选中元素,取消其他元素选中
-//     for(auto const &object:m_ObjectListMgr->m_objectList){
-//         object->SetSelected(false);
-//     }
-//     pCircle->SetSelected(true);
+    // if(m_ObjectListMgr->GetInsertPos()==-1){
+    //     m_ObjectListMgr->Add(pCircle);
+    //     pWinElementListWidget->updateInsertIndicatorPosition();
 
-//     //NotifySubscribe();
-// }
+    // }else{
+    //     m_ObjectListMgr->Insert(pCircle, m_ObjectListMgr->m_nInsertPos);
+    //     m_ObjectListMgr->m_nInsertPos++;
+    //     pWinElementListWidget->updateInsertIndicatorPosition();
+    // }
 
-// void MainWindow::OnPresetPlane(CPosition posCenter, QVector4D normal, QVector4D direction, double length, double width)
-// {
-//     CPlane *pPlane = (CPlane *)CreateEntity(enPlane);
-//     pPlane->setCenter(posCenter);
-//     pPlane->setDir_long_edge(direction);
-//     pPlane->setNormal(normal);
-//     pPlane->setLength(length);
-//     pPlane->setWidth(width);
+    //选中元素,取消其他元素选中
+    for(auto const &object:m_ObjectListMgr->m_objectList){
+        object->SetSelected(false);
+    }
+    pCircle->SetSelected(true);
 
-//     pPlane->m_CreateForm = ePreset;
-//     pPlane->SetCurCoord(m_pcsListMgr->m_pPcsCurrent);
-//     pPlane->SetRefCoord(m_pcsListMgr->m_pPcsCurrent);
-//     pPlane->SetExtCoord(m_pcsListMgr->m_pPcsCurrent);
+    NotifySubscribe();
+}
 
-//     // pPlane->SetNominal();
+void MainWindow::OnPresetPlane(CPosition posCenter, QVector4D normal, QVector4D direction, double length, double width)
+{
+    CPlane *pPlane = (CPlane *)CreateEntity(enPlane);
+    pPlane->setCenter(posCenter);
+    pPlane->setDir_long_edge(direction);
+    pPlane->setNormal(normal);
+    pPlane->setLength(length);
+    pPlane->setWidth(width);
 
-//     // 加入Entitylist 和 ObjectList
-//     m_EntityListMgr->Add(pPlane);
-//     m_ObjectListMgr->Add(pPlane);
+    pPlane->m_CreateForm = ePreset;
+    pPlane->SetCurCoord(m_pcsListMgr->m_pPcsCurrent);
+    pPlane->SetRefCoord(m_pcsListMgr->m_pPcsCurrent);
+    pPlane->SetExtCoord(m_pcsListMgr->m_pPcsCurrent);
 
-//     //NotifySubscribe();
+    // pPlane->SetNominal();
 
-// }
+    // 加入Entitylist 和 ObjectList
+    m_EntityListMgr->Add(pPlane);
+    m_ObjectListMgr->Add(pPlane);
 
-// void MainWindow::OnPresetSphere(CPosition posCenter, double diametre)
-// {
-//     CSphere *pSphere = (CSphere *)CreateEntity(enSphere);
-//     pSphere->setCenter(posCenter);
-//     pSphere->setDiameter(diametre);
+    NotifySubscribe();
 
-//     pSphere->m_CreateForm = ePreset;
-//     pSphere->SetCurCoord(m_pcsListMgr->m_pPcsCurrent);
-//     pSphere->SetRefCoord(m_pcsListMgr->m_pPcsCurrent);
-//     pSphere->SetExtCoord(m_pcsListMgr->m_pPcsCurrent);
+}
 
-//     // pSphere->SetNominal();
+void MainWindow::OnPresetSphere(CPosition posCenter, double diametre)
+{
+    CSphere *pSphere = (CSphere *)CreateEntity(enSphere);
+    pSphere->setCenter(posCenter);
+    pSphere->setDiameter(diametre);
 
-//     // 加入Entitylist 和 ObjectList
-//     m_EntityListMgr->Add(pSphere);
-//     m_ObjectListMgr->Add(pSphere);
-//     qDebug()<<"add a sphere";
-//     //NotifySubscribe();
-// }
+    pSphere->m_CreateForm = ePreset;
+    pSphere->SetCurCoord(m_pcsListMgr->m_pPcsCurrent);
+    pSphere->SetRefCoord(m_pcsListMgr->m_pPcsCurrent);
+    pSphere->SetExtCoord(m_pcsListMgr->m_pPcsCurrent);
 
-// void MainWindow::OnPresetCylinder(CPosition pos, QVector4D vec, double height, double diametre)
-// {
-//     CCylinder *pCylinder = (CCylinder *)CreateEntity(enCylinder);
-//     pCylinder->setAxis(vec);
-//     pCylinder->setBtm_center(pos);
-//     pCylinder->setDiameter(diametre);
-//     pCylinder->setHeight(height);
+    // pSphere->SetNominal();
 
-//     pCylinder->m_CreateForm = ePreset;
-//     pCylinder->SetCurCoord(m_pcsListMgr->m_pPcsCurrent);
-//     pCylinder->SetRefCoord(m_pcsListMgr->m_pPcsCurrent);
-//     pCylinder->SetExtCoord(m_pcsListMgr->m_pPcsCurrent);
+    // 加入Entitylist 和 ObjectList
+    m_EntityListMgr->Add(pSphere);
+    m_ObjectListMgr->Add(pSphere);
+    qDebug()<<"add a sphere";
+    NotifySubscribe();
+}
 
-//     // pCylinder->SetNominal();
+void MainWindow::OnPresetCylinder(CPosition pos, QVector4D vec, double height, double diametre)
+{
+    CCylinder *pCylinder = (CCylinder *)CreateEntity(enCylinder);
+    pCylinder->setAxis(vec);
+    pCylinder->setBtm_center(pos);
+    pCylinder->setDiameter(diametre);
+    pCylinder->setHeight(height);
 
-//     // 加入Entitylist 和 ObjectList
-//     m_EntityListMgr->Add(pCylinder);
-//     m_ObjectListMgr->Add(pCylinder);
+    pCylinder->m_CreateForm = ePreset;
+    pCylinder->SetCurCoord(m_pcsListMgr->m_pPcsCurrent);
+    pCylinder->SetRefCoord(m_pcsListMgr->m_pPcsCurrent);
+    pCylinder->SetExtCoord(m_pcsListMgr->m_pPcsCurrent);
 
-//     qDebug()<<"add a Cone";
-//     //NotifySubscribe();
+    // pCylinder->SetNominal();
 
-// }
+    // 加入Entitylist 和 ObjectList
+    m_EntityListMgr->Add(pCylinder);
+    m_ObjectListMgr->Add(pCylinder);
+
+    qDebug()<<"add a Cone";
+    NotifySubscribe();
+
+}
 
 
-// void MainWindow::OnPresetCone(CPosition posCenter, QVector4D axis, double partH, double fullH, double angle)
+void MainWindow::OnPresetCone(CPosition posCenter, QVector4D axis, double partH, double fullH, double angle)
 
-// {
-//     CCone *pCone = (CCone *)CreateEntity(enCone);
-//     pCone->setCone_height(partH);
-//     pCone->setHeight(fullH);
-//     pCone->setAxis(axis);
-//     pCone->setRadian(angle);
-//     pCone->setVertex(posCenter);
+{
+    CCone *pCone = (CCone *)CreateEntity(enCone);
+    pCone->setCone_height(partH);
+    pCone->setHeight(fullH);
+    pCone->setAxis(axis);
+    pCone->setRadian(angle);
+    pCone->setVertex(posCenter);
 
-//     pCone->m_CreateForm = ePreset;
-//     pCone->SetCurCoord(m_pcsListMgr->m_pPcsCurrent);
-//     pCone->SetRefCoord(m_pcsListMgr->m_pPcsCurrent);
-//     pCone->SetExtCoord(m_pcsListMgr->m_pPcsCurrent);
+    pCone->m_CreateForm = ePreset;
+    pCone->SetCurCoord(m_pcsListMgr->m_pPcsCurrent);
+    pCone->SetRefCoord(m_pcsListMgr->m_pPcsCurrent);
+    pCone->SetExtCoord(m_pcsListMgr->m_pPcsCurrent);
 
-//     // pCone->SetNominal();
+    // pCone->SetNominal();
 
-//     // 加入Entitylist 和 ObjectList
-//     m_EntityListMgr->Add(pCone);
-//     m_ObjectListMgr->Add(pCone);
+    // 加入Entitylist 和 ObjectList
+    m_EntityListMgr->Add(pCone);
+    m_ObjectListMgr->Add(pCone);
 
-//     qDebug()<<"add a Cone";
-//     //NotifySubscribe();
-// }
+    qDebug()<<"add a Cone";
+    NotifySubscribe();
+}
 
 void MainWindow::showPresetElemWidget(int index){
     pWinPresetElemWidget=new PresetElemWidget(this);

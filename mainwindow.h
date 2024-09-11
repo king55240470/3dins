@@ -68,6 +68,7 @@ public:
 
     CEntity* CreateEntity(int nType);
     void NotifySubscribe();
+    void loadManager();
 
 public:
     MainWindow(QWidget *parent = nullptr);
