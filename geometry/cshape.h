@@ -12,6 +12,9 @@ class CShape
 public:
     CShape();
 
+    // 获取centity子类具体类型接口
+    virtual int GetUniqueType() {return -1;};
+
     bool m_bUnderCursor=false;//是否在光标下
     bool m_bSel=false;//是否被选中
     bool m_bDeleted=false;//是否被删除
@@ -31,8 +34,6 @@ public:
     void setUnderCursor(bool);
     virtual void SetSelected(bool);
     virtual void SetDeleted(bool);
-    virtual int GetUniqueType()
-    { return 0;};
     void setShow(bool);
     void SetGroup(bool);
 

@@ -3,7 +3,14 @@
 
 #include "centity.h"
 #include <QSettings>
-#include "cposition.h"
+
+#include "globes.h"
+
+
+#include <vtkSmartPointer.h>
+#include <vtkActor.h>
+
+
 class CLine  : public CEntity
 {
 public:
@@ -15,7 +22,6 @@ public:
 
     double k;
     double b;
-
 
     CPosition begin;
     CPosition end;
@@ -36,14 +42,15 @@ public:
         m_strCName = QString("线%1").arg(currentLineId);
     }
     int GetUniqueType() override {
-
         return enLine;
     }
+
     void SetPosition(CPosition pt1,CPosition pt2)
     {
         begin = pt1;
         end = pt2;
     }
+
     CPosition getPosition1()
     {
         return begin;
@@ -95,7 +102,11 @@ public:
         m_strAutoName = QString("点%1").arg(currentPointId);
         m_strCName = QString("点%1").arg(currentPointId);
     }
-    int GetUniqueType() override{
+
+
+    // 点类的draw
+    vtkSmartPointer<vtkActor> draw();
+    int GetUniqueType() override {
         return enPoint;
     }
 
@@ -123,7 +134,6 @@ public:
     }
 
 };
-
 
 class CCircle  : public CEntity
 {
@@ -224,9 +234,7 @@ public:
         m_strAutoName = QString("平面%1").arg(currentPlainId);
         m_strCName = QString("平面%1").arg(currentPlainId);
     }
-
-    int GetUniqueType() override {
-
+    int GetUniqueType() override{
         return enPlane;
     }
     CPosition GetObjectCenterLocalPoint()
@@ -304,9 +312,7 @@ public:
     void setHeight(double newHeight);
     CPosition getBtm_center() const;
     void setBtm_center(const CPosition &newBtm_center);
-
-    int GetUniqueType() override {
-
+    int GetUniqueType() override{
         return enCylinder;
     }
     CPosition GetObjectCenterLocalPoint()
@@ -339,7 +345,7 @@ public:
         m_strAutoName = QString("圆柱%1").arg(currentConeId);
         m_strCName = QString("圆柱%1").arg(currentConeId);
     }
-    int GetUniqueType() override {
+    int GetUniqueType() override{
         return enCone;
     }
     CPosition GetObjectCenterLocalPoint()

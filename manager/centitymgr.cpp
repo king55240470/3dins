@@ -1,11 +1,15 @@
 #include "centitymgr.h"
 
 CEntityMgr::CEntityMgr() {}
-void CEntityMgr::Add(CEntity* pEntity){
 
+void CEntityMgr::Add(CEntity* pEntity){
     m_entityList.push_back(pEntity);
     ElementListWidget *element;
     element->judgetype(pEntity);
+}
+
+CEntity* CEntityMgr::getLatestEntity(){
+    return m_entityList.back();
 }
 
 
@@ -51,6 +55,7 @@ int CEntityMgr::GetCount()
 {
     return m_entityList.count();
 }
+
 void CEntityMgr::RemoveAll()
 {
     for (CEntity *pEntityTemp : m_entityList) {
@@ -58,3 +63,4 @@ void CEntityMgr::RemoveAll()
     }
     m_entityList.clear();
 }
+

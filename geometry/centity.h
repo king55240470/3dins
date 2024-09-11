@@ -5,6 +5,8 @@
 #include "globes.h"
 #include "CPcs.h"
 #include <QVector>
+#include <vtkSmartPointer.h>
+#include <vtkActor.h>
 
 class CEntity:public CObject
 {
@@ -53,7 +55,8 @@ public:
     bool IsMeasureByProbe();//是否通过探针测量
 
     bool IsType(ENTITY_TYPE);
-
+    // 当遍历entitylist进行绘制时，传入子类的指针，自动调用它们自己的draw
+    virtual vtkSmartPointer<vtkActor> draw() {return nullptr;};
     void setEntityType(ENTITY_TYPE);
     ENTITY_TYPE getEntityType() const;
 
@@ -62,8 +65,6 @@ public:
 
     void SetCreateForm(CREATE_FORM);
     CREATE_FORM GetCreateForm();
-
-
 
 
     //序列化

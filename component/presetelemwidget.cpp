@@ -2,7 +2,7 @@
 #include"mainwindow.h"
 #include<QGridLayout>
 #include<QLabel>
-#include"geometry/cposition.h"
+#include"geometry/globes.h"
 #include<QMessageBox>
 #include<QGroupBox>
 #include<QVector4D>
@@ -588,7 +588,7 @@ void PresetElemWidget::btnplaneClicked()
         QMessageBox::critical(this, "输入错误", "平面-长边方向坐标Z需要是双精度浮点类型数。");
         return;
     }
-    //m_pMainWin->OnPresetPlane(center, vecNormal, vecDirection,length, width);
+    // m_pMainWin->OnPresetPlane(center, vecNormal, vecDirection,length, width);
 
 }
 
