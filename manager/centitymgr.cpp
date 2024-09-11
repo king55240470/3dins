@@ -4,7 +4,8 @@ CEntityMgr::CEntityMgr() {}
 
 void CEntityMgr::Add(CEntity* pEntity){
     m_entityList.push_back(pEntity);
-
+    ElementListWidget *element;
+    element->judgetype(pEntity);
 }
 
 CEntity* CEntityMgr::getLatestEntity(){

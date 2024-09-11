@@ -2,6 +2,7 @@
 #define CENTITYMGR_H
 
 #include <geometry/centity.h>
+#include "component/elementlistwidget.h"
 #include <vtkActor.h>
 #include <vtkSmartPointer.h>
 #include <vtkRenderer.h>

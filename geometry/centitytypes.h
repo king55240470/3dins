@@ -41,7 +41,6 @@ public:
         m_strAutoName = QString("线%1").arg(currentLineId);
         m_strCName = QString("线%1").arg(currentLineId);
     }
-
     int GetUniqueType() override {
         return enLine;
     }
@@ -104,9 +103,9 @@ public:
         m_strCName = QString("点%1").arg(currentPointId);
     }
 
-    // 点类的draw
-    vtkSmartPointer<vtkActor> draw() override;
 
+    // 点类的draw
+    vtkSmartPointer<vtkActor> draw();
     int GetUniqueType() override {
         return enPoint;
     }
@@ -140,7 +139,7 @@ class CCircle  : public CEntity
 {
     CPosition m_pt;
 
-    double m_d;
+    double m_d;//直径
     static int circleCount;
     int currentCircleId;
     QDataStream& serialize(QDataStream& out) const override {
@@ -174,7 +173,7 @@ public:
     double getDiameter();
     int GetUniqueType() override{
         return enCircle;
-    };
+    }
     static int getCircleCount() {
         return circleCount;
     }
@@ -235,7 +234,6 @@ public:
         m_strAutoName = QString("平面%1").arg(currentPlainId);
         m_strCName = QString("平面%1").arg(currentPlainId);
     }
-
     int GetUniqueType() override{
         return enPlane;
     }
@@ -314,9 +312,7 @@ public:
     void setHeight(double newHeight);
     CPosition getBtm_center() const;
     void setBtm_center(const CPosition &newBtm_center);
-
     int GetUniqueType() override{
-
         return enCylinder;
     }
     CPosition GetObjectCenterLocalPoint()

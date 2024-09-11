@@ -5,7 +5,7 @@ ElementListWidget::ElementListWidget(QWidget *parent)
 {
     //label=new QLabel("element list",this);
     auto *layout = new QVBoxLayout(this);
-    //treeWidgetNames->setContextMenuPolicy(Qt::CustomContextMenu);
+
     // 元素创建按钮
     QPushButton *createButton = new QPushButton("创建元素", this);
     connect(createButton, &QPushButton::clicked, this, &ElementListWidget::onCreateEllipse);
@@ -16,21 +16,22 @@ ElementListWidget::ElementListWidget(QWidget *parent)
 
     // 元素名称列表
     treeWidgetNames = new QTreeWidget(this);
-    treeWidgetNames->setHeaderLabel("元素名称");
-    treeWidgetNames->setColumnCount(1);
+    treeWidgetNames->setHeaderLabel("元素");
+    //设置为多选模式
+    treeWidgetNames->setSelectionMode(QAbstractItemView::MultiSelection);
 
     // 元素信息列表
     treeWidgetInfo = new QTreeWidget(this);
     treeWidgetInfo->setHeaderLabel("元素信息");
-    treeWidgetInfo->setColumnCount(4);
+    //treeWidgetInfo->setColumnCount(4);
     QStringList headers;
-    headers << "ID" << "X" << "Y" << "Size";
+    headers << "元素：";
     treeWidgetInfo->setHeaderLabels(headers);
 
     // 元素坐标输入
-    QLineEdit *xInput = new QLineEdit(this);
-    QLineEdit *yInput = new QLineEdit(this);
-    QLineEdit *sizeInput = new QLineEdit(this);
+    //QLineEdit *xInput = new QLineEdit(this);
+    //QLineEdit *yInput = new QLineEdit(this);
+    //QLineEdit *sizeInput = new QLineEdit(this);
 
     //工具栏
     toolBar = new QToolBar(this);
@@ -53,17 +54,17 @@ ElementListWidget::ElementListWidget(QWidget *parent)
     layout->addWidget(deleteButton);
     layout->addWidget(treeWidgetNames);
     layout->addWidget(treeWidgetInfo);
-    layout->addWidget(new QLabel("X:"));
-    layout->addWidget(xInput);
-    layout->addWidget(new QLabel("Y:"));
-    layout->addWidget(yInput);
-    layout->addWidget(new QLabel("Z"));
-    layout->addWidget(sizeInput);
+    //layout->addWidget(new QLabel("X:"));
+    //layout->addWidget(xInput);
+    //layout->addWidget(new QLabel("Y:"));
+    //layout->addWidget(yInput);
+    //layout->addWidget(new QLabel("Z"));
+    //layout->addWidget(sizeInput);
     // 保存输入框的指针
-    xLineEdit = xInput;
-    yLineEdit = yInput;
-    sizeLineEdit = sizeInput;
-    /*connect(treeWidgetNames, &QTreeWidget::customContextMenuRequested,
+    //xLineEdit = xInput;
+    //yLineEdit = yInput;
+    //sizeLineEdit = sizeInput;
+    connect(treeWidgetNames, &QTreeWidget::customContextMenuRequested,
             this, &ElementListWidget::onCustomContextMenuRequested);
     treeWidgetNames->setContextMenuPolicy(Qt::CustomContextMenu);
     QMenu *m_menu = new QMenu(this);
@@ -71,8 +72,8 @@ ElementListWidget::ElementListWidget(QWidget *parent)
     QAction* m_action2 = new QAction(tr("计划2"), this);
     m_menu->addAction(m_action1);
     m_menu->addAction(m_action2);
-    connect(m_action1, &QAction::triggered, this, &MainWindow::slot_checkPlan1);
-    connect(m_action2, &QAction::triggered, this, &MainWindow::slot_checkPlan2);*/
+    //connect(m_action1, &QAction::triggered, this, &MainWindow::slot_checkPlan1);
+    //connect(m_action2, &QAction::triggered, this, &MainWindow::slot_checkPlan2);
 }
 void ElementListWidget::onCreateEllipse() {
     int id = getNextId();
@@ -81,28 +82,19 @@ void ElementListWidget::onCreateEllipse() {
     QTreeWidgetItem *nameItem = new QTreeWidgetItem(treeWidgetNames);
     nameItem->setText(0, name);
 
-    int x = xLineEdit->text().toInt();
-    int y = yLineEdit->text().toInt();
-    QString size = sizeLineEdit->text();
-
     QTreeWidgetItem *infoItem = new QTreeWidgetItem(treeWidgetInfo);
     infoItem->setText(0, QString::number(id));
-    infoItem->setText(1, QString::number(x));
-    infoItem->setText(2, QString::number(y));
-    infoItem->setText(3, QString(size));
 }
 
 void ElementListWidget::CreateEllipse(CObject * obj)
 {
+
     int id=getNextId();
     QTreeWidgetItem *item = new QTreeWidgetItem(treeWidgetNames);
     item->setText(0,QString::number(id));
     item->setText(0,obj->GetObjectCName());
     QTreeWidgetItem *infoItem = new QTreeWidgetItem(treeWidgetInfo);
     infoItem->setText(0, QString::number(id));
-    infoItem->setText(1, QString::number(1));
-    infoItem->setText(2, QString::number(1));
-    infoItem->setText(3, QString::number(1));
 }
 
 void ElementListWidget::onDeleteEllipse()
@@ -134,15 +126,36 @@ int ElementListWidget::getNextId()
     static int lastId = 0;
     return ++lastId;
 }
-/*void ElementListWidget::onCustomContextMenuRequested(const QPoint &pos)
+void ElementListWidget::onCustomContextMenuRequested(const QPoint &pos)
 {
     QTreeWidgetItem* curItem=treeWidgetNames->itemAt(pos);
     QMenu *popMenu = new QMenu(this);
-    QAction *actionNew = new QAction(tr("新增(N)"),popMenu);
-    connect(actionNew, &QAction::triggered, this, &ElementListWidget::deal_actionNew_triggered);
+    QAction *actionNew = new QAction(tr("删除(D)"),popMenu);
+    QAction *actionNew_1 = new QAction(tr("行为1"),popMenu);
+    QAction *actionNew_2 = new QAction(tr("行为2"),popMenu);
+    QAction *actionNew_3 = new QAction(tr("行为3"),popMenu);
+    connect(actionNew, &QAction::triggered, this, &ElementListWidget::onDeleteEllipse);
     popMenu->addAction(actionNew);
+    popMenu->addAction(actionNew_1);
+    popMenu->addAction(actionNew_2);
+    popMenu->addAction(actionNew_3);
     popMenu->exec(QCursor::pos());
-}*/
+}
 
 void ElementListWidget::deal_actionNew_triggered()
 {}
+
+void ElementListWidget::judgetype(CEntity *entity)
+{
+    m_EntityType=entity->getEntityType();
+}
+
+void ElementListWidget::removeall()
+{
+    treeWidgetNames->clear();
+}
+
+void ElementListWidget::updateInsertIndicatorPosition()
+{
+
+}
