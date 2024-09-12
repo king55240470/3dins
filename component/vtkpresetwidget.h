@@ -22,6 +22,9 @@ public:
     // 获取m_renWin
     vtkSmartPointer<vtkRenderWindow> getRenderWindow();
 
+    // 获取渲染器
+    static vtkSmartPointer<vtkRenderer> getRenderer();
+
     // 将draw返回的actor添加到渲染器中
     static void addActor(vtkSmartPointer<vtkActor>& actor);
 

@@ -42,6 +42,8 @@ class ToolWidget : public QWidget {
 public:
     explicit ToolWidget(QWidget *parent = nullptr);
 
+    void NotifySubscribe();
+
     static const int SingalToolBarActionNum=9;
     static const int ActionKindNum=4;
 

@@ -142,7 +142,7 @@ class CCircle  : public CEntity
 {
     CPosition m_pt;
 
-    double m_d;
+    double m_d;//直径
     static int circleCount;
     int currentCircleId;
     QDataStream& serialize(QDataStream& out) const override {
@@ -204,7 +204,7 @@ public:
     }
 
     // 圆类的draw()
-    // vtkSmartPointer<vtkActor> draw() override;
+    vtkSmartPointer<vtkActor> draw() override;
 };
 
 class CPlane : public CEntity
@@ -220,15 +220,15 @@ private:
     int currentPlainId;
 
 public:
-    static CPosition getCenter();
+    CPosition getCenter() const;
     void setCenter(const CPosition &newCenter);
-    static QVector4D getNormal();
+    QVector4D getNormal() const;
     void setNormal(const QVector4D &newNormal);
-    static QVector4D getDir_long_edge();
+    QVector4D getDir_long_edge() const;
     void setDir_long_edge(const QVector4D &newDir_long_edge);
-    static double getLength();
-    void setLength(double newLength);
-    static double getWidth();
+    double getLength() const;
+    void setLength(double newLength) ;
+    double getWidth() const;
     void setWidth(double newWidth);
 
     CPlane(){
@@ -292,7 +292,7 @@ public:
     }
 
     // 球类的draw()
-    // vtkSmartPointer<vtkActor> draw() override;
+    vtkSmartPointer<vtkActor> draw() override;
 };
 
 
@@ -337,7 +337,7 @@ public:
     }
 
     // 圆柱体的draw()
-    // vtkSmartPointer<vtkActor> draw() override;
+    vtkSmartPointer<vtkActor> draw() override;
 };
 
 class CCone : public CEntity{
@@ -373,7 +373,7 @@ public:
     }
 
     // 圆锥的draw()
-    // vtkSmartPointer<vtkActor> draw() override;
+    vtkSmartPointer<vtkActor> draw() override;
 
 public:
     QVector4D getAxis() const;
