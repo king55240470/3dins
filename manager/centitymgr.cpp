@@ -1,5 +1,7 @@
 #include "centitymgr.h"
+#include "component/vtkpresetwidget.h"
 
+QVector<CEntity*> CEntityMgr::m_entityList;
 CEntityMgr::CEntityMgr() {}
 
 void CEntityMgr::Add(CEntity* pEntity){
@@ -59,8 +61,13 @@ void CEntityMgr::RemoveAll()
     m_entityList.clear();
 }
 
-// 遍历m_entityList重新绘制
-// void reDraw(){
+void CEntityMgr::reDraw(){
+    // 清除渲染窗口里所有actor
+    VtkPresetWidget::getRenderer()->Clear();
 
-// }
+    // 遍历m_entityList重新绘制
+    for(auto entity:m_entityList){
+        entity->draw();
+    }
+}
 

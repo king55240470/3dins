@@ -449,8 +449,12 @@ void PresetElemWidget::btnCircleClicked()
         QMessageBox::critical(this, "输入错误", "直径D需要是双精度浮点类型数。");
         return;
     }
+
     // m_pMainWin->OnPresetCircle(mypt, d);
     qDebug()<<"clicked";
+
+    m_pMainWin->OnPresetCircle(mypt, d);
+    // qDebug()<<"clicked";
 
 }
 
@@ -519,6 +523,8 @@ void PresetElemWidget::btnLineClicked()
     qDebug()<<ptEnd.x<<ptEnd.y<<ptEnd.z;
     qDebug()<<"clicked1";
     // m_pMainWin->OnPresetLine(ptBegin, ptEnd);
+
+    m_pMainWin->OnPresetLine(ptBegin, ptEnd);
     qDebug()<<"clicked2##";
 
 }
@@ -590,7 +596,7 @@ void PresetElemWidget::btnplaneClicked()
         QMessageBox::critical(this, "输入错误", "平面-长边方向坐标Z需要是双精度浮点类型数。");
         return;
     }
-    // m_pMainWin->OnPresetPlane(center, vecNormal, vecDirection,length, width);
+    m_pMainWin->OnPresetPlane(center, vecNormal, vecDirection,length, width);
 
 }
 
@@ -620,7 +626,7 @@ void PresetElemWidget::btnSphereClicked()
         QMessageBox::critical(this, "输入错误", "球体-直径D需要是双精度浮点类型数。");
         return;
     }
-    //m_pMainWin->OnPresetSphere(center, diametre);
+    m_pMainWin->OnPresetSphere(center, diametre);
 }
 
 void PresetElemWidget::btnCylinderClicked()
@@ -676,7 +682,7 @@ void PresetElemWidget::btnCylinderClicked()
     QVector4D myvec(vec.x, vec.y, vec.z, 1);
 
     qDebug()<<"try to add a Cyinder2";
-    //m_pMainWin->OnPresetCylinder(center, myvec, height, diametre);
+    m_pMainWin->OnPresetCylinder(center, myvec, height, diametre);
 
 
 
@@ -742,7 +748,7 @@ void PresetElemWidget::btnConeClicked()
     QVector4D myvec(vec.x, vec.y, vec.z, 1);
 
     qDebug()<<"try to add a Cyinder2";
-    //m_pMainWin->OnPresetCone(center, myvec, partHeight, fullHeight, angle);
+    m_pMainWin->OnPresetCone(center, myvec, partHeight, fullHeight, angle);
 
 }
 

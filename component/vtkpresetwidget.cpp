@@ -57,6 +57,11 @@ vtkSmartPointer<vtkRenderWindow> VtkPresetWidget::getRenderWindow(){
     return m_renWin;
 }
 
+vtkSmartPointer<vtkRenderer> VtkPresetWidget::getRenderer(){
+    return m_renderer;
+}
+
+
 void VtkPresetWidget::addActor(vtkSmartPointer<vtkActor>& actor){
     m_renderer->AddActor(actor);
 }
