@@ -1,5 +1,5 @@
 #include "centitytypes.h"
-#include "component/vtkpresetwidget.h"
+#include "component/vtkwidget.h"
 
 #include <vtkPoints.h>
 #include <vtkPolyDataMapper.h>
@@ -32,7 +32,7 @@ vtkSmartPointer<vtkActor> CPoint::draw(){
     actor->SetMapper(mapper);
     actor->GetProperty()->SetPointSize(1); // 设置点的大小
 
-    VtkPresetWidget::addActor(actor);
+    VtkWidget::addActor(actor);
     return actor;
 }
 
@@ -62,7 +62,7 @@ vtkSmartPointer<vtkActor> CLine::draw(){
     actor->SetMapper(mapper);
 
     // 添加到渲染窗口中
-    VtkPresetWidget::addActor(actor);
+    VtkWidget::addActor(actor);
     return actor;
 }
 
@@ -96,7 +96,7 @@ vtkSmartPointer<vtkActor> CCircle::draw(){
     lines->InsertNextCell(2, pointIds);
 
     // 创建PolyData并设置点和线
-    vtkNew<vtkPolyData> polyData;
+    vtkSmartPointer<vtkPolyData> polyData;
     polyData->SetPoints(points);
     polyData->SetLines(lines);
 
@@ -106,7 +106,7 @@ vtkSmartPointer<vtkActor> CCircle::draw(){
     vtkSmartPointer<vtkActor> actor;
     actor->SetMapper(mapper);
 
-    VtkPresetWidget::addActor(actor);
+    VtkWidget::addActor(actor);
     return actor;
 }
 
@@ -129,7 +129,7 @@ vtkSmartPointer<vtkActor> CPlane::draw(){
     vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
 
-    VtkPresetWidget::addActor(actor);
+    VtkWidget::addActor(actor);
     return actor;
 }
 
@@ -148,7 +148,7 @@ vtkSmartPointer<vtkActor> CSphere::draw(){
     auto actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
 
-    VtkPresetWidget::addActor(actor);
+    VtkWidget::addActor(actor);
     return actor;
 }
 
@@ -167,7 +167,7 @@ vtkSmartPointer<vtkActor> CCylinder::draw(){
     auto actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
 
-    VtkPresetWidget::addActor(actor);
+    VtkWidget::addActor(actor);
     return actor;
 }
 
@@ -187,7 +187,7 @@ vtkSmartPointer<vtkActor> CCone::draw(){
     auto actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
 
-    VtkPresetWidget::addActor(actor);
+    VtkWidget::addActor(actor);
     return actor;
 }
 

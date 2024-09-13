@@ -63,7 +63,7 @@ void CEntityMgr::RemoveAll()
 
 void CEntityMgr::reDraw(){
     // 清除渲染窗口里所有actor
-    VtkPresetWidget::getRenderer()->Clear();
+    VtkWidget::getRenderer()->Clear();
 
     // 遍历m_entityList重新绘制
     for(auto entity:m_entityList){
