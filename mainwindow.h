@@ -7,6 +7,7 @@
 #include <QStatusbar>
 #include "geometry/globes.h"
 #include "geometry/centity.h"
+#include "component/vtkwidget.h"
 #include "manager/centitymgr.h"
 #include "manager/cobjectmgr.h"
 #include "manager/cpcsmgr.h"

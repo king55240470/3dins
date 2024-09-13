@@ -3,8 +3,7 @@
 
 #include <geometry/centity.h>
 #include "component/elementlistwidget.h"
-#include <vtkActor.h>
-#include <vtkSmartPointer.h>
+#include "component/vtkwidget.h"
 
 class CEntityMgr : public CEntity
 {
@@ -29,7 +28,7 @@ public:
     void RemoveAll();
 
     // 遍历m_entityList重新绘制
-    void reDraw();
+    static void reDraw();
 };
 
 #endif // CENTITYMGR_H
