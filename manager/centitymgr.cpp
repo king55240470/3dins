@@ -69,5 +69,8 @@ void CEntityMgr::reDraw(){
     for(auto entity:m_entityList){
         entity->draw();
     }
+
+    // 将新的渲染器加入渲染窗口
+    VtkWidget::getRenderWindow()->AddRenderer(VtkWidget::getRenderer());
 }
 
