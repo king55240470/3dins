@@ -13,53 +13,53 @@ VTK_MODULE_INIT(vtkInteractionStyle);
 
 // 定义并初始化渲染器、渲染窗口和交互器
 vtkSmartPointer<vtkRenderer> VtkWidget::m_renderer = vtkSmartPointer<vtkRenderer>::New();
-vtkSmartPointer<vtkGenericOpenGLRenderWindow> VtkWidget::m_renWin = vtkSmartPointer<vtkGenericOpenGLRenderWindow>::New();
-vtkSmartPointer<vtkGenericRenderWindowInteractor> VtkWidget::m_interactor= vtkSmartPointer<vtkGenericRenderWindowInteractor>::New();
+vtkSmartPointer<vtkRenderWindow> VtkWidget::m_renWin = vtkSmartPointer<vtkRenderWindow>::New();
+vtkSmartPointer<vtkRenderWindowInteractor> VtkWidget::m_interactor= vtkSmartPointer<vtkRenderWindowInteractor>::New();
 
 VtkWidget::VtkWidget(QWidget *parent)
     : QWidget(parent)
 {
     // 为交互器设置窗口
-    // m_interactor->SetRenderWindow(m_renWin);
-    // // 创建球体源
-    // vtkSmartPointer<vtkSphereSource> sphere = vtkSmartPointer<vtkSphereSource>::New();
-    // sphere->SetCenter(0, 2, 0);
-    // sphere->SetRadius(1);
-    // sphere->SetEndTheta(360);
-    // sphere->SetThetaResolution(50);
+    m_interactor->SetRenderWindow(m_renWin);
+    // 创建球体源
+    vtkSmartPointer<vtkSphereSource> sphere = vtkSmartPointer<vtkSphereSource>::New();
+    sphere->SetCenter(0, 2, 0);
+    sphere->SetRadius(1);
+    sphere->SetEndTheta(360);
+    sphere->SetThetaResolution(50);
 
-    // // 创建映射器
-    // auto mapper_2 = vtkSmartPointer<vtkPolyDataMapper>::New();
-    // mapper_2->SetInputConnection(sphere->GetOutputPort());
+    // 创建映射器
+    auto mapper_2 = vtkSmartPointer<vtkPolyDataMapper>::New();
+    mapper_2->SetInputConnection(sphere->GetOutputPort());
 
-    // // 创建执行器
-    // auto actor_2 = vtkSmartPointer<vtkActor>::New();
-    // actor_2->SetMapper(mapper_2);
-    // actor_2->GetProperty()->SetColor(0.7, 0.3, 0.3);
+    // 创建执行器
+    auto actor_2 = vtkSmartPointer<vtkActor>::New();
+    actor_2->SetMapper(mapper_2);
+    actor_2->GetProperty()->SetColor(0.7, 0.3, 0.3);
 
-    // // 创建坐标器
-    // auto axes = vtkSmartPointer<vtkAxesActor>::New();
-    // axes->SetAxisLabels(true);
-    // axes->SetAxisLabels(true);
-    // axes->SetAxisLabels(true);
-    // axes->SetTotalLength(0.3, 0.3, 0.3); // 设置轴的长度
-    // axes->SetConeRadius(0.03); // 设置轴锥体的半径
-    // axes->SetCylinderRadius(0.02); // 设置轴圆柱体的半径
-    // axes->SetSphereRadius(0.03); // 设置轴末端的球体半径
+    // 创建坐标器
+    auto axes = vtkSmartPointer<vtkAxesActor>::New();
+    axes->SetAxisLabels(true);
+    axes->SetAxisLabels(true);
+    axes->SetAxisLabels(true);
+    axes->SetTotalLength(1, 1, 1); // 设置轴的长度
+    axes->SetConeRadius(0.03); // 设置轴锥体的半径
+    axes->SetCylinderRadius(0.02); // 设置轴圆柱体的半径
+    axes->SetSphereRadius(0.03); // 设置轴末端的球体半径
 
-    // // 将坐标器添加到渲染器中
-    // m_renderer->AddActor(axes);
+    // 将坐标器添加到渲染器中
+    m_renderer->AddActor(axes);
 
-    // m_renderer->SetBackground(255, 255, 255);
-    // m_renderer->AddActor(actor_2); // 添加到渲染器
-    // m_renWin->AddRenderer(m_renderer);  // 将渲染器添加到渲染窗口
+    m_renderer->SetBackground(0.1, 0.2, 0.4);
+    m_renderer->AddActor(actor_2); // 将图形添加到渲染器
+    m_renWin->AddRenderer(m_renderer);  // 将渲染器添加到渲染窗口
 
-    // // 设置 VTK 渲染窗口到 QWidget
-    // QVTKOpenGLNativeWidget* vtkWidget = new QVTKOpenGLNativeWidget(this);
-    // vtkWidget->setRenderWindow(m_renWin);
-    // QHBoxLayout *layout = new QHBoxLayout(this);
-    // layout->addWidget(vtkWidget);
-    // setLayout(layout);
+    // 设置 VTK 渲染窗口到 QWidget
+    QVTKOpenGLNativeWidget* vtkWidget = new QVTKOpenGLNativeWidget(this);
+    vtkWidget->setRenderWindow(m_renWin);
+    QHBoxLayout *layout = new QHBoxLayout(this);
+    layout->addWidget(vtkWidget);
+    setLayout(layout);
 
     // m_renWin->Render(); // 开始渲染
 
@@ -80,9 +80,9 @@ VtkWidget::VtkWidget(QWidget *parent)
     // 创建一个点云智能指针
     cloudptr.reset(new PointCloudT);
     // 从指定路径加载 PCD 文件到点云对象中
-    pcl::io::loadPCDFile("D:\\Lenovo\\Acun\\3din\\bunny.pcd", *cloudptr);
-    pcl::io::loadPCDFile("E:\\pcl\\maize.pcd", *cloudptr);
-    // pcl::io::loadPCDFile("E:\\pcl\\bunny.pcd", *cloudptr);
+    // pcl::io::loadPCDFile("D:\\Lenovo\\Acun\\3din\\bunny.pcd", *cloudptr);
+    // pcl::io::loadPCDFile("E:\\pcl\\maize.pcd", *cloudptr);
+    pcl::io::loadPCDFile("E:\\pcl\\bunny.pcd", *cloudptr);
     // 定义颜色处理的轴
     const std::string axis ="z";
     // 创建颜色处理器，基于指定的轴为点云着色
@@ -104,8 +104,9 @@ void VtkWidget::addActor(vtkSmartPointer<vtkActor>& actor){
     m_renderer->AddActor(actor);
 }
 
-void UpdateInfo(){
+void VtkWidget::UpdateInfo(){
     CEntityMgr::reDraw();
+    getRenderWindow()->Render();
 }
 
 

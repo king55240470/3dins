@@ -309,8 +309,7 @@ void MainWindow::NotifySubscribe()
 {
     m_ObjectListMgr->upadteelementlist();
 
-    // 遍历entitylist重新绘制
-    m_EntityListMgr->reDraw();
+    pWinVtkWidget->UpdateInfo(); // 更新vtkwidget信息
 }
 
 void MainWindow::OnPresetPoint(CPosition pt){
