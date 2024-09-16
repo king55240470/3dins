@@ -44,6 +44,9 @@ public:
 
     // 实现在notify里更新信息
     void UpdateInfo();
+
+    // 当添加新的元素后，遍历m_entityList重新绘制
+    static void reDraw();
 private:
     PointCloudPtr cloudptr; // 点云智能指针
     PCLViewer::Ptr cloud_viewer; // PCL 可视化器的智能指针
