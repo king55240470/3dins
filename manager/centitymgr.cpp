@@ -1,7 +1,7 @@
 #include "centitymgr.h"
 #include "component/vtkpresetwidget.h"
 
-QVector<CEntity*> CEntityMgr::m_entityList;
+
 CEntityMgr::CEntityMgr() {}
 
 void CEntityMgr::Add(CEntity* pEntity){
