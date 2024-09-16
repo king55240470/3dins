@@ -4,7 +4,7 @@
 
 class CObjectMgr
 {
-public:
+private:
     QVector<CObject*> m_objectList;
     int m_nInsertPos=-1;
     bool m_bHideInvalid;

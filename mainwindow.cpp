@@ -309,6 +309,7 @@ CEntity* MainWindow::CreateEntity(int nType){
 void MainWindow::NotifySubscribe()
 {
     pWinElementListWidget->upadteelementlist();
+    pWinVtkWidget->UpdateInfo(); // 更新vtkwidget信息
 }
 
 void MainWindow::OnPresetPoint(CPosition pt){
@@ -378,7 +379,7 @@ void MainWindow::OnPresetCircle(CPosition pt, double diameter)
     // }
 
     //选中元素,取消其他元素选中
-    for(auto const &object:m_ObjectListMgr->m_objectList){
+    for(auto const &object:m_ObjectListMgr->getObjectList()){
         object->SetSelected(false);
     }
     pCircle->SetSelected(true);

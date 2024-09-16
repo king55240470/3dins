@@ -8,8 +8,6 @@
 class CEntityMgr : public CEntity
 {
 private:
-
-
     int m_nSize;
     int m_nCount;
     bool m_bRedraw;
@@ -28,8 +26,6 @@ public:
     int GetCount();
     void RemoveAll();
     QVector<CEntity*> getEntityList();
-    // 遍历m_entityList重新绘制
-    void reDraw();
 };
 
 #endif // CENTITYMGR_H

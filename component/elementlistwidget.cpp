@@ -104,7 +104,7 @@ void ElementListWidget::onDeleteEllipse()
             int row = treeWidgetNames->indexOfTopLevelItem(selectedItem);
             treeWidgetNames->takeTopLevelItem(row);
             treeWidgetInfo->takeTopLevelItem(row);
-            m_pMainWin->m_ObjectListMgr->m_objectList.erase(m_pMainWin->m_ObjectListMgr->m_objectList.begin() + row);
+            m_pMainWin->m_ObjectListMgr->getObjectList().erase(m_pMainWin->m_ObjectListMgr->getObjectList().begin() + row);
         }
         upadteelementlist();
     }
@@ -131,11 +131,6 @@ void ElementListWidget::deal_actionNew_triggered()
 
 }
 
-void ElementListWidget::judgetype(CEntity *entity)
-{
-    m_EntityType=entity->getEntityType();
-}
-
 void ElementListWidget::updateInsertIndicatorPosition()
 {
 
@@ -146,7 +141,7 @@ void ElementListWidget::upadteelementlist()
     treeWidgetNames->clear();
     treeWidgetInfo->clear();
 
-    for(const auto& element :m_pMainWin->m_ObjectListMgr->m_objectList){
+    for(const auto& element :m_pMainWin->m_ObjectListMgr->getObjectList()){
         CreateEllipse(element);
     }
 }
