@@ -3,6 +3,7 @@
 DataWidget::DataWidget(QWidget *parent)
     : QWidget{parent}
 {
+    m_pMainWin=(MainWindow*)parent;
     vlayout=new QVBoxLayout(this);
     hlayout=new QHBoxLayout();
 
@@ -28,4 +29,18 @@ DataWidget::DataWidget(QWidget *parent)
 
     vlayout->addLayout(hlayout);
     vlayout->addWidget(table);
+
+}
+
+void DataWidget::updateele(int index)
+{
+    CEntity* entity=m_pMainWin->m_EntityListMgr->m_entityList[index];
+    table->setItem(count, 0, new QTableWidgetItem(entity->m_strCName));
+    if(entity->GetUniqueType()==enPoint){
+        CPoint* point = dynamic_cast<CPoint*>(entity);
+        QString String = QString("(%1, %2, %3)").arg(point->GetPt().x).arg(point->GetPt().y).arg(point->GetPt().z);
+        table->setItem(count,1,new QTableWidgetItem(String));
+    }
+
+    count++;
 }

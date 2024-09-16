@@ -1,13 +1,11 @@
 #include "centitymgr.h"
-#include "component/vtkpresetwidget.h"
 
+CEntityMgr::CEntityMgr() {
 
-CEntityMgr::CEntityMgr() {}
+}
 
 void CEntityMgr::Add(CEntity* pEntity){
     m_entityList.push_back(pEntity);
-    ElementListWidget *element;
-    element->judgetype(pEntity);
 }
 
 int CEntityMgr::FindEntity(CEntity *pEntity)
@@ -61,8 +59,11 @@ void CEntityMgr::RemoveAll()
     m_entityList.clear();
 }
 
-QVector<CEntity*>& CEntityMgr::getEntityList(){
+QVector<CEntity *> CEntityMgr::getEntityList()
+{
     return m_entityList;
 }
+
+
 
 

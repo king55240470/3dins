@@ -56,14 +56,10 @@ void CObjectMgr::SelectAll(bool bVal)
         pObj->m_bSel= bVal;
 }
 
-void CObjectMgr::upadteelementlist()
+QVector<CObject *> CObjectMgr::getObjectList()
 {
-    ElementListWidget * remove;
-    remove->removeall();
-    for(const auto& element :m_objectList){
-        ElementListWidget*creat;
-        creat->CreateEllipse(element);
-    }
+    return m_objectList;
 }
+
 
 

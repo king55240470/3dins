@@ -18,7 +18,7 @@
 #include <pcl/point_types.h>     // PCL 的点类型定义
 #include <pcl/io/pcd_io.h>       // PCL 的 PCD 文件输入输出类
 #include <pcl/visualization/pcl_visualizer.h> // PCL 的可视化工具
-
+#include "mainwindow.h"
 // 定义点的类型
 typedef pcl::PointXYZ PointT; // 定义 PointT 为 pcl::PointXYZ 类型
 typedef pcl::PointCloud<PointT> PointCloudT; // 定义 PointCloudT 为 pcl::PointCloud<PointT> 类型
@@ -46,7 +46,7 @@ public:
     void UpdateInfo();
 
     // 当添加新的元素后，遍历m_entityList重新绘制
-    static void reDraw();
+    void reDraw();
 private:
     PointCloudPtr cloudptr; // 点云智能指针
     PCLViewer::Ptr cloud_viewer; // PCL 可视化器的智能指针
@@ -55,7 +55,7 @@ private:
     static vtkSmartPointer<vtkRenderer> m_renderer;
     static vtkSmartPointer<vtkRenderWindow> m_renWin;
     static vtkSmartPointer<vtkRenderWindowInteractor> m_interactor;
-
+    MainWindow *m_pMainWin=nullptr;
 };
 
 #endif // VTKWIDGET_H
