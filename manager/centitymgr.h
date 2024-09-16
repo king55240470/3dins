@@ -7,9 +7,10 @@
 
 class CEntityMgr : public CEntity
 {
-private:
+public:
     static QVector<CEntity*> m_entityList; // 封装centity对象的数组
 
+private:
     int m_nSize;
     int m_nCount;
     bool m_bRedraw;
