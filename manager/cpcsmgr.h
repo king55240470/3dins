@@ -59,8 +59,9 @@ public:
     //其他
     bool IsMultiCoordSys() const; //多坐标系判断
     bool bTempPcsNodeInUse() const; //临时坐标系节点是否使用
+    bool CanEntityBeDeleted(CEntity *);
     void setBTempPcsNodeInUse(bool newBTempPcsNodeInUse); //设置使用
-    // void SetEntityList(CEntityMgr*);
+    void SetEntityList(CEntityMgr*);
     // bool IsEntityInBaseCoordSystem(CEntity const*);
 
     // void TransEntityToCurrentCoordSys();

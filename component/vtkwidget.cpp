@@ -121,7 +121,7 @@ void VtkWidget::reDraw(){
     VtkWidget::getRenderer()->Clear();
 
     // 遍历m_entityList重新绘制
-    for(auto entity : CEntityMgr::getEntityList()){
+    for(auto entity : m_pMainWin->m_EntityListMgr->getEntityList()){
         entity->draw();
     }
 
