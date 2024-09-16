@@ -9,7 +9,6 @@ ElementListWidget::ElementListWidget(QWidget *parent)
 
     // 元素创建按钮
     QPushButton *createButton = new QPushButton("创建元素", this);
-    connect(createButton, &QPushButton::clicked, this, &ElementListWidget::onCreateEllipse);
 
     // 删除选中元素的按钮
     QPushButton *deleteButton = new QPushButton("删除选中元素", this);
@@ -75,16 +74,6 @@ ElementListWidget::ElementListWidget(QWidget *parent)
             emit itemSelected(index); // 发出自定义信号
         }
     });
-}
-void ElementListWidget::onCreateEllipse() {
-    int id =0;
-    QString name = QString("元素%1").arg(id);
-
-    QTreeWidgetItem *nameItem = new QTreeWidgetItem(treeWidgetNames);
-    nameItem->setText(0, name);
-
-    QTreeWidgetItem *infoItem = new QTreeWidgetItem(treeWidgetInfo);
-    infoItem->setText(0, QString::number(id));
 }
 
 void ElementListWidget::CreateEllipse(CObject*obj)

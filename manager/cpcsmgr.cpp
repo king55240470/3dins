@@ -67,7 +67,7 @@ void CPcsMgr::SetCurCoordSystem(int nPcsID, bool)
     //更新实体当前坐标系
 }
 
-//未实现查找坐标系名称
+
 void CPcsMgr::SetCurCoordSystem(QString)
 {
 
@@ -77,8 +77,10 @@ void CPcsMgr::SetCurCoordSystem(QString)
 void CPcsMgr::SetCurCoordSystem(CPcs* pPcs)
 {
     m_pPcsCurrent=pPcs;
-
     //更新实体当前坐标系
+    for (CEntity* pEntity : m_pEntityListMgr->m_entityList) {
+        pEntity->SetCurCoord(pPcs);
+    }
 }
 
 CPcs* CPcsMgr::GetBaseCoordSystem()
@@ -100,10 +102,19 @@ CPcs* CPcsMgr::Find(int nPcsID)
     return nullptr;
 }
 
-// CPcs* CPcsMgr::Find(QString)
-// {
-//     //按名称查找坐标系
-// }
+CPcs* CPcsMgr::Find(QString pcsName)
+{
+    CPcs* pPcs;
+    for(CPcsNode *pPcsNode : m_PcsNodeList)
+    {
+        if(pPcsNode->GetObjectCName()==pcsName)
+        {
+            pPcs=pPcsNode->getPcs();
+            break;
+        }
+    }
+    return pPcs;
+}
 
 CPcsNode* CPcsMgr::FindNode(int nPcsID)
 {
@@ -220,6 +231,17 @@ void CPcsMgr::setBTempPcsNodeInUse(bool newBTempPcsNodeInUse)
 {
     m_bTempPcsNodeInUse=newBTempPcsNodeInUse;
 }
+
+void CPcsMgr::SetEntityList(CEntityMgr* entityMgr)
+{
+    m_pEntityListMgr = entityMgr;
+}
+
+bool CPcsMgr::CanEntityBeDeleted(CEntity *)
+{
+    return true;
+}
+
 
 
 

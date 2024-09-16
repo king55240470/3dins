@@ -1,7 +1,9 @@
 #include "centitymgr.h"
 
 //QVector<CEntity*> CEntityMgr::m_entityList;
-CEntityMgr::CEntityMgr() {}
+CEntityMgr::CEntityMgr() {
+
+}
 
 void CEntityMgr::Add(CEntity* pEntity){
     m_entityList.push_back(pEntity);

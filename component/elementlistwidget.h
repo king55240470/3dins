@@ -27,7 +27,6 @@ class ElementListWidget : public QWidget
     Q_OBJECT
 public:
     explicit ElementListWidget(QWidget *parent = nullptr);
-    void onCreateEllipse();
     void CreateEllipse(CObject*);
     void onDeleteEllipse();
     int getNextId();
