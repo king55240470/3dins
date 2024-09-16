@@ -61,13 +61,8 @@ void CEntityMgr::RemoveAll()
     m_entityList.clear();
 }
 
-void CEntityMgr::reDraw(){
-    // 清除渲染窗口里所有actor
-    VtkWidget::getRenderer()->Clear();
-
-    // 遍历m_entityList重新绘制
-    for(auto entity:m_entityList){
-        entity->draw();
-    }
+QVector<CEntity*>& CEntityMgr::getEntityList(){
+    return m_entityList;
 }
+
 

@@ -3,7 +3,6 @@
 
 #include <geometry/centity.h>
 #include "component/elementlistwidget.h"
-#include "component/vtkwidget.h"
 
 class CEntityMgr : public CEntity
 {
@@ -28,8 +27,9 @@ public:
     int GetCount();
     void RemoveAll();
 
-    // 遍历m_entityList重新绘制
-    static void reDraw();
+    // 获取m_entityList
+    static QVector<CEntity*>& getEntityList();
+
 };
 
 #endif // CENTITYMGR_H

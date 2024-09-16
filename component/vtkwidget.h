@@ -2,17 +2,17 @@
 #define VTKWIDGET_H
 #include "manager/centitymgr.h"
 
-#include <QWidget>               // QWidget 是所有用户界面对象的基类
-#include <QWindow>               // QWindow 提供了窗口的基础功能
-#include <QHBoxLayout>           // QHBoxLayout 用于水平布局管理
-#include <vtkGenericOpenGLRenderWindow.h> // VTK 的 OpenGL 渲染窗口类
+#include <QWidget>
+#include <QWindow>
+#include <QHBoxLayout>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
+
+#include <vtkGenericOpenGLRenderWindow.h> // VTK 的 OpenGL 渲染窗口类
+#include <vtkGenericRenderWindowInteractor.h>
 #include <vtkActor.h>
 #include <vtkSmartPointer.h>
-#include <vtkGenericRenderWindowInteractor.h>
-#include <vtkGenericOpenGLRenderWindow.h>
 
 #include <pcl/point_cloud.h>     // PCL 的点云类
 #include <pcl/point_types.h>     // PCL 的点类型定义
@@ -34,7 +34,7 @@ public:
     ~VtkWidget();
 
     // 获取m_renWin
-    vtkSmartPointer<vtkRenderWindow> getRenderWindow();
+    static vtkSmartPointer<vtkRenderWindow> getRenderWindow();
 
     // 获取渲染器
     static vtkSmartPointer<vtkRenderer> getRenderer();
@@ -44,14 +44,17 @@ public:
 
     // 实现在notify里更新信息
     void UpdateInfo();
+
+    // 当添加新的元素后，遍历m_entityList重新绘制
+    static void reDraw();
 private:
     PointCloudPtr cloudptr; // 点云智能指针
     PCLViewer::Ptr cloud_viewer; // PCL 可视化器的智能指针
 
     // 为所有的actor创建渲染器、渲染窗口和交互器
     static vtkSmartPointer<vtkRenderer> m_renderer;
-    static vtkSmartPointer<vtkGenericOpenGLRenderWindow> m_renWin;
-    static vtkSmartPointer<vtkGenericRenderWindowInteractor> m_interactor;
+    static vtkSmartPointer<vtkRenderWindow> m_renWin;
+    static vtkSmartPointer<vtkRenderWindowInteractor> m_interactor;
 
 };
 
