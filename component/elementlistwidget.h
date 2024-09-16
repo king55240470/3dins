@@ -18,9 +18,9 @@
 #include <QContextMenuEvent>
 #include<QToolBar>
 #include <QVector>
-#include <manager/centitymgr.h>
+//#include "manager/centitymgr.h"
 //#include <unordered_map>
-#include "geometry/globes.h"
+//#include "geometry/globes.h"
 #include "mainwindow.h"
 class ElementListWidget : public QWidget
 {
@@ -48,7 +48,6 @@ private:
     std::set<int> deletedIds;
     QToolBar * toolBar;
     CEntity * centity;
-    ENTITY_TYPE m_EntityType;
     MainWindow *m_pMainWin=nullptr;
     //std::unordered_map<QTreeWidgetItem*, size_t> itemToIndexMap;
 signals:
