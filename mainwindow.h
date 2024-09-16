@@ -44,7 +44,14 @@ private:
     PresetElemWidget *pWinPresetElemWidget;
 
     QMenuBar * bar;
+
+    //状态栏
     QStatusBar *stbar;
+    QPushButton* switchRefCsBtn;
+    QPushButton* switchCsBtn;
+
+protected:
+    bool eventFilter(QObject* watched, QEvent* event) override;
 
 //私有的槽函数
 /*private slots:
@@ -71,6 +78,10 @@ public:
     void NotifySubscribe();
     void loadManager();
 
+    //slots
+    void on2dCoordOriginAuto(); // 创建坐标系
+    void on2dCoordSave();
+
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
@@ -78,5 +89,8 @@ public:
     void RestoreWidgets();
     void setupUi();
     void showPresetElemWidget(int);
+
+private:
+    CPcs* m_nRelyOnWhichCs; // 状态栏的参考坐标系
 };
 #endif // MAINWINDOW_H

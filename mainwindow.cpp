@@ -17,6 +17,7 @@
 #include <QMessageBox>
 #include <QWidget>
 #include "manager/cpcsmgr.h"
+#include <QListWidget>
 
 class PresetElemWidget;
 
@@ -78,13 +79,40 @@ void MainWindow::setupUi(){
         showPresetElemWidget(6);
     });
 
+    // 添加竖线分隔符
+    QFrame *line = new QFrame();
+    line->setFrameShape(QFrame::VLine);  // 设置形状为垂直线
+    line->setFrameShadow(QFrame::Sunken);  // 设置阴影为凹陷效果，增强3D效果
+    line->setLineWidth(2);  // 设置线宽
+    line->setStyleSheet("color: black;");  // 设置竖线的颜色为灰色
+
     //状态栏
     stbar=statusBar();
     setStatusBar(stbar);
     QLabel *label1=new QLabel("左侧状态栏",this);
     stbar->addWidget(label1);
-    QLabel *label2=new QLabel("右侧状态栏",this);
-    stbar->addPermanentWidget(label2);
+    // QLabel *label2=new QLabel("右侧状态栏",this);
+    // stbar->addPermanentWidget(label2);
+    switchRefCsBtn = new QPushButton("参考依赖坐标系");
+    switchRefCsBtn->setFixedWidth(100);
+    switchRefCsBtn->setObjectName("statusSwitchRef");
+    switchRefCsBtn->setFlat(true); // 设置按钮为平面样式
+    switchRefCsBtn->setStyleSheet("text-align: center;border: none;margin-right: 20px;"); // 去掉边框，更像标签
+    switchRefCsBtn->installEventFilter(this);  // 为按钮安装事件过滤器
+    stbar->addPermanentWidget(switchRefCsBtn);
+
+    stbar->addPermanentWidget(line);
+
+    switchCsBtn = new QPushButton("机械坐标系");
+    switchCsBtn->setFixedWidth(100);
+    switchCsBtn->setFlat(true); // 设置按钮为平面样式
+    switchCsBtn->setStyleSheet("text-align: center;border: none;margin-right: 20px;"); // 去掉边框，更像标签
+    switchCsBtn->installEventFilter(this);  // 为按钮安装事件过滤器
+    switchCsBtn->setObjectName("statusSwitchCs");
+    stbar->addPermanentWidget(switchCsBtn);
+
+    stbar->addPermanentWidget(line);
+
 
     spMainWindow=new QSplitter(Qt::Horizontal,this);
     spLeft=new QSplitter(Qt::Vertical,spMainWindow);
@@ -310,7 +338,7 @@ void MainWindow::NotifySubscribe()
     m_ObjectListMgr->upadteelementlist();
 
     // 遍历entitylist重新绘制
-    m_EntityListMgr->reDraw();
+    // m_EntityListMgr->reDraw();
 }
 
 void MainWindow::OnPresetPoint(CPosition pt){
@@ -328,7 +356,7 @@ void MainWindow::OnPresetPoint(CPosition pt){
     m_ObjectListMgr->Add(pPoint);
 
     //qDebug()<<"clicked3.2";
-    //NotifySubscribe();
+    NotifySubscribe();
 }
 
 void MainWindow::OnPresetLine(CPosition ptStart, CPosition ptEnd)
@@ -364,7 +392,7 @@ void MainWindow::OnPresetCircle(CPosition pt, double diameter)
 
     // pCircle->SetNominal();
 
-    std::vector<QPointF> points;
+    // std::vector<QPointF> points;
 
     //pCircle->addToolArray((CircleGraphics*)CreateImgTool(eImgCircleGraphics,points,data));
 
@@ -381,11 +409,11 @@ void MainWindow::OnPresetCircle(CPosition pt, double diameter)
     //     pWinElementListWidget->updateInsertIndicatorPosition();
     // }
 
-    //选中元素,取消其他元素选中
-    for(auto const &object:m_ObjectListMgr->m_objectList){
-        object->SetSelected(false);
-    }
-    pCircle->SetSelected(true);
+    // //选中元素,取消其他元素选中
+    // for(auto const &object:m_ObjectListMgr->m_objectList){
+    //     object->SetSelected(false);
+    // }
+    // pCircle->SetSelected(true);
 
     NotifySubscribe();
 }
@@ -503,4 +531,232 @@ void MainWindow::showPresetElemWidget(int index){
         break;
     }
     pWinPresetElemWidget->show();
+}
+
+bool MainWindow::eventFilter(QObject* watched, QEvent* event){
+    if (event->type() == QEvent::MouseButtonDblClick && qobject_cast<QPushButton*>(watched)) {
+        // 检测到双击事件
+        QPushButton* button = qobject_cast<QPushButton*>(watched);
+        if(button->objectName()=="statusSwitchCs")
+        {
+            // QMessageBox::information(this, "双击事件", "切换坐标系双击了!");
+            QDialog dialog(this);
+            dialog.setWindowTitle("请选择坐标系");
+            QVBoxLayout layout(&dialog);
+            QListWidget listWidget; //dialog中的list
+            layout.addWidget(&listWidget);
+            QString strClickedText; //记录点击list的item
+
+            if(m_pcsListMgr->m_bTempPcsNodeInUse)
+            {
+                listWidget.addItem("临时坐标系");
+            }
+
+            // 使用反向迭代器倒着遍历
+            for (auto it = m_pcsListMgr->m_PcsNodeList.rbegin(); it != m_pcsListMgr->m_PcsNodeList.rend(); ++it) {
+                CPcsNode* node = *it;  // 解引用迭代器以获取 CPcsNode* 指针
+                //std::cout << "Node value: " << node->value << std::endl;
+                if(node->m_bDeleted==false)
+                    listWidget.addItem(node->GetObjectCName());
+            }
+
+            // 连接列表的点击事件
+            connect(&listWidget, &QListWidget::itemClicked, [&](QListWidgetItem *item){
+                // QMessageBox::information(this, "选项被点击", "你点击了: " + item->text());
+                strClickedText=item->text();
+            });
+            // 添加按钮
+            QHBoxLayout *buttonLayout = new QHBoxLayout;
+            QPushButton *okButton = new QPushButton("确定");
+            QPushButton *cancelButton = new QPushButton("取消");
+            buttonLayout->addWidget(okButton);
+            buttonLayout->addWidget(cancelButton);
+            layout.addLayout(buttonLayout);
+
+            // 连接按钮信号
+            connect(okButton, &QPushButton::clicked, &dialog, &QDialog::accept);
+            connect(cancelButton, &QPushButton::clicked, &dialog, &QDialog::reject);
+
+            // 显示对话框
+            if (dialog.exec() == QDialog::Accepted) {
+                if(!strClickedText.isEmpty())
+                {
+                    if(strClickedText=="临时坐标系")
+                    {
+                        // 啥也不干
+                    }
+                    else if (strClickedText=="机械坐标系")
+                    {
+                        CPcs* pPcs = m_pcsListMgr->m_pHeadPcsNode->getPcs();
+                        m_pcsListMgr->SetCurCoordSystem(pPcs);
+                        NotifySubscribe();
+                        for(CEntity *pEntity : m_pcsListMgr->m_pEntityListMgr->m_entityList)
+                        {
+                            pEntity->SetCurCoord(pPcs);
+                        }
+                    }
+                    else
+                    {
+                        // 遍历找到该坐标系
+                        CPcs* pPcs = m_pcsListMgr->Find(strClickedText);
+                        m_pcsListMgr->SetCurCoordSystem(pPcs);
+                        NotifySubscribe();
+                        for(CEntity *pEntity : m_pcsListMgr->m_pEntityListMgr->m_entityList)
+                        {
+                            pEntity->SetCurCoord(pPcs);
+                        }
+
+                    }
+                    // 右下加标签设置为对应坐标系
+                    button->setText(strClickedText);
+                }
+                else
+                {
+                    stbar->showMessage("您没有选择任何坐标系",2000);
+                }
+            }
+            dialog.close();
+
+        }
+        else if(button->objectName()=="statusSwitchRef")
+        {
+            if(button->text()=="参考依赖坐标系")
+            {
+                button->setText("参考当前坐标系");
+                // m_nRelyOnWhichCs = csCur;
+                // pWinDataResultWidget->UpdateInfo();
+            }
+            else
+            {
+                button->setText("参考依赖坐标系");
+                // m_nRelyOnWhichCs = csRef;
+                // pWinDataResultWidget->UpdateInfo();
+            }
+        }
+
+        return true;  // 返回 true 表示事件已被处理，不再传递
+    }
+    // 调用基类的事件过滤器以处理其他事件
+    return QMainWindow::eventFilter(watched, event);
+}
+
+void MainWindow::on2dCoordOriginAuto(){
+    // 如果临时坐标系不为空，则禁止继续创建临时坐标系
+    if(m_pcsListMgr->m_bTempPcsNodeInUse)
+    {
+        // 设置状态栏的样式
+        // 创建自定义 QLabel
+
+        // ShowCustomizedStatusMsg("已存在临时坐标系",2000);
+        stbar->showMessage("已存在临时坐标系",2000);
+
+        return;
+
+    }
+    //qDebug()<<"添加坐标系";
+
+    m_pcsListMgr->m_bTempPcsNodeInUse = true;
+
+    QVector<CObject*> choosenList;
+    // for(int i=0;i<m_ObjectListMgr->m_objectList.size();i++)
+    // {
+    //     if(m_ObjectListMgr->m_objectList[i]->getbSel() == 1)
+    //     {
+    //         choosenList.push_back(m_ObjectListMgr->m_objectList[i]);
+    //     }
+    // }     getbSel()??
+    if(choosenList.size() != 1) return;
+    CPosition pos;
+    switch (choosenList[0]->GetUniqueType()) {
+    case enCircle:
+    {
+        CCircle* newCircle = (CCircle*)choosenList[0];
+        // CPosition posTemp;
+        pos.x=newCircle->getCenter().x;
+        pos.y=newCircle->getCenter().y;
+        pos.z=newCircle->getCenter().z;
+        //QVector4D vecPos = newCircle->GetGlobalPos(posTemp);
+        //pos.x = vecPos.x();
+        //pos.y = vecPos.y();
+        //pos.z = vecPos.z();
+
+        break;
+    }
+    case enPoint:
+    {
+        CPoint* newPoint = (CPoint*)choosenList[0];
+        pos.x=newPoint->GetPt().x;
+        pos.y=newPoint->GetPt().y;
+        pos.z=newPoint->GetPt().z;
+        break;
+    }
+    default:
+        break;
+    }
+    //CPosition pos(1,0,0);
+    CPcs *pPcs = new CPcs();
+
+    QVector4D posVec = m_pcsListMgr->m_pPcsCurrent->m_mat * QVector4D(pos.x, pos.y, pos.z, 1);
+    CPosition globalPos(posVec.x(), posVec.y(), posVec.z());
+
+    pPcs->m_mat = m_pcsListMgr->m_pPcsCurrent->m_mat;
+    pPcs->m_mat.translate(pos.x, pos.y, pos.z);
+    // 上面是局部变量，但是坐标系中心必须保存全局坐标
+
+    pPcs->m_poso = globalPos;
+
+    pPcs->m_nPcsID = m_pcsListMgr->m_pPcsCurrent->m_nPcsID;
+    pPcs->m_nRef = m_pcsListMgr->m_nCount+1;
+
+    // 创建节点
+    CPcsNode *pcsTempNode = new CPcsNode();
+    pcsTempNode->pPcs = pPcs;
+    // pcsTempNode->create_type = e2dCoord; //create_type?
+    pcsTempNode->SetObjectAutoName("临时坐标系");
+
+    pcsTempNode->SetObjectCName("临时坐标系");
+
+    m_pcsListMgr->m_pNodeTemporary = pcsTempNode;
+
+    // 设置当前坐标系,并更新所有entity的当前坐标系
+    m_pcsListMgr->SetCurCoordSystem(pcsTempNode->pPcs);
+
+    // 把临时坐标系节点加入objectlist
+    m_pcsListMgr->m_pNodeTemporary->setDwAddress((uintptr_t)(pcsTempNode));
+    m_ObjectListMgr->Add(m_pcsListMgr->m_pNodeTemporary);
+
+    //选中元素,取消其他元素选中
+    for(auto const &object:m_ObjectListMgr->m_objectList){
+        object->SetSelected(false);
+    }
+    m_pcsListMgr->m_pNodeTemporary->SetSelected(true);
+
+    // 更新状态栏
+    switchCsBtn->setText("临时坐标系");
+
+    //qDebug()<<"添加坐标系完成！！";
+    NotifySubscribe();
+}
+
+void MainWindow::on2dCoordSave(){
+    if(m_pcsListMgr->bTempPcsNodeInUse() == false)
+    {
+        stbar->showMessage("没有临时坐标系需要保存",2000);
+        return;
+    }
+
+    // 临时坐标系转为正式坐标系
+    m_pcsListMgr->AddCoordSys(m_pcsListMgr->m_pNodeTemporary);
+    m_pcsListMgr->m_pTailPcsNode->nPcsNodeId = ++CPcsNode::nPcsNodeCount;
+    int nPcsId=m_pcsListMgr->m_pTailPcsNode->nPcsNodeId;
+    QString pcsName=QString("工件坐标系%1").arg(nPcsId-1);
+    m_pcsListMgr->m_pTailPcsNode->SetObjectAutoName(pcsName);
+    m_pcsListMgr->m_pTailPcsNode->SetObjectCName(pcsName);
+    qDebug()<<"当前有"<<m_pcsListMgr->m_nCount<<"个坐标系";
+
+    m_pcsListMgr->setBTempPcsNodeInUse(false);
+    //更新状态栏
+    switchCsBtn->setText(pcsName);
+    NotifySubscribe();
+
 }
