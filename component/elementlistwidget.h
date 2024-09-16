@@ -18,8 +18,10 @@
 #include <QContextMenuEvent>
 #include<QToolBar>
 #include <QVector>
+#include <manager/centitymgr.h>
 //#include <unordered_map>
 #include "geometry/globes.h"
+#include "mainwindow.h"
 class ElementListWidget : public QWidget
 {
     Q_OBJECT
@@ -34,6 +36,8 @@ public:
     void judgetype(CEntity*);
     void removeall();
     void updateInsertIndicatorPosition();
+    void upadteelementlist();
+
 private:
     QTreeWidget *treeWidgetNames;
     QTreeWidget *treeWidgetInfo;
@@ -45,8 +49,10 @@ private:
     QToolBar * toolBar;
     CEntity * centity;
     ENTITY_TYPE m_EntityType;
-
+    MainWindow *m_pMainWin=nullptr;
     //std::unordered_map<QTreeWidgetItem*, size_t> itemToIndexMap;
+signals:
+    void itemSelected(int itemName);
 };
 
 #endif // ELEMENTLISTWIDGET_H

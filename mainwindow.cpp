@@ -27,6 +27,7 @@ MainWindow::MainWindow(QWidget *parent)
     setupUi();
     RestoreWidgets();
     loadManager();
+    //connect(pWinElementListWidget,&ElementListWidget::itemSelected,pWinDataWidget,&pWinDataWidget::);
 }
 
 void MainWindow::setupUi(){
@@ -307,10 +308,7 @@ CEntity* MainWindow::CreateEntity(int nType){
 
 void MainWindow::NotifySubscribe()
 {
-    m_ObjectListMgr->upadteelementlist();
-
-    // 遍历entitylist重新绘制
-    m_EntityListMgr->reDraw();
+    pWinElementListWidget->upadteelementlist();
 }
 
 void MainWindow::OnPresetPoint(CPosition pt){
@@ -328,7 +326,7 @@ void MainWindow::OnPresetPoint(CPosition pt){
     m_ObjectListMgr->Add(pPoint);
 
     //qDebug()<<"clicked3.2";
-    //NotifySubscribe();
+    NotifySubscribe();
 }
 
 void MainWindow::OnPresetLine(CPosition ptStart, CPosition ptEnd)
@@ -341,7 +339,6 @@ void MainWindow::OnPresetLine(CPosition ptStart, CPosition ptEnd)
     pLine->m_pCurCoord = m_pcsListMgr->m_pPcsCurrent;
     pLine->m_pExtCoord = m_pcsListMgr->m_pPcsCurrent;
     // pLine->SetNominal();
-
     // 加入Entitylist 和 ObjectList
     m_EntityListMgr->Add(pLine);
     m_ObjectListMgr->Add(pLine);
@@ -361,7 +358,6 @@ void MainWindow::OnPresetCircle(CPosition pt, double diameter)
     pCircle->m_pRefCoord = m_pcsListMgr->m_pPcsCurrent;
     pCircle->m_pCurCoord = m_pcsListMgr->m_pPcsCurrent;
     pCircle->m_pExtCoord = m_pcsListMgr->m_pPcsCurrent;
-
     // pCircle->SetNominal();
 
     std::vector<QPointF> points;
@@ -403,7 +399,6 @@ void MainWindow::OnPresetPlane(CPosition posCenter, QVector4D normal, QVector4D 
     pPlane->SetCurCoord(m_pcsListMgr->m_pPcsCurrent);
     pPlane->SetRefCoord(m_pcsListMgr->m_pPcsCurrent);
     pPlane->SetExtCoord(m_pcsListMgr->m_pPcsCurrent);
-
     // pPlane->SetNominal();
 
     // 加入Entitylist 和 ObjectList
@@ -424,7 +419,6 @@ void MainWindow::OnPresetSphere(CPosition posCenter, double diametre)
     pSphere->SetCurCoord(m_pcsListMgr->m_pPcsCurrent);
     pSphere->SetRefCoord(m_pcsListMgr->m_pPcsCurrent);
     pSphere->SetExtCoord(m_pcsListMgr->m_pPcsCurrent);
-
     // pSphere->SetNominal();
 
     // 加入Entitylist 和 ObjectList
@@ -446,7 +440,6 @@ void MainWindow::OnPresetCylinder(CPosition pos, QVector4D vec, double height, d
     pCylinder->SetCurCoord(m_pcsListMgr->m_pPcsCurrent);
     pCylinder->SetRefCoord(m_pcsListMgr->m_pPcsCurrent);
     pCylinder->SetExtCoord(m_pcsListMgr->m_pPcsCurrent);
-
     // pCylinder->SetNominal();
 
     // 加入Entitylist 和 ObjectList
@@ -473,7 +466,6 @@ void MainWindow::OnPresetCone(CPosition posCenter, QVector4D axis, double partH,
     pCone->SetCurCoord(m_pcsListMgr->m_pPcsCurrent);
     pCone->SetRefCoord(m_pcsListMgr->m_pPcsCurrent);
     pCone->SetExtCoord(m_pcsListMgr->m_pPcsCurrent);
-
     // pCone->SetNominal();
 
     // 加入Entitylist 和 ObjectList
@@ -482,6 +474,11 @@ void MainWindow::OnPresetCone(CPosition posCenter, QVector4D axis, double partH,
 
     qDebug()<<"add a Cone";
     NotifySubscribe();
+}
+
+CObjectMgr *MainWindow::getObjectListMgr()
+{
+    return m_ObjectListMgr;
 }
 
 void MainWindow::showPresetElemWidget(int index){

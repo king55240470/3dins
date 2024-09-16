@@ -1,7 +1,6 @@
 #ifndef COBJECTMGR_H
 #define COBJECTMGR_H
 #include "geometry/cobject.h"
-#include "component/elementlistwidget.h"
 
 class CObjectMgr
 {
@@ -27,7 +26,7 @@ public:
     void RemoveAll();
     void SelectAll(bool);
     CObject* findObject();
-    void upadteelementlist();
+    QVector<CObject*> getObjectList();
 };
 
 #endif // COBJECTMGR_H
