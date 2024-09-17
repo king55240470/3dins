@@ -6,7 +6,6 @@
 #include <vtkPolyData.h>
 #include <vtkLineSource.h>
 #include <vtkCellArray.h>
-#include <vtkEllipseArcSource.h>
 #include <vtkPlaneSource.h>
 #include <vtkSphereSource.h>
 #include <vtkCylinderSource.h>
@@ -70,7 +69,7 @@ vtkSmartPointer<vtkActor> CLine::draw(){
 // 圆类的draw()
 vtkSmartPointer<vtkActor> CCircle::draw(){
     // 创建圆上的点集
-    vtkSmartPointer<vtkPoints> points;
+    auto points = vtkSmartPointer<vtkPoints>::New();
     const int numPoints = 100; // 圆的点数，更多点数会更平滑
     const double radius = getDiameter()/2; // 圆的半径
     for (int i = 0; i < numPoints; ++i)
@@ -82,7 +81,7 @@ vtkSmartPointer<vtkActor> CCircle::draw(){
     }
 
     // 创建一个线源来表示圆的线（多段线）
-    vtkSmartPointer<vtkCellArray> lines;
+    auto lines = vtkSmartPointer<vtkCellArray>::New();
     vtkIdType pointIds[2];
     for (int i = 0; i < numPoints - 1; ++i)
     {
@@ -96,14 +95,14 @@ vtkSmartPointer<vtkActor> CCircle::draw(){
     lines->InsertNextCell(2, pointIds);
 
     // 创建PolyData并设置点和线
-    vtkSmartPointer<vtkPolyData> polyData;
+    auto polyData = vtkSmartPointer<vtkPolyData>::New();
     polyData->SetPoints(points);
     polyData->SetLines(lines);
 
     // 创建映射器和actor
-    vtkSmartPointer<vtkPolyDataMapper> mapper;
+    auto mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     mapper->SetInputData(polyData);
-    vtkSmartPointer<vtkActor> actor;
+    auto actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
 
     VtkWidget::addActor(actor);
@@ -122,11 +121,11 @@ vtkSmartPointer<vtkActor> CPlane::draw(){
     planeSource->SetYResolution(50);
 
     // 创建映射器
-    vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    auto mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     mapper->SetInputConnection(planeSource->GetOutputPort());
 
     // 创建执行器
-    vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
+    auto actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
 
     VtkWidget::addActor(actor);
@@ -158,6 +157,7 @@ vtkSmartPointer<vtkActor> CCylinder::draw(){
     auto cylinder = vtkSmartPointer<vtkCylinderSource>::New();
     cylinder->SetCenter(getBtm_center().x, getBtm_center().y, getBtm_center().z);
     cylinder->SetRadius(getDiameter() / 2);
+    cylinder->SetResolution(100);
 
     // 创建映射器
     auto mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
@@ -178,6 +178,7 @@ vtkSmartPointer<vtkActor> CCone::draw(){
     cone->SetCenter(getVertex().x, getVertex().y, getVertex().z);
     cone->SetRadius(getRadian());
     cone->SetHeight(getCone_height());
+    cone->SetResolution(100);
 
     // 创建映射器
     auto mapper = vtkSmartPointer<vtkPolyDataMapper>::New();

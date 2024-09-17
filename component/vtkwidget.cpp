@@ -23,8 +23,11 @@ vtkSmartPointer<vtkRenderWindowInteractor> VtkWidget::m_interactor= vtkSmartPoin
 VtkWidget::VtkWidget(QWidget *parent)
     : QWidget(parent)
 {
+    m_pMainWin = (MainWindow*) parent;
+
     // 为交互器设置窗口
     m_interactor->SetRenderWindow(m_renWin);
+
     // 创建球体源
     vtkSmartPointer<vtkSphereSource> sphere = vtkSmartPointer<vtkSphereSource>::New();
     sphere->SetCenter(0, 2, 0);
@@ -56,7 +59,7 @@ VtkWidget::VtkWidget(QWidget *parent)
     m_renderer->AddActor(axes);
 
     m_renderer->SetBackground(0.1, 0.2, 0.4);
-    m_renderer->AddActor(actor_2); // 将球体添加到渲染器
+    // m_renderer->AddActor(actor_2); // 将球体添加到渲染器
     m_renWin->AddRenderer(m_renderer);  // 将渲染器添加到渲染窗口
     m_renWin->SetSize(WIDTH, HEIGHT);
 
@@ -121,7 +124,7 @@ void VtkWidget::reDraw(){
     VtkWidget::getRenderer()->Clear();
 
     // 遍历m_entityList重新绘制
-    for(auto entity : m_pMainWin->m_EntityListMgr->getEntityList()){
+    for(auto& entity : m_pMainWin->m_EntityListMgr->getEntityList()){
         entity->draw();
     }
 
