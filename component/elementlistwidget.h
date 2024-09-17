@@ -13,7 +13,6 @@
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
 #include <QApplication>
-#include <set>
 #include <QDebug>
 #include <QContextMenuEvent>
 #include<QToolBar>
@@ -44,7 +43,6 @@ private:
     QLineEdit *yLineEdit;
     QLineEdit *sizeLineEdit;
     int nextEllipseIndex=0;
-    std::set<int> deletedIds;
     QToolBar * toolBar;
     CEntity * centity;
     MainWindow *m_pMainWin=nullptr;
