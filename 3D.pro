@@ -749,5 +749,5 @@ CONFIG(debug, debug|release){
 }
 
 
-INCLUDEPATH += $$PWD/include
-LIBS += -L$$PWD/lib -lmyDll
+# INCLUDEPATH += $$PWD/include
+# LIBS += -L$$PWD/lib -lmyDll
