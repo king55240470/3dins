@@ -115,7 +115,6 @@ void VtkWidget::addActor(vtkSmartPointer<vtkActor>& actor){
 
 void VtkWidget::UpdateInfo(){
     reDraw();
-    getRenderWindow()->Render();
 }
 
 
@@ -130,6 +129,7 @@ void VtkWidget::reDraw(){
 
     // 将新的渲染器加入渲染窗口
     VtkWidget::getRenderWindow()->AddRenderer(VtkWidget::getRenderer());
+    getRenderWindow()->Render();
 }
 
 VtkWidget::~VtkWidget() {}
