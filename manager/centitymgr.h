@@ -25,7 +25,7 @@ public:
     CEntity* FindEntityByName(QString);
     int GetCount();
     void RemoveAll();
-    QVector<CEntity*> getEntityList();
+    QVector<CEntity*>& getEntityList();
 };
 
 #endif // CENTITYMGR_H
