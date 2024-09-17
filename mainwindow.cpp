@@ -639,46 +639,38 @@ bool MainWindow::eventFilter(QObject* watched, QEvent* event){
     return QMainWindow::eventFilter(watched, event);
 }
 
+//处理临时坐标系的创建
 void MainWindow::on2dCoordOriginAuto(){
     // 如果临时坐标系不为空，则禁止继续创建临时坐标系
     if(m_pcsListMgr->m_bTempPcsNodeInUse)
     {
-        // 设置状态栏的样式
-        // 创建自定义 QLabel
-
-        // ShowCustomizedStatusMsg("已存在临时坐标系",2000);
         stbar->showMessage("已存在临时坐标系",2000);
-
         return;
-
     }
     //qDebug()<<"添加坐标系";
 
     m_pcsListMgr->m_bTempPcsNodeInUse = true;
 
+    // 创建一个对象列表，用于存储选中的对象
     QVector<CObject*> choosenList;
-    // for(int i=0;i<m_ObjectListMgr->m_objectList.size();i++)
+    // for(int i=0;i<m_ObjectListMgr->getObjectList().size();i++)
     // {
-    //     if(m_ObjectListMgr->m_objectList[i]->getbSel() == 1)
+    //     if(m_ObjectListMgr->getObjectList()[i]->getbSel() == 1) // 如果对象被选中
     //     {
-    //         choosenList.push_back(m_ObjectListMgr->m_objectList[i]);
+    //         choosenList.push_back(m_ObjectListMgr->getObjectList()[i]);
     //     }
-    // }     getbSel()??
+    // }
     if(choosenList.size() != 1) return;
     CPosition pos;
+
+    // 根据选中的对象类型，获取其坐标信息
     switch (choosenList[0]->GetUniqueType()) {
     case enCircle:
     {
         CCircle* newCircle = (CCircle*)choosenList[0];
-        // CPosition posTemp;
         pos.x=newCircle->getCenter().x;
         pos.y=newCircle->getCenter().y;
         pos.z=newCircle->getCenter().z;
-        //QVector4D vecPos = newCircle->GetGlobalPos(posTemp);
-        //pos.x = vecPos.x();
-        //pos.y = vecPos.y();
-        //pos.z = vecPos.z();
-
         break;
     }
     case enPoint:
@@ -692,16 +684,17 @@ void MainWindow::on2dCoordOriginAuto(){
     default:
         break;
     }
-    //CPosition pos(1,0,0);
     CPcs *pPcs = new CPcs();
 
-    QVector4D posVec = m_pcsListMgr->m_pPcsCurrent->m_mat * QVector4D(pos.x, pos.y, pos.z, 1);
+    QVector4D posVec = m_pcsListMgr->m_pPcsCurrent->m_mat * QVector4D(pos.x, pos.y, pos.z, 1); // 得到全局坐标
     CPosition globalPos(posVec.x(), posVec.y(), posVec.z());
 
+    // 设置新坐标系的矩阵为当前坐标系的矩阵
     pPcs->m_mat = m_pcsListMgr->m_pPcsCurrent->m_mat;
+    // 将坐标系平移到选中对象的位置，即工件坐标系
     pPcs->m_mat.translate(pos.x, pos.y, pos.z);
-    // 上面是局部变量，但是坐标系中心必须保存全局坐标
 
+    // 上面是局部变量，但是坐标系中心必须保存全局坐标
     pPcs->m_poso = globalPos;
 
     pPcs->m_nPcsID = m_pcsListMgr->m_pPcsCurrent->m_nPcsID;
@@ -710,9 +703,8 @@ void MainWindow::on2dCoordOriginAuto(){
     // 创建节点
     CPcsNode *pcsTempNode = new CPcsNode();
     pcsTempNode->pPcs = pPcs;
-    // pcsTempNode->create_type = e2dCoord; //create_type?
+    // pcsTempNode->create_type = e2dCoord;
     pcsTempNode->SetObjectAutoName("临时坐标系");
-
     pcsTempNode->SetObjectCName("临时坐标系");
 
     m_pcsListMgr->m_pNodeTemporary = pcsTempNode;
@@ -721,14 +713,14 @@ void MainWindow::on2dCoordOriginAuto(){
     m_pcsListMgr->SetCurCoordSystem(pcsTempNode->pPcs);
 
     // 把临时坐标系节点加入objectlist
-    m_pcsListMgr->m_pNodeTemporary->setDwAddress((uintptr_t)(pcsTempNode));
+    m_pcsListMgr->m_pNodeTemporary->setDwAddress((uintptr_t)(pcsTempNode)); // 将节点地址转换为uintptr_t类型并存储
     m_ObjectListMgr->Add(m_pcsListMgr->m_pNodeTemporary);
 
     //选中元素,取消其他元素选中
     for(auto const &object:m_ObjectListMgr->getObjectList()){
         object->SetSelected(false);
     }
-    m_pcsListMgr->m_pNodeTemporary->SetSelected(true);
+    m_pcsListMgr->m_pNodeTemporary->SetSelected(true); // 将临时坐标系节点设置为选中状态
 
     // 更新状态栏
     switchCsBtn->setText("临时坐标系");
@@ -737,6 +729,7 @@ void MainWindow::on2dCoordOriginAuto(){
     NotifySubscribe();
 }
 
+// 将临时二维坐标系转化为正式的坐标系并保存
 void MainWindow::on2dCoordSave(){
     if(m_pcsListMgr->bTempPcsNodeInUse() == false)
     {
@@ -748,12 +741,13 @@ void MainWindow::on2dCoordSave(){
     m_pcsListMgr->AddCoordSys(m_pcsListMgr->m_pNodeTemporary);
     m_pcsListMgr->m_pTailPcsNode->nPcsNodeId = ++CPcsNode::nPcsNodeCount;
     int nPcsId=m_pcsListMgr->m_pTailPcsNode->nPcsNodeId;
-    QString pcsName=QString("工件坐标系%1").arg(nPcsId-1);
+    QString pcsName=QString("工件坐标系%1").arg(nPcsId-1); // 命名为 "工件坐标系" + (ID - 1)
     m_pcsListMgr->m_pTailPcsNode->SetObjectAutoName(pcsName);
     m_pcsListMgr->m_pTailPcsNode->SetObjectCName(pcsName);
     qDebug()<<"当前有"<<m_pcsListMgr->m_nCount<<"个坐标系";
 
-    m_pcsListMgr->setBTempPcsNodeInUse(false);
+    m_pcsListMgr->setBTempPcsNodeInUse(false);  // 将标志设为不再使用临时坐标系
+
     //更新状态栏
     switchCsBtn->setText(pcsName);
     NotifySubscribe();
