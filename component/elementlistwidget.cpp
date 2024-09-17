@@ -96,7 +96,7 @@ void ElementListWidget::onDeleteEllipse()
             auto& objectList = m_pMainWin->m_ObjectListMgr->getObjectList();
             objectList.erase(objectList.begin() + row);
         }
-        upadteelementlist();
+        m_pMainWin->NotifySubscribe();
     }
 }
 
