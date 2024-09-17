@@ -5,9 +5,10 @@
 #include <QSplitter>
 #include <QMenuBar>
 #include <QStatusbar>
+#include <QPushButton>
 #include "geometry/globes.h"
 #include "geometry/centity.h"
-#include "component/vtkwidget.h"
+//#include "component/vtkwidget.h"
 #include "manager/centitymgr.h"
 #include "manager/cobjectmgr.h"
 #include "manager/cpcsmgr.h"
@@ -44,7 +45,14 @@ private:
     PresetElemWidget *pWinPresetElemWidget;
 
     QMenuBar * bar;
+
+    //状态栏
     QStatusBar *stbar;
+    QPushButton* switchRefCsBtn;
+    QPushButton* switchCsBtn;
+
+protected:
+    bool eventFilter(QObject* watched, QEvent* event) override;
 
 //私有的槽函数
 /*private slots:
@@ -66,10 +74,14 @@ public:
     void OnPresetSphere(CPosition posCenter, double diametre);
     void OnPresetCylinder(CPosition pos, QVector4D vec, double height, double diametre);
     void OnPresetCone(CPosition posCenter, QVector4D axis, double partH, double fullH, double angle);
-
+    CObjectMgr *getObjectListMgr();
     CEntity* CreateEntity(int nType);
     void NotifySubscribe();
     void loadManager();
+
+    //slots
+    void on2dCoordOriginAuto(); // 创建坐标系
+    void on2dCoordSave();
 
 public:
     MainWindow(QWidget *parent = nullptr);
@@ -78,5 +90,8 @@ public:
     void RestoreWidgets();
     void setupUi();
     void showPresetElemWidget(int);
+
+private:
+    CPcs* m_nRelyOnWhichCs; // 状态栏的参考坐标系
 };
 #endif // MAINWINDOW_H
