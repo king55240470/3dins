@@ -42,7 +42,7 @@ public:
     // 将draw返回的actor添加到渲染器中
     static void addActor(vtkSmartPointer<vtkActor>& actor);
 
-    // 实现在notify里更新信息
+    // 在notifsubscribey里更新信息
     void UpdateInfo();
 
     // 当添加新的元素后，遍历m_entityList重新绘制
