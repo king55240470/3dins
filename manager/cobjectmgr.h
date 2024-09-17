@@ -26,7 +26,7 @@ public:
     void RemoveAll();
     void SelectAll(bool);
     CObject* findObject();
-    QVector<CObject*> getObjectList();
+    QVector<CObject*>& getObjectList();
 };
 
 #endif // COBJECTMGR_H
