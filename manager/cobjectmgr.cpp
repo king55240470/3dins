@@ -56,7 +56,7 @@ void CObjectMgr::SelectAll(bool bVal)
         pObj->m_bSel= bVal;
 }
 
-QVector<CObject *> CObjectMgr::getObjectList()
+QVector<CObject *> &CObjectMgr::getObjectList()
 {
     return m_objectList;
 }

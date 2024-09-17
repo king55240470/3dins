@@ -93,7 +93,8 @@ void ElementListWidget::onDeleteEllipse()
             int row = treeWidgetNames->indexOfTopLevelItem(selectedItem);
             treeWidgetNames->takeTopLevelItem(row);
             treeWidgetInfo->takeTopLevelItem(row);
-            m_pMainWin->m_ObjectListMgr->getObjectList().erase(m_pMainWin->m_ObjectListMgr->getObjectList().begin() + row);
+            auto& objectList = m_pMainWin->m_ObjectListMgr->getObjectList();
+            objectList.erase(objectList.begin() + row);
         }
         upadteelementlist();
     }

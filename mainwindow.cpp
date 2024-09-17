@@ -337,7 +337,7 @@ CEntity* MainWindow::CreateEntity(int nType){
 void MainWindow::NotifySubscribe()
 {
     pWinElementListWidget->upadteelementlist();
-    pWinVtkWidget->UpdateInfo(); // 更新vtkwidget信息
+    //pWinVtkWidget->UpdateInfo(); // 更新vtkwidget信息
 }
 
 void MainWindow::OnPresetPoint(CPosition pt){
