@@ -9,8 +9,9 @@
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
 
-#include <vtkGenericOpenGLRenderWindow.h> // VTK 的 OpenGL 渲染窗口类
+#include <vtkGenericOpenGLRenderWindow.h>
 #include <vtkGenericRenderWindowInteractor.h>
+
 #include <vtkActor.h>
 #include <vtkSmartPointer.h>
 
@@ -53,8 +54,8 @@ private:
 
     // 为所有的actor创建渲染器、渲染窗口和交互器
     static vtkSmartPointer<vtkRenderer> m_renderer;
-    static vtkSmartPointer<vtkRenderWindow> m_renWin;
-    static vtkSmartPointer<vtkRenderWindowInteractor> m_interactor;
+    static vtkSmartPointer<vtkGenericOpenGLRenderWindow> m_renWin;
+    static vtkSmartPointer<vtkGenericRenderWindowInteractor> m_interactor;
     MainWindow *m_pMainWin=nullptr;
 };
 
