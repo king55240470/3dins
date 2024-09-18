@@ -9,16 +9,18 @@
 #include <vtkAutoInit.h>
 VTK_MODULE_INIT(vtkRenderingOpenGL2);
 VTK_MODULE_INIT(vtkInteractionStyle);
+VTK_MODULE_INIT(vtkRenderingVolumeOpenGL2);
+VTK_MODULE_INIT(vtkRenderingFreeType);
 
 
 // 定义并初始化渲染器、渲染窗口和交互器
-vtkSmartPointer<vtkRenderer> VtkWidget::m_renderer = vtkSmartPointer<vtkRenderer>::New();
-vtkSmartPointer<vtkGenericOpenGLRenderWindow> VtkWidget::m_renWin = vtkSmartPointer<vtkGenericOpenGLRenderWindow>::New();
-vtkSmartPointer<vtkGenericRenderWindowInteractor> VtkWidget::m_interactor= vtkSmartPointer<vtkGenericRenderWindowInteractor>::New();
-
 // vtkSmartPointer<vtkRenderer> VtkWidget::m_renderer = vtkSmartPointer<vtkRenderer>::New();
-// vtkSmartPointer<vtkRenderWindow> VtkWidget::m_renWin = vtkSmartPointer<vtkRenderWindow>::New();
-// vtkSmartPointer<vtkRenderWindowInteractor> VtkWidget::m_interactor= vtkSmartPointer<vtkRenderWindowInteractor>::New();
+// vtkSmartPointer<vtkGenericOpenGLRenderWindow> VtkWidget::m_renWin = vtkSmartPointer<vtkGenericOpenGLRenderWindow>::New();
+// vtkSmartPointer<vtkGenericRenderWindowInteractor> VtkWidget::m_interactor= vtkSmartPointer<vtkGenericRenderWindowInteractor>::New();
+
+vtkSmartPointer<vtkRenderer> VtkWidget::m_renderer = vtkSmartPointer<vtkRenderer>::New();
+vtkSmartPointer<vtkRenderWindow> VtkWidget::m_renWin = vtkSmartPointer<vtkRenderWindow>::New();
+vtkSmartPointer<vtkRenderWindowInteractor> VtkWidget::m_interactor= vtkSmartPointer<vtkRenderWindowInteractor>::New();
 
 
 // 渲染窗口大小
@@ -69,13 +71,9 @@ VtkWidget::VtkWidget(QWidget *parent)
     m_renWin->SetSize(WIDTH, HEIGHT);
 
     // 设置 VTK 渲染窗口到 QWidget
-    QVTKOpenGLNativeWidget* vtkWidget = new QVTKOpenGLNativeWidget(this);
-    vtkWidget->setRenderWindow(m_renWin);
-    QHBoxLayout *layout = new QHBoxLayout(this);
-    layout->addWidget(vtkWidget);
-    setLayout(layout);
-
-    m_renWin->Render(); // 开始渲染
+    QHBoxLayout *mainlayout = new QHBoxLayout(this);
+    setUpVtk(mainlayout); // 配置vtk窗口
+    this->setLayout(mainlayout);
 
 
     // // 创建 PCLViewer 对象，用于显示点云
@@ -136,3 +134,10 @@ void VtkWidget::reDraw(){
 }
 
 VtkWidget::~VtkWidget() {}
+
+void VtkWidget::setUpVtk(QHBoxLayout *layout){
+    QVTKOpenGLNativeWidget* vtkWidget = new QVTKOpenGLNativeWidget(this);
+    vtkWidget->setRenderWindow(m_renWin);
+    layout->addWidget(vtkWidget);
+    m_renWin->Render(); // 开始渲染
+}
