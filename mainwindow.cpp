@@ -554,16 +554,16 @@ bool MainWindow::eventFilter(QObject* watched, QEvent* event){
             // 使用反向迭代器倒着遍历
             for (auto it = m_pcsListMgr->m_PcsNodeList.rbegin(); it != m_pcsListMgr->m_PcsNodeList.rend(); ++it) {
                 CPcsNode* node = *it;  // 解引用迭代器以获取 CPcsNode* 指针
-                //std::cout << "Node value: " << node->value << std::endl;
                 if(node->m_bDeleted==false)
                     listWidget.addItem(node->GetObjectCName());
             }
 
             // 连接列表的点击事件
-            connect(&listWidget, &QListWidget::itemClicked, [&](QListWidgetItem *item){
+            connect(&listWidget, &QListWidget::itemClicked, this,[&](QListWidgetItem *item){
                 // QMessageBox::information(this, "选项被点击", "你点击了: " + item->text());
                 strClickedText=item->text();
             });
+
             // 添加按钮
             QHBoxLayout *buttonLayout = new QHBoxLayout;
             QPushButton *okButton = new QPushButton("确定");
@@ -582,31 +582,32 @@ bool MainWindow::eventFilter(QObject* watched, QEvent* event){
                 {
                     if(strClickedText=="临时坐标系")
                     {
-                        // 啥也不干
+                        // 什么也不做
                     }
                     else if (strClickedText=="机械坐标系")
                     {
-                        CPcs* pPcs = m_pcsListMgr->m_pHeadPcsNode->getPcs();
+                        CPcs* pPcs = m_pcsListMgr->GetBaseCoordSystem();
                         m_pcsListMgr->SetCurCoordSystem(pPcs);
                         NotifySubscribe();
-                        for(CEntity *pEntity : m_pcsListMgr->m_pEntityListMgr->m_entityList)
+                        // 更新所有实体的当前坐标系
+                        for(CEntity *pEntity : m_pcsListMgr->m_pEntityListMgr->getEntityList())
                         {
                             pEntity->SetCurCoord(pPcs);
                         }
                     }
                     else
                     {
-                        // 遍历找到该坐标系
+                        // 遍历找到该工件坐标系
                         CPcs* pPcs = m_pcsListMgr->Find(strClickedText);
                         m_pcsListMgr->SetCurCoordSystem(pPcs);
                         NotifySubscribe();
-                        for(CEntity *pEntity : m_pcsListMgr->m_pEntityListMgr->m_entityList)
+                        for(CEntity *pEntity : m_pcsListMgr->m_pEntityListMgr->getEntityList())
                         {
                             pEntity->SetCurCoord(pPcs);
                         }
 
                     }
-                    // 右下加标签设置为对应坐标系
+                    // 右下加标签设置为所选坐标系
                     button->setText(strClickedText);
                 }
                 else
@@ -622,14 +623,14 @@ bool MainWindow::eventFilter(QObject* watched, QEvent* event){
             if(button->text()=="参考依赖坐标系")
             {
                 button->setText("参考当前坐标系");
-                // m_nRelyOnWhichCs = csCur;
-                // pWinDataResultWidget->UpdateInfo();
+                m_nRelyOnWhichCs = m_pcsListMgr->GetCurCoordSystem();
+                // pWinDataWidget->UpdateInfo(); // 更新数据结果窗口
             }
             else
             {
                 button->setText("参考依赖坐标系");
-                // m_nRelyOnWhichCs = csRef;
-                // pWinDataResultWidget->UpdateInfo();
+                m_nRelyOnWhichCs = m_pcsListMgr->GetBaseCoordSystem();
+                // pWinDataWidget->UpdateInfo();
             }
         }
 
@@ -653,13 +654,13 @@ void MainWindow::on2dCoordOriginAuto(){
 
     // 创建一个对象列表，用于存储选中的对象
     QVector<CObject*> choosenList;
-    // for(int i=0;i<m_ObjectListMgr->getObjectList().size();i++)
-    // {
-    //     if(m_ObjectListMgr->getObjectList()[i]->getbSel() == 1) // 如果对象被选中
-    //     {
-    //         choosenList.push_back(m_ObjectListMgr->getObjectList()[i]);
-    //     }
-    // }
+    for(int i=0;i<m_ObjectListMgr->getObjectList().size();i++)
+    {
+        if(m_ObjectListMgr->getObjectList()[i]->IsSelected() == 1) // 如果对象被选中
+        {
+            choosenList.push_back(m_ObjectListMgr->getObjectList()[i]);
+        }
+    }
     if(choosenList.size() != 1) return;
     CPosition pos;
 
@@ -703,7 +704,7 @@ void MainWindow::on2dCoordOriginAuto(){
     // 创建节点
     CPcsNode *pcsTempNode = new CPcsNode();
     pcsTempNode->pPcs = pPcs;
-    // pcsTempNode->create_type = e2dCoord;
+    // pcsTempNode->create_type = e2dCoord; // 记录坐标系如何创建
     pcsTempNode->SetObjectAutoName("临时坐标系");
     pcsTempNode->SetObjectCName("临时坐标系");
 
@@ -729,7 +730,7 @@ void MainWindow::on2dCoordOriginAuto(){
     NotifySubscribe();
 }
 
-// 将临时二维坐标系转化为正式的坐标系并保存
+// 将临时坐标系转化为正式的坐标系并保存
 void MainWindow::on2dCoordSave(){
     if(m_pcsListMgr->bTempPcsNodeInUse() == false)
     {

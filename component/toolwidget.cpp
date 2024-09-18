@@ -45,6 +45,7 @@ ToolWidget::ToolWidget(QWidget *parent)
     : QWidget(parent) {
     QVBoxLayout *layout = new QVBoxLayout(this);
 
+    m_pMainWin =(MainWindow*)parent;
 
        resize(400,250);
 
@@ -381,9 +382,15 @@ void ToolWidget::connectActionWithF(){
     connect(save_actions_[save_action_name_list_.indexOf("pdf")],&QAction::triggered,&tool_widget::onSavePdf);
     connect(save_actions_[save_action_name_list_.indexOf("image")],&QAction::triggered,&tool_widget::onSaveImage);
     //坐标系
-    connect(coord_actions_[coord_action_name_list_.indexOf("创建坐标系")],&QAction::triggered,&tool_widget::onCreateCoord);
+    connect(coord_actions_[coord_action_name_list_.indexOf("创建坐标系")],&QAction::triggered,this,[&](){
+        tool_widget::onCreateCoord();
+        m_pMainWin->on2dCoordOriginAuto(); //创建临时坐标系
+    });
     connect(coord_actions_[coord_action_name_list_.indexOf("旋转坐标系")],&QAction::triggered,&tool_widget::onSpinCoord);
-    connect(coord_actions_[coord_action_name_list_.indexOf("保存坐标系")],&QAction::triggered,&tool_widget::onSaveCoord);
+    connect(coord_actions_[coord_action_name_list_.indexOf("保存坐标系")],&QAction::triggered,this,[&](){
+        tool_widget::onSaveCoord();
+        m_pMainWin->on2dCoordSave();
+    });
 
 }
 
