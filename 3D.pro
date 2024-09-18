@@ -747,3 +747,7 @@ CONFIG(debug, debug|release){
     TARGET = ../_release32/AppName
     }
 }
+
+
+# INCLUDEPATH += $$PWD/include
+# LIBS += -L$$PWD/lib -lmyDll
