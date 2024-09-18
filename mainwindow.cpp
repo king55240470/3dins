@@ -395,6 +395,7 @@ void MainWindow::OnPresetCircle(CPosition pt, double diameter)
 
     // 加入Entitylist 和 ObjectList
     m_EntityListMgr->Add(pCircle);
+    m_ObjectListMgr->Add(pCircle);
 
     // if(m_ObjectListMgr->GetInsertPos()==-1){
     //     m_ObjectListMgr->Add(pCircle);
