@@ -72,12 +72,14 @@ vtkSmartPointer<vtkActor> CCircle::draw(){
     auto points = vtkSmartPointer<vtkPoints>::New();
     const int numPoints = 100; // 圆的点数，更多点数会更平滑
     const double radius = getDiameter()/2; // 圆的半径
+    auto center = getCenter();
     for (int i = 0; i < numPoints; ++i)
     {
         double theta = 2.0 * vtkMath::Pi() * static_cast<double>(i) / static_cast<double>(numPoints);
-        double x = radius * cos(theta);
-        double y = radius * sin(theta);
-        points->InsertNextPoint(x, y, 0.0); // Z坐标设为0
+        double x = center.x + radius * cos(theta); // 加上中心x坐标
+        double y = center.y + radius * sin(theta); // 加上中心y坐标
+        double z = center.z;
+        points->InsertNextPoint(x, y, z); // Z坐标设为0
     }
 
     // 创建一个线源来表示圆的线（多段线）

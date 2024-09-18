@@ -34,6 +34,9 @@ public:
     VtkWidget(QWidget *parent = nullptr);
     ~VtkWidget();
 
+    // 配置vtk窗口
+    void setUpVtk(QHBoxLayout *layout);
+
     // 获取m_renWin
     static vtkSmartPointer<vtkRenderWindow> getRenderWindow();
 
@@ -54,8 +57,13 @@ private:
 
     // 为所有的actor创建渲染器、渲染窗口和交互器
     static vtkSmartPointer<vtkRenderer> m_renderer;
-    static vtkSmartPointer<vtkGenericOpenGLRenderWindow> m_renWin;
-    static vtkSmartPointer<vtkGenericRenderWindowInteractor> m_interactor;
+    static vtkSmartPointer<vtkRenderWindow> m_renWin;
+    static vtkSmartPointer<vtkRenderWindowInteractor> m_interactor;
+
+    // static vtkSmartPointer<vtkRenderer> m_renderer;
+    // static vtkSmartPointer<vtkGenericOpenGLRenderWindow> m_renWin;
+    // static vtkSmartPointer<vtkGenericRenderWindowInteractor> m_interactor;
+
     MainWindow *m_pMainWin=nullptr;
 };
 
