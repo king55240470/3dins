@@ -114,7 +114,9 @@ vtkSmartPointer<vtkActor> CPlane::draw(){
     // 创建平面源
     vtkSmartPointer<vtkPlaneSource> planeSource = vtkSmartPointer<vtkPlaneSource>::New();
     planeSource->SetCenter(getCenter().x, getCenter().y, getCenter().z); // 设置平面中心
-    // planeSource->SetNormal(CPlane::getNormal().x, CPlane::getNormal().y, CPlane::getNormal().z); // 设置平面法线
+
+    QVector4D normalVec = getNormal(); // 存储getNormal返回的临时normal对象
+    planeSource->SetNormal(normalVec.x(), normalVec.y(), normalVec.z()); // 设置平面法线
 
     // 设置平面的X和Y分辨率
     planeSource->SetXResolution(50);

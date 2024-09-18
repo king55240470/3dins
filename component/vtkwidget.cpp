@@ -13,8 +13,13 @@ VTK_MODULE_INIT(vtkInteractionStyle);
 
 // 定义并初始化渲染器、渲染窗口和交互器
 vtkSmartPointer<vtkRenderer> VtkWidget::m_renderer = vtkSmartPointer<vtkRenderer>::New();
-vtkSmartPointer<vtkRenderWindow> VtkWidget::m_renWin = vtkSmartPointer<vtkRenderWindow>::New();
-vtkSmartPointer<vtkRenderWindowInteractor> VtkWidget::m_interactor= vtkSmartPointer<vtkRenderWindowInteractor>::New();
+vtkSmartPointer<vtkGenericOpenGLRenderWindow> VtkWidget::m_renWin = vtkSmartPointer<vtkGenericOpenGLRenderWindow>::New();
+vtkSmartPointer<vtkGenericRenderWindowInteractor> VtkWidget::m_interactor= vtkSmartPointer<vtkGenericRenderWindowInteractor>::New();
+
+// vtkSmartPointer<vtkRenderer> VtkWidget::m_renderer = vtkSmartPointer<vtkRenderer>::New();
+// vtkSmartPointer<vtkRenderWindow> VtkWidget::m_renWin = vtkSmartPointer<vtkRenderWindow>::New();
+// vtkSmartPointer<vtkRenderWindowInteractor> VtkWidget::m_interactor= vtkSmartPointer<vtkRenderWindowInteractor>::New();
+
 
 // 渲染窗口大小
 #define WIDTH 1000
@@ -53,7 +58,7 @@ VtkWidget::VtkWidget(QWidget *parent)
     axes->SetConeRadius(0.03); // 设置轴锥体的半径
     axes->SetCylinderRadius(0.02); // 设置轴圆柱体的半径
     axes->SetSphereRadius(0.03); // 设置轴末端的球体半径
-    axes->SetPosition(-WIDTH * 0.9, -HEIGHT * 0.9, 0.0);
+    axes->SetPosition(0, 2, 0);
 
     // 将坐标器添加到渲染器中
     m_renderer->AddActor(axes);
@@ -127,8 +132,6 @@ void VtkWidget::reDraw(){
         entity->draw();
     }
 
-    // 将新的渲染器加入渲染窗口
-    VtkWidget::getRenderWindow()->AddRenderer(VtkWidget::getRenderer());
     getRenderWindow()->Render();
 }
 
