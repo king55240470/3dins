@@ -5,6 +5,7 @@
 #include <QAction>
 #include <QVBoxLayout>
 #include"toolaction.h"
+#include <mainwindow.h>
 
 namespace tool_widget{
 //Find
@@ -41,6 +42,8 @@ class ToolWidget : public QWidget {
     Q_OBJECT
 public:
     explicit ToolWidget(QWidget *parent = nullptr);
+
+    MainWindow* m_pMainWin;
 
     void NotifySubscribe();
 
