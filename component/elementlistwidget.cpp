@@ -57,23 +57,7 @@ ElementListWidget::ElementListWidget(QWidget *parent)
     m_menu->addAction(m_action1);
     m_menu->addAction(m_action2);
 
-    connect(treeWidgetNames, &QTreeWidget::itemClicked, this, [this](QTreeWidgetItem*item) {
-        if (item) {
-            QString itemName = item->text(0);// 获取所选项的名称
-            QTreeWidgetItem *parentItem = item->parent();
-            int index = -1;
-            if (parentItem) {
-                // 遍历父项的子项，找到当前项的位置
-                for (int i = 0; i < parentItem->childCount(); ++i) {
-                    if (parentItem->child(i) == item) {
-                        index = i;
-                        break;
-                    }
-                }
-            }
-            emit itemSelected(index); // 发出自定义信号
-        }
-    });
+    connect(treeWidgetNames, &QTreeWidget::itemClicked, this, &ElementListWidget::onItemClicked);
 }
 
 void ElementListWidget::CreateEllipse(CObject*obj)
@@ -134,4 +118,24 @@ void ElementListWidget::upadteelementlist()
     for(const auto& element :m_pMainWin->m_ObjectListMgr->getObjectList()){
         CreateEllipse(element);
     }
+}
+
+void ElementListWidget::onItemClicked(QTreeWidgetItem *item)
+{
+    QList<QTreeWidgetItem*> selectedItems = treeWidgetNames->selectedItems();
+    QList<int>list;
+    for(QTreeWidgetItem* it:selectedItems)
+    {
+        QTreeWidgetItem *parentItem = it->parent();
+        if (parentItem) {
+            // 遍历父项的子项，找到当前项的位置
+            for (int i = 0; i < parentItem->childCount(); ++i) {
+                if (parentItem->child(i) == item) {
+                    list.push_back(i);
+                    break;
+                }
+            }
+        }
+    }
+    emit itemSelected(list); // 发出自定义信号
 }
