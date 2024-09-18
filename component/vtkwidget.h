@@ -38,13 +38,16 @@ public:
     void setUpVtk(QHBoxLayout *layout);
 
     // 获取m_renWin
-    static vtkSmartPointer<vtkRenderWindow> getRenderWindow();
+    //static vtkSmartPointer<vtkRenderWindow> getRenderWindow();
+    vtkSmartPointer<vtkRenderWindow> getRenderWindow();
 
     // 获取渲染器
-    static vtkSmartPointer<vtkRenderer> getRenderer();
+    //static vtkSmartPointer<vtkRenderer> getRenderer();
+    vtkSmartPointer<vtkRenderer> getRenderer();
 
     // 将draw返回的actor添加到渲染器中
-    static void addActor(vtkSmartPointer<vtkActor>& actor);
+    //static void addActor(vtkSmartPointer<vtkActor>& actor);
+    void addActor(vtkSmartPointer<vtkActor>& actor);
 
     // 在notifsubscribey里更新信息
     void UpdateInfo();
@@ -56,9 +59,13 @@ private:
     PCLViewer::Ptr cloud_viewer; // PCL 可视化器的智能指针
 
     // 为所有的actor创建渲染器、渲染窗口和交互器
-    static vtkSmartPointer<vtkRenderer> m_renderer;
+/*  static vtkSmartPointer<vtkRenderer> m_renderer;
     static vtkSmartPointer<vtkRenderWindow> m_renWin;
     static vtkSmartPointer<vtkRenderWindowInteractor> m_interactor;
+*/
+    vtkSmartPointer<vtkGenericOpenGLRenderWindow> renderWindow;
+    vtkSmartPointer<vtkRenderer> renderer;
+
 
     // static vtkSmartPointer<vtkRenderer> m_renderer;
     // static vtkSmartPointer<vtkGenericOpenGLRenderWindow> m_renWin;

@@ -31,7 +31,7 @@ vtkSmartPointer<vtkActor> CPoint::draw(){
     actor->SetMapper(mapper);
     actor->GetProperty()->SetPointSize(1); // 设置点的大小
 
-    VtkWidget::addActor(actor);
+    //VtkWidget::addActor(actor);
     return actor;
 }
 
@@ -61,7 +61,7 @@ vtkSmartPointer<vtkActor> CLine::draw(){
     actor->SetMapper(mapper);
 
     // 添加到渲染窗口中
-    VtkWidget::addActor(actor);
+    //VtkWidget::addActor(actor);
     return actor;
 }
 
@@ -107,7 +107,7 @@ vtkSmartPointer<vtkActor> CCircle::draw(){
     auto actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
 
-    VtkWidget::addActor(actor);
+    //VtkWidget::addActor(actor);
     return actor;
 }
 
@@ -132,7 +132,7 @@ vtkSmartPointer<vtkActor> CPlane::draw(){
     auto actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
 
-    VtkWidget::addActor(actor);
+    //VtkWidget::addActor(actor);
     return actor;
 }
 
@@ -151,7 +151,7 @@ vtkSmartPointer<vtkActor> CSphere::draw(){
     auto actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
 
-    VtkWidget::addActor(actor);
+    //VtkWidget::addActor(actor);
     return actor;
 }
 
@@ -171,7 +171,7 @@ vtkSmartPointer<vtkActor> CCylinder::draw(){
     auto actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
 
-    VtkWidget::addActor(actor);
+    //VtkWidget::addActor(actor);
     return actor;
 }
 
@@ -192,7 +192,7 @@ vtkSmartPointer<vtkActor> CCone::draw(){
     auto actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
 
-    VtkWidget::addActor(actor);
+    //VtkWidget::addActor(actor);
     return actor;
 }
 
