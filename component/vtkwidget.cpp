@@ -37,7 +37,7 @@ VtkWidget::VtkWidget(QWidget *parent)
     axes->SetPosition(0, 0, 0);
 
     // 将坐标器添加到渲染器中
-    renderer->SetBackground(0.1, 0.2, 0.4);
+    renderer->SetBackground(255, 255, 255);
     renderer->AddActor(axes);
 
     renWin->AddRenderer(renderer);  // 将渲染器添加到渲染窗口
