@@ -216,10 +216,12 @@ void CCircle::SetCenter(CPosition pt)
     m_pt.z = pt.z;
 
 }
+
 CPosition CCircle::getCenter()
 {
     return m_pt;
 }
+
 double CCircle::getDiameter()
 {
     return m_d;

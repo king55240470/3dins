@@ -28,7 +28,7 @@ MainWindow::MainWindow(QWidget *parent)
     setupUi();
     RestoreWidgets();
     loadManager();
-    //connect(pWinElementListWidget,&ElementListWidget::itemSelected,pWinDataWidget,&pWinDataWidget::);
+    connect(pWinElementListWidget,&ElementListWidget::itemSelected,pWinDataWidget,&DataWidget::updateele);
 }
 
 void MainWindow::setupUi(){
