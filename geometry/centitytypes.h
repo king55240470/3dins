@@ -6,7 +6,6 @@
 
 #include "globes.h"
 
-
 #include <vtkSmartPointer.h>
 #include <vtkActor.h>
 

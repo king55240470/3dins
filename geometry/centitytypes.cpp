@@ -31,7 +31,7 @@ vtkSmartPointer<vtkActor> CPoint::draw(){
     actor->SetMapper(mapper);
     actor->GetProperty()->SetPointSize(1); // 设置点的大小
 
-    //VtkWidget::addActor(actor);
+    // addActor(actor);
     return actor;
 }
 
