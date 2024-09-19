@@ -9,18 +9,38 @@
 #include <vtkAutoInit.h>
 VTK_MODULE_INIT(vtkRenderingOpenGL2);
 VTK_MODULE_INIT(vtkInteractionStyle);
+VTK_MODULE_INIT(vtkRenderingVolumeOpenGL2);
+VTK_MODULE_INIT(vtkRenderingFreeType);
 
 
 // 定义并初始化渲染器、渲染窗口和交互器
-vtkSmartPointer<vtkRenderer> VtkWidget::m_renderer = vtkSmartPointer<vtkRenderer>::New();
-vtkSmartPointer<vtkRenderWindow> VtkWidget::m_renWin = vtkSmartPointer<vtkRenderWindow>::New();
-vtkSmartPointer<vtkRenderWindowInteractor> VtkWidget::m_interactor= vtkSmartPointer<vtkRenderWindowInteractor>::New();
+// vtkSmartPointer<vtkRenderer> VtkWidget::m_renderer = vtkSmartPointer<vtkRenderer>::New();
+// vtkSmartPointer<vtkGenericOpenGLRenderWindow> VtkWidget::m_renWin = vtkSmartPointer<vtkGenericOpenGLRenderWindow>::New();
+// vtkSmartPointer<vtkGenericRenderWindowInteractor> VtkWidget::m_interactor= vtkSmartPointer<vtkGenericRenderWindowInteractor>::New();
+
+// vtkSmartPointer<vtkRenderer> VtkWidget::m_renderer = vtkSmartPointer<vtkRenderer>::New();
+// vtkSmartPointer<vtkRenderWindow> VtkWidget::m_renWin = vtkSmartPointer<vtkRenderWindow>::New();
+// vtkSmartPointer<vtkRenderWindowInteractor> VtkWidget::m_interactor= vtkSmartPointer<vtkRenderWindowInteractor>::New();
+
+
+
+
+// 渲染窗口大小
+#define WIDTH 1000
+#define HEIGHT 800
 
 VtkWidget::VtkWidget(QWidget *parent)
     : QWidget(parent)
 {
+    m_pMainWin = (MainWindow*) parent;
+
     // 为交互器设置窗口
-    m_interactor->SetRenderWindow(m_renWin);
+    // m_interactor->SetRenderWindow(m_renWin);
+
+    renderWindow = vtkSmartPointer<vtkGenericOpenGLRenderWindow>::New();
+    renderer = vtkSmartPointer<vtkRenderer>::New();
+
+    /*
     // 创建球体源
     vtkSmartPointer<vtkSphereSource> sphere = vtkSmartPointer<vtkSphereSource>::New();
     sphere->SetCenter(0, 2, 0);
@@ -36,7 +56,7 @@ VtkWidget::VtkWidget(QWidget *parent)
     auto actor_2 = vtkSmartPointer<vtkActor>::New();
     actor_2->SetMapper(mapper_2);
     actor_2->GetProperty()->SetColor(0.7, 0.3, 0.3);
-
+    */
     // 创建坐标器
     auto axes = vtkSmartPointer<vtkAxesActor>::New();
     axes->SetAxisLabels(true);
@@ -46,22 +66,22 @@ VtkWidget::VtkWidget(QWidget *parent)
     axes->SetConeRadius(0.03); // 设置轴锥体的半径
     axes->SetCylinderRadius(0.02); // 设置轴圆柱体的半径
     axes->SetSphereRadius(0.03); // 设置轴末端的球体半径
+    axes->SetPosition(0, 2, 0);
 
     // 将坐标器添加到渲染器中
-    m_renderer->AddActor(axes);
+    //m_renderer->AddActor(axes);
 
-    m_renderer->SetBackground(0.1, 0.2, 0.4);
-    m_renderer->AddActor(actor_2); // 将图形添加到渲染器
-    m_renWin->AddRenderer(m_renderer);  // 将渲染器添加到渲染窗口
+    //m_renderer->SetBackground(0.1, 0.2, 0.4);
+    // m_renderer->AddActor(actor_2); // 将球体添加到渲染器
+    //m_renWin->AddRenderer(m_renderer);  // 将渲染器添加到渲染窗口
+    //m_renWin->SetSize(WIDTH, HEIGHT);
 
+    renderer->AddActor(axes);
+    renderWindow->AddRenderer(renderer);
     // 设置 VTK 渲染窗口到 QWidget
-    QVTKOpenGLNativeWidget* vtkWidget = new QVTKOpenGLNativeWidget(this);
-    vtkWidget->setRenderWindow(m_renWin);
-    QHBoxLayout *layout = new QHBoxLayout(this);
-    layout->addWidget(vtkWidget);
-    setLayout(layout);
-
-    m_renWin->Render(); // 开始渲染
+    QHBoxLayout *mainlayout = new QHBoxLayout;
+    setUpVtk(mainlayout); // 配置vtk窗口
+    this->setLayout(mainlayout);
 
 
     // // 创建 PCLViewer 对象，用于显示点云
@@ -93,20 +113,22 @@ VtkWidget::VtkWidget(QWidget *parent)
 }
 
 vtkSmartPointer<vtkRenderWindow> VtkWidget::getRenderWindow(){
-    return m_renWin;
+    //return m_renWin;
+    return renderWindow;
 }
 
 vtkSmartPointer<vtkRenderer> VtkWidget::getRenderer(){
-    return m_renderer;
+    // return m_renderer;
+    return renderer;
 }
 
 void VtkWidget::addActor(vtkSmartPointer<vtkActor>& actor){
-    m_renderer->AddActor(actor);
+    // m_renderer->AddActor(actor);
+    return renderer->AddActor(actor);
 }
 
 void VtkWidget::UpdateInfo(){
     reDraw();
-    getRenderWindow()->Render();
 }
 
 
@@ -115,12 +137,20 @@ void VtkWidget::reDraw(){
     VtkWidget::getRenderer()->Clear();
 
     // 遍历m_entityList重新绘制
-    for(auto entity : m_pMainWin->m_EntityListMgr->getEntityList()){
+    for(auto& entity : m_pMainWin->m_EntityListMgr->getEntityList()){
         entity->draw();
     }
 
-    // 将新的渲染器加入渲染窗口
-    VtkWidget::getRenderWindow()->AddRenderer(VtkWidget::getRenderer());
+    getRenderWindow()->Render();
 }
 
 VtkWidget::~VtkWidget() {}
+
+void VtkWidget::setUpVtk(QHBoxLayout *layout){
+    QVTKOpenGLNativeWidget* vtkWidget = new QVTKOpenGLNativeWidget(this);
+    // vtkWidget->setRenderWindow(m_renWin);
+    vtkWidget->setRenderWindow(renderWindow);
+    layout->addWidget(vtkWidget);
+    renderWindow->Render();
+   // m_renWin->Render(); // 开始渲染
+}

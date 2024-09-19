@@ -1,6 +1,5 @@
 #include "centitymgr.h"
 
-//QVector<CEntity*> CEntityMgr::m_entityList;
 CEntityMgr::CEntityMgr() {
 
 }
@@ -60,7 +59,7 @@ void CEntityMgr::RemoveAll()
     m_entityList.clear();
 }
 
-QVector<CEntity *> CEntityMgr::getEntityList()
+QVector<CEntity *>& CEntityMgr::getEntityList()
 {
     return m_entityList;
 }

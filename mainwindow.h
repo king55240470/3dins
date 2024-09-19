@@ -92,6 +92,7 @@ public:
     void showPresetElemWidget(int);
 
 private:
+    // RELY_ON_CS_TYPE m_nRelyOnWhichCs;
     CPcs* m_nRelyOnWhichCs; // 状态栏的参考坐标系
 };
 #endif // MAINWINDOW_H
