@@ -7,25 +7,28 @@ ElementListWidget::ElementListWidget(QWidget *parent)
     m_pMainWin=(MainWindow*)parent;
     auto *layout = new QVBoxLayout(this);
 
-    // 元素创建按钮
-    QPushButton *createButton = new QPushButton("创建元素", this);
-
     // 删除选中元素的按钮
     QPushButton *deleteButton = new QPushButton("删除选中元素", this);
     connect(deleteButton, &QPushButton::clicked, this, &ElementListWidget::onDeleteEllipse);
 
     // 元素名称列表
     treeWidgetNames = new QTreeWidget(this);
-    treeWidgetNames->setHeaderLabel("元素");
+    treeWidgetNames->setColumnCount(2);
+    QStringList headers;
+    headers << "元素" << "元素别名";
+    QTreeWidgetItem *headerItem = new QTreeWidgetItem(headers);
+
+    // 设置头部项
+    treeWidgetNames->setHeaderItem(headerItem);
     //设置为多选模式
     treeWidgetNames->setSelectionMode(QAbstractItemView::MultiSelection);
 
     // 元素信息列表
     treeWidgetInfo = new QTreeWidget(this);
-    treeWidgetInfo->setHeaderLabel("元素信息");
-    QStringList headers;
+    treeWidgetInfo->setHeaderLabel("元素");
+    /*QStringList headers;
     headers << "元素：";
-    treeWidgetInfo->setHeaderLabels(headers);
+    treeWidgetInfo->setHeaderLabels(headers);*/
 
     //工具栏
     toolBar = new QToolBar(this);
@@ -44,7 +47,6 @@ ElementListWidget::ElementListWidget(QWidget *parent)
 
     // 布局
     layout->addWidget(toolBar);
-    layout->addWidget(createButton);
     layout->addWidget(deleteButton);
     layout->addWidget(treeWidgetNames);
     layout->addWidget(treeWidgetInfo);
@@ -64,8 +66,37 @@ void ElementListWidget::CreateEllipse(CObject*obj)
 {
     QTreeWidgetItem *item = new QTreeWidgetItem(treeWidgetNames);
     item->setText(0,obj->m_strCName);
+    item->setText(1,obj->m_strAutoName);
     QTreeWidgetItem *infoItem = new QTreeWidgetItem(treeWidgetInfo);
     infoItem->setText(0,obj->m_strCName);
+    if(obj->GetUniqueType()==enPoint){
+        QIcon icon(":/component/find/point.jpg");
+        item->setIcon(0, icon);
+    }
+    if(obj->GetUniqueType()==enLine){
+        QIcon icon(":/component/find/line.jpg");
+        item->setIcon(0, icon);
+    }
+    if(obj->GetUniqueType()==enCircle){
+        QIcon icon(":/component/find/circle.jpg");
+        item->setIcon(0, icon);
+    }
+    if(obj->GetUniqueType()==enPlane){
+        QIcon icon(":/component/find/plan.jpg");
+        item->setIcon(0, icon);
+    }
+    if(obj->GetUniqueType()==enSphere){
+        QIcon icon(":/component/find/sphere.jpg");
+        item->setIcon(0, icon);
+    }
+    if(obj->GetUniqueType()==enCone){
+        QIcon icon(":/component/find/cone.jpg");
+        item->setIcon(0, icon);
+    }
+    if(obj->GetUniqueType()==enCylinder){
+        QIcon icon(":/component/find/cylinder.jpg");
+        item->setIcon(0, icon);
+    }
 }
 
 void ElementListWidget::onDeleteEllipse()
@@ -122,20 +153,7 @@ void ElementListWidget::upadteelementlist()
 
 void ElementListWidget::onItemClicked(QTreeWidgetItem *item)
 {
-    QList<QTreeWidgetItem*> selectedItems = treeWidgetNames->selectedItems();
-    QList<int>list;
-    for(QTreeWidgetItem* it:selectedItems)
-    {
-        QTreeWidgetItem *parentItem = it->parent();
-        if (parentItem) {
-            // 遍历父项的子项，找到当前项的位置
-            for (int i = 0; i < parentItem->childCount(); ++i) {
-                if (parentItem->child(i) == item) {
-                    list.push_back(i);
-                    break;
-                }
-            }
-        }
-    }
-    emit itemSelected(list); // 发出自定义信号
+    int index=-1;
+    index = treeWidgetNames->indexOfTopLevelItem(item);
+    emit itemSelected(index); // 发出自定义信号
 }
