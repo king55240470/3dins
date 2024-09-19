@@ -14,7 +14,7 @@ class DataWidget : public QWidget
     Q_OBJECT
 public:
     explicit DataWidget(QWidget *parent = nullptr);
-    void updateele(QList<int> idex);
+    void updateele(int i);
 private:
     QVBoxLayout *vlayout;
     QHBoxLayout *hlayout;

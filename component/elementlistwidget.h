@@ -49,7 +49,7 @@ private:
     //std::unordered_map<QTreeWidgetItem*, size_t> itemToIndexMap;
     void onItemClicked(QTreeWidgetItem *item);
 signals:
-    void itemSelected(QList<int> idex);
+    void itemSelected(int idex);
 };
 
 #endif // ELEMENTLISTWIDGET_H

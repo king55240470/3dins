@@ -64,6 +64,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 RESOURCES += \
     filemanagerwidget.qrc \
+    graph.qrc \
     toolwidget.qrc
 
 
