@@ -77,10 +77,6 @@ void CPcsMgr::SetCurCoordSystem(QString)
 void CPcsMgr::SetCurCoordSystem(CPcs* pPcs)
 {
     m_pPcsCurrent=pPcs;
-    //更新实体当前坐标系
-    for (CEntity* pEntity : m_pEntityListMgr->m_entityList) {
-        pEntity->SetCurCoord(pPcs);
-    }
 }
 
 CPcs* CPcsMgr::GetBaseCoordSystem()
@@ -232,10 +228,10 @@ void CPcsMgr::setBTempPcsNodeInUse(bool newBTempPcsNodeInUse)
     m_bTempPcsNodeInUse=newBTempPcsNodeInUse;
 }
 
-void CPcsMgr::SetEntityList(CEntityMgr* entityMgr)
+/*void CPcsMgr::SetEntityList(CEntityMgr* entityMgr)
 {
     m_pEntityListMgr = entityMgr;
-}
+}*/
 
 bool CPcsMgr::CanEntityBeDeleted(CEntity *)
 {

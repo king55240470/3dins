@@ -157,5 +157,6 @@ void ElementListWidget::onItemClicked(QTreeWidgetItem *item)
 {
     int index=-1;
     index = treeWidgetNames->indexOfTopLevelItem(item);
+    m_pMainWin->getObjectListMgr()->getObjectList()[index]->SetSelected(true);
     emit itemSelected(index); // 发出自定义信号
 }
