@@ -1,5 +1,4 @@
 #include "centitytypes.h"
-#include "component/vtkwidget.h"
 
 #include <vtkPoints.h>
 #include <vtkPolyDataMapper.h>
@@ -25,13 +24,14 @@ vtkSmartPointer<vtkActor> CPoint::draw(){
     // 创建映射器
     vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     mapper->SetInputData(polyData);
+    mapper->SetColorMode(Qt::black);
 
     // 创建执行器，添加mapper
     vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
     actor->GetProperty()->SetPointSize(1); // 设置点的大小
 
-    //VtkWidget::addActor(actor);
+    // addActor(actor);
     return actor;
 }
 
@@ -59,6 +59,7 @@ vtkSmartPointer<vtkActor> CLine::draw(){
     // 创建执行器
     auto actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
+    actor->GetProperty()->SetColor(0.0, 0.0, 0.0);
 
     // 添加到渲染窗口中
     //VtkWidget::addActor(actor);
@@ -104,8 +105,10 @@ vtkSmartPointer<vtkActor> CCircle::draw(){
     // 创建映射器和actor
     auto mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     mapper->SetInputData(polyData);
+
     auto actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
+    actor->GetProperty()->SetColor(0.0, 0.0, 0.0);
 
     //VtkWidget::addActor(actor);
     return actor;
@@ -131,6 +134,7 @@ vtkSmartPointer<vtkActor> CPlane::draw(){
     // 创建执行器
     auto actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
+    actor->GetProperty()->SetColor(0.0, 0.0, 0.0);
 
     //VtkWidget::addActor(actor);
     return actor;
@@ -150,6 +154,7 @@ vtkSmartPointer<vtkActor> CSphere::draw(){
     // 创建执行器
     auto actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
+    actor->GetProperty()->SetColor(0.0, 0.0, 0.0);
 
     //VtkWidget::addActor(actor);
     return actor;
@@ -170,6 +175,7 @@ vtkSmartPointer<vtkActor> CCylinder::draw(){
     // 创建执行器
     auto actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
+    actor->GetProperty()->SetColor(0.0, 0.0, 0.0);
 
     //VtkWidget::addActor(actor);
     return actor;
@@ -191,6 +197,7 @@ vtkSmartPointer<vtkActor> CCone::draw(){
     // 创建执行器
     auto actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
+    actor->GetProperty()->SetColor(0.0, 0.0, 0.0);
 
     //VtkWidget::addActor(actor);
     return actor;
