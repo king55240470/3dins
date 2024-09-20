@@ -65,6 +65,7 @@ ElementListWidget::ElementListWidget(QWidget *parent)
 void ElementListWidget::CreateEllipse(CObject*obj)
 {
     QTreeWidgetItem *item = new QTreeWidgetItem(treeWidgetNames);
+    item->setData(0, Qt::UserRole, QVariant::fromValue<CObject*>(obj));
     item->setText(0,obj->m_strCName);
     item->setText(1,obj->m_strAutoName);
     QTreeWidgetItem *infoItem = new QTreeWidgetItem(treeWidgetInfo);
@@ -155,8 +156,20 @@ void ElementListWidget::upadteelementlist()
 
 void ElementListWidget::onItemClicked(QTreeWidgetItem *item)
 {
+    CObject *obj = item->data(0, Qt::UserRole).value<CObject*>();
     int index=-1;
-    index = treeWidgetNames->indexOfTopLevelItem(item);
-    m_pMainWin->getObjectListMgr()->getObjectList()[index]->SetSelected(true);
-    emit itemSelected(index); // 发出自定义信号
+    for(int i=0;i<m_pMainWin->getObjectListMgr()->getObjectList().size();i++){
+        if(m_pMainWin->getObjectListMgr()->getObjectList()[i]==obj){
+            index=i;
+        }
+    }
+
+    QString name1="临时坐标系";
+    QString name2="工件坐标系";
+    QString name=obj->GetObjectCName();
+
+    if(name!=name1&&name!=name2){
+        m_pMainWin->getObjectListMgr()->getObjectList()[index]->SetSelected(true);
+        emit itemSelected(index); // 发出自定义信号
+    }
 }
