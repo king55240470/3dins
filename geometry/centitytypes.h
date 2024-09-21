@@ -6,7 +6,6 @@
 
 #include "globes.h"
 
-
 #include <vtkSmartPointer.h>
 #include <vtkActor.h>
 
@@ -357,8 +356,8 @@ public:
         vertex.y=0;
         vertex.z=0;
         currentConeId = ++coneCount;
-        m_strAutoName = QString("圆柱%1").arg(currentConeId);
-        m_strCName = QString("圆柱%1").arg(currentConeId);
+        m_strAutoName = QString("圆锥%1").arg(currentConeId);
+        m_strCName = QString("圆锥%1").arg(currentConeId);
     }
     int GetUniqueType() override{
         return enCone;
