@@ -23,7 +23,7 @@ DataWidget::DataWidget(QWidget *parent)
     table=new QTableWidget();
     table->setColumnCount(3);
     table->setHorizontalHeaderLabels(QStringList()<<"数据项"<<"量测值"<<"状态");
-    table->setRowCount(5);
+    table->setRowCount(6);
     table->verticalHeader()->setHidden(true);//隐藏列号
     table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);//使table内部表格随边框的大小而改变
 
@@ -32,15 +32,164 @@ DataWidget::DataWidget(QWidget *parent)
 
 }
 
-void DataWidget::updateele(int index)
+void DataWidget::updateele(int i)
 {
-    CEntity* entity=m_pMainWin->m_EntityListMgr->m_entityList[index];
-    table->setItem(count, 0, new QTableWidgetItem(entity->m_strCName));
-    if(entity->GetUniqueType()==enPoint){
-        CPoint* point = dynamic_cast<CPoint*>(entity);
-        QString String = QString("(%1, %2, %3)").arg(point->GetPt().x).arg(point->GetPt().y).arg(point->GetPt().z);
-        table->setItem(count,1,new QTableWidgetItem(String));
-    }
+    table->clear();
+        CEntity* entity=m_pMainWin->m_EntityListMgr->m_entityList[i];
+        //table->setItem(count, 0, new QTableWidgetItem(entity->m_strCName));
+        label2->setText(entity->m_strCName);
+        if(entity->GetUniqueType()==enPoint){
+            CPoint* point = dynamic_cast<CPoint*>(entity);
+            if (point != nullptr){
+                //double xx=point->GetPt().x;
+                table->setItem(0, 0, new QTableWidgetItem("X"));
+                table->setItem(0, 1, new QTableWidgetItem(QString::number(point->GetPt().x,'f',6)));
+                table->setItem(0, 2, new QTableWidgetItem("")); // 可选择设置状态
 
-    count++;
+                table->setItem(1, 0, new QTableWidgetItem("Y"));
+                table->setItem(1, 1, new QTableWidgetItem(QString::number(point->GetPt().y,'f',6)));
+                table->setItem(1, 2, new QTableWidgetItem("")); // 可选择设置状态
+
+                table->setItem(2, 0, new QTableWidgetItem("Z"));
+                table->setItem(2, 1, new QTableWidgetItem(QString::number(point->GetPt().z,'f',6)));
+                table->setItem(2, 2, new QTableWidgetItem(""));
+            }
+        }
+        if(entity->GetUniqueType()==enLine){
+            CLine* line = dynamic_cast<CLine*>(entity);
+            if (line != nullptr){
+                table->setItem(0, 0, new QTableWidgetItem("X1"));
+                table->setItem(0, 1, new QTableWidgetItem(QString::number(line->getPosition1().x,'f',6)));
+                table->setItem(0, 2, new QTableWidgetItem("")); // 可选择设置状态
+
+                table->setItem(1, 0, new QTableWidgetItem("Y1"));
+                table->setItem(1, 1, new QTableWidgetItem(QString::number(line->getPosition1().y,'f',6)));
+                table->setItem(1, 2, new QTableWidgetItem("")); // 可选择设置状态
+
+                table->setItem(2, 0, new QTableWidgetItem("Z1"));
+                table->setItem(2, 1, new QTableWidgetItem(QString::number(line->getPosition1().z,'f',6)));
+                table->setItem(2, 2, new QTableWidgetItem(""));
+
+                table->setItem(3, 0, new QTableWidgetItem("X2"));
+                table->setItem(3, 1, new QTableWidgetItem(QString::number(line->getPosition2().x,'f',6)));
+                table->setItem(3, 2, new QTableWidgetItem("")); // 可选择设置状态
+
+                table->setItem(4, 0, new QTableWidgetItem("Y2"));
+                table->setItem(4, 1, new QTableWidgetItem(QString::number(line->getPosition2().y,'f',6)));
+                table->setItem(4, 2, new QTableWidgetItem("")); // 可选择设置状态
+
+                table->setItem(5, 0, new QTableWidgetItem("Z2"));
+                table->setItem(5, 1, new QTableWidgetItem(QString::number(line->getPosition2().z,'f',6)));
+                table->setItem(5, 2, new QTableWidgetItem(""));
+
+            }
+        }
+        if(entity->GetUniqueType()==enCircle){
+            CCircle* circle = dynamic_cast<CCircle*>(entity);
+            if (circle != nullptr){
+                table->setItem(0, 0, new QTableWidgetItem("X"));
+                table->setItem(0, 1, new QTableWidgetItem(QString::number(circle->getCenter().x,'f',6)));
+                table->setItem(0, 2, new QTableWidgetItem("")); // 可选择设置状态
+
+                table->setItem(1, 0, new QTableWidgetItem("Y"));
+                table->setItem(1, 1, new QTableWidgetItem(QString::number(circle->getCenter().y,'f',6)));
+                table->setItem(1, 2, new QTableWidgetItem("")); // 可选择设置状态
+
+                table->setItem(2, 0, new QTableWidgetItem("Z"));
+                table->setItem(2, 1, new QTableWidgetItem(QString::number(circle->getCenter().z,'f',6)));
+                table->setItem(2, 2, new QTableWidgetItem(""));
+
+                table->setItem(3, 0, new QTableWidgetItem("D"));
+                table->setItem(3, 1, new QTableWidgetItem(QString::number(circle->getDiameter(),'f',6)));
+                table->setItem(3, 2, new QTableWidgetItem(""));
+            }
+        }
+        if(entity->GetUniqueType()==enPlane){
+            CPlane* plane = dynamic_cast<CPlane*>(entity);
+            if (plane != nullptr){
+                table->setItem(0, 0, new QTableWidgetItem("X"));
+                table->setItem(0, 1, new QTableWidgetItem(QString::number(plane->getCenter().x,'f',6)));
+                table->setItem(0, 2, new QTableWidgetItem("")); // 可选择设置状态
+
+                table->setItem(1, 0, new QTableWidgetItem("Y"));
+                table->setItem(1, 1, new QTableWidgetItem(QString::number(plane->getCenter().y,'f',6)));
+                table->setItem(1, 2, new QTableWidgetItem("")); // 可选择设置状态
+
+                table->setItem(2, 0, new QTableWidgetItem("Z"));
+                table->setItem(2, 1, new QTableWidgetItem(QString::number(plane->getCenter().z,'f',6)));
+                table->setItem(2, 2, new QTableWidgetItem(""));
+
+                table->setItem(3, 0, new QTableWidgetItem("Length"));
+                table->setItem(3, 1, new QTableWidgetItem(QString::number(plane->getLength(),'f',6)));
+                table->setItem(3, 2, new QTableWidgetItem(""));
+
+                table->setItem(4, 0, new QTableWidgetItem("Width"));
+                table->setItem(4, 1, new QTableWidgetItem(QString::number(plane->getWidth(),'f',6)));
+                table->setItem(4, 2, new QTableWidgetItem(""));
+            }
+        }
+        if(entity->GetUniqueType()==enSphere){
+            CSphere* sphere = dynamic_cast<CSphere*>(entity);
+            if (sphere != nullptr){
+                table->setItem(0, 0, new QTableWidgetItem("X"));
+                table->setItem(0, 1, new QTableWidgetItem(QString::number(sphere->getCenter().x,'f',6)));
+                table->setItem(0, 2, new QTableWidgetItem("")); // 可选择设置状态
+
+                table->setItem(1, 0, new QTableWidgetItem("Y"));
+                table->setItem(1, 1, new QTableWidgetItem(QString::number(sphere->getCenter().y,'f',6)));
+                table->setItem(1, 2, new QTableWidgetItem("")); // 可选择设置状态
+
+                table->setItem(2, 0, new QTableWidgetItem("Z"));
+                table->setItem(2, 1, new QTableWidgetItem(QString::number(sphere->getCenter().z,'f',6)));
+                table->setItem(2, 2, new QTableWidgetItem(""));
+
+                table->setItem(3, 0, new QTableWidgetItem("R"));
+                table->setItem(3, 1, new QTableWidgetItem(QString::number(sphere->getDiameter(),'f',6)));
+                table->setItem(3, 2, new QTableWidgetItem(""));
+            }
+        }
+        if(entity->GetUniqueType()==enCylinder){
+            CCylinder* cylinder = dynamic_cast<CCylinder*>(entity);
+            if (cylinder != nullptr){
+                table->setItem(0, 0, new QTableWidgetItem("X"));
+                table->setItem(0, 1, new QTableWidgetItem(QString::number(cylinder->getBtm_center().x,'f',6)));
+                table->setItem(0, 2, new QTableWidgetItem("")); // 可选择设置状态
+
+                table->setItem(1, 0, new QTableWidgetItem("Y"));
+                table->setItem(1, 1, new QTableWidgetItem(QString::number(cylinder->getBtm_center().y,'f',6)));
+                table->setItem(1, 2, new QTableWidgetItem("")); // 可选择设置状态
+
+                table->setItem(2, 0, new QTableWidgetItem("Z"));
+                table->setItem(2, 1, new QTableWidgetItem(QString::number(cylinder->getBtm_center().z,'f',6)));
+                table->setItem(2, 2, new QTableWidgetItem(""));
+
+                table->setItem(3, 0, new QTableWidgetItem("R"));
+                table->setItem(3, 1, new QTableWidgetItem(QString::number(cylinder->getDiameter(),'f',6)));
+                table->setItem(3, 2, new QTableWidgetItem(""));
+
+                table->setItem(4, 0, new QTableWidgetItem("Height"));
+                table->setItem(4, 1, new QTableWidgetItem(QString::number(cylinder->getHeight(),'f',6)));
+                table->setItem(4, 2, new QTableWidgetItem(""));
+            }
+        }
+        if(entity->GetUniqueType()==enCone){
+            CCone* cone = dynamic_cast<CCone*>(entity);
+            if (cone != nullptr){
+                table->setItem(0, 0, new QTableWidgetItem("X"));
+                table->setItem(0, 1, new QTableWidgetItem(QString::number(cone->GetObjectCenterLocalPoint().x,'f',6)));
+                table->setItem(0, 2, new QTableWidgetItem("")); // 可选择设置状态
+
+                table->setItem(1, 0, new QTableWidgetItem("Y"));
+                table->setItem(1, 1, new QTableWidgetItem(QString::number(cone->GetObjectCenterLocalPoint().y,'f',6)));
+                table->setItem(1, 2, new QTableWidgetItem("")); // 可选择设置状态
+
+                table->setItem(2, 0, new QTableWidgetItem("Z"));
+                table->setItem(2, 1, new QTableWidgetItem(QString::number(cone->GetObjectCenterLocalPoint().z,'f',6)));
+                table->setItem(2, 2, new QTableWidgetItem(""));
+
+                table->setItem(2, 0, new QTableWidgetItem("H"));
+                table->setItem(2, 1, new QTableWidgetItem(QString::number(cone->getHeight(),'f',6)));
+                table->setItem(2, 2, new QTableWidgetItem(""));
+            }
+        }
 }

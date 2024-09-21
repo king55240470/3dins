@@ -47,8 +47,9 @@ private:
     CEntity * centity;
     MainWindow *m_pMainWin=nullptr;
     //std::unordered_map<QTreeWidgetItem*, size_t> itemToIndexMap;
+    void onItemClicked(QTreeWidgetItem *item);
 signals:
-    void itemSelected(int itemName);
+    void itemSelected(int index);
 };
 
 #endif // ELEMENTLISTWIDGET_H

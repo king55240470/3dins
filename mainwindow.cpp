@@ -28,7 +28,7 @@ MainWindow::MainWindow(QWidget *parent)
     setupUi();
     RestoreWidgets();
     loadManager();
-    //connect(pWinElementListWidget,&ElementListWidget::itemSelected,pWinDataWidget,&pWinDataWidget::);
+    connect(pWinElementListWidget,&ElementListWidget::itemSelected,pWinDataWidget,&DataWidget::updateele);
 }
 
 void MainWindow::setupUi(){
@@ -337,7 +337,7 @@ CEntity* MainWindow::CreateEntity(int nType){
 void MainWindow::NotifySubscribe()
 {
     pWinElementListWidget->upadteelementlist();
-    //pWinVtkWidget->UpdateInfo(); // 更新vtkwidget信息
+    pWinVtkWidget->UpdateInfo(); // 更新vtkwidget信息
 }
 
 void MainWindow::OnPresetPoint(CPosition pt){
@@ -395,6 +395,7 @@ void MainWindow::OnPresetCircle(CPosition pt, double diameter)
 
     // 加入Entitylist 和 ObjectList
     m_EntityListMgr->Add(pCircle);
+    m_ObjectListMgr->Add(pCircle);
 
     // if(m_ObjectListMgr->GetInsertPos()==-1){
     //     m_ObjectListMgr->Add(pCircle);
@@ -646,6 +647,7 @@ void MainWindow::on2dCoordOriginAuto(){
     if(m_pcsListMgr->m_bTempPcsNodeInUse)
     {
         stbar->showMessage("已存在临时坐标系",2000);
+        qDebug()<<"临时坐标系不为空";
         return;
     }
     //qDebug()<<"添加坐标系";
@@ -656,12 +658,16 @@ void MainWindow::on2dCoordOriginAuto(){
     QVector<CObject*> choosenList;
     for(int i=0;i<m_ObjectListMgr->getObjectList().size();i++)
     {
-        if(m_ObjectListMgr->getObjectList()[i]->IsSelected() == 1) // 如果对象被选中
+        if(m_ObjectListMgr->getObjectList()[i]->IsSelected() == true) // 如果对象被选中
         {
             choosenList.push_back(m_ObjectListMgr->getObjectList()[i]);
+            qDebug()<<"列表里有东西";
         }
     }
-    if(choosenList.size() != 1) return;
+    if(choosenList.size() != 1) {
+        qDebug()<<"size不为1";
+        return;
+    }
     CPosition pos;
 
     // 根据选中的对象类型，获取其坐标信息
@@ -712,10 +718,17 @@ void MainWindow::on2dCoordOriginAuto(){
 
     // 设置当前坐标系,并更新所有entity的当前坐标系
     m_pcsListMgr->SetCurCoordSystem(pcsTempNode->pPcs);
-
+    for (CEntity* pEntity : m_EntityListMgr->getEntityList()) {
+        pEntity->SetCurCoord(pPcs);
+    }
+    //qDebug()<<"执行到这步了";
     m_pcsListMgr->m_pNodeTemporary->setDwAddress((uintptr_t)(pcsTempNode)); // 将节点地址转换为uintptr_t类型并存储
+
     // 把临时坐标系节点加入objectlist
     m_ObjectListMgr->Add(m_pcsListMgr->m_pNodeTemporary);
+
+    int t=m_ObjectListMgr->getObjectList().size();
+    qDebug()<<t;
 
     //选中元素,取消其他元素选中
     for(auto const &object:m_ObjectListMgr->getObjectList()){
