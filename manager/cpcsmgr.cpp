@@ -24,6 +24,7 @@ void CPcsMgr::Initialize()
     pcsNode->pPcs=csMechanical;
     pcsNode->nPcsNodeId =1;
     pcsNode->nRefID=-1;
+    pcsNode->SetObjectCName("机械坐标系");
 
     m_nCount++;
 
