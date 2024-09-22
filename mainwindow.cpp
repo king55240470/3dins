@@ -656,11 +656,13 @@ void MainWindow::on2dCoordOriginAuto(){
 
     // 创建一个对象列表，用于存储选中的对象
     QVector<CObject*> choosenList;
+    int index=-1;
     for(int i=0;i<m_ObjectListMgr->getObjectList().size();i++)
     {
         if(m_ObjectListMgr->getObjectList()[i]->IsSelected() == true) // 如果对象被选中
         {
             choosenList.push_back(m_ObjectListMgr->getObjectList()[i]);
+            index=i;
             qDebug()<<"列表里有东西";
         }
     }
@@ -724,7 +726,8 @@ void MainWindow::on2dCoordOriginAuto(){
     //qDebug()<<"执行到这步了";
     // 把临时坐标系节点加入objectlist
     m_pcsListMgr->m_pNodeTemporary->setDwAddress((uintptr_t)(pcsTempNode)); // 将节点地址转换为uintptr_t类型并存储
-    m_ObjectListMgr->Add(m_pcsListMgr->m_pNodeTemporary);
+    //m_ObjectListMgr->Add(m_pcsListMgr->m_pNodeTemporary);
+    m_ObjectListMgr->getObjectList().insert(m_ObjectListMgr->getObjectList().begin()+index+1,m_pcsListMgr->m_pNodeTemporary);
     int t=m_ObjectListMgr->getObjectList().size();
     qDebug()<<t;
 

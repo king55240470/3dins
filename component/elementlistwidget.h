@@ -46,6 +46,8 @@ private:
     QToolBar * toolBar;
     CEntity * centity;
     MainWindow *m_pMainWin=nullptr;
+    static int pcscount;
+    QVector<CObject*>eleobjlist;
     //std::unordered_map<QTreeWidgetItem*, size_t> itemToIndexMap;
     void onItemClicked(QTreeWidgetItem *item);
 signals:
