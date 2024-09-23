@@ -1,6 +1,5 @@
 #ifndef VTKWIDGET_H
 #define VTKWIDGET_H
-#include "manager/centitymgr.h"
 
 #include <QWidget>
 #include <QWindow>
@@ -20,6 +19,22 @@
 #include <pcl/io/pcd_io.h>       // PCL 的 PCD 文件输入输出类
 #include <pcl/visualization/pcl_visualizer.h> // PCL 的可视化工具
 #include "mainwindow.h"
+
+#include <QVTKOpenGLNativeWidget.h>
+#include <vtkSphereSource.h>
+#include <vtkPolyDataMapper.h>
+#include <vtkActor.h>
+#include <vtkProperty.h>
+#include <vtkCamera.h>
+#include <vtkAxesActor.h>
+#include <vtkCubeAxesActor.h>
+#include <vtkCaptionActor2D.h>
+#include <vtkAutoInit.h>
+VTK_MODULE_INIT(vtkRenderingOpenGL2);
+VTK_MODULE_INIT(vtkInteractionStyle);
+VTK_MODULE_INIT(vtkRenderingVolumeOpenGL2);
+VTK_MODULE_INIT(vtkRenderingFreeType);
+
 // 定义点的类型
 typedef pcl::PointXYZ PointT; // 定义 PointT 为 pcl::PointXYZ 类型
 typedef pcl::PointCloud<PointT> PointCloudT; // 定义 PointCloudT 为 pcl::PointCloud<PointT> 类型
@@ -51,17 +66,23 @@ public:
 
     // 当添加新的元素后，遍历m_entityList重新绘制
     void reDraw();
+
+    // 创建左下角坐标轴
+    void createAxes();
+
 private:
     PointCloudPtr cloudptr; // 点云智能指针
     PCLViewer::Ptr cloud_viewer; // PCL 可视化器的智能指针
 
-    // 为所有的actor创建渲染器、渲染窗口和交互器
-    vtkSmartPointer<vtkGenericOpenGLRenderWindow> renWin;
+    // 创建渲染器、渲染窗口和交互器
     vtkSmartPointer<vtkRenderer> renderer;
+    vtkSmartPointer<vtkGenericOpenGLRenderWindow> renWin;
+    vtkSmartPointer<vtkGenericRenderWindowInteractor> interactor;
 
-    // static vtkSmartPointer<vtkRenderer> m_renderer;
-    // static vtkSmartPointer<vtkGenericOpenGLRenderWindow> m_renWin;
-    // static vtkSmartPointer<vtkGenericRenderWindowInteractor> m_interactor;
+    // 创建坐标器
+    vtkSmartPointer<vtkAxesActor> axesActor;
+    // 创建交互部件来放坐标器
+    vtkSmartPointer<vtkOrientationMarkerWidget> orientationWidget;
 
     MainWindow *m_pMainWin=nullptr;
 };

@@ -60,6 +60,7 @@ vtkSmartPointer<vtkActor> CLine::draw(){
     auto actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
     actor->GetProperty()->SetColor(0.0, 0.0, 0.0);
+    actor->GetProperty()->SetLineWidth(3);
 
     // 添加到渲染窗口中
     //VtkWidget::addActor(actor);
@@ -109,6 +110,7 @@ vtkSmartPointer<vtkActor> CCircle::draw(){
     auto actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
     actor->GetProperty()->SetColor(0.0, 0.0, 0.0);
+    actor->GetProperty()->SetLineWidth(3);
 
     //VtkWidget::addActor(actor);
     return actor;
@@ -134,7 +136,7 @@ vtkSmartPointer<vtkActor> CPlane::draw(){
     // 创建执行器
     auto actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
-    actor->GetProperty()->SetColor(0.0, 0.0, 0.0);
+    actor->GetProperty()->SetColor(0.5, 0.5, 0.5);
 
     //VtkWidget::addActor(actor);
     return actor;
@@ -142,10 +144,12 @@ vtkSmartPointer<vtkActor> CPlane::draw(){
 
 // 球类的draw()
 vtkSmartPointer<vtkActor> CSphere::draw(){
-    // 创建球体圆
+    // 创建球体
     auto sphere = vtkSmartPointer<vtkSphereSource>::New();
     sphere->SetCenter(CSphere::getCenter().x, CSphere::getCenter().y, CSphere::getCenter().z);
     sphere->SetRadius(CSphere::getDiameter() / 2);
+    sphere->SetPhiResolution(100);
+    sphere->SetThetaResolution(100);
 
     // 创建映射器
     auto mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
@@ -154,7 +158,7 @@ vtkSmartPointer<vtkActor> CSphere::draw(){
     // 创建执行器
     auto actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
-    actor->GetProperty()->SetColor(0.0, 0.0, 0.0);
+    actor->GetProperty()->SetColor(0.5, 0.5, 0.5);
 
     //VtkWidget::addActor(actor);
     return actor;
@@ -175,7 +179,7 @@ vtkSmartPointer<vtkActor> CCylinder::draw(){
     // 创建执行器
     auto actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
-    actor->GetProperty()->SetColor(0.0, 0.0, 0.0);
+    actor->GetProperty()->SetColor(0.5, 0.5, 0.5);
 
     //VtkWidget::addActor(actor);
     return actor;
@@ -197,7 +201,7 @@ vtkSmartPointer<vtkActor> CCone::draw(){
     // 创建执行器
     auto actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
-    actor->GetProperty()->SetColor(0.0, 0.0, 0.0);
+    actor->GetProperty()->SetColor(0.5, 0.5, 0.5);
 
     //VtkWidget::addActor(actor);
     return actor;
