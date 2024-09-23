@@ -4,7 +4,6 @@
 #include"geometry/cpcsnode.h"
 #include<list>
 #include "centitymgr.h"
-#include "cobjectmgr.h"
 
 class CPcsMgr
 {
@@ -14,8 +13,6 @@ public:
     CPcs* m_pPcsCurrent; //当前坐标系
     CPcsNode* m_pNodeTemporary; //临时坐标系节点
     bool m_bTempPcsNodeInUse; //临时坐标系节点是否使用
-    CEntityMgr* m_pEntityListMgr;
-    CObjectMgr* m_pObjectList;
     CPcsNode* m_pHeadPcsNode; //头节点
     CPcsNode* m_pTailPcsNode; //尾节点
     std::list<CPcsNode*> m_PcsNodeList; //存储坐标系节点的链表
@@ -61,7 +58,7 @@ public:
     bool bTempPcsNodeInUse() const; //临时坐标系节点是否使用
     bool CanEntityBeDeleted(CEntity *);
     void setBTempPcsNodeInUse(bool newBTempPcsNodeInUse); //设置使用
-    void SetEntityList(CEntityMgr*);
+    //void SetEntityList(CEntityMgr*);
     // bool IsEntityInBaseCoordSystem(CEntity const*);
 
     // void TransEntityToCurrentCoordSys();
