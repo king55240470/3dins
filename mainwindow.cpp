@@ -591,10 +591,11 @@ bool MainWindow::eventFilter(QObject* watched, QEvent* event){
                         m_pcsListMgr->SetCurCoordSystem(pPcs);
                         NotifySubscribe();
                         // 更新所有实体的当前坐标系
-                        for(CEntity *pEntity : m_pcsListMgr->m_pEntityListMgr->getEntityList())
-                        {
-                            pEntity->SetCurCoord(pPcs);
-                        }
+                        // SetCurCoordSystem函数中已实现
+                        // for(CEntity *pEntity : m_pcsListMgr->m_pEntityListMgr->getEntityList())
+                        // {
+                        //     pEntity->SetCurCoord(pPcs);
+                        // }
                     }
                     else
                     {
@@ -602,11 +603,10 @@ bool MainWindow::eventFilter(QObject* watched, QEvent* event){
                         CPcs* pPcs = m_pcsListMgr->Find(strClickedText);
                         m_pcsListMgr->SetCurCoordSystem(pPcs);
                         NotifySubscribe();
-                        for(CEntity *pEntity : m_pcsListMgr->m_pEntityListMgr->getEntityList())
-                        {
-                            pEntity->SetCurCoord(pPcs);
-                        }
-
+                        // for(CEntity *pEntity : m_pcsListMgr->m_pEntityListMgr->getEntityList())
+                        // {
+                        //     pEntity->SetCurCoord(pPcs);
+                        // }
                     }
                     // 右下加标签设置为所选坐标系
                     button->setText(strClickedText);
@@ -647,6 +647,7 @@ void MainWindow::on2dCoordOriginAuto(){
     if(m_pcsListMgr->m_bTempPcsNodeInUse)
     {
         stbar->showMessage("已存在临时坐标系",2000);
+        qDebug()<<"临时坐标系不为空";
         return;
     }
     //qDebug()<<"添加坐标系";
@@ -655,14 +656,20 @@ void MainWindow::on2dCoordOriginAuto(){
 
     // 创建一个对象列表，用于存储选中的对象
     QVector<CObject*> choosenList;
+    int index=-1;
     for(int i=0;i<m_ObjectListMgr->getObjectList().size();i++)
     {
-        if(m_ObjectListMgr->getObjectList()[i]->IsSelected() == 1) // 如果对象被选中
+        if(m_ObjectListMgr->getObjectList()[i]->IsSelected() == true) // 如果对象被选中
         {
             choosenList.push_back(m_ObjectListMgr->getObjectList()[i]);
+            index=i;
+            qDebug()<<"列表里有东西";
         }
     }
-    if(choosenList.size() != 1) return;
+    if(choosenList.size() != 1) {
+        qDebug()<<"size不为1";
+        return;
+    }
     CPosition pos;
 
     // 根据选中的对象类型，获取其坐标信息
@@ -713,11 +720,13 @@ void MainWindow::on2dCoordOriginAuto(){
 
     // 设置当前坐标系,并更新所有entity的当前坐标系
     m_pcsListMgr->SetCurCoordSystem(pcsTempNode->pPcs);
-
-    // 把临时坐标系节点加入objectlist
+    for (CEntity* pEntity : m_EntityListMgr->getEntityList()) {
+        pEntity->SetCurCoord(pPcs);
+    }
+    //qDebug()<<"执行到这步了";
     m_pcsListMgr->m_pNodeTemporary->setDwAddress((uintptr_t)(pcsTempNode)); // 将节点地址转换为uintptr_t类型并存储
-    m_ObjectListMgr->Add(m_pcsListMgr->m_pNodeTemporary);
-
+    //m_ObjectListMgr->Add(m_pcsListMgr->m_pNodeTemporary);
+    m_ObjectListMgr->getObjectList().insert(m_ObjectListMgr->getObjectList().begin()+index+1,m_pcsListMgr->m_pNodeTemporary);
     //选中元素,取消其他元素选中
     for(auto const &object:m_ObjectListMgr->getObjectList()){
         object->SetSelected(false);
