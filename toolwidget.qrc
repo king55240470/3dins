@@ -24,5 +24,9 @@
         <file>component/construct/point.jpg</file>
         <file>component/construct/rectangle.jpg</file>
         <file>component/construct/sphere.jpg</file>
+        <file>component/viewangle/front.png</file>
+        <file>component/viewangle/isometric.png</file>
+        <file>component/viewangle/right.png</file>
+        <file>component/viewangle/up.png</file>
     </qresource>
 </RCC>
