@@ -4,6 +4,8 @@
 #include <QWidget>
 #include <QWindow>
 #include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QPushButton>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
@@ -29,6 +31,7 @@
 #include <vtkAxesActor.h>
 #include <vtkCubeAxesActor.h>
 #include <vtkCaptionActor2D.h>
+#include <vtkInteractorStyleTrackballCamera.h>
 #include <vtkAutoInit.h>
 VTK_MODULE_INIT(vtkRenderingOpenGL2);
 VTK_MODULE_INIT(vtkInteractionStyle);
@@ -50,7 +53,7 @@ public:
     ~VtkWidget();
 
     // 配置vtk窗口
-    void setUpVtk(QHBoxLayout *layout);
+    void setUpVtk(QVBoxLayout *layout);
 
     // 获取m_renWin
     vtkSmartPointer<vtkRenderWindow> getRenderWindow();
@@ -74,17 +77,26 @@ private:
     PointCloudPtr cloudptr; // 点云智能指针
     PCLViewer::Ptr cloud_viewer; // PCL 可视化器的智能指针
 
+    QVTKOpenGLNativeWidget* vtkWidget; // vtk窗口
+
     // 创建渲染器、渲染窗口和交互器
     vtkSmartPointer<vtkRenderer> renderer;
     vtkSmartPointer<vtkGenericOpenGLRenderWindow> renWin;
-    vtkSmartPointer<vtkGenericRenderWindowInteractor> interactor;
+    vtkSmartPointer<vtkRenderWindowInteractor> interactor;
 
     // 创建坐标器
     vtkSmartPointer<vtkAxesActor> axesActor;
-    // 创建交互部件来放坐标器
+    // 创建交互部件来封装坐标器
     vtkSmartPointer<vtkOrientationMarkerWidget> orientationWidget;
 
     MainWindow *m_pMainWin=nullptr;
+signals:
+
+
+private slots:
+    void onTopViewClicked(); // 相机视角1
+    void onRightViewClicked(); // 相机视角2
+    void onFrontViewClicked(); // 相机视角3
 };
 
 #endif // VTKWIDGET_H

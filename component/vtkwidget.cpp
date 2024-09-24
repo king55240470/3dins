@@ -1,4 +1,5 @@
 #include "vtkwidget.h"
+#include <vtkInteractorStyle.h>
 
 // 渲染窗口大小
 #define WIDTH 1000
@@ -9,18 +10,71 @@ VtkWidget::VtkWidget(QWidget *parent)
 {
     m_pMainWin = (MainWindow*) parent;
 
+    // 创建不同视角的点击按钮
+    QPushButton *topViewButton = new QPushButton("Top View", this);
+    QPushButton *rightViewButton = new QPushButton("Right View", this);
+    QPushButton *frontViewButton = new QPushButton("Front View", this);
+
+    // 连接按钮的clicked信号到槽函数
+    connect(topViewButton, &QPushButton::clicked, this, &VtkWidget::onTopViewClicked);
+    connect(rightViewButton, &QPushButton::clicked, this, &VtkWidget::onRightViewClicked);
+    connect(frontViewButton, &QPushButton::clicked, this, &VtkWidget::onFrontViewClicked);
+
+    // 设置 VTK 渲染窗口到 QWidget
+    QVBoxLayout *mainlayout = new QVBoxLayout;
+    setUpVtk(mainlayout); // 配置vtk窗口
+    // 将按钮加入布局
+    mainlayout->addWidget(topViewButton, 0);
+    mainlayout->addWidget(rightViewButton, 0);
+    mainlayout->addWidget(frontViewButton, 0);
+
+    this->setLayout(mainlayout);
+
+}
+
+void VtkWidget::setUpVtk(QVBoxLayout *layout){
     // 初始化渲染器和交互器
     renWin = vtkSmartPointer<vtkGenericOpenGLRenderWindow>::New();
     renderer = vtkSmartPointer<vtkRenderer>::New();
     renWin->AddRenderer(renderer);  // 将渲染器添加到渲染窗口
-    // interactor = vtkSmartPointer<vtkGenericRenderWindowInteractor>::New();
+    // interactor = vtkSmartPointer<vtkRenderWindowInteractor>::New();
     // interactor->SetRenderWindow(renWin);
 
-    // 设置 VTK 渲染窗口到 QWidget
-    QHBoxLayout *mainlayout = new QHBoxLayout;
-    setUpVtk(mainlayout); // 配置vtk窗口
-    this->setLayout(mainlayout);
+    // 创建坐标器
+    createAxes();
+    // 创建初始视角相机
+    vtkCamera* camera = renderer->GetActiveCamera();
+    if (camera) {
+        // 设置相机的初始位置和焦点
+        camera->SetPosition(0, 0, 1);
+        camera->SetFocalPoint(0, 0, 0);
+        camera->SetViewUp(0, 1, 0);
 
+        // 根据需要调整视野角度
+        camera->SetViewAngle(60);
+
+        // 根据场景的具体大小和需要调整裁剪范围
+        camera->SetClippingRange(0.1, 1000);
+
+        // 根据需要调整视图的缩放
+        camera->Zoom(0.5);
+    }
+
+    // 设置渲染器颜色为白
+    renderer->SetBackground(1, 1, 1);
+
+    vtkWidget = new QVTKOpenGLNativeWidget(this);
+    vtkWidget->setRenderWindow(renWin);
+    layout->addWidget(vtkWidget);
+
+    // // 创建交互器样式
+    // auto customStyle = vtkSmartPointer<vtkInteractorStyle>::New();
+    // customStyle->SetInteractor(interactor);
+    // customStyle->SetCurrentRenderer(renderer.GetPointer()); // 设置当前的渲染器
+    // // 设置VTK窗口的交互样式
+    // renWin->GetInteractor()->SetInteractorStyle(customStyle);
+
+    renWin->Render();
 }
 
 vtkSmartPointer<vtkRenderWindow> VtkWidget::getRenderWindow(){
@@ -50,6 +104,7 @@ void VtkWidget::reDraw(){
     // 初始化迭代器，准备遍历actor集合
     actorCollection->InitTraversal(it);
 
+    // 循环解除actor与渲染器的关联
     vtkSmartPointer<vtkActor> actor;
     while ((actor = actorCollection->GetNextActor(it)) != nullptr)
     {
@@ -69,6 +124,7 @@ void VtkWidget::createAxes()
 {
     // 创建坐标器
     auto axes = vtkSmartPointer<vtkAxesActor>::New();
+
     // 设置 X Y Z 轴标题颜色为黑色
     axes->GetXAxisCaptionActor2D()->GetCaptionTextProperty()->SetColor(0.0, 0.0, 0.0);
     axes->GetYAxisCaptionActor2D()->GetCaptionTextProperty()->SetColor(0.0, 0.0, 0.0);
@@ -79,7 +135,7 @@ void VtkWidget::createAxes()
     axes->GetYAxisCaptionActor2D()->GetCaptionTextProperty()->SetFontSize(10);
     axes->GetZAxisCaptionActor2D()->GetCaptionTextProperty()->SetFontSize(10);
 
-    axes->SetTotalLength(0.3, 0.3, 0.3); // 设置轴的长度
+    axes->SetTotalLength(0.4, 0.4, 0.4); // 设置轴的长度
     axes->SetConeRadius(0.08); // 设置轴锥体的半径
     axes->SetCylinderRadius(0.1); // 设置轴圆柱体的半径
     axes->SetSphereRadius(0.05); // 设置轴末端的球体半径
@@ -95,7 +151,7 @@ void VtkWidget::createAxes()
     // // 将坐标轴演员添加到orientationWidget
     // orientationWidget->SetOrientationMarker(axes);
     // // 将orientationWidget与交互器关联
-    // orientationWidget->SetInteractor(interactor);
+    // orientationWidget->SetInteractor(renWin->GetInteractor());
     // // 设置视口
     // orientationWidget->SetViewport(0.0, 0.0, 0.2, 0.2);
 
@@ -103,36 +159,54 @@ void VtkWidget::createAxes()
     // orientationWidget->InteractiveOff();
 }
 
-void VtkWidget::setUpVtk(QHBoxLayout *layout){
-    createAxes();
-
-    //创建视角相机
-    vtkCamera* camera = renderer->GetActiveCamera();
+// 切换相机视角1
+void VtkWidget::onTopViewClicked() {
+    vtkCamera *camera = renderer->GetActiveCamera();
     if (camera) {
-        // 设置相机的初始位置和焦点
-        camera->SetPosition(0, 0, 1);
+        camera->SetPosition(0, 0, 1);  // 重置相机视角为俯视
         camera->SetFocalPoint(0, 0, 0);
         camera->SetViewUp(0, 1, 0);
 
-        // 根据需要调整视野角度
-        camera->SetViewAngle(60);
+        camera->OrthogonalizeViewUp(); // 确保与SetViewUp方向正交
 
-        // 根据场景的具体大小和需要调整裁剪范围
-        camera->SetClippingRange(0.1, 1000);
-
-        // 根据需要调整视图的缩放
-        camera->Zoom(0.45);
+        // 重新设置相机并渲染
+        renderer->ResetCamera();
+        renWin->Render();
     }
-
-    // 设置渲染器颜色为白
-    // renderer->SetBackground(0.1, 0.2, 0.4);
-    renderer->SetBackground(1, 1, 1);
-
-    QVTKOpenGLNativeWidget* vtkWidget = new QVTKOpenGLNativeWidget(this);
-    vtkWidget->setRenderWindow(renWin);
-    layout->addWidget(vtkWidget);
-    renWin->Render();
 }
+
+// 切换相机视角2
+void VtkWidget::onRightViewClicked(){
+    vtkCamera *camera = renderer->GetActiveCamera();
+    if (camera) {
+        camera->SetPosition(1, 0, 0);  // 重置相机视角为右侧
+        camera->SetFocalPoint(0, 0, 0);
+        camera->SetViewUp(0, 1, 0);
+
+        camera->OrthogonalizeViewUp(); // 确保与SetViewUp方向正交
+
+        // 重新设置相机并渲染
+        renderer->ResetCamera();
+        renWin->Render();
+    }
+}
+
+// 切换相机视角3
+void VtkWidget::onFrontViewClicked(){
+    vtkCamera *camera = renderer->GetActiveCamera();
+    if (camera) {
+        camera->SetPosition(0, -1, 0);  // 重置相机视角为正视
+        camera->SetFocalPoint(0, 0, 0);
+        camera->SetViewUp(0, 0, 1);
+
+        camera->OrthogonalizeViewUp(); // 确保与SetViewUp方向正交
+
+        // 重新设置相机并渲染
+        renderer->ResetCamera();
+        renWin->Render();
+    }
+}
+
 
 VtkWidget::~VtkWidget() {}
 
