@@ -29,7 +29,8 @@ vtkSmartPointer<vtkActor> CPoint::draw(){
     // 创建执行器，添加mapper
     vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
-    actor->GetProperty()->SetPointSize(1); // 设置点的大小
+    actor->GetProperty()->SetPointSize(2); // 设置点的大小
+    actor->GetProperty()->SetLineWidth(3);
 
     // addActor(actor);
     return actor;
