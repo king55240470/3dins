@@ -8,6 +8,7 @@ ContralWidget::ContralWidget(ToolWidget* toolWidget_,QWidget *parent) : QDialog(
     find_action_name_list_=toolWidget->getFindActionNames();
     construct_action_name_list_=toolWidget->getConstructActionNames();
     coord_action_name_list_=toolWidget->getCoordActionNames();
+    view_angle_action_name_list_=toolWidget->getViewAngleActionNames();
 
 
     QVBoxLayout *layout = new QVBoxLayout;
@@ -43,11 +44,13 @@ ContralWidget::ContralWidget(ToolWidget* toolWidget_,QWidget *parent) : QDialog(
         QStringList find_action_add_list;
         QStringList construct_action_add_list;
         QStringList coord_action_add_list;
+        QStringList view_angle_action_add_list;
 
         int save_action_add_num=0;
         int find_action_add_num=0;
         int construct_action_add_num=0;
         int coord_action_add_num=0;
+        int view_angle_action_add_num=0;
 
         for(int i=0;i<toolWidget->getFindActionNum();i++){
             if(action_is_checked_[find_action_index_][i]) {
@@ -73,12 +76,20 @@ ContralWidget::ContralWidget(ToolWidget* toolWidget_,QWidget *parent) : QDialog(
                 coord_action_add_num++;
             }
         }
+        for(int i=0;i<toolWidget->getViewAngleActionNum();i++){
+            if(action_is_checked_[view_angle_action_index_][i]) {
+                view_angle_action_add_list<<(*view_angle_action_name_list_)[i];
+                view_angle_action_add_num++;
+            }
+        }
 
         int toolbar_index=-1;
         toolbar_index= toolWidget->addFindActions(find_action_add_list,find_action_add_num, toolbar_index);
         toolbar_index= toolWidget->addConstructActions(construct_action_add_list,construct_action_add_num, toolbar_index);
         toolbar_index= toolWidget->addSaveActions(save_action_add_list,save_action_add_num, toolbar_index);
         toolbar_index= toolWidget->addCoordActions(coord_action_add_list, coord_action_add_num, toolbar_index);
+        toolbar_index= toolWidget->addViewAngleActions(view_angle_action_add_list,view_angle_action_add_num,toolbar_index);
+
 
     });
 
@@ -86,7 +97,7 @@ ContralWidget::ContralWidget(ToolWidget* toolWidget_,QWidget *parent) : QDialog(
 }
 void ContralWidget::createTreeWidgetItem(){
     // 添加一些父节点
-    QString rootItemNames[ToolWidget::ActionKindNum]={"识别","构造","保存","坐标系"};
+    QString rootItemNames[ToolWidget::ActionKindNum]={"识别","构造","保存","坐标系","视角"};
     for(int i=0;i<ToolWidget::ActionKindNum;i++){
         QTreeWidgetItem *fatherItem = new QTreeWidgetItem(treeWidget,QStringList()<<(rootItemNames[i]));
 
@@ -117,6 +128,12 @@ void ContralWidget::createTreeWidgetItem(){
         iconItem->setFlags(iconItem->flags() | Qt::ItemIsUserCheckable); // 设置为复选框
         iconItem->setCheckState(0, Qt::Checked); // 设置为选中状态
     }
+    for(int i=0;i<toolWidget->getViewAngleActionNum();i++){
+        QTreeWidgetItem *iconItem = new QTreeWidgetItem(fatherItems[view_angle_action_index_],QStringList()<< (*view_angle_action_name_list_)[i]);
+        iconItem->setFlags(iconItem->flags() | Qt::ItemIsUserCheckable); // 设置为复选框
+        iconItem->setCheckState(0, Qt::Checked); // 设置为选中状态
+    }
+
 
 }
 void ContralWidget::closeEvent(QCloseEvent* event){
