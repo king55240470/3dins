@@ -666,10 +666,10 @@ void MainWindow::on2dCoordOriginAuto(){
             qDebug()<<"列表里有东西";
         }
     }
-    if(choosenList.size() != 1) {
+    /*if(choosenList.size() != 1) {
         qDebug()<<"size不为1";
         return;
-    }
+    }*/
     CPosition pos;
 
     // 根据选中的对象类型，获取其坐标信息
