@@ -25,20 +25,19 @@ protected:
     const int find_action_index_=0;
     const int construct_action_index_=1;
     const int coord_action_index_=3;
+    const int view_angle_action_index_=4;
 
     void createTreeWidgetItem();
     void closeEvent(QCloseEvent* event)override;
 
     bool action_is_checked_[ToolWidget::ActionKindNum][12];
 
-    QString* iconNames_First;
-    QString* iconNames_Second;
-    QString* iconNames_Third;
 
     const QStringList* save_action_name_list_;
     const QStringList* find_action_name_list_;
     const QStringList* construct_action_name_list_;
     const QStringList* coord_action_name_list_;
+    const QStringList * view_angle_action_name_list_;
 
     QTreeWidget *treeWidget;
 
