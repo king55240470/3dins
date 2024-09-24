@@ -139,6 +139,7 @@ public:
 
 class CCircle  : public CEntity
 {
+public:
     CPosition m_pt;
 
     double m_d;//直径
