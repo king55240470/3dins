@@ -36,6 +36,11 @@ void onSaveExcel();
 void onSaveTxt();
 void onSaveWord();
 void onSaveImage();
+//ViewAngle
+void onFrontViewAngle();
+void onIosmetricViewAngle();
+void onRightViewAngle();
+void onUpViewAngle();
 }
 
 class ToolWidget : public QWidget {
@@ -48,12 +53,13 @@ public:
     void NotifySubscribe();
 
     static const int SingalToolBarActionNum=9;
-    static const int ActionKindNum=4;
+    static const int ActionKindNum=5;
 
     QStringList* getSaveActionNames();
     QStringList* getConstructActionNames();
     QStringList* getFindActionNames();
     QStringList* getCoordActionNames();
+    QStringList* getViewAngleActionNames();
 
     int getToolbarNum();
 
@@ -61,6 +67,7 @@ public:
     int getConstructActionNum();
     int getCoordActionNum();
     int getFindActionNum();
+    int getViewAngleActionNum();
 
     void clearToolWidget();
 
@@ -70,9 +77,12 @@ public:
     int addConstructActions(QStringList& ,int,int=-1);
     int addFindActions(QStringList& ,int,int=-1);
     int addCoordActions(QStringList& ,int,int=-1);
+    int addViewAngleActions(QStringList&,int,int=-1);
 
      ~ToolWidget();
     void connectActionWithF();
+
+
 
 
 private:
@@ -81,24 +91,28 @@ private:
     ToolAction **  construct_actions_;
     ToolAction **  find_actions_;
     ToolAction **  coord_actions_;
+    ToolAction **  view_angle_actions_;
     QToolBar   **  toolBars;
 
     QStringList save_action_iconpath_list_;
     QStringList construct_action_iconpath_list_;
     QStringList find_action_iconpath_list_;
     QStringList coord_action_iconpath_list_;
+    QStringList view_angle_action_iconpath_list_;
 
 
     QStringList save_action_name_list_;
     QStringList construct_action_name_list_;
     QStringList find_action_name_list_;
     QStringList coord_action_name_list_;
+    QStringList view_angle_action_name_list_;
 
     int m_nToolbarNum;
     int m_nSaveActionNum;
     int m_nConstructActionNum;
     int m_nFindActionNum;
     int m_nCoordActionNum;
+    int m_nViewAngleActionNum;
 
 };
 #endif // TOOLWIDGET_H

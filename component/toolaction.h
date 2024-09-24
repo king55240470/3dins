@@ -7,7 +7,8 @@ enum ToolActionKind{
     SaveAction,
     ConstructAction,
     CoordAction,
-    FindAction
+    FindAction,
+    ViewAngleAction
 };
 class ToolAction :public QAction
 {
