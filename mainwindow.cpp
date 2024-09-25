@@ -764,3 +764,23 @@ void MainWindow::on2dCoordSave(){
     NotifySubscribe();
 
 }
+
+void MainWindow::onTopViewClicked()
+{
+    pWinVtkWidget->onTopView();
+}
+
+void MainWindow::onRightViewClicked()
+{
+    pWinVtkWidget->onRightView();
+}
+
+void MainWindow::onFrontViewClicked()
+{
+    pWinVtkWidget->onFrontView();
+}
+
+void MainWindow::onIsometricViewClicked()
+{
+    pWinVtkWidget->ononIsometricView();
+}

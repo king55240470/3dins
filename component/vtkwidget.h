@@ -73,6 +73,12 @@ public:
     // 创建左下角坐标轴
     void createAxes();
 
+    // 切换相机视角
+    void onTopView();
+    void onRightView();
+    void onFrontView();
+    void ononIsometricView();
+
 private:
     PointCloudPtr cloudptr; // 点云智能指针
     PCLViewer::Ptr cloud_viewer; // PCL 可视化器的智能指针
@@ -92,11 +98,6 @@ private:
     MainWindow *m_pMainWin=nullptr;
 signals:
 
-
-private slots:
-    void onTopViewClicked(); // 相机视角1
-    void onRightViewClicked(); // 相机视角2
-    void onFrontViewClicked(); // 相机视角3
 };
 
 #endif // VTKWIDGET_H
