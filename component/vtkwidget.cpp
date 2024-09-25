@@ -10,24 +10,9 @@ VtkWidget::VtkWidget(QWidget *parent)
 {
     m_pMainWin = (MainWindow*) parent;
 
-    // 创建不同视角的点击按钮
-    QPushButton *topViewButton = new QPushButton("Top View", this);
-    QPushButton *rightViewButton = new QPushButton("Right View", this);
-    QPushButton *frontViewButton = new QPushButton("Front View", this);
-
-    // 连接按钮的clicked信号到槽函数
-    connect(topViewButton, &QPushButton::clicked, this, &VtkWidget::onTopViewClicked);
-    connect(rightViewButton, &QPushButton::clicked, this, &VtkWidget::onRightViewClicked);
-    connect(frontViewButton, &QPushButton::clicked, this, &VtkWidget::onFrontViewClicked);
-
     // 设置 VTK 渲染窗口到 QWidget
     QVBoxLayout *mainlayout = new QVBoxLayout;
     setUpVtk(mainlayout); // 配置vtk窗口
-    // 将按钮加入布局
-    mainlayout->addWidget(topViewButton, 0);
-    mainlayout->addWidget(rightViewButton, 0);
-    mainlayout->addWidget(frontViewButton, 0);
-
     this->setLayout(mainlayout);
 
 }
@@ -160,10 +145,10 @@ void VtkWidget::createAxes()
 }
 
 // 切换相机视角1
-void VtkWidget::onTopViewClicked() {
+void VtkWidget::onTopView() {
     vtkCamera *camera = renderer->GetActiveCamera();
     if (camera) {
-        camera->SetPosition(0, 0, 1);  // 重置相机视角为俯视
+        camera->SetPosition(0, 0, 1);  // 重置相机位置为俯视
         camera->SetFocalPoint(0, 0, 0);
         camera->SetViewUp(0, 1, 0);
 
@@ -176,10 +161,10 @@ void VtkWidget::onTopViewClicked() {
 }
 
 // 切换相机视角2
-void VtkWidget::onRightViewClicked(){
+void VtkWidget::onRightView(){
     vtkCamera *camera = renderer->GetActiveCamera();
     if (camera) {
-        camera->SetPosition(1, 0, 0);  // 重置相机视角为右侧
+        camera->SetPosition(1, 0, 0);  // 重置相机位置为右侧
         camera->SetFocalPoint(0, 0, 0);
         camera->SetViewUp(0, 1, 0);
 
@@ -192,14 +177,30 @@ void VtkWidget::onRightViewClicked(){
 }
 
 // 切换相机视角3
-void VtkWidget::onFrontViewClicked(){
+void VtkWidget::onFrontView(){
     vtkCamera *camera = renderer->GetActiveCamera();
     if (camera) {
-        camera->SetPosition(0, -1, 0);  // 重置相机视角为正视
+        camera->SetPosition(0, -1, 0);  // 重置相机位置为正视
         camera->SetFocalPoint(0, 0, 0);
         camera->SetViewUp(0, 0, 1);
 
         camera->OrthogonalizeViewUp(); // 确保与SetViewUp方向正交
+
+        // 重新设置相机并渲染
+        renderer->ResetCamera();
+        renWin->Render();
+    }
+}
+
+void VtkWidget::ononIsometricView(){
+    vtkCamera *camera = renderer->GetActiveCamera();
+    if (camera) {
+        camera->SetPosition(0, 0, 0); // 重置相机位置
+        camera->SetViewUp(0, 1, 0);    // 重置视角向上方向
+
+        camera->Azimuth(30);
+        camera->Elevation(30);
+        camera->OrthogonalizeViewUp();
 
         // 重新设置相机并渲染
         renderer->ResetCamera();

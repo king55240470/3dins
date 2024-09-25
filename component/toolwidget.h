@@ -38,7 +38,7 @@ void onSaveWord();
 void onSaveImage();
 //ViewAngle
 void onFrontViewAngle();
-void onIosmetricViewAngle();
+void onIsometricViewAngle();
 void onRightViewAngle();
 void onUpViewAngle();
 }

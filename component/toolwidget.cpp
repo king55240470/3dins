@@ -453,10 +453,22 @@ void ToolWidget::connectActionWithF(){
         m_pMainWin->on2dCoordSave();
     });
     //视角
-    connect(view_angle_actions_[view_angle_action_name_list_.indexOf("主视角")],&QAction::triggered,&tool_widget::onFrontViewAngle);
-    connect(view_angle_actions_[view_angle_action_name_list_.indexOf("俯视角")],&QAction::triggered,&tool_widget::onUpViewAngle);
-    connect(view_angle_actions_[view_angle_action_name_list_.indexOf("侧视角")],&QAction::triggered,&tool_widget::onRightViewAngle);
-    connect(view_angle_actions_[view_angle_action_name_list_.indexOf("立体视角")],&QAction::triggered,&tool_widget::onIosmetricViewAngle);
+    connect(view_angle_actions_[view_angle_action_name_list_.indexOf("主视角")],&QAction::triggered,this,[&](){
+        tool_widget::onFrontViewAngle();
+        m_pMainWin->onFrontViewClicked();
+    });
+    connect(view_angle_actions_[view_angle_action_name_list_.indexOf("俯视角")],&QAction::triggered,this, [&](){
+        tool_widget::onUpViewAngle();
+        m_pMainWin->onTopViewClicked();
+    });
+    connect(view_angle_actions_[view_angle_action_name_list_.indexOf("侧视角")],&QAction::triggered,[&](){
+        tool_widget::onRightViewAngle();
+        m_pMainWin->onRightViewClicked();
+    });
+    connect(view_angle_actions_[view_angle_action_name_list_.indexOf("立体视角")],&QAction::triggered,[&](){
+        tool_widget::onIsometricViewAngle();
+        m_pMainWin->onIsometricViewClicked();
+    });
 }
 
 
@@ -464,7 +476,7 @@ void ToolWidget::connectActionWithF(){
 //Find
 namespace tool_widget{
 void onFrontViewAngle(){qDebug()<<"点击了主视角";}
-void onIosmetricViewAngle(){qDebug()<<"点击了立体视角";}
+void onIsometricViewAngle(){qDebug()<<"点击了立体视角";}
 void onRightViewAngle(){qDebug()<<"点击了侧视角";}
 void onUpViewAngle(){qDebug()<<"点击了俯视角";}
 void  onFindPoint(){ qDebug()<<"点击了识别点";}
