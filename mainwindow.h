@@ -78,10 +78,18 @@ public:
     CEntity* CreateEntity(int nType);
     void NotifySubscribe();
     void loadManager();
+    ElementListWidget *getPWinElementListWidget();
+    VtkWidget * getPWinVtkWidget();
 
     //slots
     void on2dCoordOriginAuto(); // 创建坐标系
     void on2dCoordSave();
+
+    // 切换图形的观察视角
+    void onTopViewClicked();
+    void onRightViewClicked();
+    void onFrontViewClicked();
+    void onIsometricViewClicked();
 
 public:
     MainWindow(QWidget *parent = nullptr);
@@ -91,7 +99,7 @@ public:
     void setupUi();
     void showPresetElemWidget(int);
 
-private:
+public:
     // RELY_ON_CS_TYPE m_nRelyOnWhichCs;
     CPcs* m_nRelyOnWhichCs; // 状态栏的参考坐标系
 };
