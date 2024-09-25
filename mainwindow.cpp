@@ -342,6 +342,7 @@ void MainWindow::NotifySubscribe()
 {
     pWinElementListWidget->upadteelementlist();
     pWinVtkWidget->UpdateInfo(); // 更新vtkwidget信息
+    pWinFileManagerWidget->UpdateInfo();
 }
 
 void MainWindow::OnPresetPoint(CPosition pt){
