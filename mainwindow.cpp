@@ -652,7 +652,7 @@ void MainWindow::on2dCoordOriginAuto(){
     }
     //qDebug()<<"添加坐标系";
 
-    m_pcsListMgr->m_bTempPcsNodeInUse = true;
+    //m_pcsListMgr->m_bTempPcsNodeInUse = true;
 
     // 创建一个对象列表，用于存储选中的对象
     QVector<CObject*> choosenList;
@@ -663,13 +663,14 @@ void MainWindow::on2dCoordOriginAuto(){
         {
             choosenList.push_back(m_ObjectListMgr->getObjectList()[i]);
             index=i;
+            qDebug()<<m_ObjectListMgr->getObjectList()[i]->GetObjectCName();
             qDebug()<<"列表里有东西";
         }
     }
-    /*if(choosenList.size() != 1) {
+    if(choosenList.size() != 1) {
         qDebug()<<"size不为1";
         return;
-    }*/
+    }
     CPosition pos;
 
     // 根据选中的对象类型，获取其坐标信息
@@ -732,12 +733,12 @@ void MainWindow::on2dCoordOriginAuto(){
         object->SetSelected(false);
     }
     m_pcsListMgr->m_pNodeTemporary->SetSelected(true); // 将临时坐标系节点设置为选中状态
-
     // 更新状态栏
     switchCsBtn->setText("临时坐标系");
 
     //qDebug()<<"添加坐标系完成！！";
     NotifySubscribe();
+    m_pcsListMgr->m_bTempPcsNodeInUse = true;
 }
 
 // 将临时坐标系转化为正式的坐标系并保存
@@ -762,5 +763,4 @@ void MainWindow::on2dCoordSave(){
     //更新状态栏
     switchCsBtn->setText(pcsName);
     NotifySubscribe();
-
 }
