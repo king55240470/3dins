@@ -665,7 +665,7 @@ void MainWindow::on2dCoordOriginAuto(){
     }
     //qDebug()<<"添加坐标系";
 
-    //m_pcsListMgr->m_bTempPcsNodeInUse = true;
+    m_pcsListMgr->m_bTempPcsNodeInUse = true;
 
     // 创建一个对象列表，用于存储选中的对象
     QVector<CObject*> choosenList;
