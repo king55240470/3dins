@@ -670,15 +670,26 @@ void MainWindow::on2dCoordOriginAuto(){
     // 创建一个对象列表，用于存储选中的对象
     QVector<CObject*> choosenList;
     int index=-1;
-    for(int i=0;i<m_ObjectListMgr->getObjectList().size();i++)
+    // for(int i=0;i<m_ObjectListMgr->getObjectList().size();i++)
+    // {
+    //     if(m_ObjectListMgr->getObjectList()[i]->IsSelected() == true) // 如果对象被选中
+    //     {
+    //         choosenList.push_back(m_ObjectListMgr->getObjectList()[i]);
+    //         index=i;
+    //         qDebug()<<"列表里有东西";
+    //     }
+    // }
+
+    for(int i=0;i<m_EntityListMgr->getEntityList().size();i++)
     {
-        if(m_ObjectListMgr->getObjectList()[i]->IsSelected() == true) // 如果对象被选中
+        if(m_EntityListMgr->getEntityList()[i]->IsSelected() == true) // 如果对象被选中
         {
-            choosenList.push_back(m_ObjectListMgr->getObjectList()[i]);
+            choosenList.push_back(m_EntityListMgr->getEntityList()[i]);
             index=i;
             qDebug()<<"列表里有东西";
         }
     }
+
     /*if(choosenList.size() != 1) {
         qDebug()<<"size不为1";
         return;
