@@ -29,6 +29,7 @@ MainWindow::MainWindow(QWidget *parent)
     RestoreWidgets();
     loadManager();
     connect(pWinElementListWidget,&ElementListWidget::itemSelected,pWinDataWidget,&DataWidget::updateele);
+    connect(pWinElementListWidget,&ElementListWidget::itemSelected,pWinToolWidget,&ToolWidget::updateele);
 }
 
 void MainWindow::setupUi(){
@@ -763,4 +764,10 @@ void MainWindow::on2dCoordSave(){
     switchCsBtn->setText(pcsName);
     NotifySubscribe();
 
+}
+ElementListWidget* MainWindow:: getPWinElementListWidget(){
+    return pWinElementListWidget;
+}
+VtkWidget *MainWindow:: getPWinVtkWidget(){
+    return pWinVtkWidget;
 }

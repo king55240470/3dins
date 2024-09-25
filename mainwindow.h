@@ -78,6 +78,8 @@ public:
     CEntity* CreateEntity(int nType);
     void NotifySubscribe();
     void loadManager();
+    ElementListWidget *getPWinElementListWidget();
+    VtkWidget * getPWinVtkWidget();
 
     //slots
     void on2dCoordOriginAuto(); // 创建坐标系
