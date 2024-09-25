@@ -624,9 +624,9 @@ bool MainWindow::eventFilter(QObject* watched, QEvent* event){
         {
             // 获取选中元素的下表index
             int index=-1;
-            for(int i=0;i<m_ObjectListMgr->getObjectList().size();i++)
+            for(int i=0;i<m_EntityListMgr->getEntityList().size();i++)
             {
-                if(m_ObjectListMgr->getObjectList()[i]->IsSelected() == true) // 如果对象被选中
+                if(m_EntityListMgr->getEntityList()[i]->IsSelected() == true) // 如果对象被选中
                 {
                     index=i;
                 }
