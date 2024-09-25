@@ -765,13 +765,13 @@ void MainWindow::on2dCoordSave(){
     NotifySubscribe();
 
 }
-<<<<<<< HEAD
+
 ElementListWidget* MainWindow:: getPWinElementListWidget(){
     return pWinElementListWidget;
 }
 VtkWidget *MainWindow:: getPWinVtkWidget(){
     return pWinVtkWidget;
-=======
+}
 
 void MainWindow::onTopViewClicked()
 {
@@ -791,5 +791,4 @@ void MainWindow::onFrontViewClicked()
 void MainWindow::onIsometricViewClicked()
 {
     pWinVtkWidget->ononIsometricView();
->>>>>>> abea325b4c33a92998e53901daebc5be91708bb5
 }
