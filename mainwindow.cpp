@@ -765,9 +765,31 @@ void MainWindow::on2dCoordSave(){
     NotifySubscribe();
 
 }
+<<<<<<< HEAD
 ElementListWidget* MainWindow:: getPWinElementListWidget(){
     return pWinElementListWidget;
 }
 VtkWidget *MainWindow:: getPWinVtkWidget(){
     return pWinVtkWidget;
+=======
+
+void MainWindow::onTopViewClicked()
+{
+    pWinVtkWidget->onTopView();
+}
+
+void MainWindow::onRightViewClicked()
+{
+    pWinVtkWidget->onRightView();
+}
+
+void MainWindow::onFrontViewClicked()
+{
+    pWinVtkWidget->onFrontView();
+}
+
+void MainWindow::onIsometricViewClicked()
+{
+    pWinVtkWidget->ononIsometricView();
+>>>>>>> abea325b4c33a92998e53901daebc5be91708bb5
 }

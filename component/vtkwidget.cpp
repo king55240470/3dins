@@ -1,16 +1,5 @@
 #include "vtkwidget.h"
-
-#include <QVTKOpenGLNativeWidget.h>
-#include <vtkSphereSource.h>
-#include <vtkPolyDataMapper.h>
-#include <vtkActor.h>
-#include <vtkProperty.h>
-#include <vtkAxesActor.h>
-#include <vtkAutoInit.h>
-VTK_MODULE_INIT(vtkRenderingOpenGL2);
-VTK_MODULE_INIT(vtkInteractionStyle);
-VTK_MODULE_INIT(vtkRenderingVolumeOpenGL2);
-VTK_MODULE_INIT(vtkRenderingFreeType);
+#include <vtkInteractorStyle.h>
 
 // 渲染窗口大小
 #define WIDTH 1000
@@ -21,59 +10,56 @@ VtkWidget::VtkWidget(QWidget *parent)
 {
     m_pMainWin = (MainWindow*) parent;
 
-
-    renWin = vtkSmartPointer<vtkGenericOpenGLRenderWindow>::New();
-    renderer = vtkSmartPointer<vtkRenderer>::New();
-
-    // 创建坐标器
-    auto axes = vtkSmartPointer<vtkAxesActor>::New();
-    axes->SetAxisLabels(true);
-    axes->SetAxisLabels(true);
-    axes->SetAxisLabels(true);
-    axes->SetTotalLength(0.2, 0.2, 0.2); // 设置轴的长度
-    axes->SetConeRadius(0.03); // 设置轴锥体的半径
-    axes->SetCylinderRadius(0.02); // 设置轴圆柱体的半径
-    axes->SetSphereRadius(0.03); // 设置轴末端的球体半径
-    axes->SetPosition(0, 0, 0);
-
-    // 将坐标器添加到渲染器中
-    renderer->SetBackground(255, 255, 255);
-    renderer->AddActor(axes);
-
-    renWin->AddRenderer(renderer);  // 将渲染器添加到渲染窗口
-
     // 设置 VTK 渲染窗口到 QWidget
-    QHBoxLayout *mainlayout = new QHBoxLayout;
+    QVBoxLayout *mainlayout = new QVBoxLayout;
     setUpVtk(mainlayout); // 配置vtk窗口
     this->setLayout(mainlayout);
 
+}
 
-    // // 创建 PCLViewer 对象，用于显示点云
-    // cloud_viewer.reset(new PCLViewer("Viewer"));
-    // cloud_viewer->setShowFPS(false);  // 不显示帧率
-    // cloud_viewer->setBackgroundColor(0.1, 0.2, 0.4);
-    // // 获取渲染窗口的窗口 ID，并将其转换为 QWindow 对象
-    // auto viewerWinId = QWindow::fromWinId((WId)cloud_viewer->getRenderWindow()->GetGenericWindowId());
-    // // 创建一个窗口容器，将 PCLViewer 的窗口嵌入到 Qt 窗口中
-    // QWidget *widget = QWidget::createWindowContainer(viewerWinId, nullptr);
-    // // 创建一个垂直布局
-    // QVBoxLayout* mainLayout = new QVBoxLayout;
-    // mainLayout->addWidget(widget);  // 将窗口容器添加到布局中
-    // // 设置主窗口的中心部件的布局
-    // setLayout(mainLayout);
-    // // 创建一个点云智能指针
-    // cloudptr.reset(new PointCloudT);
-    // // 从指定路径加载 PCD 文件到点云对象中
-    // // pcl::io::loadPCDFile("D:\\Lenovo\\Acun\\3din\\bunny.pcd", *cloudptr);
-    // // pcl::io::loadPCDFile("E:\\pcl\\maize.pcd", *cloudptr);
-    // pcl::io::loadPCDFile("E:\\pcl\\bunny.pcd", *cloudptr);
-    // // 定义颜色处理的轴
-    // const std::string axis ="z";
-    // // 创建颜色处理器，基于指定的轴为点云着色
-    // pcl::visualization::PointCloudColorHandlerGenericField<PointT> color_handler(cloudptr, axis);
-    // // 将点云添加到 PCLViewer 中
-    // cloud_viewer->addPointCloud(cloudptr, color_handler, "cloud");
+void VtkWidget::setUpVtk(QVBoxLayout *layout){
+    // 初始化渲染器和交互器
+    renWin = vtkSmartPointer<vtkGenericOpenGLRenderWindow>::New();
+    renderer = vtkSmartPointer<vtkRenderer>::New();
+    renWin->AddRenderer(renderer);  // 将渲染器添加到渲染窗口
+    // interactor = vtkSmartPointer<vtkRenderWindowInteractor>::New();
+    // interactor->SetRenderWindow(renWin);
 
+    // 创建坐标器
+    createAxes();
+    // 创建初始视角相机
+    vtkCamera* camera = renderer->GetActiveCamera();
+    if (camera) {
+        // 设置相机的初始位置和焦点
+        camera->SetPosition(0, 0, 1);
+        camera->SetFocalPoint(0, 0, 0);
+        camera->SetViewUp(0, 1, 0);
+
+        // 根据需要调整视野角度
+        camera->SetViewAngle(60);
+
+        // 根据场景的具体大小和需要调整裁剪范围
+        camera->SetClippingRange(0.1, 1000);
+
+        // 根据需要调整视图的缩放
+        camera->Zoom(0.5);
+    }
+
+    // 设置渲染器颜色为白
+    renderer->SetBackground(1, 1, 1);
+
+    vtkWidget = new QVTKOpenGLNativeWidget(this);
+    vtkWidget->setRenderWindow(renWin);
+    layout->addWidget(vtkWidget);
+
+    // // 创建交互器样式
+    // auto customStyle = vtkSmartPointer<vtkInteractorStyle>::New();
+    // customStyle->SetInteractor(interactor);
+    // customStyle->SetCurrentRenderer(renderer.GetPointer()); // 设置当前的渲染器
+    // // 设置VTK窗口的交互样式
+    // renWin->GetInteractor()->SetInteractorStyle(customStyle);
+
+    renWin->Render();
 }
 
 vtkSmartPointer<vtkRenderWindow> VtkWidget::getRenderWindow(){
@@ -103,6 +89,7 @@ void VtkWidget::reDraw(){
     // 初始化迭代器，准备遍历actor集合
     actorCollection->InitTraversal(it);
 
+    // 循环解除actor与渲染器的关联
     vtkSmartPointer<vtkActor> actor;
     while ((actor = actorCollection->GetNextActor(it)) != nullptr)
     {
@@ -117,11 +104,110 @@ void VtkWidget::reDraw(){
     getRenderWindow()->Render(); // 刷新渲染窗口
 }
 
+// 创建坐标器
+void VtkWidget::createAxes()
+{
+    // 创建坐标器
+    auto axes = vtkSmartPointer<vtkAxesActor>::New();
+
+    // 设置 X Y Z 轴标题颜色为黑色
+    axes->GetXAxisCaptionActor2D()->GetCaptionTextProperty()->SetColor(0.0, 0.0, 0.0);
+    axes->GetYAxisCaptionActor2D()->GetCaptionTextProperty()->SetColor(0.0, 0.0, 0.0);
+    axes->GetZAxisCaptionActor2D()->GetCaptionTextProperty()->SetColor(0.0, 0.0, 0.0);
+
+    // 设置字体大小
+    axes->GetXAxisCaptionActor2D()->GetCaptionTextProperty()->SetFontSize(10);
+    axes->GetYAxisCaptionActor2D()->GetCaptionTextProperty()->SetFontSize(10);
+    axes->GetZAxisCaptionActor2D()->GetCaptionTextProperty()->SetFontSize(10);
+
+    axes->SetTotalLength(0.4, 0.4, 0.4); // 设置轴的长度
+    axes->SetConeRadius(0.08); // 设置轴锥体的半径
+    axes->SetCylinderRadius(0.1); // 设置轴圆柱体的半径
+    axes->SetSphereRadius(0.05); // 设置轴末端的球体半径
+    axes->SetPosition(0, 0, 0);
+    renderer->AddActor(axes); // 将坐标器添加到渲染器
+
+    // orientationWidget = vtkSmartPointer<vtkOrientationMarkerWidget>::New();
+    // // 设置 X Y Z 轴标题颜色为黑色
+    // axes->GetXAxisCaptionActor2D()->GetCaptionTextProperty()->SetColor(0.0, 0.0, 0.0);
+    // axes->GetYAxisCaptionActor2D()->GetCaptionTextProperty()->SetColor(0.0, 0.0, 0.0);
+    // axes->GetZAxisCaptionActor2D()->GetCaptionTextProperty()->SetColor(0.0, 0.0, 0.0);
+
+    // // 将坐标轴演员添加到orientationWidget
+    // orientationWidget->SetOrientationMarker(axes);
+    // // 将orientationWidget与交互器关联
+    // orientationWidget->SetInteractor(renWin->GetInteractor());
+    // // 设置视口
+    // orientationWidget->SetViewport(0.0, 0.0, 0.2, 0.2);
+
+    // // orientationWidget->SetEnabled(1);
+    // orientationWidget->InteractiveOff();
+}
+
+// 切换相机视角1
+void VtkWidget::onTopView() {
+    vtkCamera *camera = renderer->GetActiveCamera();
+    if (camera) {
+        camera->SetPosition(0, 0, 1);  // 重置相机位置为俯视
+        camera->SetFocalPoint(0, 0, 0);
+        camera->SetViewUp(0, 1, 0);
+
+        camera->OrthogonalizeViewUp(); // 确保与SetViewUp方向正交
+
+        // 重新设置相机并渲染
+        renderer->ResetCamera();
+        renWin->Render();
+    }
+}
+
+// 切换相机视角2
+void VtkWidget::onRightView(){
+    vtkCamera *camera = renderer->GetActiveCamera();
+    if (camera) {
+        camera->SetPosition(1, 0, 0);  // 重置相机位置为右侧
+        camera->SetFocalPoint(0, 0, 0);
+        camera->SetViewUp(0, 1, 0);
+
+        camera->OrthogonalizeViewUp(); // 确保与SetViewUp方向正交
+
+        // 重新设置相机并渲染
+        renderer->ResetCamera();
+        renWin->Render();
+    }
+}
+
+// 切换相机视角3
+void VtkWidget::onFrontView(){
+    vtkCamera *camera = renderer->GetActiveCamera();
+    if (camera) {
+        camera->SetPosition(0, -1, 0);  // 重置相机位置为正视
+        camera->SetFocalPoint(0, 0, 0);
+        camera->SetViewUp(0, 0, 1);
+
+        camera->OrthogonalizeViewUp(); // 确保与SetViewUp方向正交
+
+        // 重新设置相机并渲染
+        renderer->ResetCamera();
+        renWin->Render();
+    }
+}
+
+void VtkWidget::ononIsometricView(){
+    vtkCamera *camera = renderer->GetActiveCamera();
+    if (camera) {
+        camera->SetPosition(0, 0, 0); // 重置相机位置
+        camera->SetViewUp(0, 1, 0);    // 重置视角向上方向
+
+        camera->Azimuth(30);
+        camera->Elevation(30);
+        camera->OrthogonalizeViewUp();
+
+        // 重新设置相机并渲染
+        renderer->ResetCamera();
+        renWin->Render();
+    }
+}
+
+
 VtkWidget::~VtkWidget() {}
 
-void VtkWidget::setUpVtk(QHBoxLayout *layout){
-    QVTKOpenGLNativeWidget* vtkWidget = new QVTKOpenGLNativeWidget(this);
-    vtkWidget->setRenderWindow(renWin);
-    layout->addWidget(vtkWidget);
-    renWin->Render();
-}
