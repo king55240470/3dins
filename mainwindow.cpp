@@ -29,6 +29,10 @@ MainWindow::MainWindow(QWidget *parent)
     RestoreWidgets();
     loadManager();
     connect(pWinElementListWidget,&ElementListWidget::itemSelected,pWinDataWidget,&DataWidget::updateele);
+
+    m_nRelyOnWhichCs=m_pcsListMgr->GetBaseCoordSystem();
+
+    connect(pWinElementListWidget,&ElementListWidget::itemSelected,pWinToolWidget,&ToolWidget::updateele);
 }
 
 void MainWindow::setupUi(){
@@ -591,11 +595,10 @@ bool MainWindow::eventFilter(QObject* watched, QEvent* event){
                         m_pcsListMgr->SetCurCoordSystem(pPcs);
                         NotifySubscribe();
                         // 更新所有实体的当前坐标系
-                        // SetCurCoordSystem函数中已实现
-                        // for(CEntity *pEntity : m_pcsListMgr->m_pEntityListMgr->getEntityList())
-                        // {
-                        //     pEntity->SetCurCoord(pPcs);
-                        // }
+                        for(CEntity *pEntity : m_EntityListMgr->getEntityList())
+                        {
+                            pEntity->SetCurCoord(pPcs);
+                        }
                     }
                     else
                     {
@@ -603,10 +606,10 @@ bool MainWindow::eventFilter(QObject* watched, QEvent* event){
                         CPcs* pPcs = m_pcsListMgr->Find(strClickedText);
                         m_pcsListMgr->SetCurCoordSystem(pPcs);
                         NotifySubscribe();
-                        // for(CEntity *pEntity : m_pcsListMgr->m_pEntityListMgr->getEntityList())
-                        // {
-                        //     pEntity->SetCurCoord(pPcs);
-                        // }
+                        for(CEntity *pEntity : m_EntityListMgr->getEntityList())
+                        {
+                            pEntity->SetCurCoord(pPcs);
+                        }
                     }
                     // 右下加标签设置为所选坐标系
                     button->setText(strClickedText);
@@ -621,17 +624,27 @@ bool MainWindow::eventFilter(QObject* watched, QEvent* event){
         }
         else if(button->objectName()=="statusSwitchRef")
         {
+            // 获取选中元素的下表index
+            int index=-1;
+            for(int i=0;i<m_EntityListMgr->getEntityList().size();i++)
+            {
+                if(m_EntityListMgr->getEntityList()[i]->IsSelected() == true) // 如果对象被选中
+                {
+                    index=i;
+                }
+            }
+
             if(button->text()=="参考依赖坐标系")
             {
                 button->setText("参考当前坐标系");
                 m_nRelyOnWhichCs = m_pcsListMgr->GetCurCoordSystem();
-                // pWinDataWidget->UpdateInfo(); // 更新数据结果窗口
+                pWinDataWidget->updateele(index); // 更新数据结果窗口
             }
             else
             {
                 button->setText("参考依赖坐标系");
                 m_nRelyOnWhichCs = m_pcsListMgr->GetBaseCoordSystem();
-                // pWinDataWidget->UpdateInfo();
+                pWinDataWidget->updateele(index);
             }
         }
 
@@ -641,7 +654,7 @@ bool MainWindow::eventFilter(QObject* watched, QEvent* event){
     return QMainWindow::eventFilter(watched, event);
 }
 
-//处理临时坐标系的创建
+//处理临时坐标系的创建(只有点和圆可建立坐标系)
 void MainWindow::on2dCoordOriginAuto(){
     // 如果临时坐标系不为空，则禁止继续创建临时坐标系
     if(m_pcsListMgr->m_bTempPcsNodeInUse)
@@ -661,12 +674,12 @@ void MainWindow::on2dCoordOriginAuto(){
     {
         if(m_ObjectListMgr->getObjectList()[i]->IsSelected() == true) // 如果对象被选中
         {
-            choosenList.push_back(m_ObjectListMgr->getObjectList()[i]);
-            index=i;
-            qDebug()<<m_ObjectListMgr->getObjectList()[i]->GetObjectCName();
-            qDebug()<<"列表里有东西";
+             choosenList.push_back(m_ObjectListMgr->getObjectList()[i]);
+             index=i;
+             qDebug()<<"列表里有东西";
         }
     }
+
     if(choosenList.size() != 1) {
         qDebug()<<"size不为1";
         return;
@@ -678,7 +691,7 @@ void MainWindow::on2dCoordOriginAuto(){
     case enCircle:
     {
         CCircle* newCircle = (CCircle*)choosenList[0];
-        pos.x=newCircle->getCenter().x;
+        pos.x=newCircle->getCenter().x; //当前坐标系下预置时填写的坐标
         pos.y=newCircle->getCenter().y;
         pos.z=newCircle->getCenter().z;
         break;
@@ -695,7 +708,6 @@ void MainWindow::on2dCoordOriginAuto(){
         break;
     }
     CPcs *pPcs = new CPcs();
-
     QVector4D posVec = m_pcsListMgr->m_pPcsCurrent->m_mat * QVector4D(pos.x, pos.y, pos.z, 1); // 得到全局坐标
     CPosition globalPos(posVec.x(), posVec.y(), posVec.z());
 
@@ -719,7 +731,7 @@ void MainWindow::on2dCoordOriginAuto(){
 
     m_pcsListMgr->m_pNodeTemporary = pcsTempNode;
 
-    // 设置当前坐标系,并更新所有entity的当前坐标系
+    // 将临时坐标系设置为当前坐标系,并更新所有entity的当前坐标系
     m_pcsListMgr->SetCurCoordSystem(pcsTempNode->pPcs);
     for (CEntity* pEntity : m_EntityListMgr->getEntityList()) {
         pEntity->SetCurCoord(pPcs);
@@ -763,4 +775,31 @@ void MainWindow::on2dCoordSave(){
     //更新状态栏
     switchCsBtn->setText(pcsName);
     NotifySubscribe();
+}
+
+ElementListWidget* MainWindow:: getPWinElementListWidget(){
+    return pWinElementListWidget;
+}
+VtkWidget *MainWindow:: getPWinVtkWidget(){
+    return pWinVtkWidget;
+}
+
+void MainWindow::onTopViewClicked()
+{
+    pWinVtkWidget->onTopView();
+}
+
+void MainWindow::onRightViewClicked()
+{
+    pWinVtkWidget->onRightView();
+}
+
+void MainWindow::onFrontViewClicked()
+{
+    pWinVtkWidget->onFrontView();
+}
+
+void MainWindow::onIsometricViewClicked()
+{
+    pWinVtkWidget->ononIsometricView();
 }

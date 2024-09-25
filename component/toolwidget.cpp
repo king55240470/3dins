@@ -39,6 +39,26 @@
 #include <QDebug>
 #include<QResource>
 #include<QLabel>
+#include"elementlistwidget.h"
+#include"geometry/centitytypes.h"
+#include"component/vtkwidget.h"
+#include"vtkPoints.h"
+#include <vtkSmartPointer.h>
+#include <vtkActor.h>
+#include <vtkPoints.h>
+#include <vtkPolyDataMapper.h>
+#include <vtkPolyData.h>
+#include <vtkLineSource.h>
+#include <vtkCellArray.h>
+#include <vtkPlaneSource.h>
+#include <vtkSphereSource.h>
+#include <vtkCylinderSource.h>
+#include <vtkConeSource.h>
+#include <vtkProperty.h>
+
+#include<QTreeWidgetItem>
+
+
 int getImagePaths(const QString& directory, QStringList &iconPaths, QStringList &iconNames);
 
 ToolWidget::ToolWidget(QWidget *parent)
@@ -47,39 +67,46 @@ ToolWidget::ToolWidget(QWidget *parent)
 
     m_pMainWin =(MainWindow*)parent;
 
+
+
        resize(400,250);
 
         m_nSaveActionNum=5;
         m_nConstructActionNum=8;
         m_nFindActionNum=8;
         m_nCoordActionNum=3;
+        m_nViewAngleActionNum=4;
 
         //静态保存图片路径和名称
         save_action_iconpath_list_<<":/component/save/excel.png"<< ":/component/save/pdf.jpg"<< ":/component/save/txt.jpg"<< ":/component/save/word.jpg"<<":/component/save/image.jpg";
         construct_action_iconpath_list_<<":/component/construct/point.jpg"<<":/component/construct/line.jpg"<<":/component/construct/circle.jpg"<<   ":/component/construct/plan.jpg"<<  ":/component/construct/rectangle.jpg"<<":/component/construct/cylinder.jpg"<< ":/component/construct/cone.jpg"<< ":/component/construct/sphere.jpg";
         find_action_iconpath_list_<<":/component/construct/point.jpg"<<":/component/construct/line.jpg"<<":/component/construct/circle.jpg"<<   ":/component/construct/plan.jpg"<<  ":/component/construct/rectangle.jpg"<<":/component/construct/cylinder.jpg"<< ":/component/construct/cone.jpg"<< ":/component/construct/sphere.jpg";
         coord_action_iconpath_list_<<":/component/coord/create.png"<<  ":/component/coord/spin.jpg"<<":/component/coord/save.png";
+        view_angle_action_iconpath_list_<<":/component/viewangle/front.png"<<":/component/viewangle/up.png"<<":/component/viewangle/right.png"<<":/component/viewangle/isometric.png";
 
         save_action_name_list_<<"excel"<< "pdf"<< "txt"<< "word"<<"image";
         construct_action_name_list_<<"点"<<"线"<<"圆"<<"平面"<<"矩形"<<"圆柱"<<"圆锥"<<"球形";
         find_action_name_list_<<"点"<<"线"<<"圆"<<"平面"<<"矩形"<<"圆柱"<<"圆锥"<<"球形";;
         coord_action_name_list_<<"创建坐标系"<<"旋转坐标系"<<"保存坐标系";
+        view_angle_action_name_list_<<"主视角"<<"俯视角"<<"侧视角"<<"立体视角";
 
         m_nSaveActionNum=save_action_name_list_.count();
         m_nConstructActionNum=construct_action_name_list_.count();
         m_nFindActionNum=find_action_name_list_.count();
         m_nCoordActionNum=coord_action_name_list_.count();
+        m_nViewAngleActionNum=view_angle_action_name_list_.count();
 
         save_actions_      =new ToolAction * [m_nSaveActionNum];
         construct_actions_ =new ToolAction * [m_nConstructActionNum];
         find_actions_ =    new ToolAction * [m_nFindActionNum];
         coord_actions_     =new ToolAction * [m_nCoordActionNum];
+        view_angle_actions_= new ToolAction * [m_nViewAngleActionNum];
 
 
     //创建工具栏
-    int allActionNum=  m_nSaveActionNum+m_nConstructActionNum+m_nFindActionNum+m_nCoordActionNum;
+    int allActionNum=  m_nSaveActionNum+m_nConstructActionNum+m_nFindActionNum+m_nCoordActionNum+m_nViewAngleActionNum;
 
-    m_nToolbarNum =(allActionNum/SingalToolBarActionNum)+4;
+    m_nToolbarNum =(allActionNum/SingalToolBarActionNum)+5;
 
     toolBars=new QToolBar*[m_nToolbarNum];
 
@@ -87,7 +114,7 @@ ToolWidget::ToolWidget(QWidget *parent)
     for(int i=0;i<m_nToolbarNum;i++){
 
         toolBars[i]=new QToolBar(this);
-        toolBars[i]->setIconSize(QSize(30,30));
+        toolBars[i]->setIconSize(QSize(28,28));
         toolBars[i]->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         toolBars[i]->setStyleSheet(
             "QToolButton {"
@@ -155,6 +182,19 @@ ToolWidget::ToolWidget(QWidget *parent)
         find_actions_[i]=action;
 
     }
+qDebug()<<"ok3";
+    qDebug()<<m_nViewAngleActionNum;
+    for(int i=0;i<m_nViewAngleActionNum;i++){
+
+        ToolAction* action=new ToolAction(this);
+        action->setToolActionKind(ViewAngleAction);
+        action->setName(view_angle_action_name_list_[i]);
+        action->setIcon(QIcon(view_angle_action_iconpath_list_[i]));
+        action->setToolTip(view_angle_action_name_list_[i]);
+        view_angle_actions_[i]=action;
+    }
+
+
 
     //设置布局
     setLayout(layout);
@@ -162,8 +202,10 @@ ToolWidget::ToolWidget(QWidget *parent)
     //设置工具栏窗口
     createToolWidget();
 
+
     //设置QAction信号槽
     connectActionWithF();
+
 
 
 
@@ -211,6 +253,14 @@ void ToolWidget::createToolWidget(){
     for(int i=lastToolBar_index;i<m_nToolbarNum;i++){
         layout()->addWidget(toolBars[i]);
     }
+    lastToolBar_index=toolbar_index+1;
+
+    layout()->addWidget(new QLabel("视角:"));
+    toolbar_index= addViewAngleActions(view_angle_action_name_list_,m_nViewAngleActionNum, toolbar_index);
+    for(int i=lastToolBar_index;i<m_nToolbarNum;i++){
+        layout()->addWidget(toolBars[i]);
+    }
+
 
 }
 void ToolWidget::clearToolBar(QToolBar *toolbar) {
@@ -298,6 +348,25 @@ int ToolWidget::addCoordActions(QStringList& action_name_list ,int action_num,in
     return toolbar_index;
 }
 
+int ToolWidget::addViewAngleActions(QStringList& action_name_list ,int action_num,int toolbar_index){
+    int action_count=0;
+    int index_=0;
+    for(int i=0;i<action_num;i++){
+        //更新工具栏行数
+        if(action_count%SingalToolBarActionNum==0){
+            toolbar_index++;
+        }
+        for(index_=0;index_<m_nViewAngleActionNum;index_++){
+            if(action_name_list[i]==view_angle_action_name_list_[index_]){
+                action_count++;
+                toolBars[toolbar_index]->addAction(view_angle_actions_[index_]);
+                toolBars[toolbar_index]->addSeparator();
+            }
+        }
+    }
+    return toolbar_index;
+}
+
 
 QStringList* ToolWidget::getSaveActionNames(){
 
@@ -322,6 +391,13 @@ QStringList* ToolWidget::getCoordActionNames(){
     return &coord_action_name_list_;
 
 }
+QStringList* ToolWidget::getViewAngleActionNames(){
+
+    return &view_angle_action_name_list_;
+
+}
+
+
 
 
 int ToolWidget::getToolbarNum(){
@@ -353,73 +429,99 @@ int ToolWidget::getFindActionNum(){
     return m_nFindActionNum;
 
 }
+int ToolWidget::getViewAngleActionNum(){
 
-void ToolWidget::connectActionWithF(){
-    //识别
-    connect(find_actions_[find_action_name_list_.indexOf("点")],&QAction::triggered,&tool_widget::onFindPoint);
-    connect(find_actions_[find_action_name_list_.indexOf("线")],&QAction::triggered,&tool_widget::onFindLine);
-    connect(find_actions_[find_action_name_list_.indexOf("圆")],&QAction::triggered,&tool_widget::onFindCircle);
-    connect(find_actions_[find_action_name_list_.indexOf("平面")],&QAction::triggered,&tool_widget::onFindPlan);
-    connect(find_actions_[find_action_name_list_.indexOf("矩形")],&QAction::triggered,&tool_widget::onFindRectangle);
-    connect(find_actions_[find_action_name_list_.indexOf("圆柱")],&QAction::triggered,&tool_widget::onFindCylinder);
-    connect(find_actions_[find_action_name_list_.indexOf("圆锥")],&QAction::triggered,&tool_widget::onFindCone);
-    connect(find_actions_[find_action_name_list_.indexOf("球形")],&QAction::triggered,&tool_widget::onFindSphere);
-
-    //构造
-    connect(construct_actions_[construct_action_name_list_.indexOf("点")],&QAction::triggered,&tool_widget::onConstructPoint);
-    connect(construct_actions_[construct_action_name_list_.indexOf("线")],&QAction::triggered,&tool_widget::onConstructLine);
-    connect(construct_actions_[construct_action_name_list_.indexOf("圆")],&QAction::triggered,&tool_widget::onConstructCircle);
-    connect(construct_actions_[construct_action_name_list_.indexOf("平面")],&QAction::triggered,&tool_widget::onConstructPlan);
-    connect(construct_actions_[construct_action_name_list_.indexOf("矩形")],&QAction::triggered,&tool_widget::onConstructRectangle);
-    connect(construct_actions_[construct_action_name_list_.indexOf("圆柱")],&QAction::triggered,&tool_widget::onConstructCylinder);
-    connect(construct_actions_[construct_action_name_list_.indexOf("圆锥")],&QAction::triggered,&tool_widget::onConstructCone);
-    connect(construct_actions_[construct_action_name_list_.indexOf("球形")],&QAction::triggered,&tool_widget::onConstructSphere);
-
-    //保存
-    connect(save_actions_[save_action_name_list_.indexOf("excel")],&QAction::triggered,&tool_widget::onSaveExcel);
-    connect(save_actions_[save_action_name_list_.indexOf("word")],&QAction::triggered,&tool_widget::onSaveWord);
-    connect(save_actions_[save_action_name_list_.indexOf("txt")],&QAction::triggered,&tool_widget::onSaveTxt);
-    connect(save_actions_[save_action_name_list_.indexOf("pdf")],&QAction::triggered,&tool_widget::onSavePdf);
-    connect(save_actions_[save_action_name_list_.indexOf("image")],&QAction::triggered,&tool_widget::onSaveImage);
-    //坐标系
-    connect(coord_actions_[coord_action_name_list_.indexOf("创建坐标系")],&QAction::triggered,this,[&](){
-        tool_widget::onCreateCoord();
-        m_pMainWin->on2dCoordOriginAuto(); //创建临时坐标系
-    });
-    connect(coord_actions_[coord_action_name_list_.indexOf("旋转坐标系")],&QAction::triggered,&tool_widget::onSpinCoord);
-    connect(coord_actions_[coord_action_name_list_.indexOf("保存坐标系")],&QAction::triggered,this,[&](){
-        tool_widget::onSaveCoord();
-        m_pMainWin->on2dCoordSave();
-    });
+    return m_nViewAngleActionNum;
 
 }
 
+void ToolWidget::connectActionWithF(){
+    //识别
+    connect(find_actions_[find_action_name_list_.indexOf("点")],&QAction::triggered,&  tool_widget::onFindPoint);
+    connect(find_actions_[find_action_name_list_.indexOf("线")],&QAction::triggered,&  tool_widget::onFindLine);
+    connect(find_actions_[find_action_name_list_.indexOf("圆")],&QAction::triggered,&  tool_widget::onFindCircle);
+    connect(find_actions_[find_action_name_list_.indexOf("平面")],&QAction::triggered,&  tool_widget::onFindPlan);
+    connect(find_actions_[find_action_name_list_.indexOf("矩形")],&QAction::triggered,&  tool_widget::onFindRectangle);
+    connect(find_actions_[find_action_name_list_.indexOf("圆柱")],&QAction::triggered,&  tool_widget::onFindCylinder);
+    connect(find_actions_[find_action_name_list_.indexOf("圆锥")],&QAction::triggered,&  tool_widget::onFindCone);
+    connect(find_actions_[find_action_name_list_.indexOf("球形")],&QAction::triggered,&  tool_widget::onFindSphere);
 
-namespace tool_widget{
+    //构造
+    connect(construct_actions_[construct_action_name_list_.indexOf("点")],&QAction::triggered,&  tool_widget::onConstructPoint);
+    connect(construct_actions_[construct_action_name_list_.indexOf("线")],&QAction::triggered,this,&ToolWidget::onConstructLine);
+    connect(construct_actions_[construct_action_name_list_.indexOf("圆")],&QAction::triggered,this,&ToolWidget::onConstructCircle);
+    connect(construct_actions_[construct_action_name_list_.indexOf("平面")],&QAction::triggered,this,& ToolWidget::onConstructPlane);
+    connect(construct_actions_[construct_action_name_list_.indexOf("矩形")],&QAction::triggered,&  tool_widget::onConstructRectangle);
+    connect(construct_actions_[construct_action_name_list_.indexOf("圆柱")],&QAction::triggered,&  tool_widget::onConstructCylinder);
+    connect(construct_actions_[construct_action_name_list_.indexOf("圆锥")],&QAction::triggered,&  tool_widget::onConstructCone);
+    connect(construct_actions_[construct_action_name_list_.indexOf("球形")],&QAction::triggered,&  tool_widget::onConstructSphere);
+
+    //保存
+    connect(save_actions_[save_action_name_list_.indexOf("excel")],&QAction::triggered,&  tool_widget::onSaveExcel);
+    connect(save_actions_[save_action_name_list_.indexOf("word")],&QAction::triggered,&  tool_widget::onSaveWord);
+    connect(save_actions_[save_action_name_list_.indexOf("txt")],&QAction::triggered,&  tool_widget::onSaveTxt);
+    connect(save_actions_[save_action_name_list_.indexOf("pdf")],&QAction::triggered,&  tool_widget::onSavePdf);
+    connect(save_actions_[save_action_name_list_.indexOf("image")],&QAction::triggered,&  tool_widget::onSaveImage);
+    //坐标系
+    connect(coord_actions_[coord_action_name_list_.indexOf("创建坐标系")],&QAction::triggered,this,[&](){
+         tool_widget::onCreateCoord();
+        m_pMainWin->on2dCoordOriginAuto(); //创建临时坐标系
+    });
+    connect(coord_actions_[coord_action_name_list_.indexOf("旋转坐标系")],&QAction::triggered,&  tool_widget::onSpinCoord);
+    connect(coord_actions_[coord_action_name_list_.indexOf("保存坐标系")],&QAction::triggered,this,[&](bool){
+        tool_widget::onSaveCoord();
+        m_pMainWin->on2dCoordSave();
+    });
+    //视角
+    connect(view_angle_actions_[view_angle_action_name_list_.indexOf("主视角")],&QAction::triggered,this,[&](){
+        tool_widget::onFrontViewAngle();
+        m_pMainWin->onFrontViewClicked();
+    });
+    connect(view_angle_actions_[view_angle_action_name_list_.indexOf("俯视角")],&QAction::triggered,this, [&](){
+        tool_widget::onUpViewAngle();
+        m_pMainWin->onTopViewClicked();
+    });
+    connect(view_angle_actions_[view_angle_action_name_list_.indexOf("侧视角")],&QAction::triggered,[&](){
+        tool_widget::onRightViewAngle();
+        m_pMainWin->onRightViewClicked();
+    });
+    connect(view_angle_actions_[view_angle_action_name_list_.indexOf("立体视角")],&QAction::triggered,[&](){
+        tool_widget::onIsometricViewAngle();
+        m_pMainWin->onIsometricViewClicked();
+    });
+}
+
+
+
 //Find
-void onFindPoint(){ qDebug()<<"点击了识别点";}
-void onFindLine(){  qDebug()<<"点击了识别线";}
-void onFindCircle(){ qDebug()<<"点击了识别圆";}
-void onFindPlan(){qDebug()<<"点击了识别平面";}
-void onFindRectangle(){qDebug()<<"点击了识别矩形";}
-void onFindCylinder(){qDebug()<<"点击了识别圆柱";}
-void onFindCone(){qDebug()<<"点击了识别圆锥";}
-void onFindSphere(){qDebug()<<"点击了识别球形";}
+namespace tool_widget{
+void onFrontViewAngle(){qDebug()<<"点击了主视角";}
+void onIsometricViewAngle(){qDebug()<<"点击了立体视角";}
+void onRightViewAngle(){qDebug()<<"点击了侧视角";}
+void onUpViewAngle(){qDebug()<<"点击了俯视角";}
+void  onFindPoint(){ qDebug()<<"点击了识别点";}
+void  onFindLine(){  qDebug()<<"点击了识别线";}
+void  onFindCircle(){ qDebug()<<"点击了识别圆";}
+void  onFindPlan(){qDebug()<<"点击了识别平面";}
+void  onFindRectangle(){qDebug()<<"点击了识别矩形";}
+void  onFindCylinder(){qDebug()<<"点击了识别圆柱";}
+void  onFindCone(){qDebug()<<"点击了识别圆锥";}
+void   onFindSphere(){qDebug()<<"点击了识别球形";}
 //Construct
-void onConstructPoint(){qDebug()<<"点击了构造点";}
-void onConstructLine(){qDebug()<<"点击了构造线";}
-void onConstructCircle(){qDebug()<<"点击了构造圆";}
-void onConstructPlan(){qDebug()<<"点击了构造平面";}
-void onConstructRectangle(){qDebug()<<"点击了构造矩形";}
-void onConstructCylinder(){qDebug()<<"点击了构造圆柱";}
-void onConstructCone(){qDebug()<<"点击了构造圆锥";}
-void onConstructSphere(){qDebug()<<"点击了构造球形";}
+void   onConstructPoint(){qDebug()<<"点击了构造点";}
+void   onConstructLine(){qDebug()<<"点击了构造线";}
+void   onConstructCircle(){qDebug()<<"点击了构造圆";}
+void   onConstructPlan(){qDebug()<<"点击了构造平面";}
+void   onConstructRectangle(){qDebug()<<"点击了构造矩形";}
+void   onConstructCylinder(){qDebug()<<"点击了构造圆柱";}
+void   onConstructCone(){qDebug()<<"点击了构造圆锥";}
+void   onConstructSphere(){qDebug()<<"点击了构造球形";}
 //Coord
-void onCreateCoord(){qDebug()<<"点击了创建坐标系";}
-void onSpinCoord(){qDebug()<<"点击了旋转坐标系";}
-void onSaveCoord(){qDebug()<<"点击了保存坐标系";}
+void   onCreateCoord(){qDebug()<<"点击了创建坐标系";}
+void   onSpinCoord(){qDebug()<<"点击了旋转坐标系";}
+void   onSaveCoord(){qDebug()<<"点击了保存坐标系";}
 //Save
-void onSavePdf(){
+void   onSavePdf(){
     QString path = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("Pdf(*.pdf)"));
     if (path.isEmpty()){
         return ;
@@ -496,7 +598,7 @@ void onSavePdf(){
 
     pdfFile.close();
 }
-void onSaveExcel(){
+void   onSaveExcel(){
     QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("Excel(*.xlsx *.xls)"));
     if (filePath.isEmpty()){
         return ;
@@ -592,7 +694,7 @@ void onSaveExcel(){
     excel.dynamicCall("Quit()");		//关闭excel
     QMessageBox::information(nullptr, "提示", "保存成功");
 }
-void onSaveTxt(){
+void  onSaveTxt(){
     QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("txt(*.txt )"));
     if (filePath.isEmpty()){
         return ;
@@ -621,7 +723,7 @@ void onSaveTxt(){
     QMessageBox::information(nullptr, "提示", "保存成功");
 
     }
-void onSaveWord(){
+void   onSaveWord(){
     QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("word(*.doc *.docx)"));
     if (filePath.isEmpty()){
         return ;
@@ -711,7 +813,7 @@ void onSaveWord(){
         file.close();
         QMessageBox::information(nullptr, "提示", "保存成功");
     }}
-void onSaveImage(){
+void   onSaveImage(){
     QString imagePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("Excel(*.png *.jpg)"));
     if (imagePath.isEmpty()){
         return ;
@@ -751,7 +853,206 @@ void onSaveImage(){
     pixmap.save(imagePath);
 }
 }
+void ToolWidget::onConstructLine(){
+    ElementListWidget* p_elementListwidget= m_pMainWin->getPWinElementListWidget();
+    auto& objectList = m_pMainWin->m_ObjectListMgr->getObjectList();
+    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
 
+    for(int i=0;i<m_point_index.size();i++){
+        for(int j=i+1;j<m_point_index.size();j++){
+            CPosition p1=m_selected_points[i]->GetPt();
+            CPosition p2=m_selected_points[j]->GetPt();
+            m_pMainWin->OnPresetLine(p1,p2);
+        }
+    }
+
+}
+static QVector4D crossProduct(const QVector4D& a, const QVector4D& b) {
+    return QVector4D(
+        a.y() * b.z() - a.z() * b.y(),
+        a.z() * b.x() - a.x() * b.z(),
+        a.x() * b.y() - a.y() * b.x(),
+        0 // 对于三维向量，w 组件通常设为 0
+        );
+};
+static auto distance(const CPosition& p1, const CPosition& p2) {
+    return sqrt(pow(p2.x - p1.x, 2) + pow(p2.y - p1.y, 2) + pow(p2.z - p1.z, 2));
+};
+void ToolWidget::onConstructCircle(){
+    const ElementListWidget* p_elementListwidget= m_pMainWin->getPWinElementListWidget();
+    auto& objectList = m_pMainWin->m_ObjectListMgr->getObjectList();
+    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+
+    if(m_point_index.size()!=3)
+    {
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("错误");
+        msgBox.setText("圆需要三个点构成");
+        msgBox.setIcon(QMessageBox::Critical); // 设置对话框图标为错误
+        msgBox.setStandardButtons(QMessageBox::Ok); // 只显示“确定”按钮
+        msgBox.exec(); // 显示对话框
+        return ;
+    }
+
+
+
+    static auto dotProduct=[](const QVector4D& a, const QVector4D& b) {
+        return a.x() * b.x() + a.y() * b.y() + a.z() * b.z();
+    };
+
+
+    CPosition A=m_selected_points[0]->GetPt();
+    CPosition B=m_selected_points[1]->GetPt();
+    CPosition C=m_selected_points[2]->GetPt();
+    CPosition center;
+    double radius;
+
+    QVector4D A_vec(A.x, A.y, A.z, 1);
+    QVector4D B_vec(B.x, B.y, B.z, 1);
+    QVector4D C_vec(C.x, C.y, C.z, 1);
+
+    // 计算向量 AB 和 AC
+    QVector4D AB = B_vec - A_vec;
+    QVector4D AC = C_vec - A_vec;
+
+    // 计算法向量 N
+
+    QVector4D N = crossProduct(AB, AC);
+
+    // 计算 AB 和 AC 的中点
+    QVector4D M_AB = (A_vec + B_vec) / 2;
+    QVector4D M_AC = (A_vec + C_vec) / 2;
+
+    // 根据 M_AB 和法向量 N 计算圆心
+    QVector4D dirN = N.normalized();
+
+    // 更新圆心
+    double d = dotProduct(dirN, M_AC - M_AB);
+    QVector4D centerVec = M_AB + dirN * d;
+
+
+    // 更新圆心
+    center.x = centerVec.x();
+    center.y = centerVec.y();
+    center.z = centerVec.z();
+
+    // 计算半径
+    radius = distance(center, A);
+
+    m_pMainWin->OnPresetCircle(center,radius);
+
+}
+void ToolWidget::onConstructPlane(){
+    ElementListWidget* p_elementListwidget= m_pMainWin->getPWinElementListWidget();
+    auto& objectList = m_pMainWin->m_ObjectListMgr->getObjectList();
+    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+
+    if(m_point_index.size()!=3)
+    {
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("错误");
+        msgBox.setText("平面需要三个点构成");
+        msgBox.setIcon(QMessageBox::Critical); // 设置对话框图标为错误
+        msgBox.setStandardButtons(QMessageBox::Ok); // 只显示“确定”按钮
+        msgBox.exec(); // 显示对话框
+        return ;
+    }
+
+    CPosition A=m_selected_points[0]->GetPt();
+    CPosition B=m_selected_points[1]->GetPt();
+    CPosition C=m_selected_points[2]->GetPt();
+
+    QVector4D vecA(A.x, A.y, A.z, 1.0);
+    QVector4D vecB(B.x, B.y, B.z, 1.0);
+    QVector4D vecC(C.x, C.y, C.z, 1.0);
+
+    // 计算法向量
+    QVector4D AB = vecB - vecA; // 向量 AB
+    QVector4D AC = vecC - vecA; // 向量 AC
+
+    CPosition center; // 平面的中心点
+    QVector4D normal; // 平面的法向量
+    QVector4D direction;
+
+    normal = crossProduct(AB,AC); // 计算法向量并归一化
+
+    // 如果法向量的长度为零，说明三点共线
+    if (normal.length() == 0) {
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("错误");
+        msgBox.setText("三点共线，无法生成平面");
+        msgBox.setIcon(QMessageBox::Critical); // 设置对话框图标为错误
+        msgBox.setStandardButtons(QMessageBox::Ok); // 只显示“确定”按钮
+        msgBox.exec(); // 显示对话框
+        return ;
+    }
+
+    // 计算平面的中心
+    center = CPosition((A.x + B.x + C.x) / 3, (A.y + B.y + C.y) / 3, (A.z + B.z + C.z) / 3);
+
+    // 方向可以由任一向量定义，这里使用 X 轴的正方向作为方向
+    direction = QVector4D(1, 0, 0, 0); // 方向向量可以根据具体应用调整
+
+    double lenAB = distance(A, B);
+    double lenAC = distance(A, C);
+    double lenBC = distance(B, C);
+
+    double width=qMax(lenAB,lenAC);
+    width=qMax(width,lenBC)*1.5;
+    double length=qMin(lenAB,lenAC);
+    length=qMin(length,lenBC);
+
+    m_pMainWin->OnPresetPlane(center,normal,direction,length,width);
+
+}
+void ToolWidget::updateele(){
+
+    ElementListWidget* p_elementListwidget= m_pMainWin->getPWinElementListWidget();
+    VtkWidget * p_vtkwidget=m_pMainWin->getPWinVtkWidget();
+    QList<QTreeWidgetItem*> selectedItems = p_elementListwidget->getSelectedItems();
+    QVector<CObject*> eleobjlist=p_elementListwidget->getEleobjlist();
+
+    if (!selectedItems.isEmpty()) {
+        m_point_index.clear();
+        m_selected_points.clear();
+        int *index=new int[selectedItems.size()];
+        int *entityindex=new int[selectedItems.size()];
+        int count_index=0;
+        int count_entityindex=0;
+
+        for(QTreeWidgetItem *selectedItem:selectedItems)
+        {
+
+            CObject *obj = selectedItem->data(0, Qt::UserRole).value<CObject*>();
+            for(int i=0;i<m_pMainWin->getObjectListMgr()->getObjectList().size();i++){
+                if(m_pMainWin->getObjectListMgr()->getObjectList()[i]==obj){
+                    index[count_index]=i;
+                    count_index++;
+                }
+            }
+
+            for(int i=0;i<eleobjlist.size();i++){
+                if(eleobjlist[i]==obj){
+                    entityindex[count_entityindex]=i;
+                    count_entityindex++;
+                }
+            }
+
+        }
+        auto& objectList = m_pMainWin->m_ObjectListMgr->getObjectList();
+        auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+
+        for(int i=0;i<count_entityindex;i++){
+            if(entityList[entityindex[i]]->GetUniqueType()==enPoint){
+                m_point_index.push_back(index[i]);
+                m_selected_points.push_back((CPoint*)entityList[entityindex[i]]);
+            }
+        }
+        delete []index;
+        delete []entityindex;
+    }
+    qDebug()<<"toolwidget::updateele";
+}
 void ToolWidget::NotifySubscribe(){
     qDebug()<<"ToolWidget::NotifySubscribe()";
 }

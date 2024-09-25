@@ -15,7 +15,7 @@ class DataWidget : public QWidget
 public:
     explicit DataWidget(QWidget *parent = nullptr);
     void updateele(int i);
-    void UpdateInfo();
+    // void UpdateInfo();
 private:
     QVBoxLayout *vlayout;
     QHBoxLayout *hlayout;
