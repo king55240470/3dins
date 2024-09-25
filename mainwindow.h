@@ -78,10 +78,18 @@ public:
     CEntity* CreateEntity(int nType);
     void NotifySubscribe();
     void loadManager();
+    ElementListWidget *getPWinElementListWidget();
+    VtkWidget * getPWinVtkWidget();
 
     //slots
     void on2dCoordOriginAuto(); // 创建坐标系
     void on2dCoordSave();
+
+    // 切换图形的观察视角
+    void onTopViewClicked();
+    void onRightViewClicked();
+    void onFrontViewClicked();
+    void onIsometricViewClicked();
 
 public:
     MainWindow(QWidget *parent = nullptr);

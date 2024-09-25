@@ -39,6 +39,26 @@
 #include <QDebug>
 #include<QResource>
 #include<QLabel>
+#include"elementlistwidget.h"
+#include"geometry/centitytypes.h"
+#include"component/vtkwidget.h"
+#include"vtkPoints.h"
+#include <vtkSmartPointer.h>
+#include <vtkActor.h>
+#include <vtkPoints.h>
+#include <vtkPolyDataMapper.h>
+#include <vtkPolyData.h>
+#include <vtkLineSource.h>
+#include <vtkCellArray.h>
+#include <vtkPlaneSource.h>
+#include <vtkSphereSource.h>
+#include <vtkCylinderSource.h>
+#include <vtkConeSource.h>
+#include <vtkProperty.h>
+
+#include<QTreeWidgetItem>
+
+
 int getImagePaths(const QString& directory, QStringList &iconPaths, QStringList &iconNames);
 
 ToolWidget::ToolWidget(QWidget *parent)
@@ -428,9 +448,9 @@ void ToolWidget::connectActionWithF(){
 
     //构造
     connect(construct_actions_[construct_action_name_list_.indexOf("点")],&QAction::triggered,&  tool_widget::onConstructPoint);
-    connect(construct_actions_[construct_action_name_list_.indexOf("线")],&QAction::triggered,&  tool_widget::onConstructLine);
-    connect(construct_actions_[construct_action_name_list_.indexOf("圆")],&QAction::triggered,&  tool_widget::onConstructCircle);
-    connect(construct_actions_[construct_action_name_list_.indexOf("平面")],&QAction::triggered,&  tool_widget::onConstructPlan);
+    connect(construct_actions_[construct_action_name_list_.indexOf("线")],&QAction::triggered,this,&ToolWidget::onConstructLine);
+    connect(construct_actions_[construct_action_name_list_.indexOf("圆")],&QAction::triggered,this,&ToolWidget::onConstructCircle);
+    connect(construct_actions_[construct_action_name_list_.indexOf("平面")],&QAction::triggered,this,& ToolWidget::onConstructPlane);
     connect(construct_actions_[construct_action_name_list_.indexOf("矩形")],&QAction::triggered,&  tool_widget::onConstructRectangle);
     connect(construct_actions_[construct_action_name_list_.indexOf("圆柱")],&QAction::triggered,&  tool_widget::onConstructCylinder);
     connect(construct_actions_[construct_action_name_list_.indexOf("圆锥")],&QAction::triggered,&  tool_widget::onConstructCone);
@@ -453,10 +473,22 @@ void ToolWidget::connectActionWithF(){
         m_pMainWin->on2dCoordSave();
     });
     //视角
-    connect(view_angle_actions_[view_angle_action_name_list_.indexOf("主视角")],&QAction::triggered,&tool_widget::onFrontViewAngle);
-    connect(view_angle_actions_[view_angle_action_name_list_.indexOf("俯视角")],&QAction::triggered,&tool_widget::onUpViewAngle);
-    connect(view_angle_actions_[view_angle_action_name_list_.indexOf("侧视角")],&QAction::triggered,&tool_widget::onRightViewAngle);
-    connect(view_angle_actions_[view_angle_action_name_list_.indexOf("立体视角")],&QAction::triggered,&tool_widget::onIosmetricViewAngle);
+    connect(view_angle_actions_[view_angle_action_name_list_.indexOf("主视角")],&QAction::triggered,this,[&](){
+        tool_widget::onFrontViewAngle();
+        m_pMainWin->onFrontViewClicked();
+    });
+    connect(view_angle_actions_[view_angle_action_name_list_.indexOf("俯视角")],&QAction::triggered,this, [&](){
+        tool_widget::onUpViewAngle();
+        m_pMainWin->onTopViewClicked();
+    });
+    connect(view_angle_actions_[view_angle_action_name_list_.indexOf("侧视角")],&QAction::triggered,[&](){
+        tool_widget::onRightViewAngle();
+        m_pMainWin->onRightViewClicked();
+    });
+    connect(view_angle_actions_[view_angle_action_name_list_.indexOf("立体视角")],&QAction::triggered,[&](){
+        tool_widget::onIsometricViewAngle();
+        m_pMainWin->onIsometricViewClicked();
+    });
 }
 
 
@@ -464,7 +496,7 @@ void ToolWidget::connectActionWithF(){
 //Find
 namespace tool_widget{
 void onFrontViewAngle(){qDebug()<<"点击了主视角";}
-void onIosmetricViewAngle(){qDebug()<<"点击了立体视角";}
+void onIsometricViewAngle(){qDebug()<<"点击了立体视角";}
 void onRightViewAngle(){qDebug()<<"点击了侧视角";}
 void onUpViewAngle(){qDebug()<<"点击了俯视角";}
 void  onFindPoint(){ qDebug()<<"点击了识别点";}
@@ -821,8 +853,206 @@ void   onSaveImage(){
     pixmap.save(imagePath);
 }
 }
+void ToolWidget::onConstructLine(){
+    ElementListWidget* p_elementListwidget= m_pMainWin->getPWinElementListWidget();
+    auto& objectList = m_pMainWin->m_ObjectListMgr->getObjectList();
+    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+
+    for(int i=0;i<m_point_index.size();i++){
+        for(int j=i+1;j<m_point_index.size();j++){
+            CPosition p1=m_selected_points[i]->GetPt();
+            CPosition p2=m_selected_points[j]->GetPt();
+            m_pMainWin->OnPresetLine(p1,p2);
+        }
+    }
+
+}
+static QVector4D crossProduct(const QVector4D& a, const QVector4D& b) {
+    return QVector4D(
+        a.y() * b.z() - a.z() * b.y(),
+        a.z() * b.x() - a.x() * b.z(),
+        a.x() * b.y() - a.y() * b.x(),
+        0 // 对于三维向量，w 组件通常设为 0
+        );
+};
+static auto distance(const CPosition& p1, const CPosition& p2) {
+    return sqrt(pow(p2.x - p1.x, 2) + pow(p2.y - p1.y, 2) + pow(p2.z - p1.z, 2));
+};
+void ToolWidget::onConstructCircle(){
+    const ElementListWidget* p_elementListwidget= m_pMainWin->getPWinElementListWidget();
+    auto& objectList = m_pMainWin->m_ObjectListMgr->getObjectList();
+    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+
+    if(m_point_index.size()!=3)
+    {
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("错误");
+        msgBox.setText("圆需要三个点构成");
+        msgBox.setIcon(QMessageBox::Critical); // 设置对话框图标为错误
+        msgBox.setStandardButtons(QMessageBox::Ok); // 只显示“确定”按钮
+        msgBox.exec(); // 显示对话框
+        return ;
+    }
 
 
+
+    static auto dotProduct=[](const QVector4D& a, const QVector4D& b) {
+        return a.x() * b.x() + a.y() * b.y() + a.z() * b.z();
+    };
+
+
+    CPosition A=m_selected_points[0]->GetPt();
+    CPosition B=m_selected_points[1]->GetPt();
+    CPosition C=m_selected_points[2]->GetPt();
+    CPosition center;
+    double radius;
+
+    QVector4D A_vec(A.x, A.y, A.z, 1);
+    QVector4D B_vec(B.x, B.y, B.z, 1);
+    QVector4D C_vec(C.x, C.y, C.z, 1);
+
+    // 计算向量 AB 和 AC
+    QVector4D AB = B_vec - A_vec;
+    QVector4D AC = C_vec - A_vec;
+
+    // 计算法向量 N
+
+    QVector4D N = crossProduct(AB, AC);
+
+    // 计算 AB 和 AC 的中点
+    QVector4D M_AB = (A_vec + B_vec) / 2;
+    QVector4D M_AC = (A_vec + C_vec) / 2;
+
+    // 根据 M_AB 和法向量 N 计算圆心
+    QVector4D dirN = N.normalized();
+
+    // 更新圆心
+    double d = dotProduct(dirN, M_AC - M_AB);
+    QVector4D centerVec = M_AB + dirN * d;
+
+
+    // 更新圆心
+    center.x = centerVec.x();
+    center.y = centerVec.y();
+    center.z = centerVec.z();
+
+    // 计算半径
+    radius = distance(center, A);
+
+    m_pMainWin->OnPresetCircle(center,radius);
+
+}
+void ToolWidget::onConstructPlane(){
+    ElementListWidget* p_elementListwidget= m_pMainWin->getPWinElementListWidget();
+    auto& objectList = m_pMainWin->m_ObjectListMgr->getObjectList();
+    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+
+    if(m_point_index.size()!=3)
+    {
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("错误");
+        msgBox.setText("平面需要三个点构成");
+        msgBox.setIcon(QMessageBox::Critical); // 设置对话框图标为错误
+        msgBox.setStandardButtons(QMessageBox::Ok); // 只显示“确定”按钮
+        msgBox.exec(); // 显示对话框
+        return ;
+    }
+
+    CPosition A=m_selected_points[0]->GetPt();
+    CPosition B=m_selected_points[1]->GetPt();
+    CPosition C=m_selected_points[2]->GetPt();
+
+    QVector4D vecA(A.x, A.y, A.z, 1.0);
+    QVector4D vecB(B.x, B.y, B.z, 1.0);
+    QVector4D vecC(C.x, C.y, C.z, 1.0);
+
+    // 计算法向量
+    QVector4D AB = vecB - vecA; // 向量 AB
+    QVector4D AC = vecC - vecA; // 向量 AC
+
+    CPosition center; // 平面的中心点
+    QVector4D normal; // 平面的法向量
+    QVector4D direction;
+
+    normal = crossProduct(AB,AC); // 计算法向量并归一化
+
+    // 如果法向量的长度为零，说明三点共线
+    if (normal.length() == 0) {
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("错误");
+        msgBox.setText("三点共线，无法生成平面");
+        msgBox.setIcon(QMessageBox::Critical); // 设置对话框图标为错误
+        msgBox.setStandardButtons(QMessageBox::Ok); // 只显示“确定”按钮
+        msgBox.exec(); // 显示对话框
+        return ;
+    }
+
+    // 计算平面的中心
+    center = CPosition((A.x + B.x + C.x) / 3, (A.y + B.y + C.y) / 3, (A.z + B.z + C.z) / 3);
+
+    // 方向可以由任一向量定义，这里使用 X 轴的正方向作为方向
+    direction = QVector4D(1, 0, 0, 0); // 方向向量可以根据具体应用调整
+
+    double lenAB = distance(A, B);
+    double lenAC = distance(A, C);
+    double lenBC = distance(B, C);
+
+    double width=qMax(lenAB,lenAC);
+    width=qMax(width,lenBC)*1.5;
+    double length=qMin(lenAB,lenAC);
+    length=qMin(length,lenBC);
+
+    m_pMainWin->OnPresetPlane(center,normal,direction,length,width);
+
+}
+void ToolWidget::updateele(){
+
+    ElementListWidget* p_elementListwidget= m_pMainWin->getPWinElementListWidget();
+    VtkWidget * p_vtkwidget=m_pMainWin->getPWinVtkWidget();
+    QList<QTreeWidgetItem*> selectedItems = p_elementListwidget->getSelectedItems();
+    QVector<CObject*> eleobjlist=p_elementListwidget->getEleobjlist();
+
+    if (!selectedItems.isEmpty()) {
+        m_point_index.clear();
+        m_selected_points.clear();
+        int *index=new int[selectedItems.size()];
+        int *entityindex=new int[selectedItems.size()];
+        int count_index=0;
+        int count_entityindex=0;
+
+        for(QTreeWidgetItem *selectedItem:selectedItems)
+        {
+
+            CObject *obj = selectedItem->data(0, Qt::UserRole).value<CObject*>();
+            for(int i=0;i<m_pMainWin->getObjectListMgr()->getObjectList().size();i++){
+                if(m_pMainWin->getObjectListMgr()->getObjectList()[i]==obj){
+                    index[count_index]=i;
+                    count_index++;
+                }
+            }
+
+            for(int i=0;i<eleobjlist.size();i++){
+                if(eleobjlist[i]==obj){
+                    entityindex[count_entityindex]=i;
+                    count_entityindex++;
+                }
+            }
+
+        }
+        auto& objectList = m_pMainWin->m_ObjectListMgr->getObjectList();
+        auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+
+        for(int i=0;i<count_entityindex;i++){
+            if(entityList[entityindex[i]]->GetUniqueType()==enPoint){
+                m_point_index.push_back(index[i]);
+                m_selected_points.push_back((CPoint*)entityList[entityindex[i]]);
+            }
+        }
+        delete []index;
+        delete []entityindex;
+    }
+    qDebug()<<"toolwidget::updateele";
+}
 void ToolWidget::NotifySubscribe(){
     qDebug()<<"ToolWidget::NotifySubscribe()";
 }

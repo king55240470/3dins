@@ -35,7 +35,8 @@ public:
     void removeall();
     void updateInsertIndicatorPosition();
     void upadteelementlist();
-
+    QList<QTreeWidgetItem*> getSelectedItems();
+    QVector<CObject*> getEleobjlist();
 private:
     QTreeWidget *treeWidgetNames;
     QTreeWidget *treeWidgetInfo;
