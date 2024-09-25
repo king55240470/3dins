@@ -199,3 +199,9 @@ void ElementListWidget::onItemClicked(QTreeWidgetItem *item)
         emit itemSelected(index); // 发出自定义信号
     }
 }
+QList<QTreeWidgetItem*> ElementListWidget:: getSelectedItems(){
+    return treeWidgetNames->selectedItems();
+}
+QVector<CObject*> ElementListWidget::getEleobjlist(){
+    return eleobjlist;
+}

@@ -31,6 +31,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(pWinElementListWidget,&ElementListWidget::itemSelected,pWinDataWidget,&DataWidget::updateele);
 
     m_nRelyOnWhichCs=m_pcsListMgr->GetBaseCoordSystem();
+
+    connect(pWinElementListWidget,&ElementListWidget::itemSelected,pWinToolWidget,&ToolWidget::updateele);
 }
 
 void MainWindow::setupUi(){
@@ -773,4 +775,31 @@ void MainWindow::on2dCoordSave(){
     switchCsBtn->setText(pcsName);
     NotifySubscribe();
 
+}
+
+ElementListWidget* MainWindow:: getPWinElementListWidget(){
+    return pWinElementListWidget;
+}
+VtkWidget *MainWindow:: getPWinVtkWidget(){
+    return pWinVtkWidget;
+}
+
+void MainWindow::onTopViewClicked()
+{
+    pWinVtkWidget->onTopView();
+}
+
+void MainWindow::onRightViewClicked()
+{
+    pWinVtkWidget->onRightView();
+}
+
+void MainWindow::onFrontViewClicked()
+{
+    pWinVtkWidget->onFrontView();
+}
+
+void MainWindow::onIsometricViewClicked()
+{
+    pWinVtkWidget->ononIsometricView();
 }
