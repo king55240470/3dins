@@ -108,8 +108,10 @@ void ElementListWidget::onDeleteEllipse()
 {
     QList<QTreeWidgetItem*> selectedItems = treeWidgetNames->selectedItems();
     if (!selectedItems.isEmpty()) {
-        for(QTreeWidgetItem *selectedItem:selectedItems)
+        /*for(QTreeWidgetItem *selectedItem:selectedItems)*/
+        for(int j=selectedItems.size()-1;j>=0;j--)
         {
+            QTreeWidgetItem *selectedItem=selectedItems[j];
             int index=-1;
             CObject *obj = selectedItem->data(0, Qt::UserRole).value<CObject*>();
             for(int i=0;i<m_pMainWin->getObjectListMgr()->getObjectList().size();i++){
@@ -127,12 +129,15 @@ void ElementListWidget::onDeleteEllipse()
             }
             auto& objectList = m_pMainWin->m_ObjectListMgr->getObjectList();
             auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
-            if(objectList[index]->GetObjectCName()=="临时坐标系"||objectList[index]->GetObjectCName()=="工件坐标系"){
+            auto& markList = m_pMainWin->m_EntityListMgr->getMarkList();//标记是否显示元素的列表
+            if(objectList[index]->GetObjectCName().left(5)=="临时坐标系"||objectList[index]->GetObjectCName().left(5)=="工件坐标系"){
                 objectList.removeAt(index);
                 //pcscount--;
             }else{
                 objectList.removeAt(index);
                 entityList.removeAt(entityindex);
+                eleobjlist.removeAt(entityindex);
+                markList.removeAt(entityindex);
             }
         }
         m_pMainWin->NotifySubscribe();
@@ -172,30 +177,48 @@ void ElementListWidget::upadteelementlist()
     eleobjlist.clear();
     for(const auto& obj :m_pMainWin->m_ObjectListMgr->getObjectList()){
         CreateEllipse(obj);
-        if(obj->GetObjectCName()!="临时坐标系"&&obj->GetObjectCName()!="工件坐标系"){
+        obj->SetSelected(false);
+        QString name=obj->GetObjectCName();
+        if(name.left(5)!="临时坐标系"&&name.left(5)!="工件坐标系"){
             eleobjlist.push_back(obj);
         }
     }
-
+    qDebug()<<eleobjlist.size()<<"这里";
 }
 
 void ElementListWidget::onItemClicked(QTreeWidgetItem *item)
 {
     CObject *obj = item->data(0, Qt::UserRole).value<CObject*>();
-    int index=-1;
+    int entityindex=-1;
     for(int i=0;i<eleobjlist.size();i++){
         if(eleobjlist[i]==obj){
+            entityindex=i;
+        }
+    }
+    int index=-1;
+    for(int i=0;i<m_pMainWin->getObjectListMgr()->getObjectList().size();i++){
+        if(m_pMainWin->getObjectListMgr()->getObjectList()[i]==obj){
             index=i;
         }
     }
     QString name1="临时坐标系";
     QString name2="工件坐标系";
     QString name=obj->GetObjectCName();
-    if(index==-1){
+    if(entityindex==-1){
         return;
     }
     if(name!=name1&&name!=name2){
-        m_pMainWin->getObjectListMgr()->getObjectList()[index]->SetSelected(true);
-        emit itemSelected(index); // 发出自定义信号
+        if(m_pMainWin->getObjectListMgr()->getObjectList()[index]->IsSelected()==false){
+            m_pMainWin->getObjectListMgr()->getObjectList()[index]->SetSelected(true);
+        }else{
+            m_pMainWin->getObjectListMgr()->getObjectList()[index]->SetSelected(false);
+        }
+        emit itemSelected(entityindex); // 发出自定义信号
     }
+}
+QList<QTreeWidgetItem*> ElementListWidget:: getSelectedItems(){
+    return treeWidgetNames->selectedItems();
+}
+QVector<CObject*> ElementListWidget::getEleobjlist(){
+    return eleobjlist;
 }

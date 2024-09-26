@@ -78,6 +78,8 @@ public:
     CEntity* CreateEntity(int nType);
     void NotifySubscribe();
     void loadManager();
+    ElementListWidget *getPWinElementListWidget();
+    VtkWidget * getPWinVtkWidget();
 
     //slots
     void on2dCoordOriginAuto(); // 创建坐标系
@@ -97,8 +99,11 @@ public:
     void setupUi();
     void showPresetElemWidget(int);
 
-private:
+public:
     // RELY_ON_CS_TYPE m_nRelyOnWhichCs;
     CPcs* m_nRelyOnWhichCs; // 状态栏的参考坐标系
+
+    //坐标系摆正
+    double AxesRotateX();
 };
 #endif // MAINWINDOW_H

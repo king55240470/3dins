@@ -39,6 +39,26 @@
 #include <QDebug>
 #include<QResource>
 #include<QLabel>
+#include"elementlistwidget.h"
+#include"geometry/centitytypes.h"
+#include"component/vtkwidget.h"
+#include"vtkPoints.h"
+#include <vtkSmartPointer.h>
+#include <vtkActor.h>
+#include <vtkPoints.h>
+#include <vtkPolyDataMapper.h>
+#include <vtkPolyData.h>
+#include <vtkLineSource.h>
+#include <vtkCellArray.h>
+#include <vtkPlaneSource.h>
+#include <vtkSphereSource.h>
+#include <vtkCylinderSource.h>
+#include <vtkConeSource.h>
+#include <vtkProperty.h>
+
+#include<QTreeWidgetItem>
+
+
 int getImagePaths(const QString& directory, QStringList &iconPaths, QStringList &iconNames);
 
 ToolWidget::ToolWidget(QWidget *parent)
@@ -427,14 +447,14 @@ void ToolWidget::connectActionWithF(){
     connect(find_actions_[find_action_name_list_.indexOf("球形")],&QAction::triggered,&  tool_widget::onFindSphere);
 
     //构造
-    connect(construct_actions_[construct_action_name_list_.indexOf("点")],&QAction::triggered,&  tool_widget::onConstructPoint);
-    connect(construct_actions_[construct_action_name_list_.indexOf("线")],&QAction::triggered,&  tool_widget::onConstructLine);
-    connect(construct_actions_[construct_action_name_list_.indexOf("圆")],&QAction::triggered,&  tool_widget::onConstructCircle);
-    connect(construct_actions_[construct_action_name_list_.indexOf("平面")],&QAction::triggered,&  tool_widget::onConstructPlan);
-    connect(construct_actions_[construct_action_name_list_.indexOf("矩形")],&QAction::triggered,&  tool_widget::onConstructRectangle);
-    connect(construct_actions_[construct_action_name_list_.indexOf("圆柱")],&QAction::triggered,&  tool_widget::onConstructCylinder);
-    connect(construct_actions_[construct_action_name_list_.indexOf("圆锥")],&QAction::triggered,&  tool_widget::onConstructCone);
-    connect(construct_actions_[construct_action_name_list_.indexOf("球形")],&QAction::triggered,&  tool_widget::onConstructSphere);
+    connect(construct_actions_[construct_action_name_list_.indexOf("点")],&QAction::triggered,this,& ToolWidget::onConstructPoint);
+    connect(construct_actions_[construct_action_name_list_.indexOf("线")],&QAction::triggered,this,&ToolWidget::onConstructLine);
+    connect(construct_actions_[construct_action_name_list_.indexOf("圆")],&QAction::triggered,this,&ToolWidget::onConstructCircle);
+    connect(construct_actions_[construct_action_name_list_.indexOf("平面")],&QAction::triggered,this,& ToolWidget::onConstructPlane);
+    connect(construct_actions_[construct_action_name_list_.indexOf("矩形")],&QAction::triggered,this,& ToolWidget::onConstructRectangle);
+    connect(construct_actions_[construct_action_name_list_.indexOf("圆柱")],&QAction::triggered,this,&  ToolWidget::onConstructCylinder);
+    connect(construct_actions_[construct_action_name_list_.indexOf("圆锥")],&QAction::triggered,this,&  ToolWidget::onConstructCone);
+    connect(construct_actions_[construct_action_name_list_.indexOf("球形")],&QAction::triggered,this,&  ToolWidget::onConstructSphere);
 
     //保存
     connect(save_actions_[save_action_name_list_.indexOf("excel")],&QAction::triggered,&  tool_widget::onSaveExcel);
@@ -833,8 +853,539 @@ void   onSaveImage(){
     pixmap.save(imagePath);
 }
 }
+static void WrongWidget(QString message);
+static QVector4D  toQVector4D(CPosition P){
+    return QVector4D(P.x,P.y,P.z,1.0);
+}
+static CPosition toCPosition(QVector4D P){
+    return CPosition(P.x(),P.y(),P.z());
+}
+static bool isPointInPlane(const QVector4D& point, const QVector4D& planePoint, const QVector4D& normal) {
+    // 将齐次坐标转换为3D向量
+    QVector3D n(normal.x(), normal.y(), normal.z());
+    QVector3D p(point.x(), point.y(), point.z());
+    QVector3D p0(planePoint.x(), planePoint.y(), planePoint.z());
+
+    // 使用点法式平面方程
+    float D = n.x() * (p.x() - p0.x()) + n.y() * (p.y() - p0.y()) + n.z() * (p.z() - p0.z());
+
+    // 点在平面上
+    return qFabs(D) < 1e-6; // 使用一个小阈值来处理浮点数误差
+}
+void ToolWidget::onConstructPoint(){
+        m_pMainWin->showPresetElemWidget(0);
+}
+void ToolWidget::onConstructLine(){
+    ElementListWidget* p_elementListwidget= m_pMainWin->getPWinElementListWidget();
+    auto& objectList = m_pMainWin->m_ObjectListMgr->getObjectList();
+    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+    if(m_point_index.size()<2)
+    {
+        WrongWidget("线至少由两个点组成");
+
+        return ;
+    }
+    for(int i=0;i<m_point_index.size();i++){
+        for(int j=i+1;j<m_point_index.size();j++){
+            CPosition p1=m_selected_points[i]->GetPt();
+            CPosition p2=m_selected_points[j]->GetPt();
+            m_pMainWin->OnPresetLine(p1,p2);
+        }
+    }
+
+}
+static void WrongWidget(QString message){
+    QMessageBox msgBox;
+    msgBox.setWindowTitle("错误");
+    msgBox.setText(message);
+    msgBox.setIcon(QMessageBox::Critical); // 设置对话框图标为错误
+    msgBox.setStandardButtons(QMessageBox::Ok); // 只显示“确定”按钮
+    msgBox.exec(); // 显示对话框
+}
+static QVector4D crossProduct(const QVector4D& a, const QVector4D& b) {
+    return QVector4D(
+        a.y() * b.z() - a.z() * b.y(),
+        a.z() * b.x() - a.x() * b.z(),
+        a.x() * b.y() - a.y() * b.x(),
+        0 // 对于三维向量，w 组件通常设为 0
+        );
+};
+static auto distance(const CPosition& p1, const CPosition& p2) {
+    return sqrt(pow(p2.x - p1.x, 2) + pow(p2.y - p1.y, 2) + pow(p2.z - p1.z, 2));
+};
+static auto dotProduct(const QVector4D& a, const QVector4D& b) {
+    return a.x() * b.x() + a.y() * b.y() + a.z() * b.z();
+};
+static double distanceToPlane(const QVector4D& point, const QVector4D& planePoint, const QVector4D& normal) {
+    // 计算从平面上的点到外部点的向量
+    QVector4D d = point - planePoint;
+
+    // 计算法向量的单位向量
+    QVector4D unitNormal = normal.normalized();
+
+    // 计算点到平面的距离
+    double distance = QVector4D::dotProduct(d, unitNormal);
+
+    return distance;
+}
+
+class CircleInfo{
+public:
+    QVector4D center;
+    QVector4D normal;
+    double radius;
+
+    CircleInfo(){}
+    CircleInfo(QVector4D center,QVector4D normal,double radius){
+        this->center=center;
+        this->radius=radius;
+        this->normal=normal;
+    }
+};
+CircleInfo centerCircle3d(CPosition p1,CPosition p2,CPosition p3)
+{
+    double x1=p1.x;
+    double y1=p1.y;
+    double z1=p1.z;
+    double x2=p2.x;
+    double y2=p2.y;
+    double z2=p2.z;
+    double x3=p3.x;
+    double y3=p3.y;
+    double z3=p3.z;
+    double x,y,z,radius;
+    double a1 = (y1*z2 - y2*z1 - y1*z3 + y3*z1 + y2*z3 - y3*z2),
+        b1 = -(x1*z2 - x2*z1 - x1*z3 + x3*z1 + x2*z3 - x3*z2),
+        c1 = (x1*y2 - x2*y1 - x1*y3 + x3*y1 + x2*y3 - x3*y2),
+        d1 = -(x1*y2*z3 - x1*y3*z2 - x2*y1*z3 + x2*y3*z1 + x3*y1*z2 - x3*y2*z1);
+
+    double a2 = 2 * (x2 - x1),
+        b2 = 2 * (y2 - y1),
+        c2 = 2 * (z2 - z1),
+        d2 = x1*x1 + y1*y1 + z1*z1 - x2*x2 - y2*y2 - z2*z2;
+
+    double a3 = 2 * (x3 - x1),
+        b3 = 2 * (y3 - y1),
+        c3 = 2 * (z3 - z1),
+        d3 = x1*x1 + y1*y1 + z1*z1 - x3*x3 - y3*y3 - z3*z3;
+
+    x = -(b1*c2*d3 - b1*c3*d2 - b2*c1*d3 + b2*c3*d1 + b3*c1*d2 - b3*c2*d1)
+        / (a1*b2*c3 - a1*b3*c2 - a2*b1*c3 + a2*b3*c1 + a3*b1*c2 - a3*b2*c1);
+    y = (a1*c2*d3 - a1*c3*d2 - a2*c1*d3 + a2*c3*d1 + a3*c1*d2 - a3*c2*d1)
+        / (a1*b2*c3 - a1*b3*c2 - a2*b1*c3 + a2*b3*c1 + a3*b1*c2 - a3*b2*c1);
+    z = -(a1*b2*d3 - a1*b3*d2 - a2*b1*d3 + a2*b3*d1 + a3*b1*d2 - a3*b2*d1)
+        / (a1*b2*c3 - a1*b3*c2 - a2*b1*c3 + a2*b3*c1 + a3*b1*c2 - a3*b2*c1);
+    radius = sqrt((x1 - x)*(x1 - x) + (y1 - y)*(y1 - y) + (z1 - z)*(z1 - z));
+    return CircleInfo(QVector4D(x,y,z,1.0),QVector4D(0,0,0,0),radius);
+}
+CircleInfo calculateCircle(const CPosition &A, const CPosition &B, const CPosition &C){
+    CircleInfo Circle=centerCircle3d(A,B,C);
+    QVector4D A_vec(A.x, A.y, A.z, 1);
+    QVector4D B_vec(B.x, B.y, B.z, 1);
+    QVector4D C_vec(C.x, C.y, C.z, 1);
+    qDebug()<<"ABC";
+    qDebug()<<A_vec;
+    qDebug()<<B_vec;
+    qDebug()<<C_vec;
+    // 计算向量 AB 和 AC
+    QVector4D AB = B_vec - A_vec;
+    QVector4D AC = C_vec - A_vec;
+    qDebug()<<"AB,AC";
+    qDebug()<<AB<<AC;
+
+    // 计算法向量 N
+    QVector4D N = crossProduct(AB, AC);
+    if(N.length()<=1e-6){
+        Circle.radius=0;
+    }
+    qDebug()<<"N";
+    qDebug()<<N;
+    QVector4D dirN = N.normalized();
+    qDebug()<<"dirN";
+    qDebug()<<dirN;
+    // 更新圆心
+    Circle.normal=dirN;
+
+    return Circle;
+}
+void ToolWidget::onConstructCircle(){
+    const ElementListWidget* p_elementListwidget= m_pMainWin->getPWinElementListWidget();
+    auto& objectList = m_pMainWin->m_ObjectListMgr->getObjectList();
+    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+
+    if(m_point_index.size()!=3)
+    {
+        WrongWidget("圆需要三个点构成");
+        return ;
+    }
+
+    CPosition A=m_selected_points[0]->GetPt();
+    CPosition B=m_selected_points[1]->GetPt();
+    CPosition C=m_selected_points[2]->GetPt();
+    CircleInfo Circle=calculateCircle(A,B,C);
+    if(Circle.radius<1e-5){
+        WrongWidget("点共线或者点距离太近");
+        return ;
+    }
+
+    m_pMainWin->OnPresetCircle(toCPosition(Circle.center),2*Circle.radius);
+
+}
+void ToolWidget::onConstructPlane(){
+    ElementListWidget* p_elementListwidget= m_pMainWin->getPWinElementListWidget();
+    auto& objectList = m_pMainWin->m_ObjectListMgr->getObjectList();
+    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+
+    if(m_point_index.size()!=3)
+    {
+        WrongWidget("平面需要三个点构成");
+        return ;
+    }
+
+    CPosition A=m_selected_points[0]->GetPt();
+    CPosition B=m_selected_points[1]->GetPt();
+    CPosition C=m_selected_points[2]->GetPt();
+
+    QVector4D vecA(A.x, A.y, A.z, 1.0);
+    QVector4D vecB(B.x, B.y, B.z, 1.0);
+    QVector4D vecC(C.x, C.y, C.z, 1.0);
+
+    // 计算法向量
+    QVector4D AB = vecB - vecA; // 向量 AB
+    QVector4D AC = vecC - vecA; // 向量 AC
+
+    CPosition center; // 平面的中心点
+    QVector4D normal; // 平面的法向量
+    QVector4D direction;
+
+    normal = crossProduct(AB,AC); // 计算法向量并归一化
+
+    // 如果法向量的长度为零，说明三点共线
+    if (normal.length() == 0) {
+        WrongWidget("三点共线，无法生成平面");
+        return ;
+    }
+
+    // 计算平面的中心
+    center = CPosition((A.x + B.x + C.x) / 3, (A.y + B.y + C.y) / 3, (A.z + B.z + C.z) / 3);
+
+    // 方向可以由任一向量定义，这里使用 X 轴的正方向作为方向
+    direction = QVector4D(1, 0, 0, 0); // 方向向量可以根据具体应用调整
+
+    double lenAB = distance(A, B);
+    double lenAC = distance(A, C);
+    double lenBC = distance(B, C);
+
+    double width=qMax(lenAB,lenAC);
+    width=qMax(width,lenBC);
+    double length=qMin(lenAB,lenAC);
+    length=qMin(length,lenBC);
+
+    m_pMainWin->OnPresetPlane(center,normal,direction,length,width);
+
+}
+void ToolWidget::onConstructRectangle(){
+    ElementListWidget* p_elementListwidget= m_pMainWin->getPWinElementListWidget();
+    auto& objectList = m_pMainWin->m_ObjectListMgr->getObjectList();
+    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+
+    if(m_point_index.size()<3||m_point_index.size()>5)
+    {
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("错误");
+        msgBox.setText("矩形由三或四个点构成");
+        msgBox.setIcon(QMessageBox::Critical); // 设置对话框图标为错误
+        msgBox.setStandardButtons(QMessageBox::Ok); // 只显示“确定”按钮
+        msgBox.exec(); // 显示对话框
+        return ;
+    }
+    //如果是三个点，则构造平面
+    if(m_point_index.size()==3){
+        onConstructPlane();
+        return ;
+    }
+    struct RectangleInfo {
+        QVector4D center;
+        QVector4D normal;
+        QVector4D direction;
+        double length;
+        double width;
+        RectangleInfo(QVector4D center,QVector4D normal,QVector4D direction,double length,double width){
+            this->center=center;
+            this->normal=normal;
+            this->direction=direction;
+            this->length=length;
+            this->width=width;
+        }
+        RectangleInfo(){}
+    };
+    //四个点首先判断是否形成矩形
+    static auto isRightAngle=[](const QVector4D& a, const QVector4D& b) {
+        return qFabs(QVector4D::dotProduct(a, b)) < 1e-5; // 使用小值判断近似直角
+    };
+    static auto isRectangle=[](const QVector4D& p1, const QVector4D& p2, const QVector4D& p3, const QVector4D& p4) {
+        QVector4D ab = p2 - p1;
+        QVector4D ac = p3 - p1;
+        QVector4D ad = p4 - p1;
+
+        QVector4D bc = p3 - p2;
+        QVector4D bd = p4 - p2;
+
+        QVector4D cd = p4 - p3;
+
+        // 检查所有角是否为直角
+        return isRightAngle(ab, ac) && isRightAngle(ab, ad) &&
+               isRightAngle(bc, bd) && isRightAngle(cd, ac) &&
+               qFabs(ab.lengthSquared() - ac.lengthSquared()) < 1e-5;
+    };
+       //根据顺序的四个点计算矩形信息
+       static auto calculateRectangleInfo=[](const QVector4D& p1, const QVector4D& p2, const QVector4D& p3, const QVector4D& p4) {
+        QVector4D lengths[4] = {
+            p2 - p1,
+            p3 - p2,
+            p4 - p3,
+            p1 - p4
+        };
+
+       double length1 = lengths[0].length();
+       double width1 = lengths[1].length();
+
+        QVector4D center = (p1 + p2 + p3 + p4) / 4.0;
+
+        QVector4D normal = crossProduct(lengths[0], lengths[1]).normalized();
+
+        QVector4D direction = lengths[0].normalized();
+
+        return RectangleInfo(center,normal,direction,length1,width1);
+    };
 
 
+    //检查四个点的所有顺序组合，找到满足条件的一组
+    static auto checkAllCombinations=[](const QVector<QVector4D>& points,RectangleInfo& ans) {
+        for (int i = 0; i < points.size(); ++i) {
+            for (int j = 0; j < points.size(); ++j) {
+                if (j == i) continue;
+                for (int k = 0; k < points.size(); ++k) {
+                    if (k == i || k == j) continue;
+                    for (int l = 0; l < points.size(); ++l) {
+                        if (l == i || l == j || l == k) continue;
+
+                        if (isRectangle(points[i], points[j], points[k], points[l])) {
+                            ans=calculateRectangleInfo(points[i], points[j], points[k], points[l]);
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    };
+       CPosition A=m_selected_points[0]->GetPt();
+       CPosition B=m_selected_points[1]->GetPt();
+       CPosition C=m_selected_points[2]->GetPt();
+       CPosition D=m_selected_points[3]->GetPt();
+       QVector<QVector4D> points;
+       points.push_back(QVector4D(A.x, A.y, A.z, 1.0));
+       points.push_back(QVector4D(B.x, B.y, B.z, 1.0));
+       points.push_back(QVector4D(C.x, C.y, C.z, 1.0));
+       points.push_back(QVector4D(D.x, D.y, D.z, 1.0));
+
+       RectangleInfo ans;
+       if( checkAllCombinations(points,ans)){
+           CPosition center(ans.center.x(),ans.center.y(),ans.center.z());
+           m_pMainWin->OnPresetPlane(center,ans.normal,ans.direction,ans.length,ans.width);
+       }else{
+           WrongWidget("这四个点不能构成矩形");
+       }
+
+
+
+}
+void ToolWidget::onConstructCylinder(){
+
+    // 计算法线向量
+    // 检查点是否在圆内
+    if(m_point_index.size()!=4){
+        WrongWidget("需要由三个组成底面圆的点和一个顶面圆上的点");
+    }
+    static auto isPointInCircle=[](const CPosition &circleCenter, double radius, const CPosition &point) {
+        double distanceSquared = (point.x - circleCenter.x) * (point.x - circleCenter.x) +
+                                 (point.y - circleCenter.y) * (point.y - circleCenter.y)+
+                                 (point.z - circleCenter.z) * (point.z - circleCenter.z);
+        return (distanceSquared <= radius * radius);
+    };
+    CPosition A=m_selected_points[0]->GetPt();
+    CPosition B=m_selected_points[1]->GetPt();
+    CPosition C=m_selected_points[2]->GetPt();
+    CPosition D=m_selected_points[3]->GetPt();
+
+    qDebug()<<m_selected_points[0]->getId();
+    qDebug()<<m_selected_points[1]->getId();
+    qDebug()<<m_selected_points[2]->getId();
+    qDebug()<<m_selected_points[3]->getId();
+
+
+    CircleInfo Circle=calculateCircle(A,B,C);
+    if(Circle.radius<1e-6){
+        WrongWidget("底面圆的三点共线");
+    }
+     double radius=Circle.radius;
+     QVector4D circleCenter=Circle.center;
+    QVector4D normal = Circle.normal;
+    qDebug()<<Circle.center;
+    qDebug()<<Circle.normal;
+    qDebug()<<Circle.radius;
+        // 计算底面圆心和第四个点的距离
+    double distanceToD =distanceToPlane(toQVector4D(D),circleCenter,normal);
+    qDebug()<<distanceToD;
+        // 计算法线并沿法线延伸距离
+    QVector4D topCircleCenter=circleCenter+normal*distanceToD;
+    QVector4D middleCenter=circleCenter+normal*(distanceToD/2);
+    qDebug()<<topCircleCenter;
+    qDebug()<<middleCenter;
+     if(isPointInCircle(toCPosition(topCircleCenter),radius,D)){
+            m_pMainWin->OnPresetCylinder(toCPosition(middleCenter),normal,fabs(distanceToD),2*radius);
+    }else{
+            WrongWidget("第四个点不在前三个点组成底面圆对应的顶面圆上");
+    }
+
+
+}
+void ToolWidget::onConstructCone(){}
+void ToolWidget::onConstructSphere(){
+
+    if(m_point_index.size()!=4)
+    {
+        WrongWidget("球需要由四个点组成");
+        return ;
+    }
+
+    struct SphereInfo {
+        QVector4D center;
+        double radius;
+        SphereInfo(QVector4D center,double radius){
+            this->center=center;
+            this->radius=radius;
+        }
+    };
+
+    static auto checkCollinearity=[](const QVector4D& p1, const QVector4D& p2, const QVector4D& p3) {
+        QVector4D v1 = p2 - p1;
+        QVector4D v2 = p3 - p1;
+        return qFabs(QVector4D::dotProduct(v1, v2) / (v1.length() * v2.length())) == 1.0; // 若夹角为0或180度则共线
+    };
+
+    static auto canFormSphere=[](const QVector4D& p1, const QVector4D& p2, const QVector4D& p3, const QVector4D& p4) {
+        return !checkCollinearity(p1, p2, p3); // 至少需要三个不共线的点
+    };
+
+    static auto calculateSphere=[](const QVector4D& p1, const QVector4D& p2, const QVector4D& p3, const QVector4D& p4) {
+        QVector4D v1 = p2 - p1;
+        QVector4D v2 = p3 - p1;
+        QVector4D v3 = p4 - p1;
+
+       double a = QVector4D::dotProduct(v1, v1);
+       double b = QVector4D::dotProduct(v2, v2);
+       double c = QVector4D::dotProduct(v3, v3);
+
+       double d = 2 * (v1.x() * v2.y() - v2.x() * v1.y() + v1.x() * v3.y() - v3.x() * v1.y() + v2.x() * v3.y() - v2.y() * v3.x());
+
+        if (qFabs(d) < 1e-5) {
+           WrongWidget("点共面或者太近");
+           return SphereInfo(QVector4D(0,0,0,0),0);
+        }
+
+        QVector4D center;
+        center.setX(((v1.x() * v1.x() + v1.y() * v1.y()) * (v2.y() - v3.y()) +
+                     (v2.x() * v2.x() + v2.y() * v2.y()) * (v3.y() - v1.y()) +
+                     (v3.x() * v3.x() + v3.y() * v3.y()) * (v1.y() - v2.y())) / d);
+
+        center.setY(((v1.x() * v1.x() + v1.y() * v1.y()) * (v3.x() - v2.x()) +
+                     (v2.x() * v2.x() + v2.y() * v2.y()) * (v1.x() - v3.x()) +
+                     (v3.x() * v3.x() + v3.y() * v3.y()) * (v2.x() - v1.x())) / d);
+
+        center.setZ(0); // 这里假设球在xy平面上
+
+        // 计算半径
+       double radius = (center - p1).length();
+
+       return SphereInfo(center,radius);
+    };
+    if(m_point_index.size()==4){
+        CPosition A=m_selected_points[0]->GetPt();
+        CPosition B=m_selected_points[1]->GetPt();
+        CPosition C=m_selected_points[2]->GetPt();
+        CPosition D=m_selected_points[3]->GetPt();
+        QVector<QVector4D> points;
+        QVector4D p1(A.x, A.y, A.z, 1.0);
+        QVector4D p2(B.x, B.y, B.z, 1.0);
+        QVector4D p3(C.x, C.y, C.z, 1.0);
+        QVector4D p4(D.x, D.y, D.z, 1.0);
+
+        if (canFormSphere(p1, p2, p3, p4)) {
+            SphereInfo sphereInfo = calculateSphere(p1, p2, p3, p4);
+            if(sphereInfo.radius==0){
+
+            }else{
+                CPosition center(sphereInfo.center.x(),sphereInfo.center.y(),sphereInfo.center.z());
+                m_pMainWin->OnPresetSphere(center,sphereInfo.radius);
+            }
+
+        } else {
+            WrongWidget("所给的点不能构成一个球");
+        }
+
+    }
+
+}
+void ToolWidget::updateele(){
+
+    ElementListWidget* p_elementListwidget= m_pMainWin->getPWinElementListWidget();
+    VtkWidget * p_vtkwidget=m_pMainWin->getPWinVtkWidget();
+    QList<QTreeWidgetItem*> selectedItems = p_elementListwidget->getSelectedItems();
+    QVector<CObject*> eleobjlist=p_elementListwidget->getEleobjlist();
+
+    if (!selectedItems.isEmpty()) {
+        m_point_index.clear();
+        m_selected_points.clear();
+        int *index=new int[selectedItems.size()];
+        int *entityindex=new int[selectedItems.size()];
+        int count_index=0;
+        int count_entityindex=0;
+
+        for(QTreeWidgetItem *selectedItem:selectedItems)
+        {
+
+            CObject *obj = selectedItem->data(0, Qt::UserRole).value<CObject*>();
+            for(int i=0;i<m_pMainWin->getObjectListMgr()->getObjectList().size();i++){
+                if(m_pMainWin->getObjectListMgr()->getObjectList()[i]==obj){
+                    index[count_index]=i;
+                    count_index++;
+                }
+            }
+
+            for(int i=0;i<eleobjlist.size();i++){
+                if(eleobjlist[i]==obj){
+                    entityindex[count_entityindex]=i;
+                    count_entityindex++;
+                }
+            }
+
+        }
+        auto& objectList = m_pMainWin->m_ObjectListMgr->getObjectList();
+        auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+
+        for(int i=0;i<count_entityindex;i++){
+            if(entityList[entityindex[i]]->GetUniqueType()==enPoint){
+                m_point_index.push_back(index[i]);
+                m_selected_points.push_back((CPoint*)entityList[entityindex[i]]);
+            }
+        }
+        delete []index;
+        delete []entityindex;
+    }
+    qDebug()<<"toolwidget::updateele";
+}
 void ToolWidget::NotifySubscribe(){
     qDebug()<<"ToolWidget::NotifySubscribe()";
 }

@@ -97,8 +97,20 @@ void VtkWidget::reDraw(){
     }
 
     // 遍历m_entityList重新绘制
-    for(auto& entity : m_pMainWin->m_EntityListMgr->getEntityList()){
-        addActor(entity->draw());
+    // for(auto& entity : m_pMainWin->m_EntityListMgr->getEntityList()){
+    //     addActor(entity->draw());
+    // }
+
+    QVector<bool> list=m_pMainWin->m_EntityListMgr->getMarkList();//获取标记是否隐藏元素的list
+    QVector<CEntity*> entitylist=m_pMainWin->m_EntityListMgr->getEntityList();
+    for(auto i=0;i< entitylist.size();i++){
+        qDebug()<<list[i];
+    }
+    for(auto i=0;i< entitylist.size();i++){
+        if(!list[i]){
+            addActor(entitylist[i]->draw());
+            //qDebug() << "Adding entity to VTK:" << entity->m_strCName;
+        }
     }
 
     getRenderWindow()->Render(); // 刷新渲染窗口
