@@ -421,3 +421,23 @@ void CCone::setAxis(const QVector4D &newAxis)
 {
     axis = newAxis;
 }
+
+double CDisrtance::getOntolerance()
+{
+    return ontolerance;
+}
+
+double CDisrtance::getUndertolerance()
+{
+    return undertolerance;
+}
+
+void CDisrtance::setOntolerance(double on)
+{
+    ontolerance=on;
+}
+
+void CDisrtance::setUndertolerance(double under)
+{
+    undertolerance=under;
+}

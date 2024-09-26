@@ -108,8 +108,10 @@ void ElementListWidget::onDeleteEllipse()
 {
     QList<QTreeWidgetItem*> selectedItems = treeWidgetNames->selectedItems();
     if (!selectedItems.isEmpty()) {
-        for(QTreeWidgetItem *selectedItem:selectedItems)
+        /*for(QTreeWidgetItem *selectedItem:selectedItems)*/
+        for(int j=selectedItems.size()-1;j>=0;j--)
         {
+            QTreeWidgetItem *selectedItem=selectedItems[j];
             int index=-1;
             CObject *obj = selectedItem->data(0, Qt::UserRole).value<CObject*>();
             for(int i=0;i<m_pMainWin->getObjectListMgr()->getObjectList().size();i++){
@@ -133,6 +135,7 @@ void ElementListWidget::onDeleteEllipse()
             }else{
                 objectList.removeAt(index);
                 entityList.removeAt(entityindex);
+                eleobjlist.removeAt(entityindex);
             }
         }
         m_pMainWin->NotifySubscribe();
@@ -203,7 +206,11 @@ void ElementListWidget::onItemClicked(QTreeWidgetItem *item)
         return;
     }
     if(name!=name1&&name!=name2){
-        m_pMainWin->getObjectListMgr()->getObjectList()[index]->SetSelected(true);
+        if(m_pMainWin->getObjectListMgr()->getObjectList()[index]->IsSelected()==false){
+            m_pMainWin->getObjectListMgr()->getObjectList()[index]->SetSelected(true);
+        }else{
+            m_pMainWin->getObjectListMgr()->getObjectList()[index]->SetSelected(false);
+        }
         emit itemSelected(entityindex); // 发出自定义信号
     }
 }
