@@ -19,7 +19,10 @@
 #include <QPainter>
 #include <QApplication>
 
+#include "geometry/centity.h"
+
 class VtkWidget;
+class MainWindow;
 class ButtonDelegate;
 class FileManagerWidget : public QWidget
 {
@@ -35,27 +38,23 @@ private:
     QStandardItem *measuredFile;
     QStandardItem *contentItem;
     QStandardItem *identifyItem;
-    VtkWidget *pWinVtkWidget;
     ButtonDelegate *delegate;
     QMenu *contextMenu;//右键菜单
     QAction *deleteAction;
+    MainWindow *m_pMainWin;
+    VtkWidget *m_pVtkWidget;
 public:
     void openModelFile(QString,QString);
     void openMeasuredFile(QString,QString);
-    //void getFileContent(const QString &);
+    void createPresetOpen(CEntity*);
+    void createPresetClose(CEntity*);
     void contextMenuEvent(QContextMenuEvent *event);
+    void UpdateInfo();
+    bool isChildOf(QStandardItem*, QStandardItem*);
 private slots:
-    void clickFile(const QModelIndex &);
+    void getItem(const QModelIndex &);
+    void changeVtk(const QModelIndex &);
     void deleteFile();
-private:
-    /*QString getPath(QStandardItem *item){
-        QString path;
-        while (item) {
-            path.prepend(item->text() + "/");
-            item = item->parent();
-        }
-        return path.left(path.length() - 1);
-    }*/
 signals:
 };
 
@@ -64,59 +63,10 @@ class ButtonDelegate : public QStyledItemDelegate {
     Q_OBJECT
 public:
     ButtonDelegate(QObject *parent = nullptr) : QStyledItemDelegate(parent) {}
-
-        // 用于绘制图形元素到界面上 //包含绘制项时需要的样式选项，如项的矩形区域、样式等 //表示当前绘制的模型项的索引
-    void paint(QPainter *painter,const QStyleOptionViewItem &option,const QModelIndex &index) const override{
-        QStyledItemDelegate::paint(painter,option,index);//调用基类的paint方法，执行默认绘制操作
-
-        /*if (index.column() == 1){
-        QRect buttonRect=option.rect;//用于创建一个矩形区域
-        buttonRect.setLeft(buttonRect.right() - 50);//使按钮在子节点左侧
-        buttonRect.setWidth(50);
-        buttonRect.setHeight(20);
-        painter->drawRect(buttonRect);//绘制按钮边框
-        QIcon iconOpen=QIcon(":/component/eye/openeye.png");
-        iconOpen.paint(painter,buttonRect,Qt::AlignCenter);
-        }*/
-
-        if (index.parent().isValid()) {//确保不是头节点
-            bool isOpen=index.data(Qt::UserRole+1).toBool();//根据索引的数据决定给按钮添加哪种图标
-            QStyleOptionButton btn;
-            QRect itemRect  = option.rect;
-            int buttonHeight = itemRect.height();
-            int buttonWidth = buttonHeight + 10;
-            int buttonX = itemRect.right() - buttonWidth - 10;//按钮水平位置的起始点
-                                    //确保按钮在项的顶部对齐
-            QRect buttonRect(buttonX, itemRect.top(), buttonWidth, buttonHeight);
-            btn.rect = buttonRect;
-            btn.icon=isOpen ? QIcon(":/component/eye/openeye.png") : QIcon(":/component/eye/closeeye.png");
-            btn.iconSize = QSize(buttonWidth, buttonHeight);
-            QApplication::style()->drawControl(QStyle::CE_PushButton, &btn, painter);//绘制按钮
-        }
-    }
-
-    bool editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option, const QModelIndex &index) override {
-        if(event->type()==QEvent::MouseButtonRelease&&index.parent().isValid()){
-            QMouseEvent *mouseEvent=static_cast<QMouseEvent*>(event);
-            QRect itemRect = option.rect;
-            int buttonHeight = itemRect.height();
-            int buttonWidth = buttonHeight + 10;
-            int buttonX = itemRect.right() - buttonWidth - 10;
-            QRect buttonRect(buttonX, itemRect.top(), buttonWidth, buttonHeight);
-            //buttonRect.moveRight(option.rect.right());//将按钮移动到右侧
-            if(buttonRect.contains(mouseEvent->pos())){
-                bool isOpen=index.data(Qt::UserRole+1).toBool();
-                model->setData(index, !isOpen, Qt::UserRole+1);
-                QString message = !isOpen ? "显示文件内容" : "不显示文件内容";
-                qDebug() << message; //根据按钮状态输出不同的消息
-                return true;
-            }
-        }
-        return QStyledItemDelegate::editorEvent(event, model, option, index);
-    }
-
-private:
-    ButtonDelegate *delegate;
+    void paint(QPainter *painter,const QStyleOptionViewItem &option,const QModelIndex &index) const override;
+    bool editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option, const QModelIndex &index) override;
+signals:
+    void buttonClicked(const QModelIndex &index); // 自定义信号，包含项的索引
 };
 
 #endif // FILEMANAGERWIDGET_H
