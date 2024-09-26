@@ -121,7 +121,7 @@ void VtkWidget::createAxes()
     axes->GetZAxisCaptionActor2D()->GetCaptionTextProperty()->SetFontSize(10);
 
     axes->SetTotalLength(0.4, 0.4, 0.4); // 设置轴的长度
-    axes->SetConeRadius(0.08); // 设置轴锥体的半径
+    axes->SetConeRadius(0.1); // 设置轴锥体的半径
     axes->SetCylinderRadius(0.1); // 设置轴圆柱体的半径
     axes->SetSphereRadius(0.05); // 设置轴末端的球体半径
     axes->SetPosition(0, 0, 0);
@@ -192,6 +192,7 @@ void VtkWidget::onFrontView(){
     }
 }
 
+// 切换相机视角4，立体视角可以在前三个的基础上旋转
 void VtkWidget::ononIsometricView(){
     vtkCamera *camera = renderer->GetActiveCamera();
     if (camera) {
