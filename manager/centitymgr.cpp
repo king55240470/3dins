@@ -6,6 +6,7 @@ CEntityMgr::CEntityMgr() {
 
 void CEntityMgr::Add(CEntity* pEntity){
     m_entityList.push_back(pEntity);
+    marklist.push_back(false);
 }
 
 int CEntityMgr::FindEntity(CEntity *pEntity)
@@ -64,6 +65,10 @@ QVector<CEntity *>& CEntityMgr::getEntityList()
     return m_entityList;
 }
 
+QVector<bool> &CEntityMgr::getMarkList()
+{
+    return marklist;
+}
 
 
 

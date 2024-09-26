@@ -139,6 +139,7 @@ public:
 
 class CCircle  : public CEntity
 {
+public:
     CPosition m_pt;
 
     double m_d;//直径
@@ -386,5 +387,13 @@ public:
     CPosition getVertex() const;
     void setVertex(const CPosition &newVertex);
 };
-
+class CDisrtance : public CEntity{
+    double ontolerance;
+    double undertolerance;
+public:
+    double getOntolerance();
+    double getUndertolerance();
+    void setOntolerance(double on);
+    void setUndertolerance(double under);
+};
 #endif // CENTITYTYPES_H
