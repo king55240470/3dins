@@ -387,5 +387,13 @@ public:
     CPosition getVertex() const;
     void setVertex(const CPosition &newVertex);
 };
-
+class CDisrtance : public CEntity{
+    double ontolerance;
+    double undertolerance;
+public:
+    double getOntolerance();
+    double getUndertolerance();
+    void setOntolerance(double on);
+    void setUndertolerance(double under);
+};
 #endif // CENTITYTYPES_H
