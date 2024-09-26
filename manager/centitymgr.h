@@ -12,6 +12,7 @@ private:
     int m_nCount;
     bool m_bRedraw;
     int m_nRedrawIndex;
+    QVector<bool> marklist;//filemanagerwidget标记是否隐藏entitylist里的元素
 public:
     CEntityMgr();
      // 封装centity对象的数组
@@ -26,6 +27,7 @@ public:
     int GetCount();
     void RemoveAll();
     QVector<CEntity*>& getEntityList();
+    QVector<bool> &getMarkList();
 };
 
 #endif // CENTITYMGR_H

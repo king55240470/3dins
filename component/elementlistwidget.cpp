@@ -129,6 +129,7 @@ void ElementListWidget::onDeleteEllipse()
             }
             auto& objectList = m_pMainWin->m_ObjectListMgr->getObjectList();
             auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+            auto& markList = m_pMainWin->m_EntityListMgr->getMarkList();//标记是否显示元素的列表
             if(objectList[index]->GetObjectCName().left(5)=="临时坐标系"||objectList[index]->GetObjectCName().left(5)=="工件坐标系"){
                 objectList.removeAt(index);
                 //pcscount--;
@@ -136,6 +137,7 @@ void ElementListWidget::onDeleteEllipse()
                 objectList.removeAt(index);
                 entityList.removeAt(entityindex);
                 eleobjlist.removeAt(entityindex);
+                markList.removeAt(entityindex);
             }
         }
         m_pMainWin->NotifySubscribe();
