@@ -39,34 +39,38 @@ namespace {
 struct qt_meta_stringdata_CLASSFileManagerWidgetENDCLASS_t {};
 static constexpr auto qt_meta_stringdata_CLASSFileManagerWidgetENDCLASS = QtMocHelpers::stringData(
     "FileManagerWidget",
-    "clickFile",
+    "getItem",
     "",
     "QModelIndex",
+    "changeVtk",
     "deleteFile"
 );
 #else  // !QT_MOC_HAS_STRING_DATA
 struct qt_meta_stringdata_CLASSFileManagerWidgetENDCLASS_t {
-    uint offsetsAndSizes[10];
+    uint offsetsAndSizes[12];
     char stringdata0[18];
-    char stringdata1[10];
+    char stringdata1[8];
     char stringdata2[1];
     char stringdata3[12];
-    char stringdata4[11];
+    char stringdata4[10];
+    char stringdata5[11];
 };
 #define QT_MOC_LITERAL(ofs, len) \
     uint(sizeof(qt_meta_stringdata_CLASSFileManagerWidgetENDCLASS_t::offsetsAndSizes) + ofs), len 
 Q_CONSTINIT static const qt_meta_stringdata_CLASSFileManagerWidgetENDCLASS_t qt_meta_stringdata_CLASSFileManagerWidgetENDCLASS = {
     {
         QT_MOC_LITERAL(0, 17),  // "FileManagerWidget"
-        QT_MOC_LITERAL(18, 9),  // "clickFile"
-        QT_MOC_LITERAL(28, 0),  // ""
-        QT_MOC_LITERAL(29, 11),  // "QModelIndex"
-        QT_MOC_LITERAL(41, 10)   // "deleteFile"
+        QT_MOC_LITERAL(18, 7),  // "getItem"
+        QT_MOC_LITERAL(26, 0),  // ""
+        QT_MOC_LITERAL(27, 11),  // "QModelIndex"
+        QT_MOC_LITERAL(39, 9),  // "changeVtk"
+        QT_MOC_LITERAL(49, 10)   // "deleteFile"
     },
     "FileManagerWidget",
-    "clickFile",
+    "getItem",
     "",
     "QModelIndex",
+    "changeVtk",
     "deleteFile"
 };
 #undef QT_MOC_LITERAL
@@ -79,7 +83,7 @@ Q_CONSTINIT static const uint qt_meta_data_CLASSFileManagerWidgetENDCLASS[] = {
       12,       // revision
        0,       // classname
        0,    0, // classinfo
-       2,   14, // methods
+       3,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -87,10 +91,12 @@ Q_CONSTINIT static const uint qt_meta_data_CLASSFileManagerWidgetENDCLASS[] = {
        0,       // signalCount
 
  // slots: name, argc, parameters, tag, flags, initial metatype offsets
-       1,    1,   26,    2, 0x08,    1 /* Private */,
-       4,    0,   29,    2, 0x08,    3 /* Private */,
+       1,    1,   32,    2, 0x08,    1 /* Private */,
+       4,    1,   35,    2, 0x08,    3 /* Private */,
+       5,    0,   38,    2, 0x08,    5 /* Private */,
 
  // slots: parameters
+    QMetaType::Void, 0x80000000 | 3,    2,
     QMetaType::Void, 0x80000000 | 3,    2,
     QMetaType::Void,
 
@@ -106,7 +112,10 @@ Q_CONSTINIT const QMetaObject FileManagerWidget::staticMetaObject = { {
     qt_incomplete_metaTypeArray<qt_meta_stringdata_CLASSFileManagerWidgetENDCLASS_t,
         // Q_OBJECT / Q_GADGET
         QtPrivate::TypeAndForceComplete<FileManagerWidget, std::true_type>,
-        // method 'clickFile'
+        // method 'getItem'
+        QtPrivate::TypeAndForceComplete<void, std::false_type>,
+        QtPrivate::TypeAndForceComplete<const QModelIndex &, std::false_type>,
+        // method 'changeVtk'
         QtPrivate::TypeAndForceComplete<void, std::false_type>,
         QtPrivate::TypeAndForceComplete<const QModelIndex &, std::false_type>,
         // method 'deleteFile'
@@ -121,8 +130,9 @@ void FileManagerWidget::qt_static_metacall(QObject *_o, QMetaObject::Call _c, in
         auto *_t = static_cast<FileManagerWidget *>(_o);
         (void)_t;
         switch (_id) {
-        case 0: _t->clickFile((*reinterpret_cast< std::add_pointer_t<QModelIndex>>(_a[1]))); break;
-        case 1: _t->deleteFile(); break;
+        case 0: _t->getItem((*reinterpret_cast< std::add_pointer_t<QModelIndex>>(_a[1]))); break;
+        case 1: _t->changeVtk((*reinterpret_cast< std::add_pointer_t<QModelIndex>>(_a[1]))); break;
+        case 2: _t->deleteFile(); break;
         default: ;
         }
     }
@@ -147,13 +157,13 @@ int FileManagerWidget::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 2)
+        if (_id < 3)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 2;
+        _id -= 3;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 2)
+        if (_id < 3)
             *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
-        _id -= 2;
+        _id -= 3;
     }
     return _id;
 }
@@ -162,20 +172,36 @@ namespace {
 #ifdef QT_MOC_HAS_STRINGDATA
 struct qt_meta_stringdata_CLASSButtonDelegateENDCLASS_t {};
 static constexpr auto qt_meta_stringdata_CLASSButtonDelegateENDCLASS = QtMocHelpers::stringData(
-    "ButtonDelegate"
+    "ButtonDelegate",
+    "buttonClicked",
+    "",
+    "QModelIndex",
+    "index"
 );
 #else  // !QT_MOC_HAS_STRING_DATA
 struct qt_meta_stringdata_CLASSButtonDelegateENDCLASS_t {
-    uint offsetsAndSizes[2];
+    uint offsetsAndSizes[10];
     char stringdata0[15];
+    char stringdata1[14];
+    char stringdata2[1];
+    char stringdata3[12];
+    char stringdata4[6];
 };
 #define QT_MOC_LITERAL(ofs, len) \
     uint(sizeof(qt_meta_stringdata_CLASSButtonDelegateENDCLASS_t::offsetsAndSizes) + ofs), len 
 Q_CONSTINIT static const qt_meta_stringdata_CLASSButtonDelegateENDCLASS_t qt_meta_stringdata_CLASSButtonDelegateENDCLASS = {
     {
-        QT_MOC_LITERAL(0, 14)   // "ButtonDelegate"
+        QT_MOC_LITERAL(0, 14),  // "ButtonDelegate"
+        QT_MOC_LITERAL(15, 13),  // "buttonClicked"
+        QT_MOC_LITERAL(29, 0),  // ""
+        QT_MOC_LITERAL(30, 11),  // "QModelIndex"
+        QT_MOC_LITERAL(42, 5)   // "index"
     },
-    "ButtonDelegate"
+    "ButtonDelegate",
+    "buttonClicked",
+    "",
+    "QModelIndex",
+    "index"
 };
 #undef QT_MOC_LITERAL
 #endif // !QT_MOC_HAS_STRING_DATA
@@ -187,12 +213,18 @@ Q_CONSTINIT static const uint qt_meta_data_CLASSButtonDelegateENDCLASS[] = {
       12,       // revision
        0,       // classname
        0,    0, // classinfo
-       0,    0, // methods
+       1,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
        0,       // flags
-       0,       // signalCount
+       1,       // signalCount
+
+ // signals: name, argc, parameters, tag, flags, initial metatype offsets
+       1,    1,   20,    2, 0x06,    1 /* Public */,
+
+ // signals: parameters
+    QMetaType::Void, 0x80000000 | 3,    4,
 
        0        // eod
 };
@@ -205,17 +237,33 @@ Q_CONSTINIT const QMetaObject ButtonDelegate::staticMetaObject = { {
     nullptr,
     qt_incomplete_metaTypeArray<qt_meta_stringdata_CLASSButtonDelegateENDCLASS_t,
         // Q_OBJECT / Q_GADGET
-        QtPrivate::TypeAndForceComplete<ButtonDelegate, std::true_type>
+        QtPrivate::TypeAndForceComplete<ButtonDelegate, std::true_type>,
+        // method 'buttonClicked'
+        QtPrivate::TypeAndForceComplete<void, std::false_type>,
+        QtPrivate::TypeAndForceComplete<const QModelIndex &, std::false_type>
     >,
     nullptr
 } };
 
 void ButtonDelegate::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
 {
-    (void)_o;
-    (void)_id;
-    (void)_c;
-    (void)_a;
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        auto *_t = static_cast<ButtonDelegate *>(_o);
+        (void)_t;
+        switch (_id) {
+        case 0: _t->buttonClicked((*reinterpret_cast< std::add_pointer_t<QModelIndex>>(_a[1]))); break;
+        default: ;
+        }
+    } else if (_c == QMetaObject::IndexOfMethod) {
+        int *result = reinterpret_cast<int *>(_a[0]);
+        {
+            using _t = void (ButtonDelegate::*)(const QModelIndex & );
+            if (_t _q_method = &ButtonDelegate::buttonClicked; *reinterpret_cast<_t *>(_a[1]) == _q_method) {
+                *result = 0;
+                return;
+            }
+        }
+    }
 }
 
 const QMetaObject *ButtonDelegate::metaObject() const
@@ -234,6 +282,24 @@ void *ButtonDelegate::qt_metacast(const char *_clname)
 int ButtonDelegate::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 {
     _id = QStyledItemDelegate::qt_metacall(_c, _id, _a);
+    if (_id < 0)
+        return _id;
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        if (_id < 1)
+            qt_static_metacall(this, _c, _id, _a);
+        _id -= 1;
+    } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
+        if (_id < 1)
+            *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
+        _id -= 1;
+    }
     return _id;
+}
+
+// SIGNAL 0
+void ButtonDelegate::buttonClicked(const QModelIndex & _t1)
+{
+    void *_a[] = { nullptr, const_cast<void*>(reinterpret_cast<const void*>(std::addressof(_t1))) };
+    QMetaObject::activate(this, &staticMetaObject, 0, _a);
 }
 QT_WARNING_POP
