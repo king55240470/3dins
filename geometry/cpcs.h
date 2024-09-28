@@ -32,6 +32,25 @@ public:
     CPosition poso() const;
 
 
+public:
+    // double GetAngleOnXoY(){
+    //     float a = m_mat(0, 0); // X轴变换后的X分量
+    //     float e = m_mat(1, 0); // X轴变换后的Y分量
+    //     double angle2 = qRadiansToDegrees(qAtan2(e, a));
+
+    //     // 确保返回的角度是正数
+    //     return angle2 >= 0 ? angle2 : angle2 + 360;
+    // }
+
+    void PlanarRotateXinXY(double angle){
+        m_mat.rotate(angle, 0,0,1);
+    }
+
+    void PlanarRotateYinXY(double angle){
+        m_mat.rotate(0, angle,0,1);
+    }
+
 };
+
 
 #endif // CPCS_H
