@@ -104,8 +104,7 @@ public:
     CPcs* m_nRelyOnWhichCs; // 状态栏的参考坐标系
 
     //坐标系摆正
-    double AxesRotateX(); // X-Y平面的旋转角度, X轴正方向与线段之间的夹角
-    double AxesRotateY(); //
+    double AxesRotateX(); // X-Y平面, 线段与X轴正方向之间的夹角
     void on2dCoordSetRightX(); // 摆正X坐标系
     void on2dCoordSetRightY(); // 摆正Y坐标系
 };
