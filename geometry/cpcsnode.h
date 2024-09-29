@@ -4,6 +4,14 @@
 #include"cpcs.h"
 #include "cobject.h"
 
+#include <vtkSmartPointer.h>
+#include <vtkActor.h>
+#include <vtkProperty.h>
+#include <vtkCamera.h>
+#include <vtkAxesActor.h>
+#include <vtkTextProperty.h>
+#include <vtkCaptionActor2D.h>
+
 class CPcsNode : public CObject
 {
 public:
@@ -28,6 +36,9 @@ public:
     {
         return pPcs;
     }
+
+    // 坐标器的draw()方法
+    vtkSmartPointer<vtkAxesActor> draw();
 };
 
 #endif // CPCSNODE_H
