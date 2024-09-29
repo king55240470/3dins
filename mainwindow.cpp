@@ -28,8 +28,6 @@ MainWindow::MainWindow(QWidget *parent)
     setupUi();
     RestoreWidgets();
     loadManager();
-    connect(pWinElementListWidget,&ElementListWidget::itemSelected,pWinDataWidget,&DataWidget::updateele);
-
     m_nRelyOnWhichCs=csRef;
 
     connect(pWinElementListWidget,&ElementListWidget::itemSelected,pWinToolWidget,&ToolWidget::updateele);
@@ -639,13 +637,13 @@ bool MainWindow::eventFilter(QObject* watched, QEvent* event){
             {
                 button->setText("参考当前坐标系");
                 m_nRelyOnWhichCs = csCur;
-                pWinDataWidget->updateele(index); // 更新数据结果窗口
+                pWinDataWidget->updateinfo(); // 更新数据结果窗口
             }
             else
             {
                 button->setText("参考依赖坐标系");
                 m_nRelyOnWhichCs = csRef;
-                pWinDataWidget->updateele(index);
+                pWinDataWidget->updateinfo(); // 更新数据结果窗口
             }
         }
 
