@@ -14,8 +14,8 @@ class DataWidget : public QWidget
     Q_OBJECT
 public:
     explicit DataWidget(QWidget *parent = nullptr);
-    void updateele(int i);
-    // void UpdateInfo();
+    void updateinfo();
+    void getentityindex(int entityindex);
 private:
     QVBoxLayout *vlayout;
     QHBoxLayout *hlayout;
@@ -25,7 +25,7 @@ private:
     QComboBox *box;
     QTableWidget *table;
     MainWindow *m_pMainWin=nullptr;
-
+    int index=0;
 };
 
 #endif // DATAWIDGET_H
