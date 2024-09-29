@@ -834,38 +834,6 @@ double MainWindow::AxesRotateX()
     //pWinVtkWidget->rotateCameraClockwiseInXOY(angleInDegrees);
 }
 
-// double MainWindow::AxesRotateY()
-// {
-//     double angleInDegrees = -1;
-//     for (int i = 0; i < m_ObjectListMgr->getObjectList().size(); i++)
-//     {
-//         if (m_ObjectListMgr->getObjectList()[i]->IsSelected()==true &&
-//             m_ObjectListMgr->getObjectList()[i]->GetUniqueType() == enLine)
-//         {
-//             CLine* newLine = (CLine*)m_ObjectListMgr->getObjectList()[i];
-//             if (newLine != nullptr)
-//             {
-//                 // 计算向量差
-//                 double deltaX = newLine->getPosition2().x - newLine->getPosition1().x;
-//                 double deltaZ = newLine->getPosition2().z - newLine->getPosition1().z;
-
-//                 // 使用 atan2 计算旋转角度（弧度制）
-//                 double angle = atan2(deltaZ, deltaX);
-
-//                 // 将弧度转换为角度
-//                 angleInDegrees = vtkMath::DegreesFromRadians(angle);
-//                 qDebug() << "angleInDegrees is " << angleInDegrees;
-//                 break;
-//             }
-//         }
-//     }
-//     if (angleInDegrees == -1) {
-//         return -1;  // 没有找到有效的线对象
-//     }
-//     return angleInDegrees;
-//     //pWinVtkWidget->rotateCameraClockwiseInXOY(angleInDegrees);
-// }
-
 void MainWindow::on2dCoordSetRightX()
 {
     double angle = AxesRotateX(); // 获取摆正角度
@@ -874,11 +842,20 @@ void MainWindow::on2dCoordSetRightX()
     NotifySubscribe();
 }
 
-// void MainWindow::on2dCoordSetRightY()
-// {
-//     double angle = AxesRotateY(); // 获取摆正角度
-//     if(angle == -1) return;
-//     m_pcsListMgr->m_pNodeTemporary->pPcs->PlanarRotateYinXY(angle);
-//     NotifySubscribe();
-// }
+void MainWindow::on2dCoordSetRightY()
+{
+    double angleX=AxesRotateX();
+    if(angleX == -1) return;
+    double angle=0; // 线段与y轴正方向夹角
+    if(angleX>0){
+        angle=fabs(90-angleX);
+    }else{
+        if(angleX>-90)
+            angle=90+fabs(angleX);
+        else
+            angle=270-fabs(angleX);
+    }
+    m_pcsListMgr->m_pNodeTemporary->pPcs->PlanarRotateYinXY(angle);
+    NotifySubscribe();
+}
 
