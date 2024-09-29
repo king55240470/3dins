@@ -16,7 +16,7 @@ DataWidget::DataWidget(QWidget *parent)
     label3=new QLabel("坐标系:");
     box=new QComboBox();
     box->addItem("机械坐标系");
-    box->addItem("参考依赖坐标系");
+    //box->addItem("参考依赖坐标系");
 
     hlayout->addWidget(label1);
     hlayout->addWidget(label2);
@@ -35,10 +35,23 @@ DataWidget::DataWidget(QWidget *parent)
 
 }
 
-void DataWidget::updateele(int i)
+void DataWidget::getentityindex(int entityindex)
+{
+    index=entityindex;
+}
+
+void DataWidget::updateinfo()
 {
     table->clear();
-        CEntity* entity=m_pMainWin->m_EntityListMgr->m_entityList[i];
+    for(CObject *obj:m_pMainWin->m_ObjectListMgr->getObjectList()){
+        if(obj->GetObjectCName().left(5)=="工件坐标系"){
+            box->addItem(obj->GetObjectCName());
+        }
+    }
+    if(m_pMainWin->m_EntityListMgr->getEntityList().empty()){
+        return;
+    }
+        CEntity* entity=m_pMainWin->m_EntityListMgr->m_entityList[index];
         //table->setItem(count, 0, new QTableWidgetItem(entity->m_strCName));
         label2->setText(entity->m_strCName);
         if(entity->GetUniqueType()==enPoint){

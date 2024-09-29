@@ -28,8 +28,6 @@ MainWindow::MainWindow(QWidget *parent)
     setupUi();
     RestoreWidgets();
     loadManager();
-    connect(pWinElementListWidget,&ElementListWidget::itemSelected,pWinDataWidget,&DataWidget::updateele);
-
     m_nRelyOnWhichCs=m_pcsListMgr->GetBaseCoordSystem();
 
     connect(pWinElementListWidget,&ElementListWidget::itemSelected,pWinToolWidget,&ToolWidget::updateele);
@@ -639,13 +637,13 @@ bool MainWindow::eventFilter(QObject* watched, QEvent* event){
             {
                 button->setText("参考当前坐标系");
                 m_nRelyOnWhichCs = m_pcsListMgr->GetCurCoordSystem();
-                pWinDataWidget->updateele(index); // 更新数据结果窗口
+                pWinDataWidget->getentityindex(index); // 更新数据结果窗口
             }
             else
             {
                 button->setText("参考依赖坐标系");
                 m_nRelyOnWhichCs = m_pcsListMgr->GetBaseCoordSystem();
-                pWinDataWidget->updateele(index);
+                pWinDataWidget->getentityindex(index);
             }
         }
 
@@ -739,8 +737,7 @@ void MainWindow::on2dCoordOriginAuto(){
     }
     //qDebug()<<"执行到这步了";
     m_pcsListMgr->m_pNodeTemporary->setDwAddress((uintptr_t)(pcsTempNode)); // 将节点地址转换为uintptr_t类型并存储
-    //m_ObjectListMgr->Add(m_pcsListMgr->m_pNodeTemporary);
-    m_ObjectListMgr->getObjectList().insert(m_ObjectListMgr->getObjectList().begin()+index+1,m_pcsListMgr->m_pNodeTemporary);
+    m_ObjectListMgr->Add(m_pcsListMgr->m_pNodeTemporary);
     //选中元素,取消其他元素选中
     for(auto const &object:m_ObjectListMgr->getObjectList()){
         object->SetSelected(false);

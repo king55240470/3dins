@@ -213,7 +213,7 @@ void ElementListWidget::onItemClicked(QTreeWidgetItem *item)
         }else{
             m_pMainWin->getObjectListMgr()->getObjectList()[index]->SetSelected(false);
         }
-        emit itemSelected(entityindex); // 发出自定义信号
+        //emit itemSelected(entityindex); // 发出自定义信号
     }
 }
 QList<QTreeWidgetItem*> ElementListWidget:: getSelectedItems(){
