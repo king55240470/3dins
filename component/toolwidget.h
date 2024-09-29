@@ -86,9 +86,14 @@ public:
     void connectActionWithF();
     void updateele();
  public slots:
+     void onConstructPoint();
      void onConstructLine();
      void onConstructCircle();
      void onConstructPlane();
+     void onConstructRectangle();
+     void onConstructCylinder();
+     void onConstructCone();
+     void onConstructSphere();
 
 
 
