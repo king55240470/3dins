@@ -96,21 +96,20 @@ void VtkWidget::reDraw(){
         renderer->RemoveActor(actor);
     }
 
-    // 遍历m_entityList重新绘制
-    // for(auto& entity : m_pMainWin->m_EntityListMgr->getEntityList()){
-    //     addActor(entity->draw());
-    // }
+    QVector<bool> list = m_pMainWin->m_EntityListMgr->getMarkList();//获取标记是否隐藏元素的list
+    QVector<CEntity*> entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
 
-    QVector<bool> list=m_pMainWin->m_EntityListMgr->getMarkList();//获取标记是否隐藏元素的list
-    QVector<CEntity*> entitylist=m_pMainWin->m_EntityListMgr->getEntityList();
-    for(auto i=0;i< entitylist.size();i++){
-        qDebug()<<list[i];
-    }
-    for(auto i=0;i< entitylist.size();i++){
+    // 绘制entitylist每个图形
+    for(auto i = 0;i < entitylist.size();i++){
         if(!list[i]){
             addActor(entitylist[i]->draw());
             //qDebug() << "Adding entity to VTK:" << entity->m_strCName;
         }
+    }
+
+    // 绘制objectlist每个坐标器
+    for(auto object:m_pMainWin->m_ObjectListMgr->getObjectList()){
+
     }
 
     getRenderWindow()->Render(); // 刷新渲染窗口
@@ -128,9 +127,9 @@ void VtkWidget::createAxes()
     axes->GetZAxisCaptionActor2D()->GetCaptionTextProperty()->SetColor(0.0, 0.0, 0.0);
 
     // 设置字体大小
-    axes->GetXAxisCaptionActor2D()->GetCaptionTextProperty()->SetFontSize(10);
-    axes->GetYAxisCaptionActor2D()->GetCaptionTextProperty()->SetFontSize(10);
-    axes->GetZAxisCaptionActor2D()->GetCaptionTextProperty()->SetFontSize(10);
+    axes->GetXAxisCaptionActor2D()->GetCaptionTextProperty()->SetFontSize(5);
+    axes->GetYAxisCaptionActor2D()->GetCaptionTextProperty()->SetFontSize(5);
+    axes->GetZAxisCaptionActor2D()->GetCaptionTextProperty()->SetFontSize(5);
 
     axes->SetTotalLength(0.4, 0.4, 0.4); // 设置轴的长度
     axes->SetConeRadius(0.1); // 设置轴锥体的半径
