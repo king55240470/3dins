@@ -43,6 +43,10 @@ void DataWidget::getentityindex(int entityindex)
 void DataWidget::updateinfo()
 {
     table->clear();
+    if(index==-1){
+        table->clear();
+        return;
+    }
     for(CObject *obj:m_pMainWin->m_ObjectListMgr->getObjectList()){
         if(obj->GetObjectCName().left(5)=="工件坐标系"){
             box->addItem(obj->GetObjectCName());
