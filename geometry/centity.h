@@ -57,6 +57,7 @@ public:
     bool IsType(ENTITY_TYPE);
     // 当遍历entitylist进行绘制时，传入子类的指针，自动调用它们自己的draw
     virtual vtkSmartPointer<vtkActor> draw() {return nullptr;};
+
     void setEntityType(ENTITY_TYPE);
     ENTITY_TYPE getEntityType() const;
 

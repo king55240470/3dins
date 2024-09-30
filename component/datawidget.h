@@ -16,7 +16,6 @@ public:
     explicit DataWidget(QWidget *parent = nullptr);
     void updateinfo();
     void getentityindex(int entityindex);
-    // void UpdateInfo();
 private:
     QVBoxLayout *vlayout;
     QHBoxLayout *hlayout;

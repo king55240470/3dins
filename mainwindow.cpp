@@ -28,7 +28,7 @@ MainWindow::MainWindow(QWidget *parent)
     setupUi();
     RestoreWidgets();
     loadManager();
-    m_nRelyOnWhichCs=m_pcsListMgr->GetBaseCoordSystem();
+    m_nRelyOnWhichCs=csRef;
 
     connect(pWinElementListWidget,&ElementListWidget::itemSelected,pWinToolWidget,&ToolWidget::updateele);
 }
@@ -636,14 +636,14 @@ bool MainWindow::eventFilter(QObject* watched, QEvent* event){
             if(button->text()=="参考依赖坐标系")
             {
                 button->setText("参考当前坐标系");
-                m_nRelyOnWhichCs = m_pcsListMgr->GetCurCoordSystem();
-                pWinDataWidget->getentityindex(index); // 更新数据结果窗口
+                m_nRelyOnWhichCs = csCur;
+                pWinDataWidget->updateinfo(); // 更新数据结果窗口
             }
             else
             {
                 button->setText("参考依赖坐标系");
-                m_nRelyOnWhichCs = m_pcsListMgr->GetBaseCoordSystem();
-                pWinDataWidget->getentityindex(index);
+                m_nRelyOnWhichCs = csRef;
+                pWinDataWidget->updateinfo(); // 更新数据结果窗口
             }
         }
 

@@ -22,6 +22,7 @@ public:
 
     //初始化
     void Initialize();
+    std::list<CPcsNode*>& getPcsNodeList(); // 获取m_PcsNodeList
 
     //坐标系管理
     void AddCoordSys(CPcsNode* pPcsNode); //新增坐标系节点

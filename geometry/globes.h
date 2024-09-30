@@ -63,6 +63,12 @@ enum COMPENSATE_TYPE : int
     eCompensateNone = 0x5
 };
 
+enum RELY_ON_CS_TYPE : int
+{
+    csCur=0,
+    csRef=1
+};
+
 class CPosition{
 public:
     double x;
