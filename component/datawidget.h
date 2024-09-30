@@ -26,6 +26,7 @@ private:
     QTableWidget *table;
     MainWindow *m_pMainWin=nullptr;
     int index=0;
+    bool tempIn=false; // 标志临时坐标系是否在box
 };
 
 #endif // DATAWIDGET_H
