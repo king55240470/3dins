@@ -26,6 +26,7 @@
 #include <vtkSphereSource.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkActor.h>
+#include <vtkProp3D.h>
 #include <vtkProperty.h>
 #include <vtkCamera.h>
 #include <vtkAxesActor.h>
@@ -60,9 +61,6 @@ public:
 
     // 获取渲染器
     vtkSmartPointer<vtkRenderer>& getRenderer();
-
-    // 将draw返回的actor添加到渲染器中
-    void addActor(vtkSmartPointer<vtkActor> actor);
 
     // 在notifsubscribey里更新信息
     void UpdateInfo();

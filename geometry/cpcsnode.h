@@ -9,8 +9,11 @@
 #include <vtkProperty.h>
 #include <vtkCamera.h>
 #include <vtkAxesActor.h>
+#include <vtkAxes.h>
 #include <vtkTextProperty.h>
 #include <vtkCaptionActor2D.h>
+#include <vtkTransform.h>
+#include <vtkTransformFilter.h>
 
 class CPcsNode : public CObject
 {
@@ -38,7 +41,7 @@ public:
     }
 
     // 坐标器的draw()方法
-    vtkSmartPointer<vtkAxesActor> draw();
+    vtkSmartPointer<vtkAxesActor> draw(int x = 0);
 };
 
 #endif // CPCSNODE_H
