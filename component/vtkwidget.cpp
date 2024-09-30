@@ -71,16 +71,12 @@ vtkSmartPointer<vtkRenderer>& VtkWidget::getRenderer(){
     return renderer;
 }
 
-void VtkWidget::addActor(vtkSmartPointer<vtkActor> actor){
-    renderer->AddActor(actor);
-}
-
 void VtkWidget::UpdateInfo(){
     reDraw();
 }
 
 void VtkWidget::reDraw(){
-    // 清除渲染器中的所有 actor
+    // 获取渲染器中的所有 actor
     auto* actorCollection = getRenderer()->GetActors();
 
     // 创建一个迭代器用于遍历actor集合
@@ -89,27 +85,28 @@ void VtkWidget::reDraw(){
     // 初始化迭代器，准备遍历actor集合
     actorCollection->InitTraversal(it);
 
-    // 循环解除actor与渲染器的关联
-    vtkSmartPointer<vtkActor> actor;
-    while ((actor = actorCollection->GetNextActor(it)) != nullptr)
+    // vtkSmartPointer<vtkActor> actor;
+    vtkSmartPointer<vtkProp3D> prop;
+    // 遍历并移除 vtkProp3D 对象（包括 vtkActor 和 vtkAxesActor）
+    while ((prop = actorCollection->GetNextActor(it)) != nullptr)
     {
-        renderer->RemoveActor(actor);
+        renderer->RemoveActor(prop);
     }
 
     QVector<bool> list = m_pMainWin->m_EntityListMgr->getMarkList();//获取标记是否隐藏元素的list
-    QVector<CEntity*> entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
+    // 存储返回的引用对象，用于操作两个list
+    auto entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
+    auto objectlist = m_pMainWin->m_ObjectListMgr->getObjectList();
 
-    // 绘制entitylist每个图形
+    // 遍历entitylist绘制图形并加入渲染器
     for(auto i = 0;i < entitylist.size();i++){
         if(!list[i]){
-            addActor(entitylist[i]->draw());
-            //qDebug() << "Adding entity to VTK:" << entity->m_strCName;
+            getRenderer()->AddActor(entitylist[i]->draw());
         }
     }
-
-    // 绘制objectlist每个坐标器
-    for(auto object:m_pMainWin->m_ObjectListMgr->getObjectList()){
-
+    // 遍历objectlist绘制坐标系并加入渲染器
+    for(auto object:objectlist){
+        getRenderer()->AddActor(object->draw());
     }
 
     getRenderWindow()->Render(); // 刷新渲染窗口
@@ -151,7 +148,7 @@ void VtkWidget::createAxes()
     // // 设置视口
     // orientationWidget->SetViewport(0.0, 0.0, 0.2, 0.2);
 
-    // // orientationWidget->SetEnabled(1);
+    // orientationWidget->SetEnabled(true);
     // orientationWidget->InteractiveOff();
 }
 

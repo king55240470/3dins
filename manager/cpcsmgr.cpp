@@ -34,6 +34,11 @@ void CPcsMgr::Initialize()
     m_PcsNodeList.push_back(pcsNode);
 }
 
+std::list<CPcsNode *> &CPcsMgr::getPcsNodeList()
+{
+    return m_PcsNodeList;
+}
+
 void CPcsMgr::AddCoordSys(CPcsNode* pPcsNode)
 {
     m_PcsNodeList.push_back(pPcsNode);

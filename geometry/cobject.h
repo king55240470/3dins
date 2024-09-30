@@ -3,6 +3,8 @@
 #include <QString>
 #include "cshape.h"
 #include <QString>
+#include <vtkSmartPointer.h>
+#include <vtkAxesActor.h>
 
 class CObject:public CShape
 {
@@ -83,6 +85,9 @@ public:
             >>m_nObjectID;
         return in;
     }
+
+    // 用于绘制坐标系的draw，在cpcsnode中实现，默认参数是为了让entity重载
+    virtual vtkSmartPointer<vtkAxesActor> draw(int x = 0) {return nullptr;};
 };
 
 #endif // COBJECT_H
