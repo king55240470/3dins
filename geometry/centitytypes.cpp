@@ -421,22 +421,32 @@ void CCone::setAxis(const QVector4D &newAxis)
     axis = newAxis;
 }
 
-double CDisrtance::getOntolerance()
+double CDistance::getUptolerance()
 {
-    return ontolerance;
+    return uptolerance;
 }
 
-double CDisrtance::getUndertolerance()
+double CDistance::getUndertolerance()
 {
     return undertolerance;
 }
 
-void CDisrtance::setOntolerance(double on)
+void CDistance::setUptolerance(double on)
 {
-    ontolerance=on;
+    uptolerance=on;
 }
 
-void CDisrtance::setUndertolerance(double under)
+void CDistance::setUndertolerance(double under)
 {
     undertolerance=under;
+}
+
+void CDistance::setbegin(const CPosition &newbegin)
+{
+    begin=newbegin;
+}
+
+void CDistance::setend(const CPosition &newend)
+{
+    end=newend;
 }
