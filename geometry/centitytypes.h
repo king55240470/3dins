@@ -388,13 +388,27 @@ public:
     void setVertex(const CPosition &newVertex);
 };
 
-class CDisrtance : public CEntity{
-    double ontolerance;
+class CDistance : public CEntity{
+    double uptolerance;
     double undertolerance;
+    CPosition begin;
+    CPosition end;
 public:
-    double getOntolerance();
+    CDistance(){
+        uptolerance=0.0;
+        undertolerance=0.0;
+        begin.x=0;
+        begin.y=0;
+        begin.z=0;
+        end.x=0;
+        end.y=0;
+        end.z=0;
+    }
+    double getUptolerance();
     double getUndertolerance();
-    void setOntolerance(double on);
+    void setUptolerance(double on);
     void setUndertolerance(double under);
+    void setbegin(const CPosition & newbegin);
+    void setend(const CPosition & newend);
 };
 #endif // CENTITYTYPES_H

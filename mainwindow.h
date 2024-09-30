@@ -100,8 +100,7 @@ public:
     void showPresetElemWidget(int);
 
 public:
-    // RELY_ON_CS_TYPE m_nRelyOnWhichCs;
-    CPcs* m_nRelyOnWhichCs; // 状态栏的参考坐标系
+    RELY_ON_CS_TYPE m_nRelyOnWhichCs;
 
     //坐标系摆正
     double AxesRotateX(); // X-Y平面, 线段与X轴正方向之间的夹角
