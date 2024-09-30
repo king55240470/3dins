@@ -387,6 +387,7 @@ public:
     CPosition getVertex() const;
     void setVertex(const CPosition &newVertex);
 };
+
 class CDistance : public CEntity{
     double uptolerance;
     double undertolerance;
