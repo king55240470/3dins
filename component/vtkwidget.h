@@ -72,10 +72,10 @@ public:
     void createAxes();
 
     // 切换相机视角
-    void onTopView();
-    void onRightView();
-    void onFrontView();
-    void ononIsometricView();
+    void onTopView(); // 俯视
+    void onRightView(); // 右侧
+    void onFrontView(); // 正视
+    void ononIsometricView(); // 旋转立体视角
 
 private:
     PointCloudPtr cloudptr; // 点云智能指针
