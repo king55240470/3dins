@@ -43,11 +43,38 @@ void DataWidget::getentityindex(int entityindex)
 void DataWidget::updateinfo()
 {
     table->clear();
+    if(index==-1){
+        table->clear();
+        return;
+    }
+
     for(CObject *obj:m_pMainWin->m_ObjectListMgr->getObjectList()){
-        if(obj->GetObjectCName().left(5)=="工件坐标系"){
-            box->addItem(obj->GetObjectCName());
+        QString objectName = obj->GetObjectCName();
+        if(m_pMainWin->m_pcsListMgr->bTempPcsNodeInUse()){
+            if(tempIn==true)break;
+            if(objectName.left(5) == "临时坐标系"){
+                tempIn=true;
+                box->addItem(objectName);
+            }
+        }else{
+            if(tempIn){
+                if(objectName.left(5) == "工件坐标系"){
+                    box->removeItem(box->findText("临时坐标系"));
+                    tempIn=false;
+                    if (box->findText(objectName) == -1) {  // -1表示未找到重复
+                        box->addItem(objectName);
+                    }
+                }
+            }else{
+                if(objectName.left(5) == "工件坐标系"){
+                    if (box->findText(objectName) == -1) {  // -1表示未找到重复
+                        box->addItem(objectName);
+                    }
+                }
+            }
         }
     }
+
     if(m_pMainWin->m_EntityListMgr->getEntityList().empty()){
         return;
     }

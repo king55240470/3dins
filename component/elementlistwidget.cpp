@@ -22,18 +22,14 @@ ElementListWidget::ElementListWidget(QWidget *parent)
     // 设置头部项
     treeWidgetNames->setHeaderItem(headerItem);
     //设置为多选模式
-    treeWidgetNames->setSelectionMode(QAbstractItemView::MultiSelection);
+    //treeWidgetNames->setSelectionMode(QAbstractItemView::MultiSelection);
 
     // 元素信息列表
     treeWidgetInfo = new QTreeWidget(this);
     treeWidgetInfo->setHeaderLabel("元素");
-    /*QStringList headers;
-    headers << "元素：";
-    treeWidgetInfo->setHeaderLabels(headers);*/
 
     //工具栏
     toolBar = new QToolBar(this);
-    //addToolBar(Qt::LeftToolBarArea,toolBar);
     // 后期设置 只允许 左右停靠
     toolBar->setAllowedAreas(Qt::LeftToolBarArea | Qt::RightToolBarArea);
     // 设置浮动
@@ -177,7 +173,7 @@ void ElementListWidget::upadteelementlist()
     eleobjlist.clear();
     for(const auto& obj :m_pMainWin->m_ObjectListMgr->getObjectList()){
         CreateEllipse(obj);
-        obj->SetSelected(false);
+        //obj->SetSelected(false);
         QString name=obj->GetObjectCName();
         if(name.left(5)!="临时坐标系"&&name.left(5)!="工件坐标系"){
             eleobjlist.push_back(obj);
@@ -186,34 +182,38 @@ void ElementListWidget::upadteelementlist()
     qDebug()<<eleobjlist.size()<<"这里";
 }
 
-void ElementListWidget::onItemClicked(QTreeWidgetItem *item)
-{
-    CObject *obj = item->data(0, Qt::UserRole).value<CObject*>();
-    int entityindex=-1;
-    for(int i=0;i<eleobjlist.size();i++){
-        if(eleobjlist[i]==obj){
-            entityindex=i;
-        }
-    }
-    int index=-1;
+void ElementListWidget::onItemClicked()
+{  
     for(int i=0;i<m_pMainWin->getObjectListMgr()->getObjectList().size();i++){
-        if(m_pMainWin->getObjectListMgr()->getObjectList()[i]==obj){
-            index=i;
-        }
+        m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(false);
     }
-    QString name1="临时坐标系";
-    QString name2="工件坐标系";
-    QString name=obj->GetObjectCName();
-    if(entityindex==-1){
-        return;
-    }
-    if(name!=name1&&name!=name2){
-        if(m_pMainWin->getObjectListMgr()->getObjectList()[index]->IsSelected()==false){
-            m_pMainWin->getObjectListMgr()->getObjectList()[index]->SetSelected(true);
-        }else{
-            m_pMainWin->getObjectListMgr()->getObjectList()[index]->SetSelected(false);
+    for(QTreeWidgetItem*item:getSelectedItems()){
+        CObject *obj = item->data(0, Qt::UserRole).value<CObject*>();
+        int index=-1;
+        int entityindex=-1;
+        for(int i=0;i<m_pMainWin->getObjectListMgr()->getObjectList().size();i++){
+            if(m_pMainWin->getObjectListMgr()->getObjectList()[i]==obj){
+                index=i;
+            }
         }
-        //emit itemSelected(entityindex); // 发出自定义信号
+        for(int i=0;i<m_pMainWin->m_EntityListMgr->getEntityList().size();i++){
+            if(m_pMainWin->m_EntityListMgr->getEntityList()[i]==obj){
+                entityindex=i;
+            }
+        }
+        QString name1="临时坐标系";
+        QString name2="工件坐标系";
+        QString name=obj->GetObjectCName();
+        if(name!=name1&&name!=name2){
+            if(m_pMainWin->getObjectListMgr()->getObjectList()[index]->IsSelected()==false){
+                m_pMainWin->getObjectListMgr()->getObjectList()[index]->SetSelected(true);
+            }else{
+                m_pMainWin->getObjectListMgr()->getObjectList()[index]->SetSelected(false);
+            }
+            //emit itemSelected(entityindex); // 发出自定义信号
+            m_pMainWin->getPWinDataWidget()->getentityindex(entityindex);
+            m_pMainWin->getPWinDataWidget()->updateinfo();
+        }
     }
 }
 QList<QTreeWidgetItem*> ElementListWidget:: getSelectedItems(){
@@ -222,3 +222,22 @@ QList<QTreeWidgetItem*> ElementListWidget:: getSelectedItems(){
 QVector<CObject*> ElementListWidget::getEleobjlist(){
     return eleobjlist;
 }
+
+void ElementListWidget::keyPressEvent(QKeyEvent *event)
+{
+    if (event->key() == Qt::Key_Control) {
+        ctrlPressed = true; // 控制状态为按下
+        treeWidgetNames->setSelectionMode(QAbstractItemView::MultiSelection); // 切换为多选模式
+    }
+    QWidget::keyPressEvent(event);
+}
+
+void ElementListWidget::keyReleaseEvent(QKeyEvent *event)
+{
+    if (event->key() == Qt::Key_Control) {
+        ctrlPressed = false; // 控制状态为释放
+        treeWidgetNames->setSelectionMode(QAbstractItemView::SingleSelection); // 切换为单选模式
+    }
+    QWidget::keyReleaseEvent(event);
+}
+

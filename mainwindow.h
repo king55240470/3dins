@@ -80,6 +80,7 @@ public:
     void loadManager();
     ElementListWidget *getPWinElementListWidget();
     VtkWidget * getPWinVtkWidget();
+    DataWidget *getPWinDataWidget();
 
     //slots
     void on2dCoordOriginAuto(); // 创建坐标系
