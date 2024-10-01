@@ -17,10 +17,12 @@
 #include <QContextMenuEvent>
 #include<QToolBar>
 #include <QVector>
+#include <QKeyEvent>
 //#include "manager/centitymgr.h"
 //#include <unordered_map>
 //#include "geometry/globes.h"
 #include "mainwindow.h"
+#include "DataWidget.h"
 class ElementListWidget : public QWidget
 {
     Q_OBJECT
@@ -37,6 +39,8 @@ public:
     void upadteelementlist();
     QList<QTreeWidgetItem*> getSelectedItems();
     QVector<CObject*> getEleobjlist();
+    void keyPressEvent(QKeyEvent *event) override;
+    void keyReleaseEvent(QKeyEvent *event) override;
 private:
     QTreeWidget *treeWidgetNames;
     QTreeWidget *treeWidgetInfo;
@@ -50,7 +54,8 @@ private:
     static int pcscount;
     QVector<CObject*>eleobjlist;
     //std::unordered_map<QTreeWidgetItem*, size_t> itemToIndexMap;
-    void onItemClicked(QTreeWidgetItem *item);
+    void onItemClicked();
+    bool ctrlPressed = false;
 signals:
     void itemSelected(int index);
 };

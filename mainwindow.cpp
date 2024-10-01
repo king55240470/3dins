@@ -782,6 +782,11 @@ VtkWidget *MainWindow:: getPWinVtkWidget(){
     return pWinVtkWidget;
 }
 
+DataWidget *MainWindow::getPWinDataWidget()
+{
+    return pWinDataWidget;
+}
+
 void MainWindow::onTopViewClicked()
 {
     pWinVtkWidget->onTopView();
