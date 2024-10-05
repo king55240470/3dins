@@ -10,37 +10,58 @@
 #include <vtkCylinderSource.h>
 #include <vtkConeSource.h>
 #include <vtkProperty.h>
+#include <vtkVertexGlyphFilter.h>
 
 // 点类的draw()
 vtkSmartPointer<vtkActor> CPoint::draw(){
     // 创建点集
     auto point = vtkSmartPointer<vtkPoints>::New();
-    point->InsertNextPoint(m_pt.x, m_pt.y, m_pt.z);
+
+    // 获取图形在参考坐标系下的坐标(预置时输入的)，并计算得到他在机械坐标系下的位置(全局坐标)
+    CPosition pos(m_pt.x, m_pt.y, m_pt.z);
+    QVector4D posVec = GetRefCoord()->m_mat * QVector4D(pos.x, pos.y, pos.z, 1);
+    CPosition globalPos(posVec.x(), posVec.y(), posVec.z());
+
+    point->InsertNextPoint(globalPos.x, globalPos.y, globalPos.z);
 
     // 创建几何图形容器并设置点集
     vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
     polyData->SetPoints(point);
 
+    // 创建一个顶点,用过滤器将提取的点转化为更好观察的图形(glyph)，改善可视化效果
+    vtkSmartPointer<vtkVertexGlyphFilter> glyphFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
+    glyphFilter->SetInputData(polyData);
+    glyphFilter->Update();
+
     // 创建映射器
     vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-    mapper->SetInputData(polyData);
-    mapper->SetColorMode(Qt::black);
+    mapper->SetInputConnection(glyphFilter->GetOutputPort());
 
     // 创建执行器，添加mapper
     vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
-    actor->GetProperty()->SetPointSize(10); // 设置点的大小
-    actor->GetProperty()->SetLineWidth(3);
+    actor->GetProperty()->SetPointSize(7); // 设置点的大小
+    actor->GetProperty()->SetColor(0, 0, 0);
 
     return actor;
 }
 
 // 线类的draw
 vtkSmartPointer<vtkActor> CLine::draw(){
+    // 获取首尾两个点在参考坐标系下的坐标(预置时输入的)，
+    // 并计算得到他在机械坐标系下的位置(全局坐标)
+    CPosition pos_begin(begin.x, begin.y, begin.z);
+    QVector4D posVec_begin = GetRefCoord()->m_mat * QVector4D(pos_begin.x, pos_begin.y, pos_begin.z, 1);
+    CPosition glbPos_begin(posVec_begin.x(), posVec_begin.y(), posVec_begin.z());
+
+    CPosition pos_end(end.x, end.y, end.z);
+    QVector4D posVec_end = GetRefCoord()->m_mat * QVector4D(pos_end.x, pos_end.y, pos_end.z, 1);
+    CPosition glbPos_end(posVec_end.x(), posVec_end.y(), posVec_end.z());
+
     // 创建点集，并插入定义线的两个点
     auto points = vtkSmartPointer<vtkPoints>::New();
-    points->InsertNextPoint(begin.x, begin.y, begin.z);
-    points->InsertNextPoint(end.x, end.y, end.z);
+    points->InsertNextPoint(glbPos_begin.x, glbPos_begin.y, glbPos_begin.z);
+    points->InsertNextPoint(glbPos_end.x, glbPos_end.y, glbPos_end.z);
 
     // 创建线源
     auto lines = vtkSmartPointer<vtkCellArray>::New();
@@ -70,11 +91,16 @@ vtkSmartPointer<vtkActor> CLine::draw(){
 
 // 圆类的draw()
 vtkSmartPointer<vtkActor> CCircle::draw(){
+    // 获取图形在参考坐标系下的坐标(预置时输入的)，并计算得到他在机械坐标系下的位置(全局坐标)
+    CPosition pos(m_pt.x, m_pt.y, m_pt.z);
+    QVector4D posVec = GetRefCoord()->m_mat * QVector4D(pos.x, pos.y, pos.z, 1);
+    CPosition globalPos(posVec.x(), posVec.y(), posVec.z());
+
     // 创建圆上的点集
     auto points = vtkSmartPointer<vtkPoints>::New();
     const int numPoints = 100; // 圆的点数，更多点数会更平滑
     const double radius = getDiameter()/2; // 圆的半径
-    auto center = getCenter();
+    auto center = globalPos;
     for (int i = 0; i < numPoints; ++i)
     {
         double theta = 2.0 * vtkMath::Pi() * static_cast<double>(i) / static_cast<double>(numPoints);
@@ -118,9 +144,14 @@ vtkSmartPointer<vtkActor> CCircle::draw(){
 
 // 平面的draw()
 vtkSmartPointer<vtkActor> CPlane::draw(){
+    // 获取图形在参考坐标系下的坐标(预置时输入的)，并计算得到他在机械坐标系下的位置(全局坐标)
+    CPosition pos(getCenter().x, getCenter().y, getCenter().z);
+    QVector4D posVec = GetRefCoord()->m_mat * QVector4D(pos.x, pos.y, pos.z, 1);
+    CPosition globalPos(posVec.x(), posVec.y(), posVec.z());
+
     // 创建平面源
     vtkSmartPointer<vtkPlaneSource> planeSource = vtkSmartPointer<vtkPlaneSource>::New();
-    planeSource->SetCenter(getCenter().x, getCenter().y, getCenter().z); // 设置平面中心
+    planeSource->SetCenter(globalPos.x, globalPos.y, globalPos.z); // 设置平面中心
 
     QVector4D normalVec = getNormal(); // 存储getNormal返回的临时normal对象
     planeSource->SetNormal(normalVec.x(), normalVec.y(), normalVec.z()); // 设置平面法线
@@ -144,9 +175,14 @@ vtkSmartPointer<vtkActor> CPlane::draw(){
 
 // 球类的draw()
 vtkSmartPointer<vtkActor> CSphere::draw(){
-    // 创建球体
+    // 获取图形在参考坐标系下的坐标(预置时输入的)，并计算得到他在机械坐标系下的位置(全局坐标)
+    CPosition pos(getCenter().x, getCenter().y, getCenter().z);
+    QVector4D posVec = GetRefCoord()->m_mat * QVector4D(pos.x, pos.y, pos.z, 1);
+    CPosition globalPos(posVec.x(), posVec.y(), posVec.z());
+
+    // 创建球体源
     auto sphere = vtkSmartPointer<vtkSphereSource>::New();
-    sphere->SetCenter(CSphere::getCenter().x, CSphere::getCenter().y, CSphere::getCenter().z);
+    sphere->SetCenter(globalPos.x, globalPos.y, globalPos.z);
     sphere->SetRadius(CSphere::getDiameter() / 2);
     sphere->SetPhiResolution(100);
     sphere->SetThetaResolution(100);
@@ -166,9 +202,14 @@ vtkSmartPointer<vtkActor> CSphere::draw(){
 
 // 圆柱的draw()
 vtkSmartPointer<vtkActor> CCylinder::draw(){
+    // 获取图形在参考坐标系下的坐标(预置时输入的)，并计算得到他在机械坐标系下的位置(全局坐标)
+    CPosition pos(getBtm_center().x, getBtm_center().y, getBtm_center().z);
+    QVector4D posVec = GetRefCoord()->m_mat * QVector4D(pos.x, pos.y, pos.z, 1);
+    CPosition globalPos(posVec.x(), posVec.y(), posVec.z());
+
     // 创建圆柱体源
     auto cylinder = vtkSmartPointer<vtkCylinderSource>::New();
-    cylinder->SetCenter(getBtm_center().x, getBtm_center().y, getBtm_center().z);
+    cylinder->SetCenter(globalPos.x, globalPos.y, globalPos.z);
     cylinder->SetRadius(getDiameter() / 2);
     cylinder->SetResolution(100);
 
@@ -187,9 +228,14 @@ vtkSmartPointer<vtkActor> CCylinder::draw(){
 
 // 圆锥的draw()
 vtkSmartPointer<vtkActor> CCone::draw(){
+    // 获取图形在参考坐标系下的坐标(预置时输入的)，并计算得到他在机械坐标系下的位置(全局坐标)
+    CPosition pos(getVertex().x, getVertex().y, getVertex().z);
+    QVector4D posVec = GetRefCoord()->m_mat * QVector4D(pos.x, pos.y, pos.z, 1);
+    CPosition globalPos(posVec.x(), posVec.y(), posVec.z());
+
     // 创建圆锥源
     auto cone = vtkSmartPointer<vtkConeSource>::New();
-    cone->SetCenter(getVertex().x, getVertex().y, getVertex().z);
+    cone->SetCenter(globalPos.x, globalPos.y, globalPos.z);
     cone->SetRadius(getRadian());
     cone->SetHeight(getCone_height());
     cone->SetResolution(100);
