@@ -28,5 +28,6 @@
         <file>component/viewangle/isometric.png</file>
         <file>component/viewangle/right.png</file>
         <file>component/viewangle/up.png</file>
+        <file>component/construct/distance.png</file>
     </qresource>
 </RCC>
