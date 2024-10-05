@@ -497,3 +497,19 @@ void CDistance::setend(const CPosition &newend)
 {
     end=newend;
 }
+
+double CDistance::getdistance()
+{
+    double distance = sqrt(pow(end.x - begin.x, 2) +
+                           pow(end.y - begin.y, 2) +
+                           pow(end.z - begin.z, 2));
+    return distance;
+}
+
+void CDistance::judge()
+{
+    double dis=abs(uptolerance-undertolerance);
+    if(getdistance()<=dis){
+        qualified=true;
+    }
+}
