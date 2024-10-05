@@ -72,20 +72,20 @@ ToolWidget::ToolWidget(QWidget *parent)
        resize(400,250);
 
         m_nSaveActionNum=5;
-        m_nConstructActionNum=8;
+        m_nConstructActionNum=9;
         m_nFindActionNum=8;
         m_nCoordActionNum=3;
         m_nViewAngleActionNum=4;
 
         //静态保存图片路径和名称
         save_action_iconpath_list_<<":/component/save/excel.png"<< ":/component/save/pdf.jpg"<< ":/component/save/txt.jpg"<< ":/component/save/word.jpg"<<":/component/save/image.jpg";
-        construct_action_iconpath_list_<<":/component/construct/point.jpg"<<":/component/construct/line.jpg"<<":/component/construct/circle.jpg"<<   ":/component/construct/plan.jpg"<<  ":/component/construct/rectangle.jpg"<<":/component/construct/cylinder.jpg"<< ":/component/construct/cone.jpg"<< ":/component/construct/sphere.jpg";
+        construct_action_iconpath_list_<<":/component/construct/point.jpg"<<":/component/construct/line.jpg"<<":/component/construct/circle.jpg"<<   ":/component/construct/plan.jpg"<<  ":/component/construct/rectangle.jpg"<<":/component/construct/cylinder.jpg"<< ":/component/construct/cone.jpg"<< ":/component/construct/sphere.jpg"<<":/component/construct/distance.png";
         find_action_iconpath_list_<<":/component/construct/point.jpg"<<":/component/construct/line.jpg"<<":/component/construct/circle.jpg"<<   ":/component/construct/plan.jpg"<<  ":/component/construct/rectangle.jpg"<<":/component/construct/cylinder.jpg"<< ":/component/construct/cone.jpg"<< ":/component/construct/sphere.jpg";
         coord_action_iconpath_list_<<":/component/coord/create.png"<<  ":/component/coord/spin.jpg"<<":/component/coord/save.png";
         view_angle_action_iconpath_list_<<":/component/viewangle/front.png"<<":/component/viewangle/up.png"<<":/component/viewangle/right.png"<<":/component/viewangle/isometric.png";
 
         save_action_name_list_<<"excel"<< "pdf"<< "txt"<< "word"<<"image";
-        construct_action_name_list_<<"点"<<"线"<<"圆"<<"平面"<<"矩形"<<"圆柱"<<"圆锥"<<"球形";
+        construct_action_name_list_<<"点"<<"线"<<"圆"<<"平面"<<"矩形"<<"圆柱"<<"圆锥"<<"球形"<<"距离";
         find_action_name_list_<<"点"<<"线"<<"圆"<<"平面"<<"矩形"<<"圆柱"<<"圆锥"<<"球形";;
         coord_action_name_list_<<"创建坐标系"<<"旋转坐标系"<<"保存坐标系";
         view_angle_action_name_list_<<"主视角"<<"俯视角"<<"侧视角"<<"立体视角";
@@ -455,6 +455,7 @@ void ToolWidget::connectActionWithF(){
     connect(construct_actions_[construct_action_name_list_.indexOf("圆柱")],&QAction::triggered,this,&  ToolWidget::onConstructCylinder);
     connect(construct_actions_[construct_action_name_list_.indexOf("圆锥")],&QAction::triggered,this,&  ToolWidget::onConstructCone);
     connect(construct_actions_[construct_action_name_list_.indexOf("球形")],&QAction::triggered,this,&  ToolWidget::onConstructSphere);
+    connect(construct_actions_[construct_action_name_list_.indexOf("距离")],&QAction::triggered,this,&  ToolWidget::onConstructDistance);
 
     //保存
     connect(save_actions_[save_action_name_list_.indexOf("excel")],&QAction::triggered,&  tool_widget::onSaveExcel);
@@ -983,26 +984,20 @@ CircleInfo calculateCircle(const CPosition &A, const CPosition &B, const CPositi
     QVector4D A_vec(A.x, A.y, A.z, 1);
     QVector4D B_vec(B.x, B.y, B.z, 1);
     QVector4D C_vec(C.x, C.y, C.z, 1);
-    qDebug()<<"ABC";
-    qDebug()<<A_vec;
-    qDebug()<<B_vec;
-    qDebug()<<C_vec;
+
     // 计算向量 AB 和 AC
     QVector4D AB = B_vec - A_vec;
     QVector4D AC = C_vec - A_vec;
-    qDebug()<<"AB,AC";
-    qDebug()<<AB<<AC;
+
 
     // 计算法向量 N
     QVector4D N = crossProduct(AB, AC);
     if(N.length()<=1e-6){
         Circle.radius=0;
     }
-    qDebug()<<"N";
-    qDebug()<<N;
+
     QVector4D dirN = N.normalized();
-    qDebug()<<"dirN";
-    qDebug()<<dirN;
+
     // 更新圆心
     Circle.normal=dirN;
 
@@ -1219,11 +1214,6 @@ void ToolWidget::onConstructCylinder(){
     CPosition C=m_selected_points[2]->GetPt();
     CPosition D=m_selected_points[3]->GetPt();
 
-    qDebug()<<m_selected_points[0]->getId();
-    qDebug()<<m_selected_points[1]->getId();
-    qDebug()<<m_selected_points[2]->getId();
-    qDebug()<<m_selected_points[3]->getId();
-
 
     CircleInfo Circle=calculateCircle(A,B,C);
     if(Circle.radius<1e-6){
@@ -1232,17 +1222,14 @@ void ToolWidget::onConstructCylinder(){
      double radius=Circle.radius;
      QVector4D circleCenter=Circle.center;
     QVector4D normal = Circle.normal;
-    qDebug()<<Circle.center;
-    qDebug()<<Circle.normal;
-    qDebug()<<Circle.radius;
+
         // 计算底面圆心和第四个点的距离
     double distanceToD =distanceToPlane(toQVector4D(D),circleCenter,normal);
-    qDebug()<<distanceToD;
+
         // 计算法线并沿法线延伸距离
     QVector4D topCircleCenter=circleCenter+normal*distanceToD;
     QVector4D middleCenter=circleCenter+normal*(distanceToD/2);
-    qDebug()<<topCircleCenter;
-    qDebug()<<middleCenter;
+
      if(isPointInCircle(toCPosition(topCircleCenter),radius,D)){
             m_pMainWin->OnPresetCylinder(toCPosition(middleCenter),normal,fabs(distanceToD),2*radius);
     }else{
@@ -1251,7 +1238,46 @@ void ToolWidget::onConstructCylinder(){
 
 
 }
-void ToolWidget::onConstructCone(){}
+void ToolWidget::onConstructCone(){
+
+    if(m_point_index.size()<3||m_point_index.size()>5)
+    {
+        WrongWidget("圆锥由三个点或四个点组成");
+        return ;
+    }
+
+
+    CPosition A=m_selected_points[0]->GetPt();
+    CPosition B=m_selected_points[1]->GetPt();
+    CPosition C=m_selected_points[2]->GetPt();
+
+    QVector4D vecA(A.x, A.y, A.z, 1.0);
+    QVector4D vecB(B.x, B.y, B.z, 1.0);
+    QVector4D vecC(C.x, C.y, C.z, 1.0);
+
+    CPosition posCenter(A); // 底面中心
+    QVector4D bottomPoint(B.x,B.y , B.z,0); // 底面圆上的一点
+    QVector4D topVertex(C.x, C.y, C.z,0);  // 圆锥顶点
+
+
+    // 计算轴向
+    QVector4D axis = (topVertex - QVector4D(posCenter.x, posCenter.y, posCenter.z,0));
+    QVector4D axisVector(axis.x(), axis.y(), axis.z(), 0);  // 添加 0 作为第四个分量
+
+    // 计算完整高度
+    double fullH = axis.length();  // 结果是 8
+    qDebug()<<fullH;
+    // 计算部分高度（可自定义，假设为完整高度的一半）
+    double partH = fullH; // 结果是 4
+
+    // 计算角度
+    double radius = (bottomPoint - QVector4D(posCenter.x, posCenter.y, posCenter.z,0)).length(); // 结果是 5
+    double angle = qRadiansToDegrees(atan(radius / fullH)); // 计算夹角
+    qDebug()<<radius<<"    "<<angle;
+    qDebug()<<toQVector4D(posCenter);qDebug()<<bottomPoint<<topVertex;
+    // 调用函数
+    m_pMainWin->OnPresetCone(posCenter, axisVector, partH, fullH, angle);
+}
 void ToolWidget::onConstructSphere(){
 
     if(m_point_index.size()!=4)
@@ -1338,6 +1364,9 @@ void ToolWidget::onConstructSphere(){
     }
 
 }
+void ToolWidget::onConstructDistance(){
+    qDebug()<<"点击了构造距离";
+}
 void ToolWidget::updateele(){
 
     ElementListWidget* p_elementListwidget= m_pMainWin->getPWinElementListWidget();
@@ -1384,7 +1413,7 @@ void ToolWidget::updateele(){
         delete []index;
         delete []entityindex;
     }
-    qDebug()<<"toolwidget::updateele";
+
 }
 void ToolWidget::NotifySubscribe(){
     qDebug()<<"ToolWidget::NotifySubscribe()";
