@@ -393,6 +393,7 @@ class CDistance : public CEntity{
     double undertolerance;
     CPosition begin;
     CPosition end;
+    bool qualified=false;
 public:
     CDistance(){
         uptolerance=0.0;
@@ -410,5 +411,7 @@ public:
     void setUndertolerance(double under);
     void setbegin(const CPosition & newbegin);
     void setend(const CPosition & newend);
+    double getdistance();
+    void judge();
 };
 #endif // CENTITYTYPES_H
