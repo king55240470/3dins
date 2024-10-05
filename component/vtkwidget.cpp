@@ -104,9 +104,11 @@ void VtkWidget::reDraw(){
             getRenderer()->AddActor(entitylist[i]->draw());
         }
     }
+
     // 遍历objectlist绘制坐标系并加入渲染器
     for(auto object:objectlist){
-        getRenderer()->AddActor(object->draw());
+        if(object)
+            getRenderer()->AddActor(object->draw());
     }
 
     getRenderWindow()->Render(); // 刷新渲染窗口
