@@ -212,6 +212,7 @@ vtkSmartPointer<vtkActor> CCylinder::draw(){
     cylinder->SetCenter(globalPos.x, globalPos.y, globalPos.z);
     cylinder->SetRadius(getDiameter() / 2);
     cylinder->SetResolution(100);
+    cylinder->SetHeight(getHeight());
 
     // 创建映射器
     auto mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
