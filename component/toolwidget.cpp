@@ -1352,7 +1352,7 @@ void ToolWidget::updateele(){
         int *entityindex=new int[selectedItems.size()];
         int count_index=0;
         int count_entityindex=0;
-
+        qDebug()<<"被选中的元素有："<<selectedItems.size();
         for(QTreeWidgetItem *selectedItem:selectedItems)
         {
 

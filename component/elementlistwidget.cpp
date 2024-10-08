@@ -183,11 +183,15 @@ void ElementListWidget::upadteelementlist()
 }
 
 void ElementListWidget::onItemClicked()
-{  
-    for(int i=0;i<m_pMainWin->getObjectListMgr()->getObjectList().size();i++){
-        m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(false);
+{
+    QList<QTreeWidgetItem*> selectedItems = getSelectedItems();
+    if(selectedItems.size()==1){
+        for(int i=0;i<m_pMainWin->getObjectListMgr()->getObjectList().size();i++){
+            m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(false);
+        }
     }
-    for(QTreeWidgetItem*item:getSelectedItems()){
+    qDebug()<<"被选中元素数"<<selectedItems.size();
+    for(QTreeWidgetItem*item:selectedItems){
         CObject *obj = item->data(0, Qt::UserRole).value<CObject*>();
         int index=-1;
         int entityindex=-1;
@@ -205,16 +209,13 @@ void ElementListWidget::onItemClicked()
         QString name2="工件坐标系";
         QString name=obj->GetObjectCName();
         if(name!=name1&&name!=name2){
-            if(m_pMainWin->getObjectListMgr()->getObjectList()[index]->IsSelected()==false){
-                m_pMainWin->getObjectListMgr()->getObjectList()[index]->SetSelected(true);
-            }else{
-                m_pMainWin->getObjectListMgr()->getObjectList()[index]->SetSelected(false);
-            }
+           m_pMainWin->getObjectListMgr()->getObjectList()[index]->SetSelected(true);
             //emit itemSelected(entityindex); // 发出自定义信号
             m_pMainWin->getPWinDataWidget()->getentityindex(entityindex);
             m_pMainWin->getPWinDataWidget()->updateinfo();
         }
     }
+    m_pMainWin->getPWinToolWidget()->updateele();
 }
 QList<QTreeWidgetItem*> ElementListWidget:: getSelectedItems(){
     return treeWidgetNames->selectedItems();

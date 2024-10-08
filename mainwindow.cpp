@@ -30,7 +30,7 @@ MainWindow::MainWindow(QWidget *parent)
     loadManager();
     m_nRelyOnWhichCs=csRef;
 
-    connect(pWinElementListWidget,&ElementListWidget::itemSelected,pWinToolWidget,&ToolWidget::updateele);
+    //connect(pWinElementListWidget,&ElementListWidget::onItemClicked,pWinToolWidget,&ToolWidget::updateele);
 }
 
 void MainWindow::setupUi(){
@@ -786,6 +786,13 @@ DataWidget *MainWindow::getPWinDataWidget()
 {
     return pWinDataWidget;
 }
+
+ToolWidget *MainWindow::getPWinToolWidget()
+{
+    return pWinToolWidget;
+}
+
+
 
 void MainWindow::onTopViewClicked()
 {
