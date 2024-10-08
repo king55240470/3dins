@@ -47,11 +47,12 @@ static constexpr auto qt_meta_stringdata_CLASSToolWidgetENDCLASS = QtMocHelpers:
     "onConstructRectangle",
     "onConstructCylinder",
     "onConstructCone",
-    "onConstructSphere"
+    "onConstructSphere",
+    "onConstructDistance"
 );
 #else  // !QT_MOC_HAS_STRING_DATA
 struct qt_meta_stringdata_CLASSToolWidgetENDCLASS_t {
-    uint offsetsAndSizes[20];
+    uint offsetsAndSizes[22];
     char stringdata0[11];
     char stringdata1[17];
     char stringdata2[1];
@@ -62,6 +63,7 @@ struct qt_meta_stringdata_CLASSToolWidgetENDCLASS_t {
     char stringdata7[20];
     char stringdata8[16];
     char stringdata9[18];
+    char stringdata10[20];
 };
 #define QT_MOC_LITERAL(ofs, len) \
     uint(sizeof(qt_meta_stringdata_CLASSToolWidgetENDCLASS_t::offsetsAndSizes) + ofs), len 
@@ -76,7 +78,8 @@ Q_CONSTINIT static const qt_meta_stringdata_CLASSToolWidgetENDCLASS_t qt_meta_st
         QT_MOC_LITERAL(80, 20),  // "onConstructRectangle"
         QT_MOC_LITERAL(101, 19),  // "onConstructCylinder"
         QT_MOC_LITERAL(121, 15),  // "onConstructCone"
-        QT_MOC_LITERAL(137, 17)   // "onConstructSphere"
+        QT_MOC_LITERAL(137, 17),  // "onConstructSphere"
+        QT_MOC_LITERAL(155, 19)   // "onConstructDistance"
     },
     "ToolWidget",
     "onConstructPoint",
@@ -87,7 +90,8 @@ Q_CONSTINIT static const qt_meta_stringdata_CLASSToolWidgetENDCLASS_t qt_meta_st
     "onConstructRectangle",
     "onConstructCylinder",
     "onConstructCone",
-    "onConstructSphere"
+    "onConstructSphere",
+    "onConstructDistance"
 };
 #undef QT_MOC_LITERAL
 #endif // !QT_MOC_HAS_STRING_DATA
@@ -99,7 +103,7 @@ Q_CONSTINIT static const uint qt_meta_data_CLASSToolWidgetENDCLASS[] = {
       12,       // revision
        0,       // classname
        0,    0, // classinfo
-       8,   14, // methods
+       9,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -107,16 +111,18 @@ Q_CONSTINIT static const uint qt_meta_data_CLASSToolWidgetENDCLASS[] = {
        0,       // signalCount
 
  // slots: name, argc, parameters, tag, flags, initial metatype offsets
-       1,    0,   62,    2, 0x0a,    1 /* Public */,
-       3,    0,   63,    2, 0x0a,    2 /* Public */,
-       4,    0,   64,    2, 0x0a,    3 /* Public */,
-       5,    0,   65,    2, 0x0a,    4 /* Public */,
-       6,    0,   66,    2, 0x0a,    5 /* Public */,
-       7,    0,   67,    2, 0x0a,    6 /* Public */,
-       8,    0,   68,    2, 0x0a,    7 /* Public */,
-       9,    0,   69,    2, 0x0a,    8 /* Public */,
+       1,    0,   68,    2, 0x0a,    1 /* Public */,
+       3,    0,   69,    2, 0x0a,    2 /* Public */,
+       4,    0,   70,    2, 0x0a,    3 /* Public */,
+       5,    0,   71,    2, 0x0a,    4 /* Public */,
+       6,    0,   72,    2, 0x0a,    5 /* Public */,
+       7,    0,   73,    2, 0x0a,    6 /* Public */,
+       8,    0,   74,    2, 0x0a,    7 /* Public */,
+       9,    0,   75,    2, 0x0a,    8 /* Public */,
+      10,    0,   76,    2, 0x0a,    9 /* Public */,
 
  // slots: parameters
+    QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
@@ -153,6 +159,8 @@ Q_CONSTINIT const QMetaObject ToolWidget::staticMetaObject = { {
         // method 'onConstructCone'
         QtPrivate::TypeAndForceComplete<void, std::false_type>,
         // method 'onConstructSphere'
+        QtPrivate::TypeAndForceComplete<void, std::false_type>,
+        // method 'onConstructDistance'
         QtPrivate::TypeAndForceComplete<void, std::false_type>
     >,
     nullptr
@@ -172,6 +180,7 @@ void ToolWidget::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
         case 5: _t->onConstructCylinder(); break;
         case 6: _t->onConstructCone(); break;
         case 7: _t->onConstructSphere(); break;
+        case 8: _t->onConstructDistance(); break;
         default: ;
         }
     }
@@ -197,13 +206,13 @@ int ToolWidget::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 8)
+        if (_id < 9)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 8;
+        _id -= 9;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 8)
+        if (_id < 9)
             *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
-        _id -= 8;
+        _id -= 9;
     }
     return _id;
 }

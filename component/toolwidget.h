@@ -94,6 +94,7 @@ public:
      void onConstructCylinder();
      void onConstructCone();
      void onConstructSphere();
+     void onConstructDistance();
 
 
 
