@@ -7,6 +7,7 @@
 #include <QVBoxLayout>
 #include <QPushButton>
 #include <vtkRenderer.h>
+
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
 
@@ -33,6 +34,7 @@
 #include <vtkCubeAxesActor.h>
 #include <vtkCaptionActor2D.h>
 #include <vtkInteractorStyleTrackballCamera.h>
+
 #include <vtkAutoInit.h>
 VTK_MODULE_INIT(vtkRenderingOpenGL2);
 VTK_MODULE_INIT(vtkInteractionStyle);
@@ -86,9 +88,9 @@ private:
     // 创建渲染器、渲染窗口和交互器
     vtkSmartPointer<vtkRenderer> renderer;
     vtkSmartPointer<vtkGenericOpenGLRenderWindow> renWin;
-    vtkSmartPointer<vtkRenderWindowInteractor> interactor;
+    vtkSmartPointer<vtkGenericRenderWindowInteractor> interactor;
 
-    // 创建坐标器
+    // 创建全局坐标器
     vtkSmartPointer<vtkAxesActor> axesActor;
     // 创建交互部件来封装坐标器
     vtkSmartPointer<vtkOrientationMarkerWidget> orientationWidget;

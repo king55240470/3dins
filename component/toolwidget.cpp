@@ -470,7 +470,10 @@ void ToolWidget::connectActionWithF(){
          tool_widget::onCreateCoord();
         m_pMainWin->on2dCoordOriginAuto(); //创建临时坐标系
     });
-    connect(coord_actions_[coord_action_name_list_.indexOf("旋转坐标系")],&QAction::triggered,&  tool_widget::onSpinCoord);
+    connect(coord_actions_[coord_action_name_list_.indexOf("旋转坐标系")],&QAction::triggered,this,[&](){
+        tool_widget::onSpinCoord();
+        m_pMainWin->on2dCoordSetRightX(); // x轴摆正
+    });
     connect(coord_actions_[coord_action_name_list_.indexOf("保存坐标系")],&QAction::triggered,this,[&](bool){
         tool_widget::onSaveCoord();
         m_pMainWin->on2dCoordSave();
@@ -1369,6 +1372,7 @@ void ToolWidget::onConstructSphere(){
 
 }
 void ToolWidget::onConstructDistance(){
+<<<<<<< HEAD
     if(m_point_index.size()<2)
     {
         WrongWidget("距离至少由两个点构成");
@@ -1379,6 +1383,10 @@ void ToolWidget::onConstructDistance(){
     CPosition B=m_selected_points[1]->GetPt();
 
 
+=======
+    qDebug()<<"点击了构造距离";
+    m_pMainWin->getPWinVtkWidget()->reDraw();
+>>>>>>> 57136df8652b9669562ca7c2464c61dca7f03932
 }
 void ToolWidget::updateele(){
 
@@ -1394,7 +1402,7 @@ void ToolWidget::updateele(){
         int *entityindex=new int[selectedItems.size()];
         int count_index=0;
         int count_entityindex=0;
-
+        qDebug()<<"被选中的元素有："<<selectedItems.size();
         for(QTreeWidgetItem *selectedItem:selectedItems)
         {
 

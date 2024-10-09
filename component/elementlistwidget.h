@@ -18,9 +18,7 @@
 #include<QToolBar>
 #include <QVector>
 #include <QKeyEvent>
-//#include "manager/centitymgr.h"
-//#include <unordered_map>
-//#include "geometry/globes.h"
+#include "toolwidget.h"
 #include "mainwindow.h"
 #include "DataWidget.h"
 #include "toolwidget.h"
@@ -42,6 +40,7 @@ public:
     QVector<CObject*> getEleobjlist();
     void keyPressEvent(QKeyEvent *event) override;
     void keyReleaseEvent(QKeyEvent *event) override;
+    void onItemClicked();
 private:
     QTreeWidget *treeWidgetNames;
     QTreeWidget *treeWidgetInfo;
@@ -55,7 +54,6 @@ private:
     static int pcscount;
     QVector<CObject*>eleobjlist;
     //std::unordered_map<QTreeWidgetItem*, size_t> itemToIndexMap;
-    void onItemClicked();
     bool ctrlPressed = false;
 signals:
     void itemSelected(int index);
