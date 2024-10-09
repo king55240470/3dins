@@ -74,6 +74,7 @@ public:
     void OnPresetSphere(CPosition posCenter, double diametre);
     void OnPresetCylinder(CPosition pos, QVector4D vec, double height, double diametre);
     void OnPresetCone(CPosition posCenter, QVector4D axis, double partH, double fullH, double angle);
+
     CObjectMgr *getObjectListMgr();
     CEntity* CreateEntity(int nType);
     void NotifySubscribe();
@@ -81,7 +82,7 @@ public:
     ElementListWidget *getPWinElementListWidget();
     VtkWidget * getPWinVtkWidget();
     DataWidget *getPWinDataWidget();
-
+    ToolWidget *getPWinToolWidget();
     //slots
     void on2dCoordOriginAuto(); // 创建坐标系
     void on2dCoordSave();

@@ -215,6 +215,7 @@ void ElementListWidget::onItemClicked()
             m_pMainWin->getPWinDataWidget()->updateinfo();
         }
     }
+    m_pMainWin->getPWinToolWidget()->updateele();
 }
 QList<QTreeWidgetItem*> ElementListWidget:: getSelectedItems(){
     return treeWidgetNames->selectedItems();
