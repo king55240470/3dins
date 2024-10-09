@@ -51,12 +51,14 @@
 #include <vtkLineSource.h>
 #include <vtkCellArray.h>
 #include <vtkPlaneSource.h>
-#include <vtkSphereSource.h>
+#include <vtkSphereSource.h>   n
 #include <vtkCylinderSource.h>
 #include <vtkConeSource.h>
 #include <vtkProperty.h>
 
 #include<QTreeWidgetItem>
+//constructor
+#include"constructor/lineconstructor.h"
 
 
 int getImagePaths(const QString& directory, QStringList &iconPaths, QStringList &iconNames);
@@ -877,22 +879,24 @@ void ToolWidget::onConstructPoint(){
         m_pMainWin->showPresetElemWidget(0);
 }
 void ToolWidget::onConstructLine(){
-    ElementListWidget* p_elementListwidget= m_pMainWin->getPWinElementListWidget();
-    auto& objectList = m_pMainWin->m_ObjectListMgr->getObjectList();
     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
-    if(m_point_index.size()<2)
-    {
-        WrongWidget("线至少由两个点组成");
-
+    LineConstructor constructor;
+    CLine* newLine=(CLine*)constructor.create(entityList);
+    if(newLine==nullptr){
+        WrongWidget("构造线失败");
         return ;
     }
-    for(int i=0;i<m_point_index.size();i++){
-        for(int j=i+1;j<m_point_index.size();j++){
-            CPosition p1=m_selected_points[i]->GetPt();
-            CPosition p2=m_selected_points[j]->GetPt();
-            m_pMainWin->OnPresetLine(p1,p2);
-        }
-    }
+    newLine->m_CreateForm = ePreset;
+    newLine->m_pRefCoord = m_pMainWin->m_pcsListMgr->m_pPcsCurrent;
+    newLine->m_pCurCoord = m_pMainWin->m_pcsListMgr->m_pPcsCurrent;
+    newLine->m_pExtCoord = m_pMainWin->m_pcsListMgr->m_pPcsCurrent;
+    // newLine->SetNominal();
+    // 加入Entitylist 和 ObjectList
+    m_pMainWin->m_EntityListMgr->Add(newLine);
+    m_pMainWin->m_ObjectListMgr->Add(newLine);
+
+    m_pMainWin->NotifySubscribe();
+
 
 }
 static void WrongWidget(QString message){
@@ -930,7 +934,7 @@ static double distanceToPlane(const QVector4D& point, const QVector4D& planePoin
     return distance;
 }
 
-class CircleInfo{
+ class CircleInfo{
 public:
     QVector4D center;
     QVector4D normal;
@@ -1365,12 +1369,21 @@ void ToolWidget::onConstructSphere(){
 
 }
 void ToolWidget::onConstructDistance(){
-    qDebug()<<"点击了构造距离";
+    if(m_point_index.size()<2)
+    {
+        WrongWidget("距离至少由两个点构成");
+        return ;
+    }
+
+    CPosition A=m_selected_points[0]->GetPt();
+    CPosition B=m_selected_points[1]->GetPt();
+
+
 }
 void ToolWidget::updateele(){
 
     ElementListWidget* p_elementListwidget= m_pMainWin->getPWinElementListWidget();
-    VtkWidget * p_vtkwidget=m_pMainWin->getPWinVtkWidget();
+
     QList<QTreeWidgetItem*> selectedItems = p_elementListwidget->getSelectedItems();
     QVector<CObject*> eleobjlist=p_elementListwidget->getEleobjlist();
 
@@ -1413,7 +1426,7 @@ void ToolWidget::updateele(){
         delete []index;
         delete []entityindex;
     }
-
+    qDebug()<<"目前被选中的点数为"<<m_point_index.size();
 }
 void ToolWidget::NotifySubscribe(){
     qDebug()<<"ToolWidget::NotifySubscribe()";
