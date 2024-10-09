@@ -254,6 +254,45 @@ vtkSmartPointer<vtkActor> CCone::draw(){
     return actor;
 }
 
+vtkSmartPointer<vtkActor> CDistance::draw(){
+    // 获取首尾两个点在参考坐标系下的坐标(预置时输入的)，
+    // 并计算得到他在机械坐标系下的位置(全局坐标)
+    CPosition pos_begin(begin.x, begin.y, begin.z);
+    QVector4D posVec_begin = GetRefCoord()->m_mat * QVector4D(pos_begin.x, pos_begin.y, pos_begin.z, 1);
+    CPosition glbPos_begin(posVec_begin.x(), posVec_begin.y(), posVec_begin.z());
+
+    CPosition pos_end(end.x, end.y, end.z);
+    QVector4D posVec_end = GetRefCoord()->m_mat * QVector4D(pos_end.x, pos_end.y, pos_end.z, 1);
+    CPosition glbPos_end(posVec_end.x(), posVec_end.y(), posVec_end.z());
+
+    // 创建点集，并插入定义线的两个点
+    auto points = vtkSmartPointer<vtkPoints>::New();
+    points->InsertNextPoint(glbPos_begin.x, glbPos_begin.y, glbPos_begin.z);
+    points->InsertNextPoint(glbPos_end.x, glbPos_end.y, glbPos_end.z);
+
+    // 创建线源
+    auto lines = vtkSmartPointer<vtkCellArray>::New();
+    vtkIdType line[2] = {0, 1}; // 索引从0开始
+    lines->InsertNextCell(2, line); // 插入一条包含两个顶点的线
+
+    // 创建几何图形容器并设置点和线
+    vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
+    polyData->SetPoints(points);
+    polyData->SetLines(lines);
+
+    // 创建映射器
+    auto mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    mapper->SetInputData(polyData);
+
+    // 创建执行器
+    auto actor = vtkSmartPointer<vtkActor>::New();
+    actor->SetMapper(mapper);
+    actor->GetProperty()->SetColor(0.0, 0.0, 0.0);
+    actor->GetProperty()->SetLineWidth(3);
+
+    return actor;
+}
+
 
 int CLine::lineCount=0;
 int CLine::currentLineId=0;
@@ -513,3 +552,4 @@ void CDistance::judge()
         qualified=true;
     }
 }
+

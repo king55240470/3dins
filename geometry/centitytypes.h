@@ -413,5 +413,8 @@ public:
     void setend(const CPosition & newend);
     double getdistance();
     void judge();
+
+    // CDistance的draw()
+    vtkSmartPointer<vtkActor> draw() override;
 };
 #endif // CENTITYTYPES_H
