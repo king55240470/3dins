@@ -468,7 +468,10 @@ void ToolWidget::connectActionWithF(){
          tool_widget::onCreateCoord();
         m_pMainWin->on2dCoordOriginAuto(); //创建临时坐标系
     });
-    connect(coord_actions_[coord_action_name_list_.indexOf("旋转坐标系")],&QAction::triggered,&  tool_widget::onSpinCoord);
+    connect(coord_actions_[coord_action_name_list_.indexOf("旋转坐标系")],&QAction::triggered,this,[&](){
+        tool_widget::onSpinCoord();
+        m_pMainWin->on2dCoordSetRightX(); // x轴摆正
+    });
     connect(coord_actions_[coord_action_name_list_.indexOf("保存坐标系")],&QAction::triggered,this,[&](bool){
         tool_widget::onSaveCoord();
         m_pMainWin->on2dCoordSave();
