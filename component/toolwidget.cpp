@@ -1366,6 +1366,7 @@ void ToolWidget::onConstructSphere(){
 }
 void ToolWidget::onConstructDistance(){
     qDebug()<<"点击了构造距离";
+    m_pMainWin->getPWinVtkWidget()->reDraw();
 }
 void ToolWidget::updateele(){
 
