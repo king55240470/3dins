@@ -22,7 +22,7 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
     renWin = vtkSmartPointer<vtkGenericOpenGLRenderWindow>::New();
     renderer = vtkSmartPointer<vtkRenderer>::New();
     renWin->AddRenderer(renderer);  // 将渲染器添加到渲染窗口
-    // interactor = vtkSmartPointer<vtkRenderWindowInteractor>::New();
+    // interactor = vtkSmartPointer<vtkGenericRenderWindowInteractor>::New();
     // interactor->SetRenderWindow(renWin);
 
     // 创建坐标器
@@ -77,7 +77,7 @@ void VtkWidget::UpdateInfo(){
 
 void VtkWidget::reDraw(){
     // 获取渲染器中的所有 actor
-    auto* actorCollection = getRenderer()->GetActors();
+    auto* actorCollection = getRenderer()->GetViewProps();
 
     // 创建一个迭代器用于遍历actor集合
     vtkCollectionSimpleIterator it;
@@ -85,12 +85,11 @@ void VtkWidget::reDraw(){
     // 初始化迭代器，准备遍历actor集合
     actorCollection->InitTraversal(it);
 
-    // vtkSmartPointer<vtkActor> actor;
-    vtkSmartPointer<vtkProp3D> prop;
-    // 遍历并移除 vtkProp3D 对象（包括 vtkActor 和 vtkAxesActor）
-    while ((prop = actorCollection->GetNextActor(it)) != nullptr)
+    vtkSmartPointer<vtkProp> prop;
+    // 遍历并移除 vtkProp 对象（包括 vtkActor 和 vtkAxesActor）
+    while ((prop = actorCollection->GetNextProp(it)) != nullptr)
     {
-        renderer->RemoveActor(prop);
+        renderer->RemoveViewProp(prop);
     }
 
     QVector<bool> list = m_pMainWin->m_EntityListMgr->getMarkList();//获取标记是否隐藏元素的list
@@ -111,31 +110,41 @@ void VtkWidget::reDraw(){
             getRenderer()->AddActor(object->draw());
     }
 
+    // 重新加载全局坐标系
+    axesActor = vtkSmartPointer<vtkAxesActor>::New();
+
+    // 设置 X Y Z 轴标题颜色为黑色
+    axesActor->GetXAxisCaptionActor2D()->GetCaptionTextProperty()->SetColor(0.0, 0.0, 0.0);
+    axesActor->GetYAxisCaptionActor2D()->GetCaptionTextProperty()->SetColor(0.0, 0.0, 0.0);
+    axesActor->GetZAxisCaptionActor2D()->GetCaptionTextProperty()->SetColor(0.0, 0.0, 0.0);
+
+    axesActor->SetTotalLength(0.4, 0.4, 0.4); // 设置轴的长度
+    axesActor->SetConeRadius(0.1); // 设置轴锥体的半径
+    axesActor->SetCylinderRadius(0.1); // 设置轴圆柱体的半径
+    axesActor->SetSphereRadius(0.05); // 设置轴末端的球体半径
+    axesActor->SetPosition(0, 0, 0);
+    renderer->AddActor(axesActor); // 将坐标器添加到渲染器
+
     getRenderWindow()->Render(); // 刷新渲染窗口
 }
 
-// 创建坐标器
+// 创建全局坐标器
 void VtkWidget::createAxes()
 {
-    // 创建坐标器
-    auto axes = vtkSmartPointer<vtkAxesActor>::New();
+    // 初始化全局坐标系
+    axesActor = vtkSmartPointer<vtkAxesActor>::New();
 
     // 设置 X Y Z 轴标题颜色为黑色
-    axes->GetXAxisCaptionActor2D()->GetCaptionTextProperty()->SetColor(0.0, 0.0, 0.0);
-    axes->GetYAxisCaptionActor2D()->GetCaptionTextProperty()->SetColor(0.0, 0.0, 0.0);
-    axes->GetZAxisCaptionActor2D()->GetCaptionTextProperty()->SetColor(0.0, 0.0, 0.0);
+    axesActor->GetXAxisCaptionActor2D()->GetCaptionTextProperty()->SetColor(0.0, 0.0, 0.0);
+    axesActor->GetYAxisCaptionActor2D()->GetCaptionTextProperty()->SetColor(0.0, 0.0, 0.0);
+    axesActor->GetZAxisCaptionActor2D()->GetCaptionTextProperty()->SetColor(0.0, 0.0, 0.0);
 
-    // 设置字体大小
-    axes->GetXAxisCaptionActor2D()->GetCaptionTextProperty()->SetFontSize(5);
-    axes->GetYAxisCaptionActor2D()->GetCaptionTextProperty()->SetFontSize(5);
-    axes->GetZAxisCaptionActor2D()->GetCaptionTextProperty()->SetFontSize(5);
-
-    axes->SetTotalLength(0.4, 0.4, 0.4); // 设置轴的长度
-    axes->SetConeRadius(0.1); // 设置轴锥体的半径
-    axes->SetCylinderRadius(0.1); // 设置轴圆柱体的半径
-    axes->SetSphereRadius(0.05); // 设置轴末端的球体半径
-    axes->SetPosition(0, 0, 0);
-    renderer->AddActor(axes); // 将坐标器添加到渲染器
+    axesActor->SetTotalLength(0.4, 0.4, 0.4); // 设置轴的长度
+    axesActor->SetConeRadius(0.1); // 设置轴锥体的半径
+    axesActor->SetCylinderRadius(0.1); // 设置轴圆柱体的半径
+    axesActor->SetSphereRadius(0.05); // 设置轴末端的球体半径
+    axesActor->SetPosition(0, 0, 0);
+    renderer->AddActor(axesActor); // 将坐标器添加到渲染器
 
     // orientationWidget = vtkSmartPointer<vtkOrientationMarkerWidget>::New();
     // // 设置 X Y Z 轴标题颜色为黑色
@@ -150,8 +159,8 @@ void VtkWidget::createAxes()
     // // 设置视口
     // orientationWidget->SetViewport(0.0, 0.0, 0.2, 0.2);
 
-    // orientationWidget->SetEnabled(true);
-    // orientationWidget->InteractiveOff();
+    // // orientationWidget->SetEnabled(true);
+    // orientationWidget->InteractiveOn();
 }
 
 // 切换相机视角1
