@@ -98,6 +98,7 @@ void DataWidget::updateinfo()
                 //当前参考的坐标系下的坐标值
                 position=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(gloPosition,point->m_pCurCoord);
             }
+
             if (point != nullptr){
                 //double xx=point->GetPt().x;
                 table->setItem(0, 0, new QTableWidgetItem("X"));
