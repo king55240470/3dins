@@ -30,7 +30,10 @@ MainWindow::MainWindow(QWidget *parent)
     loadManager();
     m_nRelyOnWhichCs=csRef;
 
+<<<<<<< HEAD
+=======
     //connect(pWinElementListWidget,&ElementListWidget::onItemClicked,pWinToolWidget,&ToolWidget::updateele);
+>>>>>>> 57136df8652b9669562ca7c2464c61dca7f03932
 }
 
 void MainWindow::setupUi(){
@@ -792,8 +795,11 @@ ToolWidget *MainWindow::getPWinToolWidget()
     return pWinToolWidget;
 }
 
+<<<<<<< HEAD
+=======
 
 
+>>>>>>> 57136df8652b9669562ca7c2464c61dca7f03932
 void MainWindow::onTopViewClicked()
 {
     pWinVtkWidget->onTopView();
