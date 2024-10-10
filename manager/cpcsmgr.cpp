@@ -32,6 +32,8 @@ void CPcsMgr::Initialize()
     m_pHeadPcsNode=pcsNode;
     m_pTailPcsNode=pcsNode;
     m_PcsNodeList.push_back(pcsNode);
+
+
 }
 
 std::list<CPcsNode *> &CPcsMgr::getPcsNodeList()

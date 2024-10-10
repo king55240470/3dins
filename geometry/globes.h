@@ -92,7 +92,7 @@ public:
         z=obj.z;
         return *this;
     }
-    friend QDataStream& operator<<(QDataStream& out,const CPosition& pos){
+    friend QDataStream& operator<<(QDataStream& out, const CPosition& pos){
         out<<pos.x<<pos.y<<pos.z;
         return out;
     }
