@@ -21,6 +21,7 @@
 #include "toolwidget.h"
 #include "mainwindow.h"
 #include "DataWidget.h"
+#include "toolwidget.h"
 class ElementListWidget : public QWidget
 {
     Q_OBJECT
