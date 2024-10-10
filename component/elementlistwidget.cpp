@@ -63,9 +63,6 @@ void ElementListWidget::CreateEllipse(CObject*obj)
 {
     QTreeWidgetItem *item = new QTreeWidgetItem(treeWidgetNames);
     item->setData(0, Qt::UserRole, QVariant::fromValue<CObject*>(obj));
-    /*if(obj->GetObjectCName()=="临时坐标系"||obj->GetObjectCName()=="工件坐标系"){
-        pcscount++;
-    }*/
     item->setText(0,obj->m_strCName);
     item->setText(1,obj->m_strAutoName);
     QTreeWidgetItem *infoItem = new QTreeWidgetItem(treeWidgetInfo);
@@ -113,14 +110,12 @@ void ElementListWidget::onDeleteEllipse()
             for(int i=0;i<m_pMainWin->getObjectListMgr()->getObjectList().size();i++){
                 if(m_pMainWin->getObjectListMgr()->getObjectList()[i]==obj){
                     index=i;
-                    qDebug()<<"index:"<<index;
                 }
             }
             int entityindex=-1;
             for(int i=0;i<eleobjlist.size();i++){
                 if(eleobjlist[i]==obj){
                     entityindex=i;
-                    qDebug()<<"entityindex:"<<entityindex;
                 }
             }
             auto& objectList = m_pMainWin->m_ObjectListMgr->getObjectList();
@@ -142,7 +137,8 @@ void ElementListWidget::onDeleteEllipse()
 
 void ElementListWidget::onCustomContextMenuRequested(const QPoint &pos)
 {
-    QTreeWidgetItem* curItem=treeWidgetNames->itemAt(pos);
+    //QTreeWidgetItem* curItem=treeWidgetNames->itemAt(pos);
+    //if (!curItem) return;
     QMenu *popMenu = new QMenu(this);
     QAction *actionNew = new QAction(tr("删除(D)"),popMenu);
     QAction *actionNew_1 = new QAction(tr("行为1"),popMenu);
@@ -153,7 +149,7 @@ void ElementListWidget::onCustomContextMenuRequested(const QPoint &pos)
     popMenu->addAction(actionNew_1);
     popMenu->addAction(actionNew_2);
     popMenu->addAction(actionNew_3);
-    popMenu->exec(QCursor::pos());
+    popMenu->exec(mapToGlobal(pos));
 }
 
 void ElementListWidget::deal_actionNew_triggered()
@@ -179,7 +175,6 @@ void ElementListWidget::upadteelementlist()
             eleobjlist.push_back(obj);
         }
     }
-    qDebug()<<eleobjlist.size()<<"这里";
 }
 
 void ElementListWidget::onItemClicked()
@@ -190,30 +185,18 @@ void ElementListWidget::onItemClicked()
             m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(false);
         }
     }
-    qDebug()<<"被选中元素数"<<selectedItems.size();
     for(QTreeWidgetItem*item:selectedItems){
         CObject *obj = item->data(0, Qt::UserRole).value<CObject*>();
         int index=-1;
-        int entityindex=-1;
+        //int entityindex=-1;
         for(int i=0;i<m_pMainWin->getObjectListMgr()->getObjectList().size();i++){
             if(m_pMainWin->getObjectListMgr()->getObjectList()[i]==obj){
                 index=i;
             }
         }
-        for(int i=0;i<m_pMainWin->m_EntityListMgr->getEntityList().size();i++){
-            if(m_pMainWin->m_EntityListMgr->getEntityList()[i]==obj){
-                entityindex=i;
-            }
-        }
-        QString name1="临时坐标系";
-        QString name2="工件坐标系";
-        QString name=obj->GetObjectCName();
-        if(name!=name1&&name!=name2){
-           m_pMainWin->getObjectListMgr()->getObjectList()[index]->SetSelected(true);
-            //emit itemSelected(entityindex); // 发出自定义信号
-            m_pMainWin->getPWinDataWidget()->getentityindex(entityindex);
-            m_pMainWin->getPWinDataWidget()->updateinfo();
-        }
+        m_pMainWin->getObjectListMgr()->getObjectList()[index]->SetSelected(true);
+        m_pMainWin->getPWinDataWidget()->getobjindex(index);
+        m_pMainWin->getPWinDataWidget()->updateinfo();
     }
     m_pMainWin->getPWinToolWidget()->updateele();
 }
@@ -240,5 +223,19 @@ void ElementListWidget::keyReleaseEvent(QKeyEvent *event)
         treeWidgetNames->setSelectionMode(QAbstractItemView::SingleSelection); // 切换为单选模式
     }
     QWidget::keyReleaseEvent(event);
+}
+
+void ElementListWidget::mousePressEvent(QMouseEvent *event) {
+    if (event->button() == Qt::RightButton) {
+        // 获取右键点击的坐标
+        QPoint pos = event->pos();
+        QTreeWidgetItem *item = treeWidgetNames->itemAt(pos);
+        if(item){
+            onCustomContextMenuRequested(pos);
+            event->ignore();
+            return;
+        }
+    }
+    QWidget::mousePressEvent(event);
 }
 

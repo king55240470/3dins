@@ -15,7 +15,7 @@ class DataWidget : public QWidget
 public:
     explicit DataWidget(QWidget *parent = nullptr);
     void updateinfo();
-    void getentityindex(int entityindex);
+    void getobjindex(int objindex);
 private:
     QVBoxLayout *vlayout;
     QHBoxLayout *hlayout;

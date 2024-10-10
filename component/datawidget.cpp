@@ -35,9 +35,9 @@ DataWidget::DataWidget(QWidget *parent)
 
 }
 
-void DataWidget::getentityindex(int entityindex)
+void DataWidget::getobjindex(int objindex)
 {
-    index=entityindex;
+    index=objindex;
 }
 
 void DataWidget::updateinfo()
@@ -78,11 +78,12 @@ void DataWidget::updateinfo()
     if(m_pMainWin->m_EntityListMgr->getEntityList().empty()){
         return;
     }
-        CEntity* entity=m_pMainWin->m_EntityListMgr->m_entityList[index];
+    CObject* obj=m_pMainWin->getObjectListMgr()->getObjectList()[index];
+        //CEntity* entity=m_pMainWin->m_EntityListMgr->m_entityList[index];
         //table->setItem(count, 0, new QTableWidgetItem(entity->m_strCName));
-        label2->setText(entity->m_strCName);
-        if(entity->GetUniqueType()==enPoint){
-            CPoint* point = dynamic_cast<CPoint*>(entity);
+        label2->setText(obj->m_strCName);
+        if(obj->GetUniqueType()==enPoint){
+            CPoint* point = dynamic_cast<CPoint*>(obj);
             CPosition position;
             if(m_pMainWin->m_nRelyOnWhichCs==csRef){
                 //即为点存储的坐标（出生时参考的坐标）
@@ -114,8 +115,8 @@ void DataWidget::updateinfo()
                 table->setItem(2, 2, new QTableWidgetItem(""));
             }
         }
-        if(entity->GetUniqueType()==enLine){
-            CLine* line = dynamic_cast<CLine*>(entity);
+        if(obj->GetUniqueType()==enLine){
+            CLine* line = dynamic_cast<CLine*>(obj);
             CPosition position1;
             if(m_pMainWin->m_nRelyOnWhichCs==csRef){
                 //即为点存储的坐标（出生时参考的坐标）
@@ -173,8 +174,8 @@ void DataWidget::updateinfo()
 
             }
         }
-        if(entity->GetUniqueType()==enCircle){
-            CCircle* circle = dynamic_cast<CCircle*>(entity);
+        if(obj->GetUniqueType()==enCircle){
+            CCircle* circle = dynamic_cast<CCircle*>(obj);
             CPosition position;
             if(m_pMainWin->m_nRelyOnWhichCs==csRef){
                 //即为点存储的坐标（出生时参考的坐标）
@@ -207,8 +208,8 @@ void DataWidget::updateinfo()
                 table->setItem(3, 2, new QTableWidgetItem(""));
             }
         }
-        if(entity->GetUniqueType()==enPlane){
-            CPlane* plane = dynamic_cast<CPlane*>(entity);
+        if(obj->GetUniqueType()==enPlane){
+            CPlane* plane = dynamic_cast<CPlane*>(obj);
             CPosition position;
             if(m_pMainWin->m_nRelyOnWhichCs==csRef){
                 //即为点存储的坐标（出生时参考的坐标）
@@ -245,8 +246,8 @@ void DataWidget::updateinfo()
                 table->setItem(4, 2, new QTableWidgetItem(""));
             }
         }
-        if(entity->GetUniqueType()==enSphere){
-            CSphere* sphere = dynamic_cast<CSphere*>(entity);
+        if(obj->GetUniqueType()==enSphere){
+            CSphere* sphere = dynamic_cast<CSphere*>(obj);
             CPosition position;
             if(m_pMainWin->m_nRelyOnWhichCs==csRef){
                 //即为点存储的坐标（出生时参考的坐标）
@@ -279,8 +280,8 @@ void DataWidget::updateinfo()
                 table->setItem(3, 2, new QTableWidgetItem(""));
             }
         }
-        if(entity->GetUniqueType()==enCylinder){
-            CCylinder* cylinder = dynamic_cast<CCylinder*>(entity);
+        if(obj->GetUniqueType()==enCylinder){
+            CCylinder* cylinder = dynamic_cast<CCylinder*>(obj);
             CPosition position;
             if(m_pMainWin->m_nRelyOnWhichCs==csRef){
                 //即为点存储的坐标（出生时参考的坐标）
@@ -317,8 +318,8 @@ void DataWidget::updateinfo()
                 table->setItem(4, 2, new QTableWidgetItem(""));
             }
         }
-        if(entity->GetUniqueType()==enCone){
-            CCone* cone = dynamic_cast<CCone*>(entity);
+        if(obj->GetUniqueType()==enCone){
+            CCone* cone = dynamic_cast<CCone*>(obj);
             CPosition position;
             if(m_pMainWin->m_nRelyOnWhichCs==csRef){
                 //即为点存储的坐标（出生时参考的坐标）
@@ -348,6 +349,26 @@ void DataWidget::updateinfo()
 
                 table->setItem(2, 0, new QTableWidgetItem("H"));
                 table->setItem(2, 1, new QTableWidgetItem(QString::number(cone->getHeight(),'f',6)));
+                table->setItem(2, 2, new QTableWidgetItem(""));
+            }
+        }
+        if(obj->m_strCName.left(5)=="工件坐标系"){
+            CPcsNode* pcsnode=dynamic_cast<CPcsNode*>(obj);
+            CPosition position;
+            position.x=pcsnode->getPcs()->m_poso.x;
+            position.y=pcsnode->getPcs()->m_poso.y;
+            position.z=pcsnode->getPcs()->m_poso.z;
+            if (pcsnode != nullptr){
+                table->setItem(0, 0, new QTableWidgetItem("X"));
+                table->setItem(0, 1, new QTableWidgetItem(QString::number(position.x,'f',6)));
+                table->setItem(0, 2, new QTableWidgetItem("")); // 可选择设置状态
+
+                table->setItem(1, 0, new QTableWidgetItem("Y"));
+                table->setItem(1, 1, new QTableWidgetItem(QString::number(position.y,'f',6)));
+                table->setItem(1, 2, new QTableWidgetItem("")); // 可选择设置状态
+
+                table->setItem(2, 0, new QTableWidgetItem("Z"));
+                table->setItem(2, 1, new QTableWidgetItem(QString::number(position.z,'f',6)));
                 table->setItem(2, 2, new QTableWidgetItem(""));
             }
         }
