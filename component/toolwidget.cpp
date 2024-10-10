@@ -1372,7 +1372,6 @@ void ToolWidget::onConstructSphere(){
 
 }
 void ToolWidget::onConstructDistance(){
-<<<<<<< HEAD
     if(m_point_index.size()<2)
     {
         WrongWidget("距离至少由两个点构成");
@@ -1383,11 +1382,10 @@ void ToolWidget::onConstructDistance(){
     CPosition B=m_selected_points[1]->GetPt();
 
 
-=======
     qDebug()<<"点击了构造距离";
     m_pMainWin->getPWinVtkWidget()->reDraw();
->>>>>>> 57136df8652b9669562ca7c2464c61dca7f03932
 }
+
 void ToolWidget::updateele(){
 
     ElementListWidget* p_elementListwidget= m_pMainWin->getPWinElementListWidget();
