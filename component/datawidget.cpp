@@ -1,6 +1,7 @@
 #include "datawidget.h"
 #include <QHeaderView>
 #include <QVector4D>
+#include <QTimer>
 #include "manager/cpcsmgr.h"
 
 DataWidget::DataWidget(QWidget *parent)
@@ -85,20 +86,54 @@ void DataWidget::updateinfo()
         if(obj->GetUniqueType()==enPoint){
             CPoint* point = dynamic_cast<CPoint*>(obj);
             CPosition position;
+            //转换为全局坐标
+            QVector4D vec=point->m_pRefCoord->m_mat*QVector4D(point->m_pt.x,point->m_pt.y,point->m_pt.z,1);
+            CPosition gloPosition(vec.x(),vec.y(),vec.z());
+
             if(m_pMainWin->m_nRelyOnWhichCs==csRef){
+                box->setEnabled(true);
+                box->setCurrentIndex(box->findText((m_pMainWin->m_pcsListMgr->FindNode(point->GetRefCoord()))->GetObjectCName())); // 设置box当前数据显示参考的坐标系
                 //即为点存储的坐标（出生时参考的坐标）
-                //不做改变
-                position.x=point->m_pt.x;
-                position.y=point->m_pt.y;
-                position.z=point->m_pt.z;
+
+                point->SetExtCoord(point->GetRefCoord());
+
+                //当切换扩展坐标系时检测到变化
+                connect(box, &QComboBox::currentIndexChanged, this, [=](){
+                    // QString currentText =box->currentText();
+                    // qDebug() << "当前选中的文本是: " << currentText;
+                    if(box->currentText()=="机械坐标系"){
+                        point->SetExtCoord(m_pMainWin->m_pcsListMgr->GetBaseCoordSystem());
+                    }else{
+                        for(CObject *obj:m_pMainWin->m_ObjectListMgr->getObjectList()){
+                            if(box->currentText()==obj->GetObjectCName()){
+                                CPcsNode* node=dynamic_cast<CPcsNode*>(obj);
+                                point->SetExtCoord(node->getPcs());
+                                // qDebug() << "Current Text: " << box->currentText();
+                                // qDebug() << "Object Name: " << obj->GetObjectCName();
+                                break;
+                            }
+                        }
+                    }
+
+                    CPosition temposition=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(gloPosition,point->m_pExtCoord);
+
+                    table->setItem(0, 1, new QTableWidgetItem(QString::number(temposition.x,'f',6)));
+                    table->setItem(1, 1, new QTableWidgetItem(QString::number(temposition.y,'f',6)));
+                    table->setItem(2, 1, new QTableWidgetItem(QString::number(temposition.z,'f',6)));
+
+                    table->viewport()->update();
+                });
+
             }else{
+                box->setCurrentIndex(box->findText((m_pMainWin->m_pcsListMgr->FindNode(point->GetCurCoord()))->GetObjectCName())); // 设置box当前数据显示参考的坐标系
+                box->setEnabled(false);
                 //参考当前坐标系
-                //转换为全局坐标
-                QVector4D vec=point->m_pRefCoord->m_mat*QVector4D(point->m_pt.x,point->m_pt.y,point->m_pt.z,1);
-                CPosition gloPosition(vec.x(),vec.y(),vec.z());
-                //当前参考的坐标系下的坐标值
-                position=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(gloPosition,point->m_pCurCoord);
+                //将扩展坐标系设置为当前坐标系
+                point->SetExtCoord(point->GetCurCoord());
             }
+
+            //数据显示用扩展坐标系计算
+            position=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(gloPosition,point->m_pExtCoord);
 
             if (point != nullptr){
                 //double xx=point->GetPt().x;
@@ -118,35 +153,61 @@ void DataWidget::updateinfo()
         if(obj->GetUniqueType()==enLine){
             CLine* line = dynamic_cast<CLine*>(obj);
             CPosition position1;
-            if(m_pMainWin->m_nRelyOnWhichCs==csRef){
-                //即为点存储的坐标（出生时参考的坐标）
-                //不做改变
-                position1.x=line->getPosition1().x;
-                position1.y=line->getPosition1().y;
-                position1.z=line->getPosition1().z;
-            }else{
-                //参考当前坐标系
-                //转换为全局坐标
-                QVector4D vec1=line->m_pRefCoord->m_mat*QVector4D(line->getPosition1().x,line->getPosition1().y,line->getPosition1().z,1);
-                CPosition gloPosition1(vec1.x(),vec1.y(),vec1.z());
-                //当前参考的坐标系下的坐标值
-                position1=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(gloPosition1,line->m_pCurCoord);
-            }
             CPosition position2;
+            //转换为全局坐标
+            QVector4D vec1=line->m_pRefCoord->m_mat*QVector4D(line->getPosition1().x,line->getPosition1().y,line->getPosition1().z,1);
+            CPosition gloPosition1(vec1.x(),vec1.y(),vec1.z());
+            QVector4D vec2=line->m_pRefCoord->m_mat*QVector4D(line->getPosition2().x,line->getPosition2().y,line->getPosition2().z,1);
+            CPosition gloPosition2(vec2.x(),vec2.y(),vec2.z());
             if(m_pMainWin->m_nRelyOnWhichCs==csRef){
+                box->setEnabled(true);
+                box->setCurrentIndex(box->findText((m_pMainWin->m_pcsListMgr->FindNode(line->GetRefCoord()))->GetObjectCName())); // 设置box当前数据显示参考的坐标系
                 //即为点存储的坐标（出生时参考的坐标）
-                //不做改变
-                position2.x=line->getPosition2().x;
-                position2.y=line->getPosition2().y;
-                position2.z=line->getPosition2().z;
+
+                line->SetExtCoord(line->GetRefCoord());
+
+                //当切换扩展坐标系时检测到变化
+                connect(box, &QComboBox::currentIndexChanged, this, [=](){
+                    // QString currentText =box->currentText();
+                    // qDebug() << "当前选中的文本是: " << currentText;
+                    if(box->currentText()=="机械坐标系"){
+                        line->SetExtCoord(m_pMainWin->m_pcsListMgr->GetBaseCoordSystem());
+                    }else{
+                        for(CObject *obj:m_pMainWin->m_ObjectListMgr->getObjectList()){
+                            if(box->currentText()==obj->GetObjectCName()){
+                                CPcsNode* node=dynamic_cast<CPcsNode*>(obj);
+                                line->SetExtCoord(node->getPcs());
+                                // qDebug() << "Current Text: " << box->currentText();
+                                // qDebug() << "Object Name: " << obj->GetObjectCName();
+                                break;
+                            }
+                        }
+                    }
+
+                    CPosition temposition1=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(gloPosition1,line->m_pExtCoord);
+                    CPosition temposition2=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(gloPosition2,line->m_pExtCoord);
+
+                    table->setItem(0, 1, new QTableWidgetItem(QString::number(temposition1.x,'f',6)));
+                    table->setItem(1, 1, new QTableWidgetItem(QString::number(temposition1.y,'f',6)));
+                    table->setItem(2, 1, new QTableWidgetItem(QString::number(temposition1.z,'f',6)));
+                    table->setItem(0, 1, new QTableWidgetItem(QString::number(temposition2.x,'f',6)));
+                    table->setItem(1, 1, new QTableWidgetItem(QString::number(temposition2.y,'f',6)));
+                    table->setItem(2, 1, new QTableWidgetItem(QString::number(temposition2.z,'f',6)));
+
+                    table->viewport()->update();
+                });
+
             }else{
+                box->setCurrentIndex(box->findText((m_pMainWin->m_pcsListMgr->FindNode(line->GetCurCoord()))->GetObjectCName()));
+                box->setEnabled(false);
+
                 //参考当前坐标系
-                //转换为全局坐标
-                QVector4D vec2=line->m_pRefCoord->m_mat*QVector4D(line->getPosition2().x,line->getPosition2().y,line->getPosition2().z,1);
-                CPosition gloPosition2(vec2.x(),vec2.y(),vec2.z());
-                //当前参考的坐标系下的坐标值
-                position2=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(gloPosition2,line->m_pCurCoord);
+                line->SetExtCoord(line->GetCurCoord());
             }
+
+            position1=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(gloPosition1,line->m_pExtCoord);
+            position2=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(gloPosition2,line->m_pExtCoord);
+
             if (line != nullptr){
                 table->setItem(0, 0, new QTableWidgetItem("X1"));
                 table->setItem(0, 1, new QTableWidgetItem(QString::number(position1.x,'f',6)));
@@ -177,19 +238,52 @@ void DataWidget::updateinfo()
         if(obj->GetUniqueType()==enCircle){
             CCircle* circle = dynamic_cast<CCircle*>(obj);
             CPosition position;
+            //转换为全局坐标
+            QVector4D vec=circle->m_pRefCoord->m_mat*QVector4D(circle->m_pt.x,circle->m_pt.y,circle->m_pt.z,1);
+            CPosition gloPosition(vec.x(),vec.y(),vec.z());
             if(m_pMainWin->m_nRelyOnWhichCs==csRef){
+                box->setEnabled(true);
+                box->setCurrentIndex(box->findText((m_pMainWin->m_pcsListMgr->FindNode(circle->GetRefCoord()))->GetObjectCName()));
                 //即为点存储的坐标（出生时参考的坐标）
-                //不做改变
-                position.x=circle->m_pt.x;
-                position.y=circle->m_pt.y;
-                position.z=circle->m_pt.z;
+
+                circle->SetExtCoord(circle->GetRefCoord());
+
+                //当切换扩展坐标系时检测到变化
+                connect(box, &QComboBox::currentIndexChanged, this, [=](){
+                    // QString currentText =box->currentText();
+                    // qDebug() << "当前选中的文本是: " << currentText;
+                    if(box->currentText()=="机械坐标系"){
+                        circle->SetExtCoord(m_pMainWin->m_pcsListMgr->GetBaseCoordSystem());
+                    }else{
+                        for(CObject *obj:m_pMainWin->m_ObjectListMgr->getObjectList()){
+                            if(box->currentText()==obj->GetObjectCName()){
+                                CPcsNode* node=dynamic_cast<CPcsNode*>(obj);
+                                circle->SetExtCoord(node->getPcs());
+                                // qDebug() << "Current Text: " << box->currentText();
+                                // qDebug() << "Object Name: " << obj->GetObjectCName();
+                                break;
+                            }
+                        }
+                    }
+
+                    CPosition temposition=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(gloPosition,circle->m_pExtCoord);
+
+                    table->setItem(0, 1, new QTableWidgetItem(QString::number(temposition.x,'f',6)));
+                    table->setItem(1, 1, new QTableWidgetItem(QString::number(temposition.y,'f',6)));
+                    table->setItem(2, 1, new QTableWidgetItem(QString::number(temposition.z,'f',6)));
+
+                    table->viewport()->update();
+                });
+
             }else{
-                //转换为全局坐标
-                QVector4D vec=circle->m_pRefCoord->m_mat*QVector4D(circle->m_pt.x,circle->m_pt.y,circle->m_pt.z,1);
-                CPosition gloPosition(vec.x(),vec.y(),vec.z());
-                //当前参考的坐标系下的坐标值
-                position=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(gloPosition,circle->m_pCurCoord);
+                box->setCurrentIndex(box->findText((m_pMainWin->m_pcsListMgr->FindNode(circle->GetCurCoord()))->GetObjectCName()));
+                box->setEnabled(false);
+
+                circle->SetExtCoord(circle->GetCurCoord());
             }
+
+            position=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(gloPosition,circle->m_pExtCoord);
+
             if (circle != nullptr){
                 table->setItem(0, 0, new QTableWidgetItem("X"));
                 table->setItem(0, 1, new QTableWidgetItem(QString::number(position.x,'f',6)));
@@ -211,19 +305,52 @@ void DataWidget::updateinfo()
         if(obj->GetUniqueType()==enPlane){
             CPlane* plane = dynamic_cast<CPlane*>(obj);
             CPosition position;
+            //转换为全局坐标
+            QVector4D vec=plane->m_pRefCoord->m_mat*QVector4D(plane->getCenter().x,plane->getCenter().y,plane->getCenter().z,1);
+            CPosition gloPosition(vec.x(),vec.y(),vec.z());
             if(m_pMainWin->m_nRelyOnWhichCs==csRef){
+                box->setEnabled(true);
+                box->setCurrentIndex(box->findText((m_pMainWin->m_pcsListMgr->FindNode(plane->GetRefCoord()))->GetObjectCName()));
                 //即为点存储的坐标（出生时参考的坐标）
-                //不做改变
-                position.x=plane->getCenter().x;
-                position.y=plane->getCenter().y;
-                position.z=plane->getCenter().z;
+
+                plane->SetExtCoord(plane->GetRefCoord());
+
+                //当切换扩展坐标系时检测到变化
+                connect(box, &QComboBox::currentIndexChanged, this, [=](){
+                    // QString currentText =box->currentText();
+                    // qDebug() << "当前选中的文本是: " << currentText;
+                    if(box->currentText()=="机械坐标系"){
+                        plane->SetExtCoord(m_pMainWin->m_pcsListMgr->GetBaseCoordSystem());
+                    }else{
+                        for(CObject *obj:m_pMainWin->m_ObjectListMgr->getObjectList()){
+                            if(box->currentText()==obj->GetObjectCName()){
+                                CPcsNode* node=dynamic_cast<CPcsNode*>(obj);
+                                plane->SetExtCoord(node->getPcs());
+                                // qDebug() << "Current Text: " << box->currentText();
+                                // qDebug() << "Object Name: " << obj->GetObjectCName();
+                                break;
+                            }
+                        }
+                    }
+
+                    CPosition temposition=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(gloPosition,plane->m_pExtCoord);
+
+                    table->setItem(0, 1, new QTableWidgetItem(QString::number(temposition.x,'f',6)));
+                    table->setItem(1, 1, new QTableWidgetItem(QString::number(temposition.y,'f',6)));
+                    table->setItem(2, 1, new QTableWidgetItem(QString::number(temposition.z,'f',6)));
+
+                    table->viewport()->update();
+                });
+
             }else{
-                //转换为全局坐标
-                QVector4D vec=plane->m_pRefCoord->m_mat*QVector4D(plane->getCenter().x,plane->getCenter().y,plane->getCenter().z,1);
-                CPosition gloPosition(vec.x(),vec.y(),vec.z());
-                //当前参考的坐标系下的坐标值
-                position=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(gloPosition,plane->m_pCurCoord);
+                box->setCurrentIndex(box->findText((m_pMainWin->m_pcsListMgr->FindNode(plane->GetCurCoord()))->GetObjectCName()));
+                box->setEnabled(false);
+
+                plane->SetExtCoord(plane->GetCurCoord());
             }
+
+             position=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(gloPosition,plane->m_pExtCoord);
+
             if (plane != nullptr){
                 table->setItem(0, 0, new QTableWidgetItem("X"));
                 table->setItem(0, 1, new QTableWidgetItem(QString::number(position.x,'f',6)));
@@ -249,19 +376,52 @@ void DataWidget::updateinfo()
         if(obj->GetUniqueType()==enSphere){
             CSphere* sphere = dynamic_cast<CSphere*>(obj);
             CPosition position;
+            //转换为全局坐标
+            QVector4D vec=sphere->m_pRefCoord->m_mat*QVector4D(sphere->getCenter().x,sphere->getCenter().y,sphere->getCenter().z,1);
+            CPosition gloPosition(vec.x(),vec.y(),vec.z());
             if(m_pMainWin->m_nRelyOnWhichCs==csRef){
+                box->setEnabled(true);
+                box->setCurrentIndex(box->findText((m_pMainWin->m_pcsListMgr->FindNode(sphere->GetRefCoord()))->GetObjectCName()));
                 //即为点存储的坐标（出生时参考的坐标）
-                //不做改变
-                position.x=sphere->getCenter().x;
-                position.y=sphere->getCenter().y;
-                position.z=sphere->getCenter().z;
+
+                sphere->SetExtCoord(sphere->GetRefCoord());
+
+                //当切换扩展坐标系时检测到变化
+                connect(box, &QComboBox::currentIndexChanged, this, [=](){
+                    // QString currentText =box->currentText();
+                    // qDebug() << "当前选中的文本是: " << currentText;
+                    if(box->currentText()=="机械坐标系"){
+                        sphere->SetExtCoord(m_pMainWin->m_pcsListMgr->GetBaseCoordSystem());
+                    }else{
+                        for(CObject *obj:m_pMainWin->m_ObjectListMgr->getObjectList()){
+                            if(box->currentText()==obj->GetObjectCName()){
+                                CPcsNode* node=dynamic_cast<CPcsNode*>(obj);
+                                sphere->SetExtCoord(node->getPcs());
+                                // qDebug() << "Current Text: " << box->currentText();
+                                // qDebug() << "Object Name: " << obj->GetObjectCName();
+                                break;
+                            }
+                        }
+                    }
+
+                    CPosition temposition=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(gloPosition,sphere->m_pExtCoord);
+
+                    table->setItem(0, 1, new QTableWidgetItem(QString::number(temposition.x,'f',6)));
+                    table->setItem(1, 1, new QTableWidgetItem(QString::number(temposition.y,'f',6)));
+                    table->setItem(2, 1, new QTableWidgetItem(QString::number(temposition.z,'f',6)));
+
+                    table->viewport()->update();
+                });
+
             }else{
-                //转换为全局坐标
-                QVector4D vec=sphere->m_pRefCoord->m_mat*QVector4D(sphere->getCenter().x,sphere->getCenter().y,sphere->getCenter().z,1);
-                CPosition gloPosition(vec.x(),vec.y(),vec.z());
-                //当前参考的坐标系下的坐标值
-                position=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(gloPosition,sphere->m_pCurCoord);
+                box->setCurrentIndex(box->findText((m_pMainWin->m_pcsListMgr->FindNode(sphere->GetCurCoord()))->GetObjectCName()));
+                box->setEnabled(false);
+
+                sphere->SetExtCoord(sphere->GetCurCoord());
             }
+
+            position=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(gloPosition,sphere->m_pExtCoord);
+
             if (sphere != nullptr){
                 table->setItem(0, 0, new QTableWidgetItem("X"));
                 table->setItem(0, 1, new QTableWidgetItem(QString::number(position.x,'f',6)));
@@ -283,19 +443,52 @@ void DataWidget::updateinfo()
         if(obj->GetUniqueType()==enCylinder){
             CCylinder* cylinder = dynamic_cast<CCylinder*>(obj);
             CPosition position;
+            //转换为全局坐标
+            QVector4D vec=cylinder->m_pRefCoord->m_mat*QVector4D(cylinder->getBtm_center().x,cylinder->getBtm_center().y,cylinder->getBtm_center().z,1);
+            CPosition gloPosition(vec.x(),vec.y(),vec.z());
             if(m_pMainWin->m_nRelyOnWhichCs==csRef){
+                box->setEnabled(true);
+                box->setCurrentIndex(box->findText((m_pMainWin->m_pcsListMgr->FindNode(cylinder->GetRefCoord()))->GetObjectCName()));
                 //即为点存储的坐标（出生时参考的坐标）
-                //不做改变
-                position.x=cylinder->getBtm_center().x;
-                position.y=cylinder->getBtm_center().y;
-                position.z=cylinder->getBtm_center().z;
+
+                cylinder->SetExtCoord(cylinder->GetRefCoord());
+
+                //当切换扩展坐标系时检测到变化
+                connect(box, &QComboBox::currentIndexChanged, this, [=](){
+                    // QString currentText =box->currentText();
+                    // qDebug() << "当前选中的文本是: " << currentText;
+                    if(box->currentText()=="机械坐标系"){
+                        cylinder->SetExtCoord(m_pMainWin->m_pcsListMgr->GetBaseCoordSystem());
+                    }else{
+                        for(CObject *obj:m_pMainWin->m_ObjectListMgr->getObjectList()){
+                            if(box->currentText()==obj->GetObjectCName()){
+                                CPcsNode* node=dynamic_cast<CPcsNode*>(obj);
+                                cylinder->SetExtCoord(node->getPcs());
+                                // qDebug() << "Current Text: " << box->currentText();
+                                // qDebug() << "Object Name: " << obj->GetObjectCName();
+                                break;
+                            }
+                        }
+                    }
+
+                    CPosition temposition=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(gloPosition,cylinder->m_pExtCoord);
+
+                    table->setItem(0, 1, new QTableWidgetItem(QString::number(temposition.x,'f',6)));
+                    table->setItem(1, 1, new QTableWidgetItem(QString::number(temposition.y,'f',6)));
+                    table->setItem(2, 1, new QTableWidgetItem(QString::number(temposition.z,'f',6)));
+
+                    table->viewport()->update();
+                });
+
             }else{
-                //转换为全局坐标
-                QVector4D vec=cylinder->m_pRefCoord->m_mat*QVector4D(cylinder->getBtm_center().x,cylinder->getBtm_center().y,cylinder->getBtm_center().z,1);
-                CPosition gloPosition(vec.x(),vec.y(),vec.z());
-                //当前参考的坐标系下的坐标值
-                position=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(gloPosition,cylinder->m_pCurCoord);
+                box->setCurrentIndex(box->findText((m_pMainWin->m_pcsListMgr->FindNode(cylinder->GetCurCoord()))->GetObjectCName()));
+                box->setEnabled(false);
+
+                cylinder->SetExtCoord(cylinder->GetCurCoord());
             }
+
+            position=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(gloPosition,cylinder->m_pExtCoord);
+
             if (cylinder != nullptr){
                 table->setItem(0, 0, new QTableWidgetItem("X"));
                 table->setItem(0, 1, new QTableWidgetItem(QString::number(position.x,'f',6)));
@@ -321,19 +514,51 @@ void DataWidget::updateinfo()
         if(obj->GetUniqueType()==enCone){
             CCone* cone = dynamic_cast<CCone*>(obj);
             CPosition position;
+            //转换为全局坐标
+            QVector4D vec=cone->m_pRefCoord->m_mat*QVector4D(cone->GetObjectCenterLocalPoint().x,cone->GetObjectCenterLocalPoint().y,cone->GetObjectCenterLocalPoint().z,1);
+            CPosition gloPosition(vec.x(),vec.y(),vec.z());
             if(m_pMainWin->m_nRelyOnWhichCs==csRef){
+                box->setEnabled(true);
+                box->setCurrentIndex(box->findText((m_pMainWin->m_pcsListMgr->FindNode(cone->GetRefCoord()))->GetObjectCName()));
                 //即为点存储的坐标（出生时参考的坐标）
-                //不做改变
-                position.x=cone->GetObjectCenterLocalPoint().x;
-                position.y=cone->GetObjectCenterLocalPoint().y;
-                position.z=cone->GetObjectCenterLocalPoint().z;
+
+                cone->SetExtCoord(cone->GetRefCoord());
+
+                //当切换扩展坐标系时检测到变化
+                connect(box, &QComboBox::currentIndexChanged, this, [=](){
+                    // QString currentText =box->currentText();
+                    // qDebug() << "当前选中的文本是: " << currentText;
+                    if(box->currentText()=="机械坐标系"){
+                        cone->SetExtCoord(m_pMainWin->m_pcsListMgr->GetBaseCoordSystem());
+                    }else{
+                        for(CObject *obj:m_pMainWin->m_ObjectListMgr->getObjectList()){
+                            if(box->currentText()==obj->GetObjectCName()){
+                                CPcsNode* node=dynamic_cast<CPcsNode*>(obj);
+                                cone->SetExtCoord(node->getPcs());
+                                // qDebug() << "Current Text: " << box->currentText();
+                                // qDebug() << "Object Name: " << obj->GetObjectCName();
+                                break;
+                            }
+                        }
+                    }
+
+                    CPosition temposition=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(gloPosition,cone->m_pExtCoord);
+
+                    table->setItem(0, 1, new QTableWidgetItem(QString::number(temposition.x,'f',6)));
+                    table->setItem(1, 1, new QTableWidgetItem(QString::number(temposition.y,'f',6)));
+                    table->setItem(2, 1, new QTableWidgetItem(QString::number(temposition.z,'f',6)));
+
+                    table->viewport()->update();
+                });
             }else{
-                //转换为全局坐标
-                QVector4D vec=cone->m_pRefCoord->m_mat*QVector4D(cone->GetObjectCenterLocalPoint().x,cone->GetObjectCenterLocalPoint().y,cone->GetObjectCenterLocalPoint().z,1);
-                CPosition gloPosition(vec.x(),vec.y(),vec.z());
-                //当前参考的坐标系下的坐标值
-                position=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(gloPosition,cone->m_pCurCoord);
+                box->setCurrentIndex(box->findText((m_pMainWin->m_pcsListMgr->FindNode(cone->GetCurCoord()))->GetObjectCName()));
+                box->setEnabled(false);
+
+                cone->SetExtCoord(cone->GetCurCoord());
             }
+
+            position=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(gloPosition,cone->m_pExtCoord);
+
             if (cone != nullptr){
                 table->setItem(0, 0, new QTableWidgetItem("X"));
                 table->setItem(0, 1, new QTableWidgetItem(QString::number(position.x,'f',6)));
