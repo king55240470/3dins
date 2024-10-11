@@ -254,7 +254,7 @@ vtkSmartPointer<vtkActor> CCone::draw(){
     return actor;
 }
 
-vtkSmartPointer<vtkActor> CDistance::draw(){
+/*vtkSmartPointer<vtkActor> CDistance::draw(){
     // 获取首尾两个点在参考坐标系下的坐标(预置时输入的)，
     // 并计算得到他在机械坐标系下的位置(全局坐标)
     CPosition pos_begin(begin.x, begin.y, begin.z);
@@ -291,7 +291,7 @@ vtkSmartPointer<vtkActor> CDistance::draw(){
     actor->GetProperty()->SetLineWidth(3);
 
     return actor;
-}
+}*/
 
 
 int CLine::lineCount=0;
@@ -532,16 +532,31 @@ void CDistance::setbegin(const CPosition &newbegin)
     begin=newbegin;
 }
 
-void CDistance::setend(const CPosition &newend)
+/*void CDistance::setend(const CPosition &newend)
 {
     end=newend;
+}*/
+
+void CDistance::setplane(const CPlane &Plane)
+{
+    plane=Plane;
 }
 
 double CDistance::getdistance()
 {
-    double distance = sqrt(pow(end.x - begin.x, 2) +
-                           pow(end.y - begin.y, 2) +
-                           pow(end.z - begin.z, 2));
+    QVector4D normal = plane.getNormal();
+    CPosition center = plane.getCenter();
+
+    // 将法线单位化
+    double norm_length = sqrt(normal.x() * normal.x() + normal.y() * normal.y() + normal.z() * normal.z());
+    QVector4D unitNormal = normal / norm_length;
+
+    // 计算点到平面的距离
+    // 点到平面的距离公式: d = |(P - P0) · N| / ||N||
+    double distance = fabs((begin.x - center.x) * unitNormal.x() +
+                           (begin.y - center.y) * unitNormal.y() +
+                           (begin.z - center.z) * unitNormal.z());
+
     return distance;
 }
 
