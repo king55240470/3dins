@@ -31,7 +31,7 @@ VtkWidget::VtkWidget(QWidget *parent)
     this->setLayout(mainlayout);
 
     // 显示转换后的点云图形
-    // showConvertedCloud();
+    showConvertedCloud();
 
 }
 
@@ -252,93 +252,73 @@ void VtkWidget::ononIsometricView(){
     }
 }
 
-void VtkWidget::displayCloud(std::shared_ptr<pcl::PointCloud<pcl::PointXYZ>> cloud, const std::string &name)
-{
-    visualizer->removeAllPointClouds();  // 移除所有点云
-    visualizer->removeAllShapes();  // 移除所有形状
-    pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> color(cloud, 255, 255, 255);  // 设置点云颜色为白色
-    visualizer->addPointCloud<pcl::PointXYZ>(cloud, color, name);  // 添加点云到可视化对象
-    visualizer->resetCamera();  // 重置相机
-    visualizer->spinOnce();  // 更新可视化窗口一次
-}
+// void VtkWidget::displayCloud(std::shared_ptr<pcl::PointCloud<pcl::PointXYZ>> cloud, const std::string &name)
+// {
+//     visualizer->removeAllPointClouds();  // 移除所有点云
+//     visualizer->removeAllShapes();  // 移除所有形状
+//     pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> color(cloud, 255, 255, 255);  // 设置点云颜色为白色
+//     visualizer->addPointCloud<pcl::PointXYZ>(cloud, color, name);  // 添加点云到可视化对象
+//     visualizer->resetCamera();  // 重置相机
+//     visualizer->spinOnce();  // 更新可视化窗口一次
+// }
 
-// 显示比较结果点云函数
-void VtkWidget::displayComparisonCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, const std::string &name)
+// // 显示比较结果点云函数
+// void VtkWidget::displayComparisonCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, const std::string &name)
+// {
+//     visualizer->removeAllPointClouds();  // 移除所有点云
+//     visualizer->removeAllShapes();  // 移除所有形状
+//     pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGB> color(cloud);  // 使用点云中的RGB颜色
+//     visualizer->addPointCloud<pcl::PointXYZRGB>(cloud, color, name);  // 添加点云到可视化对象
+//     visualizer->resetCamera();  // 重置相机
+//     visualizer->spin();  // 持续更新可视化窗口，直到窗
+// }
+
+void VtkWidget::showConvertedCloud()
 {
-    visualizer->removeAllPointClouds();  // 移除所有点云
-    visualizer->removeAllShapes();  // 移除所有形状
-    pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGB> color(cloud);  // 使用点云中的RGB颜色
-    visualizer->addPointCloud<pcl::PointXYZRGB>(cloud, color, name);  // 添加点云到可视化对象
-    visualizer->resetCamera();  // 重置相机
-    visualizer->spin();  // 持续更新可视化窗口，直到窗
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+    pcl::io::loadPCDFile("E:\\pcl\\bunny.pcd", *cloud);
+
+    // 将cloud转换为VTK的点集
+    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+    points->SetNumberOfPoints(cloud->points.size());
+    for (size_t i = 0; i < cloud->points.size(); ++i)
+    {
+        points->SetPoint(i, cloud->points[i].x, cloud->points[i].y, cloud->points[i].z);
+    }
+
+    vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
+    polyData->SetPoints(points);
+
+    // 创建一个顶点过滤器来生成顶点表示（可选，但通常用于点云）
+    vtkSmartPointer<vtkVertexGlyphFilter> glyphFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
+    glyphFilter->SetInputData(polyData);
+    glyphFilter->Update();
+
+    polyData = glyphFilter->GetOutput();
+
+    // 创建映射器并将glyphFilter的几何数据输入
+    vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    mapper->SetInputData(polyData);
+
+    vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
+    actor->SetMapper(mapper);
+    actor->GetProperty()->SetPointSize(3); // 设置点大小
+    actor->GetProperty()->SetColor(1, 1, 0);
+
+    renderer->AddActor(actor);
+    getRenderWindow()->Render(); // 刷新渲染窗口
 }
 
 // 显示转换后的点云图像
-void VtkWidget::showConvertedCloud(std::shared_ptr<pcl::PointCloud<pcl::PointXYZ>> cloud, const std::string &name)
-{
-    // 将cloud转换为VTK的点集
-    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-    points->SetNumberOfPoints(cloud->points.size());
-    for (size_t i = 0; i < cloud->points.size(); ++i)
-    {
-        points->SetPoint(i, cloud->points[i].x, cloud->points[i].y, cloud->points[i].z);
-    }
+void VtkWidget::showConvertedCloud(std::shared_ptr<pcl::PointCloud<pcl::PointXYZ>> cloud, const std::string &name){
 
-    vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
-    polyData->SetPoints(points);
 
-    // 创建一个顶点过滤器来生成顶点表示（可选，但通常用于点云）
-    vtkSmartPointer<vtkVertexGlyphFilter> glyphFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
-    glyphFilter->SetInputData(polyData);
-    glyphFilter->Update();
-
-    polyData = glyphFilter->GetOutput();
-
-    // 创建映射器并将glyphFilter的几何数据输入
-    vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-    mapper->SetInputData(polyData);
-
-    vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
-    actor->SetMapper(mapper);
-    actor->GetProperty()->SetPointSize(2); // 设置点大小
-    actor->GetProperty()->SetColor(1, 0, 0);
-
-    renderer->AddActor(actor);
-    getRenderWindow()->Render(); // 刷新渲染窗口
 }
 
 // 重载PointXYZRGB类型的
-void VtkWidget::showConvertedCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, const std::string &name)
-{
-    // 将cloud转换为VTK的点集
-    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-    points->SetNumberOfPoints(cloud->points.size());
-    for (size_t i = 0; i < cloud->points.size(); ++i)
-    {
-        points->SetPoint(i, cloud->points[i].x, cloud->points[i].y, cloud->points[i].z);
-    }
+void VtkWidget::showConvertedCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, const std::string &name){
 
-    vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
-    polyData->SetPoints(points);
 
-    // 创建一个顶点过滤器来生成顶点表示（可选，但通常用于点云）
-    vtkSmartPointer<vtkVertexGlyphFilter> glyphFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
-    glyphFilter->SetInputData(polyData);
-    glyphFilter->Update();
-
-    polyData = glyphFilter->GetOutput();
-
-    // 创建映射器并将glyphFilter的几何数据输入
-    vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-    mapper->SetInputData(polyData);
-
-    vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
-    actor->SetMapper(mapper);
-    actor->GetProperty()->SetPointSize(2); // 设置点大小
-    actor->GetProperty()->SetColor(1, 0, 0);
-
-    renderer->AddActor(actor);
-    getRenderWindow()->Render(); // 刷新渲染窗口
 }
 
 // 比较两个点云的处理函数
@@ -419,7 +399,7 @@ void VtkWidget::onAlign()
     // 检查配准是否成功
     if (icp.hasConverged()) {
         *alignedCloud = finalCloud;
-        displayCloud(alignedCloud, "Aligned Cloud");  // 显示对齐后的点云
+        showConvertedCloud(alignedCloud, "Aligned Cloud");  // 显示对齐后的点云
     } else {
         QMessageBox::critical(this, "Error", "ICP did not converge!");
         return;
