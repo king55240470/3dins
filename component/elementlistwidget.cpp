@@ -226,16 +226,21 @@ void ElementListWidget::keyReleaseEvent(QKeyEvent *event)
 }
 
 void ElementListWidget::mousePressEvent(QMouseEvent *event) {
-    if (event->button() == Qt::RightButton) {
+    if (event->button() == Qt::LeftButton) {
+        // 左键点击，按默认行为处理（即选中项）
+        QWidget::mousePressEvent(event);
+    }/*else if(event->button() == Qt::RightButton){
         // 获取右键点击的坐标
         QPoint pos = event->pos();
         QTreeWidgetItem *item = treeWidgetNames->itemAt(pos);
-        if(item){
-            onCustomContextMenuRequested(pos);
-            event->ignore();
-            return;
-        }
-    }
-    QWidget::mousePressEvent(event);
+        QMenu contextMenu(this);
+        QAction *action1 = contextMenu.addAction("删除");
+        QAction *action2 = contextMenu.addAction("Action 2");
+        connect(action1, &QAction::triggered, this, &ElementListWidget::onDeleteEllipse);
+        contextMenu.exec(mapToGlobal(event->pos()));
+    }else {
+        // 对于其他按钮（如中键），按默认行为处理
+        QWidget::mousePressEvent(event);
+    }*/
 }
 
