@@ -77,10 +77,11 @@ public:
     void ononIsometricView(); // 旋转立体视角
 
     // 加载点云图像
-    void displayCloud(std::shared_ptr<pcl::PointCloud<pcl::PointXYZ>> cloud, const std::string &name);
-    void displayComparisonCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, const std::string &name);
+    // void displayCloud(std::shared_ptr<pcl::PointCloud<pcl::PointXYZ>> cloud, const std::string &name);
+    // void displayComparisonCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, const std::string &name);
 
     // 将点云转为vtk的顶点图形并显示
+    void showConvertedCloud();
     void showConvertedCloud(std::shared_ptr<pcl::PointCloud<pcl::PointXYZ>> cloud, const std::string &name);
     void showConvertedCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, const std::string &name);
 
