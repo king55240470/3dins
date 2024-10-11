@@ -15,7 +15,12 @@ class DataWidget : public QWidget
 public:
     explicit DataWidget(QWidget *parent = nullptr);
     void updateinfo();
+<<<<<<< HEAD
     void getobjindex(int objindex);
+=======
+    void getentityindex(int entityindex);
+    void OnComboBoxIndexChanged(int);
+>>>>>>> 1a5be533dac985d39c56f331fe73dffe3d015c67
 private:
     QVBoxLayout *vlayout;
     QHBoxLayout *hlayout;

@@ -1380,9 +1380,15 @@ void ToolWidget::onConstructDistance(){
 
     CPosition A=m_selected_points[0]->GetPt();
     CPosition B=m_selected_points[1]->GetPt();
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> 1a5be533dac985d39c56f331fe73dffe3d015c67
     qDebug()<<"点击了构造距离";
     m_pMainWin->getPWinVtkWidget()->reDraw();
 }
+
 void ToolWidget::updateele(){
 
     ElementListWidget* p_elementListwidget= m_pMainWin->getPWinElementListWidget();
