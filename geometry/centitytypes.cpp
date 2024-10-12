@@ -575,11 +575,12 @@ double CDistance::getdistance()
     return distance;
 }
 
-void CDistance::judge()
+bool CDistance::judge()
 {
     double dis=abs(uptolerance-undertolerance);
     if(getdistance()<=dis){
         qualified=true;
     }
+    return qualified;
 }
 

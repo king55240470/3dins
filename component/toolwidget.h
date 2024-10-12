@@ -8,7 +8,6 @@
 #include <mainwindow.h>
 #include"geometry/globes.h"
 #include"geometry/centitytypes.h"
-
 //槽函数
 namespace tool_widget{
 //Find
@@ -24,7 +23,7 @@ void onFindSphere();
 void onConstructPoint();
 void onConstructLine();
 void onConstructCircle();
-void onConstructPlan();
+void onConstructPlane();
 void onConstructRectangle();
 void onConstructCylinder();
 void onConstructCone();
