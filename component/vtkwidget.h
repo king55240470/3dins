@@ -55,6 +55,9 @@ public:
     // 配置vtk窗口
     void setUpVtk(QVBoxLayout *layout);
 
+    // 配置点云文件
+    void setUpPcl();
+
     // 获取m_renWin
     vtkSmartPointer<vtkRenderWindow> getRenderWindow();
 
