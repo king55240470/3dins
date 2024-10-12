@@ -317,6 +317,7 @@ int CPlane::plainCount=0;
 int CSphere::sphereCount=0;
 int CCylinder::cylinderCount=0;
 int CCone::coneCount=0;
+int CDistance::currentCdistacneId=0;
 void CCircle::SetDiameter(double d)
 {
     m_d = d;
