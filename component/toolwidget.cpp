@@ -58,8 +58,9 @@
 
 #include<QTreeWidgetItem>
 //constructor
+#include"constructor/planeconstructor.h"
 #include"constructor/lineconstructor.h"
-
+#include"constructor/distanceconstructor.h"
 
 int getImagePaths(const QString& directory, QStringList &iconPaths, QStringList &iconNames);
 
@@ -517,7 +518,7 @@ void   onFindSphere(){qDebug()<<"点击了识别球形";}
 void   onConstructPoint(){qDebug()<<"点击了构造点";}
 void   onConstructLine(){qDebug()<<"点击了构造线";}
 void   onConstructCircle(){qDebug()<<"点击了构造圆";}
-void   onConstructPlan(){qDebug()<<"点击了构造平面";}
+void   onConstructPlane(){qDebug()<<"点击了构造平面";}
 void   onConstructRectangle(){qDebug()<<"点击了构造矩形";}
 void   onConstructCylinder(){qDebug()<<"点击了构造圆柱";}
 void   onConstructCone(){qDebug()<<"点击了构造圆锥";}
@@ -1372,18 +1373,23 @@ void ToolWidget::onConstructSphere(){
 
 }
 void ToolWidget::onConstructDistance(){
-    // if(m_point_index.size()<2)
-    // {
-    //     WrongWidget("距离至少由两个点构成");
-    //     return ;
-    // }
+    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+    DistanceConstructor constructor;
+    CDistance* newDistance=(CDistance*)constructor.create(entityList);
+    if(newDistance==nullptr){
+        WrongWidget("构造距离失败");
+        return ;
+    }
+    newDistance->m_CreateForm = ePreset;
+    newDistance->m_pRefCoord = m_pMainWin->m_pcsListMgr->m_pPcsCurrent;
+    newDistance->m_pCurCoord = m_pMainWin->m_pcsListMgr->m_pPcsCurrent;
+    newDistance->m_pExtCoord = m_pMainWin->m_pcsListMgr->m_pPcsCurrent;
+    // newPlane->SetNominal();
+    // 加入Entitylist 和 ObjectList
+    m_pMainWin->m_EntityListMgr->Add(newDistance);
+    m_pMainWin->m_ObjectListMgr->Add(newDistance);
 
-    CPosition A=m_selected_points[0]->GetPt();
-    CPlane plane;
-
-
-    qDebug()<<"点击了构造距离";
-    m_pMainWin->getPWinVtkWidget()->reDraw();
+    m_pMainWin->NotifySubscribe();
 }
 
 void ToolWidget::updateele(){
@@ -1396,6 +1402,7 @@ void ToolWidget::updateele(){
     if (!selectedItems.isEmpty()) {
         m_point_index.clear();
         m_selected_points.clear();
+        m_selected_plane.clear();
         int *index=new int[selectedItems.size()];
         int *entityindex=new int[selectedItems.size()];
         int count_index=0;
@@ -1429,10 +1436,15 @@ void ToolWidget::updateele(){
                 m_selected_points.push_back((CPoint*)entityList[entityindex[i]]);
             }
         }
+        for(int i=0;i<count_entityindex;i++){
+            if(entityList[entityindex[i]]->GetUniqueType()==enPlane){
+                m_plane_index.push_back(index[i]);
+                m_selected_plane.push_back((CPlane*)entityList[entityindex[i]]);
+            }
+        }
         delete []index;
         delete []entityindex;
     }
-    qDebug()<<"目前被选中的点数为"<<m_point_index.size();
 }
 void ToolWidget::NotifySubscribe(){
     qDebug()<<"ToolWidget::NotifySubscribe()";
