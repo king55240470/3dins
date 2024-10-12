@@ -31,7 +31,7 @@ VtkWidget::VtkWidget(QWidget *parent)
     this->setLayout(mainlayout);
 
     // 显示转换后的点云图形
-    showConvertedCloud();
+    // showConvertedCloud();
 
 }
 
