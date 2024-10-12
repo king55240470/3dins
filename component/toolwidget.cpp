@@ -1372,14 +1372,14 @@ void ToolWidget::onConstructSphere(){
 
 }
 void ToolWidget::onConstructDistance(){
-    if(m_point_index.size()<2)
-    {
-        WrongWidget("距离至少由两个点构成");
-        return ;
-    }
+    // if(m_point_index.size()<2)
+    // {
+    //     WrongWidget("距离至少由两个点构成");
+    //     return ;
+    // }
 
     CPosition A=m_selected_points[0]->GetPt();
-    CPosition B=m_selected_points[1]->GetPt();
+    CPlane plane;
 
 
     qDebug()<<"点击了构造距离";

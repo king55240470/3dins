@@ -31,7 +31,7 @@ VtkWidget::VtkWidget(QWidget *parent)
     this->setLayout(mainlayout);
 
     // 显示转换后的点云图形
-    // showConvertedCloud();
+    showConvertedCloud();
 
 }
 
@@ -302,8 +302,8 @@ void VtkWidget::showConvertedCloud()
 
     vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
-    actor->GetProperty()->SetPointSize(3); // 设置点大小
-    actor->GetProperty()->SetColor(1, 1, 0);
+    actor->GetProperty()->SetPointSize(5); // 设置点大小
+    actor->GetProperty()->SetColor(0.5, 0.5, 0.5);
 
     renderer->AddActor(actor);
     getRenderWindow()->Render(); // 刷新渲染窗口

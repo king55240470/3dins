@@ -15,6 +15,7 @@ class DataWidget : public QWidget
 public:
     explicit DataWidget(QWidget *parent = nullptr);
     void updateinfo();
+    void getobjindex(int objindex);
     void getentityindex(int entityindex);
     void OnComboBoxIndexChanged(int);
 private:
