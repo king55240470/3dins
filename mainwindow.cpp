@@ -10,6 +10,7 @@
 #include"component/contralwidget.h"
 #include "geometry/centitytypes.h"
 #include "component/presetelemwidget.h"
+#include "manager/filemgr.h"
 
 #include <QSettings>
 #include <QLabel>
@@ -200,19 +201,31 @@ MainWindow::~MainWindow() {
 
 void MainWindow::openFile(){
     // 使用QFileDialog打开文件对话框，允许多选
-    QString filePath = QFileDialog::getOpenFileName(this, tr("open  file"));
-    if (filePath.isEmpty()) { // 如果没有选择文件，返回
+    QStringList filePaths = QFileDialog::getOpenFileNames(this, tr("Open Files"));
+    //QString filePath = QFileDialog::getOpenFileName(this, tr("open  file"));
+    if (filePaths.isEmpty()) { // 如果没有选择文件，返回
         return;
     }
-    if (filePath.endsWith("stp")) {
+    for (const QString &filePath : filePaths) {
         QFileInfo fileInfo(filePath);
         QString fileName = fileInfo.fileName();
-        pWinFileManagerWidget->openModelFile(fileName,filePath);
-    }else if(filePath.endsWith("stl")||filePath.endsWith("pcd")||filePath.endsWith("ply")){
-        QFileInfo fileInfo(filePath);
-        QString fileName = fileInfo.fileName();
-        pWinFileManagerWidget->openMeasuredFile(fileName,filePath);
+
+        // 根据文件扩展名进行判断
+        if (filePath.endsWith("stp")) {
+            pWinFileManagerWidget->openModelFile(fileName, filePath);
+        } else if (filePath.endsWith("stl") || filePath.endsWith("pcd") || filePath.endsWith("ply")) {
+            pWinFileManagerWidget->openMeasuredFile(fileName, filePath);
         }
+    }
+    // if (filePath.endsWith("stp")) {
+    //     QFileInfo fileInfo(filePath);
+    //     QString fileName = fileInfo.fileName();
+    //     pWinFileManagerWidget->openModelFile(fileName,filePath);
+    // }else if(filePath.endsWith("stl")||filePath.endsWith("pcd")||filePath.endsWith("ply")){
+    //     QFileInfo fileInfo(filePath);
+    //     QString fileName = fileInfo.fileName();
+    //     pWinFileManagerWidget->openMeasuredFile(fileName,filePath);
+    //     }
 }
 void MainWindow::saveFile(){
 
@@ -292,6 +305,8 @@ void MainWindow::loadManager()
     m_pcsListMgr=new CPcsMgr();
     m_ObjectListMgr=new CObjectMgr();
     m_EntityListMgr=new CEntityMgr();
+
+    pWinFileMgr=new FileMgr();
 
     m_pcsListMgr->Initialize();
 }
@@ -864,5 +879,9 @@ void MainWindow::on2dCoordSetRightY()
     }
     m_pcsListMgr->m_pNodeTemporary->pPcs->PlanarRotateYinXY(angle);
     NotifySubscribe();
+}
+
+FileMgr *MainWindow::getpWinFileMgr(){
+    return pWinFileMgr;
 }
 
