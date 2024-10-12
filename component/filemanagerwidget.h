@@ -43,16 +43,22 @@ private:
     QAction *deleteAction;
     MainWindow *m_pMainWin;
     VtkWidget *m_pVtkWidget;
+
+    QModelIndex selectedIndex;//保存右键删除时选中的索引
+    QStandardItem *selectedItem;//保存右键删除时选中的子项
 public:
     void openModelFile(QString,QString);
     void openMeasuredFile(QString,QString);
     void createPresetOpen(CEntity*);
     void createPresetClose(CEntity*);
-    void contextMenuEvent(QContextMenuEvent *event);
+    void showContextMenu(const QPoint &);
     void UpdateInfo();
     bool isChildOf(QStandardItem*, QStandardItem*);
 private slots:
     void getItem(const QModelIndex &);
+    void changePlay(const QModelIndex &);
+    void changeModelFile(const QModelIndex &);
+    void changeMeasuredFile(const QModelIndex &);
     void changeVtk(const QModelIndex &);
     void deleteFile();
 signals:
