@@ -1,28 +1,30 @@
 #ifndef VTKWIDGET_H
 #define VTKWIDGET_H
 
+#include "mainwindow.h"
 #include <QWidget>
+#include <QVTKOpenGLWidget.h>
+#include <QVTKOpenGLNativeWidget.h>
 #include <QWindow>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QPushButton>
-#include <vtkRenderer.h>
-#include <vtkRenderWindow.h>
-#include <vtkRenderWindowInteractor.h>
-
-#include <vtkGenericOpenGLRenderWindow.h>
-#include <vtkGenericRenderWindowInteractor.h>
-
-#include <vtkActor.h>
-#include <vtkSmartPointer.h>
+#include <QImage>
+#include <QTimer>
+#include <QPixmap>
 
 #include <pcl/point_cloud.h>     // PCL 的点云类
 #include <pcl/point_types.h>     // PCL 的点类型定义
 #include <pcl/io/pcd_io.h>       // PCL 的 PCD 文件输入输出类
 #include <pcl/visualization/pcl_visualizer.h> // PCL 的可视化工具
-#include "mainwindow.h"
 
-#include <QVTKOpenGLNativeWidget.h>
+#include <vtkRenderer.h>
+#include <vtkRenderWindow.h>
+#include <vtkRenderWindowInteractor.h>
+#include <vtkGenericOpenGLRenderWindow.h>
+#include <vtkGenericRenderWindowInteractor.h>
+#include <vtkActor.h>
+#include <vtkSmartPointer.h>
 #include <vtkSphereSource.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkActor.h>
@@ -33,17 +35,14 @@
 #include <vtkCubeAxesActor.h>
 #include <vtkCaptionActor2D.h>
 #include <vtkInteractorStyleTrackballCamera.h>
+#include <vtkPropPicker.h>
+#include <vtkVertexGlyphFilter.h>
+#include <vtkCallbackCommand.h>
 #include <vtkAutoInit.h>
 VTK_MODULE_INIT(vtkRenderingOpenGL2);
 VTK_MODULE_INIT(vtkInteractionStyle);
 VTK_MODULE_INIT(vtkRenderingVolumeOpenGL2);
 VTK_MODULE_INIT(vtkRenderingFreeType);
-
-// 定义点的类型
-typedef pcl::PointXYZ PointT; // 定义 PointT 为 pcl::PointXYZ 类型
-typedef pcl::PointCloud<PointT> PointCloudT; // 定义 PointCloudT 为 pcl::PointCloud<PointT> 类型
-typedef pcl::visualization::PCLVisualizer PCLViewer; // 定义 PCLViewer 为 PCLVisualizer 类型
-typedef std::shared_ptr<PointCloudT> PointCloudPtr; // 定义 PointCloudPtr 为 PointCloudT 的智能指针
 
 class VtkWidget : public QWidget
 {
@@ -51,7 +50,7 @@ class VtkWidget : public QWidget
 
 public:
     VtkWidget(QWidget *parent = nullptr);
-    ~VtkWidget();
+    ~VtkWidget() {};
 
     // 配置vtk窗口
     void setUpVtk(QVBoxLayout *layout);
@@ -77,23 +76,40 @@ public:
     void onFrontView(); // 正视
     void ononIsometricView(); // 旋转立体视角
 
-private:
-    PointCloudPtr cloudptr; // 点云智能指针
-    PCLViewer::Ptr cloud_viewer; // PCL 可视化器的智能指针
+    // 加载点云图像
+    // void displayCloud(std::shared_ptr<pcl::PointCloud<pcl::PointXYZ>> cloud, const std::string &name);
+    // void displayComparisonCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, const std::string &name);
 
+    // 将点云转为vtk的顶点图形并显示
+    void showConvertedCloud();
+    void showConvertedCloud(std::shared_ptr<pcl::PointCloud<pcl::PointXYZ>> cloud, const std::string &name);
+    void showConvertedCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, const std::string &name);
+
+private:
     QVTKOpenGLNativeWidget* vtkWidget; // vtk窗口
+    MainWindow *m_pMainWin=nullptr; // mainwindow指针
 
     // 创建渲染器、渲染窗口和交互器
     vtkSmartPointer<vtkRenderer> renderer;
     vtkSmartPointer<vtkGenericOpenGLRenderWindow> renWin;
-    vtkSmartPointer<vtkRenderWindowInteractor> interactor;
+    vtkSmartPointer<vtkGenericRenderWindowInteractor> interactor;
 
-    // 创建坐标器
+    // 创建全局坐标器
     vtkSmartPointer<vtkAxesActor> axesActor;
     // 创建交互部件来封装坐标器
     vtkSmartPointer<vtkOrientationMarkerWidget> orientationWidget;
 
-    MainWindow *m_pMainWin=nullptr;
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud1; // 基准点云1
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud2;
+    pcl::visualization::PCLVisualizer::Ptr visualizer; // PCL 可视化器的智能指针
+
+private slots:
+    // 比较两个点云
+    void onCompare();
+
+    // 配准的槽函数
+    void onAlign();
+
 signals:
 
 };

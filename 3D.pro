@@ -20,6 +20,16 @@ SOURCES += \
     component/vtkpresetwidget.cpp \
     component/vtkwidget.cpp \
     component/vtkwindowreportwidget.cpp \
+    constructor/circleconstructor.cpp \
+    constructor/coneconstructor.cpp \
+    constructor/constructor.cpp \
+    constructor/cylinderconstructor.cpp \
+    constructor/distanceconstructor.cpp \
+    constructor/lineconstructor.cpp \
+    constructor/planeconstructor.cpp \
+    constructor/pointconstructor.cpp \
+    constructor/rectangleconstructor.cpp \
+    constructor/sphereconstructor.cpp \
     geometry/centity.cpp \
     geometry/centitytypes.cpp \
     geometry/cobject.cpp \
@@ -46,6 +56,16 @@ HEADERS += \
     component/vtkpresetwidget.h \
     component/vtkwidget.h \
     component/vtkwindowreportwidget.h \
+    constructor/circleconstructor.h \
+    constructor/coneconstructor.h \
+    constructor/constructor.h \
+    constructor/cylinderconstructor.h \
+    constructor/distanceconstructor.h \
+    constructor/lineconstructor.h \
+    constructor/planeconstructor.h \
+    constructor/pointconstructor.h \
+    constructor/rectangleconstructor.h \
+    constructor/sphereconstructor.h \
     geometry/centity.h \
     geometry/centitytypes.h \
     geometry/cobject.h \

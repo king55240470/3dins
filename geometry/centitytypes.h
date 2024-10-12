@@ -389,11 +389,13 @@ public:
 };
 
 class CDistance : public CEntity{
+    static int currentCdistacneId;
     double uptolerance;
     double undertolerance;
     CPosition begin;
-    CPosition end;
+    //CPosition end;
     bool qualified=false;
+    CPlane plane;
 public:
     CDistance(){
         uptolerance=0.0;
@@ -401,17 +403,20 @@ public:
         begin.x=0;
         begin.y=0;
         begin.z=0;
-        end.x=0;
-        end.y=0;
-        end.z=0;
+        m_strAutoName = QString("距离%1").arg(currentCdistacneId);
+        m_strCName = QString("距离%1").arg(currentCdistacneId);
     }
     double getUptolerance();
     double getUndertolerance();
     void setUptolerance(double on);
     void setUndertolerance(double under);
     void setbegin(const CPosition & newbegin);
-    void setend(const CPosition & newend);
+    //void setend(const CPosition & newend);
+    void setplane(const CPlane & Plane);
     double getdistance();
-    void judge();
+    bool judge();
+
+    // CDistance的draw()
+    vtkSmartPointer<vtkActor> draw() override;
 };
 #endif // CENTITYTYPES_H
