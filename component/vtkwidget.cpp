@@ -28,6 +28,7 @@ VtkWidget::VtkWidget(QWidget *parent)
     // 设置 VTK 渲染窗口到 QWidget
     QVBoxLayout *mainlayout = new QVBoxLayout;
     setUpVtk(mainlayout); // 配置vtk窗口
+    setUpPcl();
     this->setLayout(mainlayout);
 
     // 显示转换后的点云图形
@@ -84,6 +85,31 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
     layout->addWidget(vtkWidget);
 
     getRenderWindow()->Render();
+}
+
+void VtkWidget::setUpPcl()
+{
+    // 加载点云文件1
+    QString fileName = QFileDialog::getOpenFileName(this, "Open Point Cloud File 1", "", "PCD Files (*.pcd);;PLY Files (*.ply)");
+    if (fileName.isEmpty()) return;  // 如果文件名为空，直接返回
+
+    // 根据文件后缀加载不同的点云文件
+    if (fileName.endsWith(".pcd")) {
+        if (pcl::io::loadPCDFile<pcl::PointXYZ>(fileName.toStdString(), *cloud1) == -1) {
+            QMessageBox::critical(this, "Error", "Couldn't read the PCD file!");
+            return;
+        }
+    } else if (fileName.endsWith(".ply")) {
+        if (pcl::io::loadPLYFile<pcl::PointXYZ>(fileName.toStdString(), *cloud1) == -1) {
+            QMessageBox::critical(this, "Error", "Couldn't read the PLY file!");
+            return;
+        }
+    } else {
+        QMessageBox::critical(this, "Error", "Unsupported file format!");
+        return;
+    }
+    showConvertedCloud(cloud1, "Cloud 1");  // 显示加载的点云
+
 }
 
 vtkSmartPointer<vtkRenderWindow> VtkWidget::getRenderWindow(){
