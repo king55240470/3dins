@@ -1372,6 +1372,7 @@ void ToolWidget::onConstructSphere(){
 
 }
 void ToolWidget::onConstructDistance(){
+<<<<<<< HEAD
     if(m_point_index.size()<1&&m_plane_index.size()<1)
     {
         WrongWidget("距离至少由一个点和一个面构成");
@@ -1379,6 +1380,18 @@ void ToolWidget::onConstructDistance(){
     }
     CPosition A=m_selected_points[0]->GetPt();
     CPlane* B=m_selected_plane[0];
+=======
+    // if(m_point_index.size()<2)
+    // {
+    //     WrongWidget("距离至少由两个点构成");
+    //     return ;
+    // }
+
+    CPosition A=m_selected_points[0]->GetPt();
+    CPlane plane;
+
+
+>>>>>>> f2492c5c7fe5a9b62320a8731b44b7f4ef938d7d
     qDebug()<<"点击了构造距离";
     m_pMainWin->getPWinVtkWidget()->reDraw();
 }
