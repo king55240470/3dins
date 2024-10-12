@@ -2,16 +2,18 @@
 #define DISTANCECONSTRUCTOR_H
 #include"geometry/centitytypes.h"
 #include"constructor.h"
-class DistanceConstructor
+class DistanceConstructor:public Constructor
 {
 private:
-    CDistance m_distance;
+    CDistance *m_distance;
 public:
     DistanceConstructor();
-    bool setDistance(QVector<CEntity*>& entitylist);
-    bool setDistance(CPosition p1,CPosition p2,double uptolerance,double undertolerance);
-    bool setDistance(CPoint p1,CPoint p2,double uptolerance,double undertolerance);
-    CDistance getDistance();
+    CEntity* create(QVector<CEntity*>& entitylist)override;
+    CDistance* setDistance(CPosition p1,CPlane plane,double uptolerance,double undertolerance);
+    CDistance* setDistance(CPoint p1,CPlane plane,double uptolerance,double undertolerance);
+    CDistance* getDistance();
+    CDistance* createDistance(CPosition p1,CPlane plane,double uptolerance,double undertolerance);
+    CDistance* createDistance(CPoint p1,CPlane plane,double uptolerance,double undertolerance);
 };
 
 #endif // DISTANCECONSTRUCTOR_H
