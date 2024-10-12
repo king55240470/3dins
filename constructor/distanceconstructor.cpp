@@ -2,26 +2,27 @@
 
 DistanceConstructor::DistanceConstructor() {}
 CEntity* DistanceConstructor::create(QVector<CEntity*>& entitylist){
-    QVector<CPoint>point;
-    QVector<CPlane>plane;
+    //QVector<CPosition>positions;//存储有效点
+    QVector<CPoint*>points;
+    QVector<CPlane*>planes;
     for(int i=0;i<entitylist.size();i++){
         CEntity* entity=entitylist[i];
         if(!entity->IsSelected())continue;
         if(entity->GetUniqueType()==enPoint){
-            CPoint * Point=(CPoint*)entity;
-            point.push_back(*Point);
-        }else if(entity->GetUniqueType()==enPlane){
-            CPlane* Plane=(CPlane*)entity;
-            plane.push_back(*Plane);
+            CPoint * point=(CPoint*)entity;
+            points.push_back(point);
+        }else if(entity->GetUniqueType()==enCircle){
+            CPlane* plane=(CPlane*)entity;
+            planes.push_back(plane);
         }
     }
-    if(point.size()==1&&plane.size()==1){
+    if(points.size()==1&&planes.size()==1){
 
-        return createDistance(point[0],plane[0],0.0,0.0);
+        return createDistance(points[0],planes[0]);
     }
     return nullptr;
 }
-CDistance* DistanceConstructor::setDistance(CPosition p1,CPlane plane,double uptolerance=0.0,double undertolerance=0.0){
+/*CDistance* DistanceConstructor::setDistance(CPosition p1,CPlane plane,double uptolerance=0.0,double undertolerance=0.0){
     m_distance->setbegin(p1);
     m_distance->setplane(plane);
     m_distance->setUndertolerance(undertolerance);
@@ -34,25 +35,31 @@ CDistance* DistanceConstructor::setDistance(CPoint p1,CPlane plane,double uptole
 }
 CDistance* DistanceConstructor::getDistance(){
     return m_distance;
-}
+}*/
 
-CDistance *DistanceConstructor::createDistance(CPosition p1, CPlane plane, double uptolerance, double undertolerance)
+/*CDistance *DistanceConstructor::createDistance(CPosition p1, CPlane plane)
 {
-    m_distance->setbegin(p1);
-    m_distance->setplane(plane);
+    m_distance.setbegin(p1);
+    m_distance.setplane(plane);
     CDistance *newdistance =new CDistance();
     newdistance->setbegin(p1);
     newdistance->setplane(plane);
     return newdistance;
-}
+}*/
 
-CDistance *DistanceConstructor::createDistance(CPoint p1, CPlane plane, double uptolerance, double undertolerance)
+CDistance *DistanceConstructor::createDistance(CPoint* p1, CPlane* plane)
 {
-    CPosition pt1=p1.GetPt();
-    m_distance->setbegin(pt1);
-    m_distance->setplane(plane);
+    CPosition pt1=p1->GetPt();
+    m_distance.setbegin(pt1);
+    m_distance.setplane(*plane);
     CDistance *newdistance =new CDistance();
     newdistance->setbegin(pt1);
-    newdistance->setplane(plane);
+    newdistance->setplane(*plane);
     return newdistance;
+}
+
+void DistanceConstructor::createTolerance(double up, double under)
+{
+    m_distance.setUptolerance(up);
+    m_distance.setUndertolerance(under);
 }

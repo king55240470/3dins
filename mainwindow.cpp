@@ -29,12 +29,6 @@ MainWindow::MainWindow(QWidget *parent)
     RestoreWidgets();
     loadManager();
     m_nRelyOnWhichCs=csRef;
-
-    //connect(pWinElementListWidget,&ElementListWidget::onItemClicked,pWinToolWidget,&ToolWidget::updateele);
-
-
-    //connect(pWinElementListWidget,&ElementListWidget::onItemClicked,pWinToolWidget,&ToolWidget::updateele);
-
 }
 
 void MainWindow::setupUi(){
