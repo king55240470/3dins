@@ -84,7 +84,6 @@ vtkSmartPointer<vtkActor> CLine::draw(){
     actor->GetProperty()->SetLineWidth(3);
 
     // 添加到渲染窗口中
-    //VtkWidget::addActor(actor);
     return actor;
 }
 
@@ -138,7 +137,6 @@ vtkSmartPointer<vtkActor> CCircle::draw(){
     actor->GetProperty()->SetColor(0.0, 0.0, 0.0);
     actor->GetProperty()->SetLineWidth(3);
 
-    //VtkWidget::addActor(actor);
     return actor;
 }
 
@@ -154,7 +152,7 @@ vtkSmartPointer<vtkActor> CPlane::draw(){
     planeSource->SetCenter(globalPos.x, globalPos.y, globalPos.z); // 设置平面中心
 
     QVector4D normalVec = getNormal(); // 存储getNormal返回的临时normal对象
-    planeSource->SetNormal(normalVec.x(), normalVec.y(), normalVec.z()); // 设置平面法线
+    planeSource->SetNormal(normalVec.x(), normalVec.y(), normalVec.z()); // 设置平面法向量
 
     // 设置平面的X和Y分辨率
     planeSource->SetXResolution(50);
@@ -169,7 +167,6 @@ vtkSmartPointer<vtkActor> CPlane::draw(){
     actor->SetMapper(mapper);
     actor->GetProperty()->SetColor(0.5, 0.5, 0.5);
 
-    //VtkWidget::addActor(actor);
     return actor;
 }
 
@@ -196,7 +193,6 @@ vtkSmartPointer<vtkActor> CSphere::draw(){
     actor->SetMapper(mapper);
     actor->GetProperty()->SetColor(0.5, 0.5, 0.5);
 
-    //VtkWidget::addActor(actor);
     return actor;
 }
 
@@ -212,6 +208,7 @@ vtkSmartPointer<vtkActor> CCylinder::draw(){
     cylinder->SetCenter(globalPos.x, globalPos.y, globalPos.z);
     cylinder->SetRadius(getDiameter() / 2);
     cylinder->SetResolution(100);
+    cylinder->SetHeight(getHeight());
 
     // 创建映射器
     auto mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
@@ -222,7 +219,6 @@ vtkSmartPointer<vtkActor> CCylinder::draw(){
     actor->SetMapper(mapper);
     actor->GetProperty()->SetColor(0.5, 0.5, 0.5);
 
-    //VtkWidget::addActor(actor);
     return actor;
 }
 
@@ -249,7 +245,66 @@ vtkSmartPointer<vtkActor> CCone::draw(){
     actor->SetMapper(mapper);
     actor->GetProperty()->SetColor(0.5, 0.5, 0.5);
 
-    //VtkWidget::addActor(actor);
+    return actor;
+}
+
+vtkSmartPointer<vtkActor> CDistance::draw(){
+    // 取平面外一点
+    CPosition pos_begin(begin.x, begin.y, begin.z);
+    QVector4D posVec_begin = GetRefCoord()->m_mat * QVector4D(pos_begin.x, pos_begin.y, pos_begin.z, 1);
+    CPosition glbPos_begin(posVec_begin.x(), posVec_begin.y(), posVec_begin.z());
+
+    // 取平面上一点
+    CPosition plane_point = plane.getCenter();
+    QVector4D posVec_point = GetRefCoord()->m_mat * QVector4D(plane_point.x, plane_point.y, plane_point.z, 1);
+    CPosition glbPos_point(posVec_point.x(), posVec_point.y(), posVec_point.z());
+    // 取平面法向量
+    QVector4D plane_nomal = plane.getNormal();
+
+    // 将法线单位化
+    double norm_length = sqrt(plane_nomal.x() * plane_nomal.x() + plane_nomal.y() * plane_nomal.y() + plane_nomal.z() * plane_nomal.z());
+    QVector4D unitNormal = plane_nomal / norm_length;
+
+    // 计算点到平面的距离
+    // 点到平面的距离公式: d = |(P - P0) · N| / ||N||
+    double distance = fabs((glbPos_begin.x - glbPos_point.x) * unitNormal.x() +
+                           (glbPos_begin.y - glbPos_point.y) * unitNormal.y() +
+                           (glbPos_begin.z - glbPos_point.z) * unitNormal.z());
+
+    // 计算glbPos_begin在平面上的落点
+    CPosition projection;
+    projection.x = glbPos_begin.x - distance * plane_nomal.x();
+    projection.y = glbPos_begin.y - distance * plane_nomal.y();
+    projection.z = glbPos_begin.z - distance * plane_nomal.z();
+    QVector4D posVec_pro = GetRefCoord()->m_mat * QVector4D(projection.x, projection.y, projection.z, 1);
+    CPosition glb_pro(posVec_point.x(), posVec_point.y(), posVec_point.z());
+
+
+    // 创建点集，并插入定义线的两个点
+    auto points = vtkSmartPointer<vtkPoints>::New();
+    points->InsertNextPoint(glbPos_begin.x, glbPos_begin.y, glbPos_begin.z);
+    points->InsertNextPoint(glb_pro.x, glb_pro.y, glb_pro.z);
+
+    // 创建线源
+    auto lines = vtkSmartPointer<vtkCellArray>::New();
+    vtkIdType line[2] = {0, 1}; // 索引从0开始
+    lines->InsertNextCell(2, line); // 插入一条包含两个顶点的线
+
+    // 创建几何图形容器并设置点和线
+    vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
+    polyData->SetPoints(points);
+    polyData->SetLines(lines);
+
+    // 创建映射器
+    auto mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    mapper->SetInputData(polyData);
+
+    // 创建执行器
+    auto actor = vtkSmartPointer<vtkActor>::New();
+    actor->SetMapper(mapper);
+    actor->GetProperty()->SetColor(0.0, 0.0, 0.0);
+    actor->GetProperty()->SetLineWidth(3);
+
     return actor;
 }
 
@@ -262,6 +317,7 @@ int CPlane::plainCount=0;
 int CSphere::sphereCount=0;
 int CCylinder::cylinderCount=0;
 int CCone::coneCount=0;
+int CDistance::currentCdistacneId=0;
 void CCircle::SetDiameter(double d)
 {
     m_d = d;
@@ -492,23 +548,40 @@ void CDistance::setbegin(const CPosition &newbegin)
     begin=newbegin;
 }
 
-void CDistance::setend(const CPosition &newend)
+/*void CDistance::setend(const CPosition &newend)
 {
     end=newend;
+}*/
+
+void CDistance::setplane(const CPlane &Plane)
+{
+    plane=Plane;
 }
 
 double CDistance::getdistance()
 {
-    double distance = sqrt(pow(end.x - begin.x, 2) +
-                           pow(end.y - begin.y, 2) +
-                           pow(end.z - begin.z, 2));
+    QVector4D normal = plane.getNormal();
+    CPosition center = plane.getCenter();
+
+    // 将法线单位化
+    double norm_length = sqrt(normal.x() * normal.x() + normal.y() * normal.y() + normal.z() * normal.z());
+    QVector4D unitNormal = normal / norm_length;
+
+    // 计算点到平面的距离
+    // 点到平面的距离公式: d = |(P - P0) · N| / ||N||
+    double distance = fabs((begin.x - center.x) * unitNormal.x() +
+                           (begin.y - center.y) * unitNormal.y() +
+                           (begin.z - center.z) * unitNormal.z());
+
     return distance;
 }
 
-void CDistance::judge()
+bool CDistance::judge()
 {
     double dis=abs(uptolerance-undertolerance);
     if(getdistance()<=dis){
         qualified=true;
     }
+    return qualified;
 }
+

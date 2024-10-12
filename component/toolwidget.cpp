@@ -51,13 +51,16 @@
 #include <vtkLineSource.h>
 #include <vtkCellArray.h>
 #include <vtkPlaneSource.h>
-#include <vtkSphereSource.h>
+#include <vtkSphereSource.h>   n
 #include <vtkCylinderSource.h>
 #include <vtkConeSource.h>
 #include <vtkProperty.h>
 
 #include<QTreeWidgetItem>
-
+//constructor
+#include"constructor/planeconstructor.h"
+#include"constructor/lineconstructor.h"
+#include"constructor/distanceconstructor.h"
 
 int getImagePaths(const QString& directory, QStringList &iconPaths, QStringList &iconNames);
 
@@ -468,7 +471,10 @@ void ToolWidget::connectActionWithF(){
          tool_widget::onCreateCoord();
         m_pMainWin->on2dCoordOriginAuto(); //创建临时坐标系
     });
-    connect(coord_actions_[coord_action_name_list_.indexOf("旋转坐标系")],&QAction::triggered,&  tool_widget::onSpinCoord);
+    connect(coord_actions_[coord_action_name_list_.indexOf("旋转坐标系")],&QAction::triggered,this,[&](){
+        tool_widget::onSpinCoord();
+        m_pMainWin->on2dCoordSetRightX(); // x轴摆正
+    });
     connect(coord_actions_[coord_action_name_list_.indexOf("保存坐标系")],&QAction::triggered,this,[&](bool){
         tool_widget::onSaveCoord();
         m_pMainWin->on2dCoordSave();
@@ -512,7 +518,7 @@ void   onFindSphere(){qDebug()<<"点击了识别球形";}
 void   onConstructPoint(){qDebug()<<"点击了构造点";}
 void   onConstructLine(){qDebug()<<"点击了构造线";}
 void   onConstructCircle(){qDebug()<<"点击了构造圆";}
-void   onConstructPlan(){qDebug()<<"点击了构造平面";}
+void   onConstructPlane(){qDebug()<<"点击了构造平面";}
 void   onConstructRectangle(){qDebug()<<"点击了构造矩形";}
 void   onConstructCylinder(){qDebug()<<"点击了构造圆柱";}
 void   onConstructCone(){qDebug()<<"点击了构造圆锥";}
@@ -877,22 +883,24 @@ void ToolWidget::onConstructPoint(){
         m_pMainWin->showPresetElemWidget(0);
 }
 void ToolWidget::onConstructLine(){
-    ElementListWidget* p_elementListwidget= m_pMainWin->getPWinElementListWidget();
-    auto& objectList = m_pMainWin->m_ObjectListMgr->getObjectList();
     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
-    if(m_point_index.size()<2)
-    {
-        WrongWidget("线至少由两个点组成");
-
+    LineConstructor constructor;
+    CLine* newLine=(CLine*)constructor.create(entityList);
+    if(newLine==nullptr){
+        WrongWidget("构造线失败");
         return ;
     }
-    for(int i=0;i<m_point_index.size();i++){
-        for(int j=i+1;j<m_point_index.size();j++){
-            CPosition p1=m_selected_points[i]->GetPt();
-            CPosition p2=m_selected_points[j]->GetPt();
-            m_pMainWin->OnPresetLine(p1,p2);
-        }
-    }
+    newLine->m_CreateForm = ePreset;
+    newLine->m_pRefCoord = m_pMainWin->m_pcsListMgr->m_pPcsCurrent;
+    newLine->m_pCurCoord = m_pMainWin->m_pcsListMgr->m_pPcsCurrent;
+    newLine->m_pExtCoord = m_pMainWin->m_pcsListMgr->m_pPcsCurrent;
+    // newLine->SetNominal();
+    // 加入Entitylist 和 ObjectList
+    m_pMainWin->m_EntityListMgr->Add(newLine);
+    m_pMainWin->m_ObjectListMgr->Add(newLine);
+
+    m_pMainWin->NotifySubscribe();
+
 
 }
 static void WrongWidget(QString message){
@@ -930,7 +938,7 @@ static double distanceToPlane(const QVector4D& point, const QVector4D& planePoin
     return distance;
 }
 
-class CircleInfo{
+ class CircleInfo{
 public:
     QVector4D center;
     QVector4D normal;
@@ -1365,18 +1373,36 @@ void ToolWidget::onConstructSphere(){
 
 }
 void ToolWidget::onConstructDistance(){
-    qDebug()<<"点击了构造距离";
+    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+    DistanceConstructor constructor;
+    CDistance* newDistance=(CDistance*)constructor.create(entityList);
+    if(newDistance==nullptr){
+        WrongWidget("构造距离失败");
+        return ;
+    }
+    newDistance->m_CreateForm = ePreset;
+    newDistance->m_pRefCoord = m_pMainWin->m_pcsListMgr->m_pPcsCurrent;
+    newDistance->m_pCurCoord = m_pMainWin->m_pcsListMgr->m_pPcsCurrent;
+    newDistance->m_pExtCoord = m_pMainWin->m_pcsListMgr->m_pPcsCurrent;
+    // newPlane->SetNominal();
+    // 加入Entitylist 和 ObjectList
+    m_pMainWin->m_EntityListMgr->Add(newDistance);
+    m_pMainWin->m_ObjectListMgr->Add(newDistance);
+
+    m_pMainWin->NotifySubscribe();
 }
+
 void ToolWidget::updateele(){
 
     ElementListWidget* p_elementListwidget= m_pMainWin->getPWinElementListWidget();
-    VtkWidget * p_vtkwidget=m_pMainWin->getPWinVtkWidget();
+
     QList<QTreeWidgetItem*> selectedItems = p_elementListwidget->getSelectedItems();
     QVector<CObject*> eleobjlist=p_elementListwidget->getEleobjlist();
 
     if (!selectedItems.isEmpty()) {
         m_point_index.clear();
         m_selected_points.clear();
+        m_selected_plane.clear();
         int *index=new int[selectedItems.size()];
         int *entityindex=new int[selectedItems.size()];
         int count_index=0;
@@ -1410,10 +1436,15 @@ void ToolWidget::updateele(){
                 m_selected_points.push_back((CPoint*)entityList[entityindex[i]]);
             }
         }
+        for(int i=0;i<count_entityindex;i++){
+            if(entityList[entityindex[i]]->GetUniqueType()==enPlane){
+                m_plane_index.push_back(index[i]);
+                m_selected_plane.push_back((CPlane*)entityList[entityindex[i]]);
+            }
+        }
         delete []index;
         delete []entityindex;
     }
-
 }
 void ToolWidget::NotifySubscribe(){
     qDebug()<<"ToolWidget::NotifySubscribe()";

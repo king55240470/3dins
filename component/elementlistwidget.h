@@ -18,9 +18,12 @@
 #include<QToolBar>
 #include <QVector>
 #include <QKeyEvent>
+#include <QMouseEvent>
+#include <QAction>
 #include "toolwidget.h"
 #include "mainwindow.h"
 #include "DataWidget.h"
+#include "toolwidget.h"
 class ElementListWidget : public QWidget
 {
     Q_OBJECT
@@ -37,9 +40,13 @@ public:
     void upadteelementlist();
     QList<QTreeWidgetItem*> getSelectedItems();
     QVector<CObject*> getEleobjlist();
+    bool eventFilter(QObject *obj, QEvent *event)override;
+
+    void onItemClicked();
+protected:
+    void mousePressEvent(QMouseEvent *event)override;
     void keyPressEvent(QKeyEvent *event) override;
     void keyReleaseEvent(QKeyEvent *event) override;
-    void onItemClicked();
 private:
     QTreeWidget *treeWidgetNames;
     QTreeWidget *treeWidgetInfo;
