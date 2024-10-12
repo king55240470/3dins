@@ -30,6 +30,14 @@ MainWindow::MainWindow(QWidget *parent)
     loadManager();
     m_nRelyOnWhichCs=csRef;
 
+<<<<<<< HEAD
+=======
+    //connect(pWinElementListWidget,&ElementListWidget::onItemClicked,pWinToolWidget,&ToolWidget::updateele);
+
+
+    //connect(pWinElementListWidget,&ElementListWidget::onItemClicked,pWinToolWidget,&ToolWidget::updateele);
+
+>>>>>>> f2492c5c7fe5a9b62320a8731b44b7f4ef938d7d
 }
 
 void MainWindow::setupUi(){
@@ -790,6 +798,8 @@ ToolWidget *MainWindow::getPWinToolWidget()
 {
     return pWinToolWidget;
 }
+
+
 
 void MainWindow::onTopViewClicked()
 {

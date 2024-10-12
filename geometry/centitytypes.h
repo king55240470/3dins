@@ -417,6 +417,6 @@ public:
     void judge();
 
     // CDistance的draw()
-    //vtkSmartPointer<vtkActor> draw() override;
+    vtkSmartPointer<vtkActor> draw() override;
 };
 #endif // CENTITYTYPES_H
