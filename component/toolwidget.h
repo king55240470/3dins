@@ -131,6 +131,7 @@ private:
     //存储被选择的内容索引
     QVector<int> m_point_index;
     QVector<CPoint*>m_selected_points;
-
+    QVector<int> m_plane_index;
+    QVector<CPlane*>m_selected_plane;
 };
 #endif // TOOLWIDGET_H

@@ -50,11 +50,11 @@ ElementListWidget::ElementListWidget(QWidget *parent)
     connect(treeWidgetNames, &QTreeWidget::customContextMenuRequested,
             this, &ElementListWidget::onCustomContextMenuRequested);
     treeWidgetNames->setContextMenuPolicy(Qt::CustomContextMenu);
-    QMenu *m_menu = new QMenu(this);
-    QAction* m_action1 = new QAction(tr("计划1"), this);
-    QAction* m_action2 = new QAction(tr("计划2"), this);
-    m_menu->addAction(m_action1);
-    m_menu->addAction(m_action2);
+    setFocusPolicy(Qt::StrongFocus);
+    treeWidgetNames->installEventFilter(this);
+    treeWidgetInfo->installEventFilter(this);
+    deleteButton->installEventFilter(this);
+    toolBar->installEventFilter(this);
 
     connect(treeWidgetNames, &QTreeWidget::itemClicked, this, &ElementListWidget::onItemClicked);
 }
@@ -139,17 +139,13 @@ void ElementListWidget::onCustomContextMenuRequested(const QPoint &pos)
 {
     //QTreeWidgetItem* curItem=treeWidgetNames->itemAt(pos);
     //if (!curItem) return;
-    QMenu *popMenu = new QMenu(this);
-    QAction *actionNew = new QAction(tr("删除(D)"),popMenu);
-    QAction *actionNew_1 = new QAction(tr("行为1"),popMenu);
-    QAction *actionNew_2 = new QAction(tr("行为2"),popMenu);
-    QAction *actionNew_3 = new QAction(tr("行为3"),popMenu);
-    connect(actionNew, &QAction::triggered, this, &ElementListWidget::onDeleteEllipse);
-    popMenu->addAction(actionNew);
-    popMenu->addAction(actionNew_1);
-    popMenu->addAction(actionNew_2);
-    popMenu->addAction(actionNew_3);
-    popMenu->exec(mapToGlobal(pos));
+    QMenu menu(this);
+    QAction *action1 = menu.addAction("删除");
+    QAction *action2 = menu.addAction("操作 2");
+    QAction *action3 = menu.addAction("操作 3");
+    QAction *action4 = menu.addAction("操作 4");
+    connect(action1, &QAction::triggered, this, &ElementListWidget::onDeleteEllipse);
+    menu.exec(mapToGlobal(pos));
 }
 
 void ElementListWidget::deal_actionNew_triggered()
@@ -207,6 +203,17 @@ QVector<CObject*> ElementListWidget::getEleobjlist(){
     return eleobjlist;
 }
 
+bool ElementListWidget::eventFilter(QObject *obj, QEvent *event)
+{
+    if (event->type() == QEvent::MouseButtonPress) {
+        QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
+        qDebug() << "事件过滤器捕捉到鼠标按下:" << mouseEvent->button();
+        // 根据需要处理事件
+    }
+    // 继续传递事件
+    return QWidget::eventFilter(obj, event);
+}
+
 void ElementListWidget::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_Control) {
@@ -226,21 +233,18 @@ void ElementListWidget::keyReleaseEvent(QKeyEvent *event)
 }
 
 void ElementListWidget::mousePressEvent(QMouseEvent *event) {
-    if (event->button() == Qt::LeftButton) {
-        // 左键点击，按默认行为处理（即选中项）
-        QWidget::mousePressEvent(event);
-    }/*else if(event->button() == Qt::RightButton){
+
+    qDebug()<<"鼠标事件0";
+    if(event->button() == Qt::RightButton){
         // 获取右键点击的坐标
+        qDebug()<<"鼠标事件";
         QPoint pos = event->pos();
-        QTreeWidgetItem *item = treeWidgetNames->itemAt(pos);
-        QMenu contextMenu(this);
-        QAction *action1 = contextMenu.addAction("删除");
-        QAction *action2 = contextMenu.addAction("Action 2");
-        connect(action1, &QAction::triggered, this, &ElementListWidget::onDeleteEllipse);
-        contextMenu.exec(mapToGlobal(event->pos()));
+        //onCustomContextMenuRequested(pos);
+        event->ignore();
     }else {
         // 对于其他按钮（如中键），按默认行为处理
         QWidget::mousePressEvent(event);
-    }*/
+    }
 }
+
 

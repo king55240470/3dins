@@ -30,13 +30,6 @@ MainWindow::MainWindow(QWidget *parent)
     loadManager();
     m_nRelyOnWhichCs=csRef;
 
-<<<<<<< HEAD
-=======
-
-
-    //connect(pWinElementListWidget,&ElementListWidget::onItemClicked,pWinToolWidget,&ToolWidget::updateele);
-
->>>>>>> 1a5be533dac985d39c56f331fe73dffe3d015c67
 }
 
 void MainWindow::setupUi(){
