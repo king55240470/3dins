@@ -40,7 +40,8 @@ SOURCES += \
     mainwindow.cpp \
     manager/centitymgr.cpp \
     manager/cobjectmgr.cpp \
-    manager/cpcsmgr.cpp
+    manager/cpcsmgr.cpp \
+    manager/filemgr.cpp
 
 HEADERS += \
     component/contralwidget.h \
@@ -75,7 +76,8 @@ HEADERS += \
     mainwindow.h \
     manager/centitymgr.h \
     manager/cobjectmgr.h \
-    manager/cpcsmgr.h
+    manager/cpcsmgr.h \
+    manager/filemgr.h
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

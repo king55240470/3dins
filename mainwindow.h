@@ -22,6 +22,7 @@ class VtkWidget;
 class ReportWidget;
 class LogWidget;
 class PresetElemWidget;
+class FileMgr;
 
 class MainWindow : public QMainWindow
 {
@@ -43,6 +44,8 @@ private:
     ReportWidget *pWinReportWidget;
     LogWidget *pWinLogWidget;
     PresetElemWidget *pWinPresetElemWidget;
+
+    FileMgr *pWinFileMgr;
 
     QMenuBar * bar;
 
@@ -100,6 +103,7 @@ public:
     void RestoreWidgets();
     void setupUi();
     void showPresetElemWidget(int);
+    FileMgr *getpWinFileMgr();
 
 public:
     RELY_ON_CS_TYPE m_nRelyOnWhichCs;
