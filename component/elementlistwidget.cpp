@@ -95,6 +95,9 @@ void ElementListWidget::CreateEllipse(CObject*obj)
         QIcon icon(":/component/find/cylinder.jpg");
         item->setIcon(0, icon);
     }
+    if(obj->GetUniqueType()==enPlane){
+
+    }
 }
 
 void ElementListWidget::onDeleteEllipse()

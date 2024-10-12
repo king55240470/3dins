@@ -58,8 +58,9 @@
 
 #include<QTreeWidgetItem>
 //constructor
+#include"constructor/planeconstructor.h"
 #include"constructor/lineconstructor.h"
-
+#include"constructor/distanceconstructor.h"
 
 int getImagePaths(const QString& directory, QStringList &iconPaths, QStringList &iconNames);
 
@@ -517,7 +518,7 @@ void   onFindSphere(){qDebug()<<"点击了识别球形";}
 void   onConstructPoint(){qDebug()<<"点击了构造点";}
 void   onConstructLine(){qDebug()<<"点击了构造线";}
 void   onConstructCircle(){qDebug()<<"点击了构造圆";}
-void   onConstructPlan(){qDebug()<<"点击了构造平面";}
+void   onConstructPlane(){qDebug()<<"点击了构造平面";}
 void   onConstructRectangle(){qDebug()<<"点击了构造矩形";}
 void   onConstructCylinder(){qDebug()<<"点击了构造圆柱";}
 void   onConstructCone(){qDebug()<<"点击了构造圆锥";}
@@ -1372,28 +1373,23 @@ void ToolWidget::onConstructSphere(){
 
 }
 void ToolWidget::onConstructDistance(){
-<<<<<<< HEAD
-    if(m_point_index.size()<1&&m_plane_index.size()<1)
-    {
-        WrongWidget("距离至少由一个点和一个面构成");
+    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+    DistanceConstructor constructor;
+    CDistance* newDistance=(CDistance*)constructor.create(entityList);
+    if(newDistance==nullptr){
+        WrongWidget("构造距离失败");
         return ;
     }
-    CPosition A=m_selected_points[0]->GetPt();
-    CPlane* B=m_selected_plane[0];
-=======
-    // if(m_point_index.size()<2)
-    // {
-    //     WrongWidget("距离至少由两个点构成");
-    //     return ;
-    // }
+    newDistance->m_CreateForm = ePreset;
+    newDistance->m_pRefCoord = m_pMainWin->m_pcsListMgr->m_pPcsCurrent;
+    newDistance->m_pCurCoord = m_pMainWin->m_pcsListMgr->m_pPcsCurrent;
+    newDistance->m_pExtCoord = m_pMainWin->m_pcsListMgr->m_pPcsCurrent;
+    // newPlane->SetNominal();
+    // 加入Entitylist 和 ObjectList
+    m_pMainWin->m_EntityListMgr->Add(newDistance);
+    m_pMainWin->m_ObjectListMgr->Add(newDistance);
 
-    CPosition A=m_selected_points[0]->GetPt();
-    CPlane plane;
-
-
->>>>>>> f2492c5c7fe5a9b62320a8731b44b7f4ef938d7d
-    qDebug()<<"点击了构造距离";
-    m_pMainWin->getPWinVtkWidget()->reDraw();
+    m_pMainWin->NotifySubscribe();
 }
 
 void ToolWidget::updateele(){

@@ -597,4 +597,31 @@ void DataWidget::updateinfo()
                 table->setItem(2, 2, new QTableWidgetItem(""));
             }
         }
+        if(obj->m_strCName.left(2)=="距离"){
+            CDistance* distance=dynamic_cast<CDistance*>(obj);
+            CPosition position;
+            position.x=distance->getUptolerance();
+            position.y=distance->getUndertolerance();
+            position.z=distance->getdistance();
+            if (distance != nullptr){
+                table->setItem(0, 0, new QTableWidgetItem("上公差"));
+                table->setItem(0, 1, new QTableWidgetItem(QString::number(position.x,'f',6)));
+                table->setItem(0, 2, new QTableWidgetItem("")); // 可选择设置状态
+
+                table->setItem(1, 0, new QTableWidgetItem("下公差"));
+                table->setItem(1, 1, new QTableWidgetItem(QString::number(position.y,'f',6)));
+                table->setItem(1, 2, new QTableWidgetItem("")); // 可选择设置状态
+
+                table->setItem(2, 0, new QTableWidgetItem("距离"));
+                table->setItem(2, 1, new QTableWidgetItem(QString::number(position.z,'f',6)));
+                table->setItem(2, 2, new QTableWidgetItem(""));
+
+                table->setItem(2, 0, new QTableWidgetItem("是否合格"));
+                if(distance->judge()==true){
+                    table->setItem(2, 1, new QTableWidgetItem(QString("合格")));
+                }else{
+                    table->setItem(2, 1, new QTableWidgetItem(QString("不合格")));
+                }
+            }
+        }
 }
