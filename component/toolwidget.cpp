@@ -1372,19 +1372,13 @@ void ToolWidget::onConstructSphere(){
 
 }
 void ToolWidget::onConstructDistance(){
-    if(m_point_index.size()<2)
+    if(m_point_index.size()<1&&m_plane_index.size()<1)
     {
-        WrongWidget("距离至少由两个点构成");
+        WrongWidget("距离至少由一个点和一个面构成");
         return ;
     }
-
     CPosition A=m_selected_points[0]->GetPt();
-    CPosition B=m_selected_points[1]->GetPt();
-<<<<<<< HEAD
-=======
-
-
->>>>>>> 1a5be533dac985d39c56f331fe73dffe3d015c67
+    CPlane* B=m_selected_plane[0];
     qDebug()<<"点击了构造距离";
     m_pMainWin->getPWinVtkWidget()->reDraw();
 }
@@ -1399,6 +1393,7 @@ void ToolWidget::updateele(){
     if (!selectedItems.isEmpty()) {
         m_point_index.clear();
         m_selected_points.clear();
+        m_selected_plane.clear();
         int *index=new int[selectedItems.size()];
         int *entityindex=new int[selectedItems.size()];
         int count_index=0;
@@ -1432,10 +1427,15 @@ void ToolWidget::updateele(){
                 m_selected_points.push_back((CPoint*)entityList[entityindex[i]]);
             }
         }
+        for(int i=0;i<count_entityindex;i++){
+            if(entityList[entityindex[i]]->GetUniqueType()==enPlane){
+                m_plane_index.push_back(index[i]);
+                m_selected_plane.push_back((CPlane*)entityList[entityindex[i]]);
+            }
+        }
         delete []index;
         delete []entityindex;
     }
-    qDebug()<<"目前被选中的点数为"<<m_point_index.size();
 }
 void ToolWidget::NotifySubscribe(){
     qDebug()<<"ToolWidget::NotifySubscribe()";
