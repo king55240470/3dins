@@ -278,9 +278,6 @@ void VtkWidget::ononIsometricView(){
 
 // 显示要测量的点云图像和模型点云
 void VtkWidget::showConvertedCloud(){
-    // 清除原先存在的点云的actor
-    // reDraw();
-
     // 获取待测量的点云文件map
     auto filemap = m_pMainWin->getpWinFileMgr()->getMeasuredFileMap();
 
@@ -323,18 +320,24 @@ void VtkWidget::showConvertedCloud(){
     }
 
     getRenderWindow()->Render(); // 刷新渲染窗口
-
 }
 
 // 显示完成对比的点云
 void VtkWidget::showConvertedCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, const std::string &name){
-
 
 }
 
 // 比较两个点云的处理函数
 void VtkWidget::onCompare()
 {
+    // 获取打开的模型文件和实测文件
+    auto file_model = m_pMainWin->getpWinFileMgr()->getModelFileMap().firstKey();
+    auto file_measure = m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().firstKey();
+
+    // 初始化两个点云
+    pcl::io::loadPCDFile(file_model.toStdString(), *cloud1);
+    pcl::io::loadPCDFile(file_measure.toStdString(), *cloud2);
+
     // 检查点云是否为空
     if (cloud1->empty() || cloud2->empty()) {
         QMessageBox::warning(this, "Warning", "One or both point clouds are empty!");
