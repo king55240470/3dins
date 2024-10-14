@@ -151,12 +151,18 @@ vtkSmartPointer<vtkActor> CPlane::draw(){
     vtkSmartPointer<vtkPlaneSource> planeSource = vtkSmartPointer<vtkPlaneSource>::New();
     planeSource->SetCenter(globalPos.x, globalPos.y, globalPos.z); // 设置平面中心
 
-    QVector4D normalVec = getNormal(); // 存储getNormal返回的临时normal对象
-    planeSource->SetNormal(normalVec.x(), normalVec.y(), normalVec.z()); // 设置平面法向量
+    double length = getLength(); // 长度
+    double width = getWidth();  // 宽度
+    double cellSize = 0.02; // 每个网格单元的边长
 
-    // 设置平面的X和Y分辨率
-    planeSource->SetXResolution(50);
-    planeSource->SetYResolution(50);
+    int xResolution = static_cast<int>(length / cellSize);
+    int yResolution = static_cast<int>(width / cellSize);
+
+    planeSource->SetXResolution(xResolution);
+    planeSource->SetYResolution(yResolution);
+
+    QVector4D normalVec = getNormal(); // 获取法向量
+    planeSource->SetNormal(normalVec.x(), normalVec.y(), normalVec.z()); // 设置平面法向量
 
     // 创建映射器
     auto mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
@@ -277,7 +283,7 @@ vtkSmartPointer<vtkActor> CDistance::draw(){
     projection.y = glbPos_begin.y - distance * plane_nomal.y();
     projection.z = glbPos_begin.z - distance * plane_nomal.z();
     QVector4D posVec_pro = GetRefCoord()->m_mat * QVector4D(projection.x, projection.y, projection.z, 1);
-    CPosition glb_pro(posVec_point.x(), posVec_point.y(), posVec_point.z());
+    CPosition glb_pro(posVec_pro.x(), posVec_pro.y(), posVec_pro.z());
 
 
     // 创建点集，并插入定义线的两个点
