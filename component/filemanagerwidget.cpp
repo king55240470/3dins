@@ -201,6 +201,8 @@ void FileManagerWidget::changeModelFile(const QModelIndex &index){
     for (it = fileList.cbegin(); it != fileList.cend(); ++it) {
         qDebug() << "Key:" << it.key() << ", Value:" << it.value();
     }
+
+    m_pMainWin->getPWinVtkWidget()->UpdateInfo();
 }
 
 void FileManagerWidget::changeMeasuredFile(const QModelIndex &index){
@@ -212,6 +214,8 @@ void FileManagerWidget::changeMeasuredFile(const QModelIndex &index){
     for (it = fileList.cbegin(); it != fileList.cend(); ++it) {
         qDebug() << "Key:" << it.key() << ", Value:" << it.value();
     }
+
+    m_pMainWin->getPWinVtkWidget()->UpdateInfo();
 }
 
 void FileManagerWidget::changeVtk(const QModelIndex &index){
