@@ -64,6 +64,7 @@ void FileManagerWidget::openModelFile(QString fileName,QString filePath){
 
     //在modelFileMap中添加新值
     m_pMainWin->getpWinFileMgr()->getModelFileMap().insert(filePath, true);
+    m_pMainWin->NotifySubscribe();
 }
 
 void FileManagerWidget::openMeasuredFile(QString fileName,QString filePath){
@@ -74,6 +75,7 @@ void FileManagerWidget::openMeasuredFile(QString fileName,QString filePath){
 
     //在measuredFileMap中添加新值
     m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().insert(filePath, true);
+    m_pMainWin->NotifySubscribe();
 }
 
 void FileManagerWidget::createPresetOpen(CEntity *obj){
@@ -145,6 +147,8 @@ void FileManagerWidget::deleteFile(){
     }else{
         qDebug()<<"选择的不是文件";
     }
+
+    m_pMainWin->NotifySubscribe();
 
     //注释部分是彻底从电脑上删除文件，而不是从项目中把文件移除
     // QFileInfo fileInfo(filePath);

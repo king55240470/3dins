@@ -28,11 +28,8 @@ VtkWidget::VtkWidget(QWidget *parent)
     // 设置 VTK 渲染窗口到 QWidget
     QVBoxLayout *mainlayout = new QVBoxLayout;
     setUpVtk(mainlayout); // 配置vtk窗口
-    setUpPcl();
+    // setUpPcl(); // 配置点云
     this->setLayout(mainlayout);
-
-    // 显示转换后的点云图形
-    showConvertedCloud();
 
 }
 
@@ -87,29 +84,29 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
     getRenderWindow()->Render();
 }
 
+// 配置点云的相关
 void VtkWidget::setUpPcl()
 {
-    // 加载点云文件1
-    QString fileName = QFileDialog::getOpenFileName(this, "Open Point Cloud File 1", "", "PCD Files (*.pcd);;PLY Files (*.ply)");
-    if (fileName.isEmpty()) return;  // 如果文件名为空，直接返回
+    // // 加载点云文件1
+    // QString fileName = QFileDialog::getOpenFileName(this, "Open Point Cloud File 1", "", "PCD Files (*.pcd);;PLY Files (*.ply)");
+    // if (fileName.isEmpty()) return;  // 如果文件名为空，直接返回
 
-    // 根据文件后缀加载不同的点云文件
-    if (fileName.endsWith(".pcd")) {
-        if (pcl::io::loadPCDFile<pcl::PointXYZ>(fileName.toStdString(), *cloud1) == -1) {
-            QMessageBox::critical(this, "Error", "Couldn't read the PCD file!");
-            return;
-        }
-    } else if (fileName.endsWith(".ply")) {
-        if (pcl::io::loadPLYFile<pcl::PointXYZ>(fileName.toStdString(), *cloud1) == -1) {
-            QMessageBox::critical(this, "Error", "Couldn't read the PLY file!");
-            return;
-        }
-    } else {
-        QMessageBox::critical(this, "Error", "Unsupported file format!");
-        return;
-    }
-    showConvertedCloud(cloud1, "Cloud 1");  // 显示加载的点云
-
+    // // 根据文件后缀加载不同的点云文件
+    // if (fileName.endsWith(".pcd")) {
+    //     if (pcl::io::loadPCDFile<pcl::PointXYZ>(fileName.toStdString(), *cloud1) == -1) {
+    //         QMessageBox::critical(this, "Error", "Couldn't read the PCD file!");
+    //         return;
+    //     }
+    // } else if (fileName.endsWith(".ply")) {
+    //     if (pcl::io::loadPLYFile<pcl::PointXYZ>(fileName.toStdString(), *cloud1) == -1) {
+    //         QMessageBox::critical(this, "Error", "Couldn't read the PLY file!");
+    //         return;
+    //     }
+    // } else {
+    //     QMessageBox::critical(this, "Error", "Unsupported file format!");
+    //     return;
+    // }
+    showConvertedCloud();  // 显示加载的点云
 }
 
 vtkSmartPointer<vtkRenderWindow> VtkWidget::getRenderWindow(){
@@ -123,6 +120,7 @@ vtkSmartPointer<vtkRenderer>& VtkWidget::getRenderer(){
 
 void VtkWidget::UpdateInfo(){
     reDraw();
+    showConvertedCloud();
 }
 
 void VtkWidget::reDraw(){
@@ -278,70 +276,54 @@ void VtkWidget::ononIsometricView(){
     }
 }
 
-// void VtkWidget::displayCloud(std::shared_ptr<pcl::PointCloud<pcl::PointXYZ>> cloud, const std::string &name)
-// {
-//     visualizer->removeAllPointClouds();  // 移除所有点云
-//     visualizer->removeAllShapes();  // 移除所有形状
-//     pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> color(cloud, 255, 255, 255);  // 设置点云颜色为白色
-//     visualizer->addPointCloud<pcl::PointXYZ>(cloud, color, name);  // 添加点云到可视化对象
-//     visualizer->resetCamera();  // 重置相机
-//     visualizer->spinOnce();  // 更新可视化窗口一次
-// }
+// 显示要测量的点云图像和模型点云
+void VtkWidget::showConvertedCloud(){
+    // 获取待测量的点云文件map
+    auto filemap = m_pMainWin->getpWinFileMgr()->getMeasuredFileMap();
 
-// // 显示比较结果点云函数
-// void VtkWidget::displayComparisonCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, const std::string &name)
-// {
-//     visualizer->removeAllPointClouds();  // 移除所有点云
-//     visualizer->removeAllShapes();  // 移除所有形状
-//     pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGB> color(cloud);  // 使用点云中的RGB颜色
-//     visualizer->addPointCloud<pcl::PointXYZRGB>(cloud, color, name);  // 添加点云到可视化对象
-//     visualizer->resetCamera();  // 重置相机
-//     visualizer->spin();  // 持续更新可视化窗口，直到窗
-// }
+    auto cloud(new pcl::PointCloud<pcl::PointXYZ>);
+    // 遍历filemap中所有的文件路径
+    for(auto item = filemap.begin();item != filemap.end();item++){
+        // 如果文件不隐藏
+        if(item.value()){
+            pcl::io::loadPCDFile(item.key().toStdString(), *cloud);
 
-void VtkWidget::showConvertedCloud()
-{
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
-    pcl::io::loadPCDFile("E:\\pcl\\bunny.pcd", *cloud);
+            // 将cloud转换为VTK的点集
+            vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+            points->SetNumberOfPoints(cloud->points.size());
+            for (size_t i = 0; i < cloud->points.size(); ++i)
+            {
+                points->SetPoint(i, cloud->points[i].x, cloud->points[i].y, cloud->points[i].z);
+            }
 
-    // 将cloud转换为VTK的点集
-    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-    points->SetNumberOfPoints(cloud->points.size());
-    for (size_t i = 0; i < cloud->points.size(); ++i)
-    {
-        points->SetPoint(i, cloud->points[i].x, cloud->points[i].y, cloud->points[i].z);
+            vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
+            polyData->SetPoints(points);
+
+            // 创建一个顶点过滤器来生成顶点表示（可选，但通常用于点云）
+            vtkSmartPointer<vtkVertexGlyphFilter> glyphFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
+            glyphFilter->SetInputData(polyData);
+            glyphFilter->Update();
+
+            polyData = glyphFilter->GetOutput();
+
+            // 创建映射器并将glyphFilter的几何数据输入
+            vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+            mapper->SetInputData(polyData);
+
+            vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
+            actor->SetMapper(mapper);
+            actor->GetProperty()->SetPointSize(3); // 设置点大小
+            actor->GetProperty()->SetColor(0.5, 0.5, 0.5);
+
+            renderer->AddActor(actor);
+        }
     }
 
-    vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
-    polyData->SetPoints(points);
-
-    // 创建一个顶点过滤器来生成顶点表示（可选，但通常用于点云）
-    vtkSmartPointer<vtkVertexGlyphFilter> glyphFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
-    glyphFilter->SetInputData(polyData);
-    glyphFilter->Update();
-
-    polyData = glyphFilter->GetOutput();
-
-    // 创建映射器并将glyphFilter的几何数据输入
-    vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-    mapper->SetInputData(polyData);
-
-    vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
-    actor->SetMapper(mapper);
-    actor->GetProperty()->SetPointSize(5); // 设置点大小
-    actor->GetProperty()->SetColor(0.5, 0.5, 0.5);
-
-    renderer->AddActor(actor);
     getRenderWindow()->Render(); // 刷新渲染窗口
-}
-
-// 显示转换后的点云图像
-void VtkWidget::showConvertedCloud(std::shared_ptr<pcl::PointCloud<pcl::PointXYZ>> cloud, const std::string &name){
-
 
 }
 
-// 重载PointXYZRGB类型的
+// 显示完成对比的点云
 void VtkWidget::showConvertedCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, const std::string &name){
 
 
@@ -425,7 +407,7 @@ void VtkWidget::onAlign()
     // 检查配准是否成功
     if (icp.hasConverged()) {
         *alignedCloud = finalCloud;
-        showConvertedCloud(alignedCloud, "Aligned Cloud");  // 显示对齐后的点云
+        // showConvertedCloud(alignedCloud, "Aligned Cloud");  // 显示对齐后的点云
     } else {
         QMessageBox::critical(this, "Error", "ICP did not converge!");
         return;

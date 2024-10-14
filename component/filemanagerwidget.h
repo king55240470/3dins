@@ -20,8 +20,8 @@
 #include <QApplication>
 
 #include "geometry/centity.h"
+#include "component/vtkwidget.h"
 
-class VtkWidget;
 class MainWindow;
 class ButtonDelegate;
 class FileManagerWidget : public QWidget
@@ -42,7 +42,6 @@ private:
     QMenu *contextMenu;//右键菜单
     QAction *deleteAction;
     MainWindow *m_pMainWin;
-    VtkWidget *m_pVtkWidget;
 
     QModelIndex selectedIndex;//保存右键删除时选中的索引
     QStandardItem *selectedItem;//保存右键删除时选中的子项

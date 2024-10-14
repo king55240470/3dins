@@ -217,6 +217,7 @@ void MainWindow::openFile(){
             pWinFileManagerWidget->openMeasuredFile(fileName, filePath);
         }
     }
+
     // if (filePath.endsWith("stp")) {
     //     QFileInfo fileInfo(filePath);
     //     QString fileName = fileInfo.fileName();
@@ -352,8 +353,8 @@ CEntity* MainWindow::CreateEntity(int nType){
 void MainWindow::NotifySubscribe()
 {
     pWinElementListWidget->upadteelementlist();
-    pWinVtkWidget->UpdateInfo(); // 更新vtkwidget信息
     pWinFileManagerWidget->UpdateInfo();
+    pWinVtkWidget->UpdateInfo(); // 更新vtkwidget信息
 }
 
 void MainWindow::OnPresetPoint(CPosition pt){
