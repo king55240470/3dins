@@ -106,7 +106,7 @@ void VtkWidget::setUpPcl()
     //     QMessageBox::critical(this, "Error", "Unsupported file format!");
     //     return;
     // }
-    showConvertedCloud();  // 显示加载的点云
+
 }
 
 vtkSmartPointer<vtkRenderWindow> VtkWidget::getRenderWindow(){
@@ -278,6 +278,9 @@ void VtkWidget::ononIsometricView(){
 
 // 显示要测量的点云图像和模型点云
 void VtkWidget::showConvertedCloud(){
+    // 清除原先存在的点云的actor
+    reDraw();
+
     // 获取待测量的点云文件map
     auto filemap = m_pMainWin->getpWinFileMgr()->getMeasuredFileMap();
 

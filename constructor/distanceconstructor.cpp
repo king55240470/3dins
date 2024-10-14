@@ -11,7 +11,8 @@ CEntity* DistanceConstructor::create(QVector<CEntity*>& entitylist){
         if(entity->GetUniqueType()==enPoint){
             CPoint * point=(CPoint*)entity;
             points.push_back(point);
-        }else if(entity->GetUniqueType()==enCircle){
+        }
+        if(entity->GetUniqueType()==enPlane){
             CPlane* plane=(CPlane*)entity;
             planes.push_back(plane);
         }
