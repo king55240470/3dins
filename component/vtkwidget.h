@@ -2,6 +2,7 @@
 #define VTKWIDGET_H
 
 #include "mainwindow.h"
+#include "manager/filemgr.h"
 #include <QWidget>
 #include <QVTKOpenGLWidget.h>
 #include <QVTKOpenGLNativeWidget.h>
@@ -85,7 +86,8 @@ public:
 
     // 将点云转为vtk的顶点图形并显示
     void showConvertedCloud();
-    void showConvertedCloud(std::shared_ptr<pcl::PointCloud<pcl::PointXYZ>> cloud, const std::string &name);
+
+    // 用于显示对比完成的两个点云
     void showConvertedCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, const std::string &name);
 
 private:
