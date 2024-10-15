@@ -3,6 +3,8 @@
 
 # 忽略构建目录，假设你的构建目录名称为 build
 build*/
+debug/
+_debug64/
 
 # Prerequisites
 *.d
