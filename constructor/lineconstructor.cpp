@@ -2,21 +2,8 @@
 
 LineConstructor::LineConstructor() {}
 CEntity* LineConstructor::create(QVector<CEntity*>& entitylist){
-    QVector<CPosition>positions;//存储有效点
-    QVector<CPoint*>points;//存储图形点
-    QVector<CCircle*>ciecles;//存储图形圆
-    for(int i=0;i<entitylist.size();i++){
-        CEntity* entity=entitylist[i];
-        if(!entity->IsSelected())continue;
-        if(entity->GetUniqueType()==enPoint){
-            CPoint * point=(CPoint*)entity;
-            positions.push_back(point->GetPt());
-        }else if(entity->GetUniqueType()==enCircle){
-            CCircle* circle=(CCircle*)entity;
-            positions.push_back(circle->getCenter());
-        }
-        ;
-    }
+    Constructor::create(entitylist);
+    QVector<CPosition>&positions=Constructor::getPositions();//存储有效点
     if(positions.size()==2){
         return createLine(positions[0],positions[1]);
     }
@@ -42,7 +29,7 @@ CLine* LineConstructor::createLine(CPoint begin,CPoint end){
         &&pt1.y==pt2.y
         &&pt1.z==pt2.z)
         return nullptr;
-     CLine * newLine=new CLine();
+    CLine * newLine=new CLine();
     newLine->setBegin(pt1);
     newLine->setEnd(pt2);
     return newLine;

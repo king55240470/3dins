@@ -81,20 +81,23 @@ public:
     int addCoordActions(QStringList& ,int,int=-1);
     int addViewAngleActions(QStringList&,int,int=-1);
 
-     ~ToolWidget();
+    ~ToolWidget();
     void connectActionWithF();
     void updateele();
- public slots:
-    //构造
-     void onConstructPoint();
-     void onConstructLine();
-     void onConstructCircle();
-     void onConstructPlane();
-     void onConstructRectangle();
-     void onConstructCylinder();
-     void onConstructCone();
-     void onConstructSphere();
-     void onConstructDistance();
+
+    void addToList(CEntity*);
+
+public slots:
+              //构造
+    void onConstructPoint();
+    void onConstructLine();
+    void onConstructCircle();
+    void onConstructPlane();
+    void onConstructRectangle();
+    void onConstructCylinder();
+    void onConstructCone();
+    void onConstructSphere();
+    void onConstructDistance();
 
 
 

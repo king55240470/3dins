@@ -7,22 +7,16 @@ static auto isPointInCircle=[](const CPosition &circleCenter, double radius, con
     return (distanceSquared <= radius * radius);
 };
 CylinderConstructor::CylinderConstructor() {}
-bool CylinderConstructor::setCylinder(QVector<CEntity*>& entitylist){
-    QVector<CPoint*>points;
-    for(int i=0;i<entitylist.size();i++){
-        CEntity* entity=entitylist[i];
-        if(!entity->IsSelected()||entity->GetUniqueType()!=enPoint){
-            continue;
-        }
-        CPoint * point=(CPoint*)entity;
-        points.push_back(point);
+CEntity* CylinderConstructor::create(QVector<CEntity*>& entitylist){
+    Constructor::create(entitylist);
+    QVector<CPosition>& positions=Constructor::getPositions();
+    if(positions.size()==4){
+        return createCylinder(positions[0],positions[1],positions[2],positions[3]);
     }
-    if(points.size()==4){
-        return setCylinder(*points[0],*points[1],*points[2],*points[3]);
-    }
-    return false;
+    return nullptr;
+
 }
-bool CylinderConstructor::setCylinder(CPosition p1,CPosition p2,CPosition p3,CPosition p4){
+CCylinder* CylinderConstructor::createCylinder(CPosition p1,CPosition p2,CPosition p3,CPosition p4){
     CPosition A=p1;
     CPosition B=p2;
     CPosition C=p3;
@@ -30,7 +24,7 @@ bool CylinderConstructor::setCylinder(CPosition p1,CPosition p2,CPosition p3,CPo
 
     CircleInfor Circle=calculateCircle(A,B,C);
     if(Circle.radius<1e-6){
-        return false;
+        return nullptr;
     }
     double radius=Circle.radius;
     QVector4D circleCenter=Circle.center;
@@ -44,24 +38,18 @@ bool CylinderConstructor::setCylinder(CPosition p1,CPosition p2,CPosition p3,CPo
     QVector4D middleCenter=circleCenter+normal*(distanceToD/2);
 
     if(isPointInCircle(toCPosition(topCircleCenter),radius,D)){
-
-        m_cylinder.setBtm_center(toCPosition(middleCenter));
-        m_cylinder.setDiameter(2*radius);
-        m_cylinder.setAxis(normal);
-        m_cylinder.setHeight(fabs(distanceToD));
-        return true;
+        return createCylinder(toCPosition(middleCenter),normal,fabs(distanceToD),2*radius);
     }else{
-        return false;
+        return nullptr;
     }
 
 }
-bool CylinderConstructor::setCylinder(CPoint p1,CPoint p2,CPoint p3,CPoint p4){
-    CPosition pt1=p1.GetPt();
-    CPosition pt2=p2.GetPt();
-    CPosition pt3=p3.GetPt();
-    CPosition pt4=p4.GetPt();
-    return setCylinder(pt1,pt2,pt3,pt4);
-}
-CCylinder CylinderConstructor::getCylinder(){
-    return m_cylinder;
+
+CCylinder* CylinderConstructor::createCylinder(CPosition pos, QVector4D vec, double height, double diametre){
+    CCylinder* newCylinder=new CCylinder();
+    newCylinder->setBtm_center(pos);
+    newCylinder->setDiameter(diametre);
+    newCylinder->setAxis(vec);
+    newCylinder->setHeight(height);
+    return newCylinder;
 }

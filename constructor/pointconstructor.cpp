@@ -1,26 +1,29 @@
 #include "pointconstructor.h"
 
 PointConstructor::PointConstructor() {}
-
-bool PointConstructor::setPoint(QVector<CEntity*>& entitylist){
-    for(int i=0;i<entitylist.size();i++){
-        CEntity* entity=entitylist[i];
-        if(!entity->IsSelected()||entity->GetUniqueType()!=enPoint){
-            continue;
-        }
-        CPoint * point=(CPoint*)entity;
-        return setPoint(*point);
+CEntity* PointConstructor::create(QVector<CEntity*>& entitylist){
+    Constructor::create(entitylist);
+    positions=Constructor::getPositions();//存储有效点
+    if(positions.size()>=1){
+        return createPoint(positions[0]);
     }
-    return false;
+    return nullptr;
 }
-bool PointConstructor:: setPoint(CPosition point){
-     m_point.SetPosition(point);
-    return true;
+
+CPoint* PointConstructor:: createPoint(CPosition point){
+    CPoint* newPoint=new CPoint();
+    newPoint->SetPosition(point);
+    return newPoint;
 }
-bool PointConstructor::setPoint(CPoint point){
-     m_point=point;
-    return true;
+CPoint* PointConstructor::createPoint(CPoint& point){
+    CPoint* newPoint=new CPoint();
+    newPoint->SetPosition(point.GetPt());
+    return newPoint;
 }
-CPoint PointConstructor:: getPoint(){
-    return  m_point;
+QVector<CPosition>& PointConstructor::getPositions(){
+    return positions;
+}
+CPoint* PointConstructor::createPoint(double x,double y,double z){
+    CPosition p(x,y,z);
+    return createPoint(p);
 }
