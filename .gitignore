@@ -1,5 +1,6 @@
 # 忽略所有 .pro.user 文件，这些是 Qt Creator 的用户特定设置文件
 *.pro.user
+!_debug64/AppName.exe
 
 # 忽略构建目录，假设你的构建目录名称为 build
 build*/
