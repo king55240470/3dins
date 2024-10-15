@@ -51,22 +51,50 @@ static auto calculateSphere=[](const QVector4D& p1, const QVector4D& p2, const Q
     return SphereInfo(center,radius);
 };
 SphereConstructor::SphereConstructor() {}
-bool SphereConstructor::setSphere(QVector<CEntity*>& entitylist){
-    QVector<CPoint*>points;
+CEntity* SphereConstructor::create(QVector<CEntity*>& entitylist){
+    QVector<CPosition>positions;//存储有效点
+    CCircle* Circle=nullptr;//存储圆
     for(int i=0;i<entitylist.size();i++){
         CEntity* entity=entitylist[i];
-        if(!entity->IsSelected()||entity->GetUniqueType()!=enPoint){
-            continue;
+        if(!entity->IsSelected())continue;
+        if(entity->GetUniqueType()==enPoint){
+            CPoint * point=(CPoint*)entity;
+            positions.push_back(point->GetPt());
+        }else if(entity->GetUniqueType()==enCircle){
+            CCircle* circle=(CCircle*)entity;
+            positions.push_back(circle->getCenter());
+            Circle=circle;
+        }else if(entity->GetUniqueType()==enSphere){
+            CSphere* sphere=(CSphere*)entity;
+            positions.push_back(sphere->getCenter());
+        }else if(entity->GetUniqueType()==enPlane){
+            CPlane* plane=(CPlane*)entity;
+            positions.push_back(plane->getCenter());
+        }else if(entity->GetUniqueType()==enCone){
+            CCone* cone=(CCone*)entity;
+            positions.push_back(cone->getVertex());
+        }else if(entity->GetUniqueType()==enCylinder){
+            CCylinder* cylinder=(CCylinder*)entity;
+            positions.push_back(cylinder->getBtm_center());
+        }else if(entity->GetUniqueType()==enLine){
+            CLine* line=(CLine*)entity;
+            positions.push_back(line->getBegin());
+            positions.push_back(line->getEnd());
         }
-        CPoint * point=(CPoint*)entity;
-        points.push_back(point);
+        ;
     }
-    if(points.size()==4){
-        return setSphere(*points[0],*points[1],*points[2],*points[3]);
+    if(Circle==nullptr){
+        qDebug()<<"构造球读取圆失败";
     }
-    return false;
+    if(positions.size()==4){
+        return createSphere(positions[0],positions[1],positions[2],positions[3]);
+    }
+    if(Circle){
+        return createSphere(Circle->getCenter(),Circle->getDiameter()/2);
+    }
+    return nullptr;
 }
-bool SphereConstructor::setSphere(CPosition pt1,CPosition pt2,CPosition pt3,CPosition pt4){
+CSphere* SphereConstructor::createSphere(CPosition pt1,CPosition pt2,CPosition pt3,CPosition pt4){
     CPosition A=pt1;
     CPosition B=pt2;
     CPosition C=pt3;
@@ -80,26 +108,18 @@ bool SphereConstructor::setSphere(CPosition pt1,CPosition pt2,CPosition pt3,CPos
     if (canFormSphere(p1, p2, p3, p4)) {
         SphereInfo sphereInfo = calculateSphere(p1, p2, p3, p4);
         if(sphereInfo.radius==0){
-            return false;
+            return nullptr;
         }else{
             CPosition center(sphereInfo.center.x(),sphereInfo.center.y(),sphereInfo.center.z());
-            m_sphere.setCenter(center);
-            m_sphere.setDiameter(sphereInfo.radius*2);
-            return true;
+            return createSphere(center,sphereInfo.radius);
         }
 
     }
-    return false;
-
-
+    return nullptr;
 }
-bool SphereConstructor::setSphere(CPoint p1,CPoint p2,CPoint p3,CPoint p4){
-    CPosition pt1=p1.GetPt();
-    CPosition pt2=p2.GetPt();
-    CPosition pt3=p3.GetPt();
-    CPosition pt4=p4.GetPt();
-    return setSphere(pt1,pt2,pt3,pt4);
-}
-CSphere SphereConstructor::getSphere(){
-    return m_sphere;
+CSphere* SphereConstructor::createSphere(CPosition center,double radius){
+    CSphere* newSphere=new CSphere();
+    newSphere->setCenter(center);
+    newSphere->setDiameter(radius*2);
+    return newSphere;
 }

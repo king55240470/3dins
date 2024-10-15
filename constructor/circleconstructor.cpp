@@ -1,11 +1,11 @@
 #include "circleconstructor.h"
- QVector4D  toQVector4D(CPosition P){
+QVector4D  toQVector4D(CPosition P){
     return QVector4D(P.x,P.y,P.z,1.0);
 }
- CPosition toCPosition(QVector4D P){
+CPosition toCPosition(QVector4D P){
     return CPosition(P.x(),P.y(),P.z());
 }
- QVector4D crossProduct(const QVector4D& a, const QVector4D& b) {
+QVector4D crossProduct(const QVector4D& a, const QVector4D& b) {
     return QVector4D(
         a.y() * b.z() - a.z() * b.y(),
         a.z() * b.x() - a.x() * b.z(),
@@ -13,18 +13,18 @@
         0 // 对于三维向量，w 组件通常设为 0
         );
 };
-  double distanceToPlane(const QVector4D& point, const QVector4D& planePoint, const QVector4D& normal) {
-     // 计算从平面上的点到外部点的向量
-     QVector4D d = point - planePoint;
+double distanceToPlane(const QVector4D& point, const QVector4D& planePoint, const QVector4D& normal) {
+    // 计算从平面上的点到外部点的向量
+    QVector4D d = point - planePoint;
 
-     // 计算法向量的单位向量
-     QVector4D unitNormal = normal.normalized();
+    // 计算法向量的单位向量
+    QVector4D unitNormal = normal.normalized();
 
-     // 计算点到平面的距离
-     double distance = QVector4D::dotProduct(d, unitNormal);
+    // 计算点到平面的距离
+    double distance = QVector4D::dotProduct(d, unitNormal);
 
-     return distance;
- }
+    return distance;
+}
 CircleInfor centerCircle3d(CPosition p1,CPosition p2,CPosition p3)
 {
     double x1=p1.x;
@@ -89,17 +89,10 @@ CircleInfor calculateCircle(const CPosition &A, const CPosition &B, const CPosit
 
 CircleConstructor::CircleConstructor() {}
 CEntity* CircleConstructor::create(QVector<CEntity*>& entitylist){
-    QVector<CPoint*>points;
-    for(int i=0;i<entitylist.size();i++){
-        CEntity* entity=entitylist[i];
-        if(!entity->IsSelected()||entity->GetUniqueType()!=enPoint){
-            continue;
-        }
-        CPoint * point=(CPoint*)entity;
-        points.push_back(point);
-    }
-    if(points.size()==3){
-        return createCircle(*points[0],*points[1],*points[2]);
+    Constructor::create(entitylist);
+    QVector<CPosition>&positions=Constructor::getPositions();//存储有效点
+    if(positions.size()==3){
+        return  createCircle(positions[0],positions[1],positions[2]);
     }
     return nullptr;
 }

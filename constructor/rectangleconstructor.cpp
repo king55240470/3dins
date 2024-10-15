@@ -23,24 +23,32 @@ struct RectangleInfo {
     RectangleInfo(){}
 };
 //四个点首先判断是否形成矩形
-static auto isRightAngle=[](const QVector4D& a, const QVector4D& b) {
-    return qFabs(QVector4D::dotProduct(a, b)) < 1e-5; // 使用小值判断近似直角
-};
-static auto isRectangle=[](const QVector4D& p1, const QVector4D& p2, const QVector4D& p3, const QVector4D& p4) {
+bool isRightAngle(const QVector4D& a, const QVector4D& b) {
+    return qFabs(QVector4D::dotProduct(a, b)) < 1e-5;
+}
+
+bool isRectangle(const QVector4D& p1, const QVector4D& p2, const QVector4D& p3, const QVector4D& p4) {
     QVector4D ab = p2 - p1;
-    QVector4D ac = p3 - p1;
-    QVector4D ad = p4 - p1;
-
     QVector4D bc = p3 - p2;
-    QVector4D bd = p4 - p2;
-
     QVector4D cd = p4 - p3;
+    QVector4D da = p1 - p4;
+
+    QVector4D diag1 = p3 - p1;
+    QVector4D diag2 = p4 - p2;
+
+    // 检查对边是否相等
+    bool sidesEqual = qFabs(ab.lengthSquared() - cd.lengthSquared()) < 1e-5 &&
+                      qFabs(bc.lengthSquared() - da.lengthSquared()) < 1e-5;
+
+    // 检查对角线是否相等
+    bool diagonalsEqual = qFabs(diag1.lengthSquared() - diag2.lengthSquared()) < 1e-5;
 
     // 检查所有角是否为直角
-    return isRightAngle(ab, ac) && isRightAngle(ab, ad) &&
-           isRightAngle(bc, bd) && isRightAngle(cd, ac) &&
-           qFabs(ab.lengthSquared() - ac.lengthSquared()) < 1e-5;
-};
+    bool anglesRight = isRightAngle(ab, bc) && isRightAngle(bc, cd) &&
+                       isRightAngle(cd, da) && isRightAngle(da, ab);
+
+    return sidesEqual && diagonalsEqual && anglesRight;
+}
 //根据顺序的四个点计算矩形信息
 static auto calculateRectangleInfo=[](const QVector4D& p1, const QVector4D& p2, const QVector4D& p3, const QVector4D& p4) {
     QVector4D lengths[4] = {
@@ -84,39 +92,22 @@ static auto checkAllCombinations=[](const QVector<QVector4D>& points,RectangleIn
     return false;
 };
 RectangleConstructor::RectangleConstructor() {}
-bool RectangleConstructor::setRectangle(QVector<CEntity*>& entitylist){
-    QVector<CPoint*>points;
-    for(int i=0;i<entitylist.size();i++){
-        CEntity* entity=entitylist[i];
-        if(!entity->IsSelected()||entity->GetUniqueType()!=enPoint){
-            continue;
-        }
-        CPoint * point=(CPoint*)entity;
-        points.push_back(point);
+CEntity* RectangleConstructor::create(QVector<CEntity*>& entitylist){
+    Constructor::create(entitylist);
+    QVector<CPosition>&positions=Constructor::getPositions();//存储有效点
+    if(positions.size()==3){
+        return createRectangle(positions[0],positions[1],positions[2]);
+    }else if(positions.size()==4){
+        return createRectangle(positions[0],positions[1],positions[2],positions[3]);
     }
-    if(points.size()==3){
-        return setRectangle(*points[0],*points[1],*points[2]);
-    }else if(points.size()==4){
-        return setRectangle(*points[0],*points[1],*points[2],*points[3]);
-    }
-    return false;
+    return nullptr;
 }
-bool RectangleConstructor::setRectangle(CPosition p1,CPosition p2,CPosition p3){
+CPlane* RectangleConstructor::createRectangle(CPosition p1,CPosition p2,CPosition p3){
     PlaneConstructor pc;
-    bool ok=pc.setPlane(p1,p2,p3);
-    if(ok==false){
-        return false;
-    }
-    m_rectangle=pc.getPlane();
-    return true;
+    return pc.createPlane(p1,p2,p3);
 }
-bool RectangleConstructor::setRectangle(CPoint p1,CPoint p2,CPoint p3){
-    CPosition pt1=p1.GetPt();
-    CPosition pt2=p2.GetPt();
-    CPosition pt3=p3.GetPt();
-    return setRectangle(pt1,pt2,pt3);
-}
-bool RectangleConstructor::setRectangle(CPosition pt1,CPosition pt2,CPosition pt3,CPosition pt4){
+
+CPlane* RectangleConstructor::createRectangle(CPosition pt1,CPosition pt2,CPosition pt3,CPosition pt4){
     CPosition A=pt1;
     CPosition B=pt2;
     CPosition C=pt3;
@@ -126,28 +117,18 @@ bool RectangleConstructor::setRectangle(CPosition pt1,CPosition pt2,CPosition pt
     points.push_back(QVector4D(B.x, B.y, B.z, 1.0));
     points.push_back(QVector4D(C.x, C.y, C.z, 1.0));
     points.push_back(QVector4D(D.x, D.y, D.z, 1.0));
-
     RectangleInfo ans;
     if( checkAllCombinations(points,ans)){
         CPosition center(ans.center.x(),ans.center.y(),ans.center.z());
-        m_rectangle.setCenter(center);
-        m_rectangle.setNormal(ans.normal);
-        m_rectangle.setDir_long_edge(ans.direction);
-        m_rectangle.setLength(ans.length);
-        m_rectangle.setWidth(ans.width);
-        return true;
+        qDebug()<<'1';
+        return createRectangle(center,ans.normal,ans.direction,ans.length,ans.width);
     }else{
-        return false;
+        qDebug()<<'2';
+        return nullptr;
     }
 
 }
-bool RectangleConstructor::setRectangle(CPoint p1,CPoint p2,CPoint p3,CPoint p4){
-    CPosition pt1=p1.GetPt();
-    CPosition pt2=p2.GetPt();
-    CPosition pt3=p3.GetPt();
-    CPosition pt4=p4.GetPt();
-    return setRectangle(pt1,pt2,pt3,pt4);
-}
-CPlane RectangleConstructor::getRectabgle(){
-    return m_rectangle;
+CPlane* RectangleConstructor::createRectangle(CPosition posCenter, QVector4D normal, QVector4D direction, double length, double width){
+    PlaneConstructor constructor;
+    return constructor.createPlane(posCenter,normal,direction,length,width);
 }
