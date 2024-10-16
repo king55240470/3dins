@@ -20,7 +20,8 @@
 VtkWidget::VtkWidget(QWidget *parent)
     : QWidget(parent),
     cloud1(new pcl::PointCloud<pcl::PointXYZ>()),  // 初始化第一个点云对象
-    cloud2(new pcl::PointCloud<pcl::PointXYZ>())  // 初始化第二个点云对象
+    cloud2(new pcl::PointCloud<pcl::PointXYZ>()), // 初始化第二个点云对象
+    comparisonCloud(new pcl::PointCloud<pcl::PointXYZRGB>())
     // ,visualizer(new pcl::visualization::PCLVisualizer("Cloud Comparator"))  // 初始化可视化对象
 {
     m_pMainWin = (MainWindow*) parent;
@@ -28,7 +29,13 @@ VtkWidget::VtkWidget(QWidget *parent)
     // 设置 VTK 渲染窗口到 QWidget
     QVBoxLayout *mainlayout = new QVBoxLayout;
     setUpVtk(mainlayout); // 配置vtk窗口
-    // setUpPcl(); // 配置点云
+
+    QPushButton* b1 = new QPushButton;
+    b1->setText("对比");
+    connect(b1, &QPushButton::clicked, this, &VtkWidget::onCompare);
+
+    mainlayout->addWidget(b1);
+
     this->setLayout(mainlayout);
 
 }
@@ -279,21 +286,22 @@ void VtkWidget::ononIsometricView(){
 // 显示要测量的点云图像和模型点云
 void VtkWidget::showConvertedCloud(){
     // 获取待测量的点云文件map
-    auto filemap = m_pMainWin->getpWinFileMgr()->getMeasuredFileMap();
+    auto measured_map = m_pMainWin->getpWinFileMgr()->getMeasuredFileMap();
+    auto model_map = m_pMainWin->getpWinFileMgr()->getModelFileMap();
 
-    auto cloud(new pcl::PointCloud<pcl::PointXYZ>);
-    // 遍历filemap中所有的文件路径
-    for(auto item = filemap.begin();item != filemap.end();item++){
+    // 分别用迭代器遍历两个map的所有文件
+    auto cloud_1(new pcl::PointCloud<pcl::PointXYZ>);
+    for(auto item = measured_map.begin();item != measured_map.end() ;item++){
         // 如果文件不隐藏
         if(item.value()){
-            pcl::io::loadPCDFile(item.key().toStdString(), *cloud);
+            pcl::io::loadPCDFile(item.key().toStdString(), *cloud_1);
 
             // 将cloud转换为VTK的点集
             vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-            points->SetNumberOfPoints(cloud->points.size());
-            for (size_t i = 0; i < cloud->points.size(); ++i)
+            points->SetNumberOfPoints(cloud_1->points.size());
+            for (size_t i = 0; i < cloud_1->points.size(); ++i)
             {
-                points->SetPoint(i, cloud->points[i].x, cloud->points[i].y, cloud->points[i].z);
+                points->SetPoint(i, cloud_1->points[i].x, cloud_1->points[i].y, cloud_1->points[i].z);
             }
 
             vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
@@ -312,8 +320,45 @@ void VtkWidget::showConvertedCloud(){
 
             vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
             actor->SetMapper(mapper);
-            actor->GetProperty()->SetPointSize(3); // 设置点大小
+            actor->GetProperty()->SetPointSize(5); // 设置点大小
             actor->GetProperty()->SetColor(0.5, 0.5, 0.5);
+
+            renderer->AddActor(actor);
+        }
+    }
+
+    auto cloud_2(new pcl::PointCloud<pcl::PointXYZ>);
+    for(auto item = model_map.begin();item != model_map.end() ;item++){
+        // 如果文件不隐藏
+        if(item.value()){
+            pcl::io::loadPLYFile(item.key().toStdString(), *cloud_1);
+
+            // 将cloud转换为VTK的点集
+            vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+            points->SetNumberOfPoints(cloud_2->points.size());
+            for (size_t i = 0; i < cloud_1->points.size(); ++i)
+            {
+                points->SetPoint(i, cloud_1->points[i].x, cloud_1->points[i].y, cloud_1->points[i].z);
+            }
+
+            vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
+            polyData->SetPoints(points);
+
+            // 创建一个顶点过滤器来生成顶点表示（可选，但通常用于点云）
+            vtkSmartPointer<vtkVertexGlyphFilter> glyphFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
+            glyphFilter->SetInputData(polyData);
+            glyphFilter->Update();
+
+            polyData = glyphFilter->GetOutput();
+
+            // 创建映射器并将glyphFilter的几何数据输入
+            vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+            mapper->SetInputData(polyData);
+
+            vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
+            actor->SetMapper(mapper);
+            actor->GetProperty()->SetPointSize(5); // 设置点大小
+            actor->GetProperty()->SetColor(0.3, 0.3, 0.3);
 
             renderer->AddActor(actor);
         }
@@ -322,17 +367,16 @@ void VtkWidget::showConvertedCloud(){
     getRenderWindow()->Render(); // 刷新渲染窗口
 }
 
-// 显示完成对比的点云
-void VtkWidget::showConvertedCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, const std::string &name){
-
-}
+// void VtkWidget::showConvertedCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, const std::string &name){
+// }
 
 // 比较两个点云的处理函数
 void VtkWidget::onCompare()
 {
     // 获取打开的模型文件和实测文件
-    auto file_model = m_pMainWin->getpWinFileMgr()->getModelFileMap().firstKey();
-    auto file_measure = m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().firstKey();
+    // auto file_model = m_pMainWin->getpWinFileMgr()->getModelFileMap().firstKey();
+    auto file_model = m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().firstKey();
+    auto file_measure = m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().lastKey();
 
     // 初始化两个点云
     pcl::io::loadPCDFile(file_model.toStdString(), *cloud1);
@@ -348,8 +392,11 @@ void VtkWidget::onCompare()
     pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
     kdtree.setInputCloud(cloud2);
 
-    // 创建一个新的点云对象用于存储比较结果，并设置点云大小
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr comparisonCloud(new pcl::PointCloud<pcl::PointXYZRGB>());
+    // 将比较结果存在comparisonCloud，并设置点云大小
+    comparisonCloud->clear(); // 清除上次比较的结果
+    comparisonCloud->width = 0;
+    comparisonCloud->height = 0;
+    comparisonCloud->is_dense = false;
     comparisonCloud->resize(cloud1->size());
 
     // 初始化最大和最小距离变量
@@ -385,7 +432,55 @@ void VtkWidget::onCompare()
         }
     }
 
-    showConvertedCloud(comparisonCloud, "Comparison Cloud");  // 显示比较结果
+
+    // 转为vtk带颜色的点集，并直接显示
+    // 创建一个新的VTK点集对象，并设置点的数量
+    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+    points->SetNumberOfPoints(comparisonCloud->points.size());
+
+    // 创建一个新的VTK无符号字符数组对象，用于存储颜色信息
+    // 设置颜色数组的组件数（RGB）和元组数（点的数量）
+    vtkSmartPointer<vtkUnsignedCharArray> colors = vtkSmartPointer<vtkUnsignedCharArray>::New();
+    colors->SetNumberOfComponents(3);
+    colors->SetNumberOfTuples(comparisonCloud->points.size());
+
+    // 创建一个新的VTK单元格数组对象，用于存储顶点信息
+    vtkSmartPointer<vtkCellArray> vertexCells = vtkSmartPointer<vtkCellArray>::New();
+
+    // 遍历PCL点云中的每个点
+    for (size_t i = 0; i < comparisonCloud->points.size(); ++i)
+    {
+        // 设置VTK点集中的点的位置
+        points->SetPoint(i, comparisonCloud->points[i].x, comparisonCloud->points[i].y, comparisonCloud->points[i].z);
+        // 设置颜色数组中的颜色值（RGB）
+        colors->SetTuple3(i, comparisonCloud->points[i].r, comparisonCloud->points[i].g, comparisonCloud->points[i].b);
+    }
+
+    // 创建一个新的VTK多边形数据对象
+    vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
+    polyData->SetPoints(points);
+
+    // 创建一个顶点过滤器来生成顶点表示（可选，但通常用于点云）
+    vtkSmartPointer<vtkVertexGlyphFilter> glyphFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
+    glyphFilter->SetInputData(polyData);
+    glyphFilter->Update();
+
+    polyData = glyphFilter->GetOutput();
+
+    // 将点集、颜色数组和顶点单元格数组设置到多边形数据对象中
+    polyData->SetPoints(points);
+    polyData->GetPointData()->SetScalars(colors); // 设置颜色为点数据中的标量
+
+    // Create a mapper and actor
+    vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    mapper->SetInputData(polyData);
+
+    vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
+    actor->SetMapper(mapper);
+    actor->GetProperty()->SetPointSize(5);
+
+    renderer->AddActor(actor);
+    renWin->Render();
 }
 
 void VtkWidget::onAlign()
