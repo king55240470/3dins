@@ -19,9 +19,6 @@
 #include <QPainter>
 #include <QApplication>
 
-#include "geometry/centity.h"
-#include "component/vtkwidget.h"
-
 class MainWindow;
 class ButtonDelegate;
 class FileManagerWidget : public QWidget
@@ -31,6 +28,7 @@ public:
     explicit FileManagerWidget(QWidget *parent = nullptr);
 private:
     QVBoxLayout *layout;
+    QPushButton *compareBtn;
     QTreeView *filetree;
     QStandardItemModel *model;
     QStandardItem *rootItem;
