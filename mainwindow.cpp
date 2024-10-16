@@ -211,9 +211,9 @@ void MainWindow::openFile(){
         QString fileName = fileInfo.fileName();
 
         // 根据文件扩展名进行判断
-        if (filePath.endsWith("stp")) {
+        if (filePath.endsWith("ply")) {
             pWinFileManagerWidget->openModelFile(fileName, filePath);
-        } else if (filePath.endsWith("stl") || filePath.endsWith("pcd") || filePath.endsWith("ply")) {
+        } else if (filePath.endsWith("pcd")) {
             pWinFileManagerWidget->openMeasuredFile(fileName, filePath);
         }
     }
