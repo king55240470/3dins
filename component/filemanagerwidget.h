@@ -48,8 +48,9 @@ private:
 public:
     void openModelFile(QString,QString);
     void openMeasuredFile(QString,QString);
-    void createPresetOpen(CEntity*);
-    void createPresetClose(CEntity*);
+    void createContentItem();
+    // void createPresetOpen(CEntity*);
+    // void createPresetClose(CEntity*);
     void showContextMenu(const QPoint &);
     void UpdateInfo();
     bool isChildOf(QStandardItem*, QStandardItem*);
@@ -58,7 +59,7 @@ private slots:
     void changePlay(const QModelIndex &);
     void changeModelFile(const QModelIndex &);
     void changeMeasuredFile(const QModelIndex &);
-    void changeVtk(const QModelIndex &);
+    void changeContentItem(const QModelIndex &);
     void deleteFile();
 signals:
 };

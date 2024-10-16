@@ -146,9 +146,32 @@ void VtkWidget::reDraw(){
     auto objectlist = m_pMainWin->m_ObjectListMgr->getObjectList();
 
     // 遍历entitylist绘制图形并加入渲染器
+    // for(auto i = 0;i < entitylist.size();i++){
+    //     if(!list[i]){
+    //         getRenderer()->AddActor(entitylist[i]->draw());
+    //     }
+    // }
+    QMap<QString, bool> map = m_pMainWin->getpWinFileMgr()->getContentItemMap();
+    QVector<CEntity*> constructEntityList = m_pMainWin->getPWinToolWidget()->getConstructEntityList();//存储构建元素的列表
+    // 遍历entitylist绘制图形并加入渲染器
     for(auto i = 0;i < entitylist.size();i++){
-        if(!list[i]){
+        int flag=0;
+        if(constructEntityList.isEmpty()){//没有构建的元素
             getRenderer()->AddActor(entitylist[i]->draw());
+        }else{
+            for(int j=0;j<constructEntityList.size();j++){
+                QString key=constructEntityList[j]->GetObjectCName()+"  "+constructEntityList[j]->GetObjectAutoName();
+                if(entitylist[i]==constructEntityList[j]){//是构建的元素
+                    flag=1;
+                    if(map[key]){
+                        getRenderer()->AddActor(entitylist[i]->draw());
+                        break;
+                    }
+                }
+            }
+            if(flag==0){//不是构建的元素
+                getRenderer()->AddActor(entitylist[i]->draw());
+            }
         }
     }
 
