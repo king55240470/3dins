@@ -1,6 +1,8 @@
 #include "filemanagerwidget.h"
 #include "mainwindow.h"
 #include "manager/filemgr.h"
+#include "geometry/centity.h"
+#include "component/vtkwidget.h"
 
 #include <QMainWindow>
 #include <QDebug>
@@ -12,6 +14,8 @@ FileManagerWidget::FileManagerWidget(QWidget *parent)
     m_pMainWin=(MainWindow*)parent;
 
     layout=new QVBoxLayout(this);
+
+    compareBtn=new QPushButton("对比");
 
     filetree=new QTreeView(this);
     filetree->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -45,8 +49,10 @@ FileManagerWidget::FileManagerWidget(QWidget *parent)
 
     filetree->setModel(model);
 
+    layout->addWidget(compareBtn);
     layout->addWidget(filetree);
     layout->setContentsMargins(0, 0, 0, 0);//消除边距
+    layout->setSpacing(0);
 
     connect(filetree, &QTreeView::clicked, this, &FileManagerWidget::getItem);
     connect(delegate, &ButtonDelegate::buttonClicked, this, &FileManagerWidget::changePlay);
@@ -54,6 +60,9 @@ FileManagerWidget::FileManagerWidget(QWidget *parent)
     //设置并连接右键菜单的操作
     filetree->setContextMenuPolicy(Qt::CustomContextMenu);//设置了上下文菜单策略为Qt::CustomContextMenu，这意味着当用户在该视图上右键点击时，不会显示默认的上下文菜单，而是会触发一个信号，允许开发者自定义要显示的菜单
     connect(filetree, &QTreeView::customContextMenuRequested, this, &FileManagerWidget::showContextMenu);//当用户右键点击filetree中的任意位置时，customContextMenuRequested信号会被触发，Qt将自动调用FileManagerWidget的showContextMenu函数
+
+    //对比按钮
+    //connect(compareBtn,&QPushButton::clicked,this,&VtkWidget::onCompare);
 }
 
 void FileManagerWidget::openModelFile(QString fileName,QString filePath){
