@@ -107,6 +107,8 @@ private:
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud1; // 基准点云1
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud2;
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr comparisonCloud;
+
     pcl::visualization::PCLVisualizer::Ptr visualizer; // PCL 可视化器的智能指针
 
 private slots:

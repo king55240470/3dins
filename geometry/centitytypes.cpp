@@ -15,18 +15,18 @@
 // 点类的draw()
 vtkSmartPointer<vtkActor> CPoint::draw(){
     // 创建点集
-    auto point = vtkSmartPointer<vtkPoints>::New();
+    auto points = vtkSmartPointer<vtkPoints>::New();
 
     // 获取图形在参考坐标系下的坐标(预置时输入的)，并计算得到他在机械坐标系下的位置(全局坐标)
     CPosition pos(m_pt.x, m_pt.y, m_pt.z);
     QVector4D posVec = GetRefCoord()->m_mat * QVector4D(pos.x, pos.y, pos.z, 1);
     CPosition globalPos(posVec.x(), posVec.y(), posVec.z());
 
-    point->InsertNextPoint(globalPos.x, globalPos.y, globalPos.z);
+    points->InsertNextPoint(globalPos.x, globalPos.y, globalPos.z);
 
     // 创建几何图形容器并设置点集
     vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
-    polyData->SetPoints(point);
+    polyData->SetPoints(points);
 
     // 创建一个顶点,用过滤器将提取的点转化为更好观察的图形(glyph)，改善可视化效果
     vtkSmartPointer<vtkVertexGlyphFilter> glyphFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
