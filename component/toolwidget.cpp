@@ -870,6 +870,11 @@ void ToolWidget::addToList(CEntity* newEntity){
     m_pMainWin->m_EntityListMgr->Add(newEntity);
     m_pMainWin->m_ObjectListMgr->Add(newEntity);
 
+    //加入constructEntityList
+    constructEntityList.push_back(newEntity);
+    //加入contentItemMap
+    m_pMainWin->getpWinFileMgr()->getContentItemMap().insert(newEntity->GetObjectCName()+"  "+newEntity->GetObjectAutoName(), true);
+
     m_pMainWin->NotifySubscribe();
 
 }
@@ -1064,4 +1069,8 @@ int getImagePaths(const QString& directory, QStringList &iconPaths, QStringList 
     // qDebug()<<iconPaths;
     // qDebug()<<iconNames;
     return imageCount;
+}
+
+QVector<CEntity*>& ToolWidget::getConstructEntityList(){
+    return constructEntityList;
 }
