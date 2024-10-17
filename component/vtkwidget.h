@@ -3,6 +3,7 @@
 
 #include "mainwindow.h"
 #include "manager/filemgr.h"
+#include "component/toolwidget.h"
 #include <QWidget>
 #include <QVTKOpenGLWidget.h>
 #include <QVTKOpenGLNativeWidget.h>

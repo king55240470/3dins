@@ -1,6 +1,8 @@
 #include "filemanagerwidget.h"
 #include "mainwindow.h"
 #include "manager/filemgr.h"
+#include "geometry/centity.h"
+#include "component/vtkwidget.h"
 
 #include <QMainWindow>
 #include <QDebug>
@@ -12,6 +14,8 @@ FileManagerWidget::FileManagerWidget(QWidget *parent)
     m_pMainWin=(MainWindow*)parent;
 
     layout=new QVBoxLayout(this);
+
+    compareBtn=new QPushButton("对比");
 
     filetree=new QTreeView(this);
     filetree->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -45,8 +49,10 @@ FileManagerWidget::FileManagerWidget(QWidget *parent)
 
     filetree->setModel(model);
 
+    layout->addWidget(compareBtn);
     layout->addWidget(filetree);
     layout->setContentsMargins(0, 0, 0, 0);//消除边距
+    layout->setSpacing(0);
 
     connect(filetree, &QTreeView::clicked, this, &FileManagerWidget::getItem);
     connect(delegate, &ButtonDelegate::buttonClicked, this, &FileManagerWidget::changePlay);
@@ -54,6 +60,9 @@ FileManagerWidget::FileManagerWidget(QWidget *parent)
     //设置并连接右键菜单的操作
     filetree->setContextMenuPolicy(Qt::CustomContextMenu);//设置了上下文菜单策略为Qt::CustomContextMenu，这意味着当用户在该视图上右键点击时，不会显示默认的上下文菜单，而是会触发一个信号，允许开发者自定义要显示的菜单
     connect(filetree, &QTreeView::customContextMenuRequested, this, &FileManagerWidget::showContextMenu);//当用户右键点击filetree中的任意位置时，customContextMenuRequested信号会被触发，Qt将自动调用FileManagerWidget的showContextMenu函数
+
+    //对比按钮
+    //connect(compareBtn,&QPushButton::clicked,this,&VtkWidget::onCompare);
 }
 
 void FileManagerWidget::openModelFile(QString fileName,QString filePath){
@@ -78,21 +87,42 @@ void FileManagerWidget::openMeasuredFile(QString fileName,QString filePath){
     m_pMainWin->NotifySubscribe();
 }
 
-void FileManagerWidget::createPresetOpen(CEntity *obj){
-    QString str=obj->m_strCName+"  "+obj->m_strAutoName;
-    QStandardItem *newObjItem = new QStandardItem(str);
-    newObjItem->setData(true, Qt::UserRole+1);
-    newObjItem->setData(QVariant::fromValue<CEntity*>(obj),Qt::UserRole+2);
-    contentItem->appendRow(newObjItem);
+void FileManagerWidget::createContentItem(){
+    //删除contentItem中的所有子项
+    int childCount = contentItem->rowCount(); // 获取子项数量
+    for (int i=childCount-1;i>=0;i--) {
+        contentItem->removeRow(i); // 删除子项
+    }
+
+    //添加子项
+    //获取所有键值
+    QList<QString> keys = m_pMainWin->getpWinFileMgr()->getContentItemMap().keys();
+    // 遍历所有的键
+    for (const QString &key : keys) {
+        QStandardItem *newContentItem = new QStandardItem(key);
+        newContentItem->setData(key, Qt::UserRole);
+        newContentItem->setData(m_pMainWin->getpWinFileMgr()->getContentItemMap()[key], Qt::UserRole+1);
+        contentItem->appendRow(newContentItem);
+
+        qDebug() << "Key:" << key << ", Value:" << m_pMainWin->getpWinFileMgr()->getContentItemMap()[key];
+    }
 }
 
-void FileManagerWidget::createPresetClose(CEntity *obj){
-    QString str=obj->m_strCName+"  "+obj->m_strAutoName;
-    QStandardItem *newObjItem = new QStandardItem(str);
-    newObjItem->setData(false, Qt::UserRole+1);
-    newObjItem->setData(QVariant::fromValue<CEntity*>(obj),Qt::UserRole+2);
-    contentItem->appendRow(newObjItem);
-}
+// void FileManagerWidget::createPresetOpen(CEntity *obj){
+//     // QString str=obj->m_strCName+"  "+obj->m_strAutoName;
+//     // QStandardItem *newObjItem = new QStandardItem(str);
+//     // newObjItem->setData(true, Qt::UserRole+1);
+//     // newObjItem->setData(QVariant::fromValue<CEntity*>(obj),Qt::UserRole+2);
+//     // contentItem->appendRow(newObjItem);
+// }
+
+// void FileManagerWidget::createPresetClose(CEntity *obj){
+//     // QString str=obj->m_strCName+"  "+obj->m_strAutoName;
+//     // QStandardItem *newObjItem = new QStandardItem(str);
+//     // newObjItem->setData(false, Qt::UserRole+1);
+//     // newObjItem->setData(QVariant::fromValue<CEntity*>(obj),Qt::UserRole+2);
+//     // contentItem->appendRow(newObjItem);
+// }
 
 //显示右键菜单
 void FileManagerWidget::showContextMenu(const QPoint &pos){
@@ -188,7 +218,7 @@ void FileManagerWidget::changePlay(const QModelIndex &index){
     }else if(isChildOf(childItem, measuredFile)){
         changeMeasuredFile(index);
     }else if(isChildOf(childItem, contentItem)){
-        changeVtk(index);
+        changeContentItem(index);
     }
 }
 
@@ -218,22 +248,32 @@ void FileManagerWidget::changeMeasuredFile(const QModelIndex &index){
     m_pMainWin->getPWinVtkWidget()->UpdateInfo();
 }
 
-void FileManagerWidget::changeVtk(const QModelIndex &index){
-    QStandardItem* childItem = model->itemFromIndex(index);
-    if (index.parent().isValid()&&isChildOf(childItem, contentItem)){
-        m_pMainWin->m_EntityListMgr->getMarkList()[index.row()]=!m_pMainWin->m_EntityListMgr->getMarkList()[index.row()];//改变元素是否显示的标记
-        int childCount = contentItem->rowCount();
-        QVector<CEntity*> entityList = m_pMainWin->m_EntityListMgr->getEntityList();
-        QVector<bool> marklist=m_pMainWin->m_EntityListMgr->getMarkList();
-        for(int i=0;i<childCount;i++){
-            QStandardItem* item = contentItem->child(i);
-            bool isBtnOpen = item->data(Qt::UserRole+1).toBool();
-            if(!isBtnOpen){
-                marklist[i]=true;//不显示
-            }
-        }
-        m_pMainWin->NotifySubscribe();
+void FileManagerWidget::changeContentItem(const QModelIndex &index){
+    // QStandardItem* childItem = model->itemFromIndex(index);
+    // if (index.parent().isValid()&&isChildOf(childItem, contentItem)){
+    //     m_pMainWin->m_EntityListMgr->getMarkList()[index.row()]=!m_pMainWin->m_EntityListMgr->getMarkList()[index.row()];//改变元素是否显示的标记
+    //     int childCount = contentItem->rowCount();
+    //     QVector<CEntity*> entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+    //     QVector<bool> marklist=m_pMainWin->m_EntityListMgr->getMarkList();
+    //     for(int i=0;i<childCount;i++){
+    //         QStandardItem* item = contentItem->child(i);
+    //         bool isBtnOpen = item->data(Qt::UserRole+1).toBool();
+    //         if(!isBtnOpen){
+    //             marklist[i]=true;//不显示
+    //         }
+    //     }
+    //     m_pMainWin->NotifySubscribe();
+    // }
+    QStandardItem *item = model->itemFromIndex(index);
+    QString key = item->data(Qt::UserRole).toString();
+    m_pMainWin->getpWinFileMgr()->getContentItemMap()[key]=!m_pMainWin->getpWinFileMgr()->getContentItemMap()[key];
+    QMap<QString, bool>& contentList = m_pMainWin->getpWinFileMgr()->getContentItemMap();  // 获取 QMap 的引用
+    QMap<QString, bool>::const_iterator it;
+    for (it = contentList.cbegin(); it != contentList.cend(); ++it) {
+        qDebug() << "Key:" << it.key() << ", Value:" << it.value();
     }
+
+    m_pMainWin->getPWinVtkWidget()->UpdateInfo();
 }
 
 bool FileManagerWidget::isChildOf(QStandardItem* childItem, QStandardItem* parentItem) {
@@ -256,23 +296,24 @@ bool FileManagerWidget::isChildOf(QStandardItem* childItem, QStandardItem* paren
 
 void FileManagerWidget::UpdateInfo(){
     //删除contentItem中的所有子项
-    int childCount = contentItem->rowCount(); // 获取子项数量
-    for (int i=childCount-1;i>=0;i--) {
-        contentItem->removeRow(i); // 删除子项
-    }
+    // int childCount = contentItem->rowCount(); // 获取子项数量
+    // for (int i=childCount-1;i>=0;i--) {
+    //     contentItem->removeRow(i); // 删除子项
+    // }
 
-    //显示构建的内容
-    QVector<bool> marklist=m_pMainWin->m_EntityListMgr->getMarkList();
-    QVector<CEntity*> entityList = m_pMainWin->m_EntityListMgr->getEntityList();
-    for(int i=0;i<entityList.size();i++){
-        if(marklist[i]){
-            createPresetClose(entityList[i]);
-            qDebug()<<"关闭";
-        }else{
-            createPresetOpen(entityList[i]);
-            qDebug()<<"打开";
-        }
-    }
+    // //显示构建的内容
+    // QVector<bool> marklist=m_pMainWin->m_EntityListMgr->getMarkList();
+    // QVector<CEntity*> entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+    // for(int i=0;i<entityList.size();i++){
+    //     if(marklist[i]){
+    //         createPresetClose(entityList[i]);
+    //         qDebug()<<"关闭";
+    //     }else{
+    //         createPresetOpen(entityList[i]);
+    //         qDebug()<<"打开";
+    //     }
+    // }
+    createContentItem();
 }
 
 

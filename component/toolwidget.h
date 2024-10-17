@@ -87,6 +87,8 @@ public:
 
     void addToList(CEntity*);
 
+    QVector<CEntity*>& getConstructEntityList();
+
 public slots:
               //构造
     void onConstructPoint();
@@ -135,5 +137,8 @@ private:
     QVector<CPoint*>m_selected_points;
     QVector<int> m_plane_index;
     QVector<CPlane*>m_selected_plane;
+
+    //存储构建的元素
+    QVector<CEntity*> constructEntityList;
 };
 #endif // TOOLWIDGET_H
