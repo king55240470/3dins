@@ -39,6 +39,7 @@
 #include <vtkPropPicker.h>
 #include <vtkVertexGlyphFilter.h>
 #include <vtkCallbackCommand.h>
+#include <vtkGlyphSource2D.h>
 #include <vtkAutoInit.h>
 VTK_MODULE_INIT(vtkRenderingOpenGL2);
 VTK_MODULE_INIT(vtkInteractionStyle);

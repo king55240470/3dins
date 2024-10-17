@@ -199,6 +199,8 @@ void VtkWidget::createAxes()
     axesActor->SetCylinderRadius(0.1); // 设置轴圆柱体的半径
     axesActor->SetSphereRadius(0.05); // 设置轴末端的球体半径
     axesActor->SetPosition(0, 0, 0);
+    axesActor->SetScale(1.0); // 设置缩放因子（保持为1或所需固定大小的比例）
+
     renderer->AddActor(axesActor); // 将坐标器添加到渲染器
 
     // orientationWidget = vtkSmartPointer<vtkOrientationMarkerWidget>::New();
