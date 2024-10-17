@@ -62,7 +62,9 @@ FileManagerWidget::FileManagerWidget(QWidget *parent)
     connect(filetree, &QTreeView::customContextMenuRequested, this, &FileManagerWidget::showContextMenu);//当用户右键点击filetree中的任意位置时，customContextMenuRequested信号会被触发，Qt将自动调用FileManagerWidget的showContextMenu函数
 
     //对比按钮
-    //connect(compareBtn,&QPushButton::clicked,this,&VtkWidget::onCompare);
+    connect(compareBtn,&QPushButton::clicked,this, [&](){
+        m_pMainWin->getPWinVtkWidget()->onCompare();
+    });
 }
 
 void FileManagerWidget::openModelFile(QString fileName,QString filePath){

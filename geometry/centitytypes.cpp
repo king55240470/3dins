@@ -11,6 +11,9 @@
 #include <vtkConeSource.h>
 #include <vtkProperty.h>
 #include <vtkVertexGlyphFilter.h>
+#include <vtkPolygon.h>
+#include <vtkMath.h>
+
 
 // 点类的draw()
 vtkSmartPointer<vtkActor> CPoint::draw(){
@@ -147,31 +150,78 @@ vtkSmartPointer<vtkActor> CPlane::draw(){
     QVector4D posVec = GetRefCoord()->m_mat * QVector4D(pos.x, pos.y, pos.z, 1);
     CPosition globalPos(posVec.x(), posVec.y(), posVec.z());
 
-    // 创建平面源
-    vtkSmartPointer<vtkPlaneSource> planeSource = vtkSmartPointer<vtkPlaneSource>::New();
-    planeSource->SetCenter(globalPos.x, globalPos.y, globalPos.z); // 设置平面中心
-
-    double length = getLength(); // 长度
-    double width = getWidth();  // 宽度
-    double cellSize = 0.02; // 每个网格单元的边长
-
-    int xResolution = static_cast<int>(length / cellSize);
-    int yResolution = static_cast<int>(width / cellSize);
-
-    planeSource->SetXResolution(xResolution);
-    planeSource->SetYResolution(yResolution);
+    // 创建面——矩形法
+    double halfL = getLength() / 2.0;
+    double halfW = getWidth() / 2.0;
 
     QVector4D normalVec = getNormal(); // 获取法向量
-    planeSource->SetNormal(normalVec.x(), normalVec.y(), normalVec.z()); // 设置平面法向量
+    // 将法向量单位化
+    double norm_length = sqrt(normalVec.x() * normalVec.x() + normalVec.y() * normalVec.y() + normalVec.z() * normalVec.z());
+    QVector4D unitNormal = normalVec / norm_length;
 
-    // 创建映射器
-    auto mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-    mapper->SetInputConnection(planeSource->GetOutputPort());
+    // 找到两个垂直于normal的向量
+    // 1.选择一个不与normal共线的初始vector
+    QVector3D initialVec;
+    if(unitNormal.x() != 1)
+        initialVec = QVector3D(1, 0, 0);
+    else if(unitNormal.y() != 1)
+        initialVec = QVector3D(0, 1, 0);
+    else
+        initialVec = QVector3D(0, 0, 1);
 
-    // 创建执行器
-    auto actor = vtkSmartPointer<vtkActor>::New();
+    // 2.计算第一个向量并单位化
+    QVector3D firstPerpVec = QVector3D::crossProduct(unitNormal.toVector3D(), initialVec);
+    double norm_1 = sqrt(firstPerpVec.x() * firstPerpVec.x() + firstPerpVec.y() * firstPerpVec.y() + firstPerpVec.z() * firstPerpVec.z());
+    QVector3D unitNormal_1 = firstPerpVec / norm_1;
+    // 3.计算第二个向量，用normal和firstPerpVec的叉积
+    QVector3D secondPerpVec = QVector3D::crossProduct(unitNormal.toVector3D(), unitNormal_1);
+
+    // 计算四个顶点的全局坐标
+    double p1x = globalPos.x + halfL * secondPerpVec.x() - halfW * firstPerpVec.x();
+    double p1y = globalPos.y + halfL * secondPerpVec.y() - halfW * firstPerpVec.y();
+    double p1z = globalPos.z + halfL * secondPerpVec.z() - halfW * firstPerpVec.z();
+
+    double p2x = globalPos.x + halfL * secondPerpVec.x() + halfW * firstPerpVec.x();
+    double p2y = globalPos.y + halfL * secondPerpVec.y() + halfW * firstPerpVec.y();
+    double p2z = globalPos.z + halfL * secondPerpVec.z() + halfW * firstPerpVec.z();
+
+    double p3x = globalPos.x - halfL * secondPerpVec.x() + halfW * firstPerpVec.x();
+    double p3y = globalPos.y - halfL * secondPerpVec.y() + halfW * firstPerpVec.y();
+    double p3z = globalPos.z - halfL * secondPerpVec.z() + halfW * firstPerpVec.z();
+
+    double p4x = globalPos.x - halfL * secondPerpVec.x() - halfW * firstPerpVec.x();
+    double p4y = globalPos.y - halfL * secondPerpVec.y() - halfW * firstPerpVec.y();
+    double p4z = globalPos.z - halfL * secondPerpVec.z() - halfW * firstPerpVec.z();
+
+    // 向点集插入四个点
+    auto points = vtkSmartPointer<vtkPoints>::New();
+    points->InsertNextPoint(p1x, p1y, p1z);
+    points->InsertNextPoint(p2x, p2y, p2z);
+    points->InsertNextPoint(p3x, p3y, p3z);
+    points->InsertNextPoint(p4x, p4y, p4z);
+
+    // 得到点集的几何数据
+    vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
+    polyData->SetPoints(points);
+
+    // 创建一个vtkCellArray对象来存储多边形
+    vtkSmartPointer<vtkCellArray> cells = vtkSmartPointer<vtkCellArray>::New();
+    // 定义一个四边形（四个顶点），注意VTK中的多边形索引是从0开始的
+    vtkIdType verts[4] = {0, 1, 2, 3}; // 这里的0,1,2,3是点的索引
+    cells->InsertNextCell(4, verts); // 插入一个包含4个顶点的多边形
+
+    // 设置多边形到polyData
+    polyData->SetPolys(cells);
+
+    // 创建一个vtkPolyDataMapper来映射polyData到图形表示
+    vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    mapper->SetInputData(polyData);
+
+    // 创建一个vtkActor来表示多边形
+    vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
-    actor->GetProperty()->SetColor(0.5, 0.5, 0.5);
+    // 可以设置演员的属性，比如颜色
+    actor->GetProperty()->SetColor(0.7, 0.7, 0.7);
 
     return actor;
 }

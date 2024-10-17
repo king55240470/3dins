@@ -30,12 +30,6 @@ VtkWidget::VtkWidget(QWidget *parent)
     QVBoxLayout *mainlayout = new QVBoxLayout;
     setUpVtk(mainlayout); // 配置vtk窗口
 
-    QPushButton* b1 = new QPushButton;
-    b1->setText("对比");
-    connect(b1, &QPushButton::clicked, this, &VtkWidget::onCompare);
-
-    mainlayout->addWidget(b1);
-
     this->setLayout(mainlayout);
 
 }
@@ -58,6 +52,7 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
 
     // 创建坐标器
     createAxes();
+
     // 创建初始视角相机
     vtkCamera* camera = renderer->GetActiveCamera();
     if (camera) {
@@ -94,25 +89,6 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
 // 配置点云的相关
 void VtkWidget::setUpPcl()
 {
-    // // 加载点云文件1
-    // QString fileName = QFileDialog::getOpenFileName(this, "Open Point Cloud File 1", "", "PCD Files (*.pcd);;PLY Files (*.ply)");
-    // if (fileName.isEmpty()) return;  // 如果文件名为空，直接返回
-
-    // // 根据文件后缀加载不同的点云文件
-    // if (fileName.endsWith(".pcd")) {
-    //     if (pcl::io::loadPCDFile<pcl::PointXYZ>(fileName.toStdString(), *cloud1) == -1) {
-    //         QMessageBox::critical(this, "Error", "Couldn't read the PCD file!");
-    //         return;
-    //     }
-    // } else if (fileName.endsWith(".ply")) {
-    //     if (pcl::io::loadPLYFile<pcl::PointXYZ>(fileName.toStdString(), *cloud1) == -1) {
-    //         QMessageBox::critical(this, "Error", "Couldn't read the PLY file!");
-    //         return;
-    //     }
-    // } else {
-    //     QMessageBox::critical(this, "Error", "Unsupported file format!");
-    //     return;
-    // }
 
 }
 
@@ -152,12 +128,6 @@ void VtkWidget::reDraw(){
     auto entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
     auto objectlist = m_pMainWin->m_ObjectListMgr->getObjectList();
 
-    // 遍历entitylist绘制图形并加入渲染器
-    // for(auto i = 0;i < entitylist.size();i++){
-    //     if(!list[i]){
-    //         getRenderer()->AddActor(entitylist[i]->draw());
-    //     }
-    // }
     QMap<QString, bool> map = m_pMainWin->getpWinFileMgr()->getContentItemMap();
     QVector<CEntity*> constructEntityList = m_pMainWin->getPWinToolWidget()->getConstructEntityList();//存储构建元素的列表
     // 遍历entitylist绘制图形并加入渲染器
@@ -189,21 +159,7 @@ void VtkWidget::reDraw(){
     }
 
     // 重新加载全局坐标系
-    axesActor = vtkSmartPointer<vtkAxesActor>::New();
-
-    // 设置 X Y Z 轴标题颜色为黑色
-    axesActor->GetXAxisCaptionActor2D()->GetCaptionTextProperty()->SetColor(0.0, 0.0, 0.0);
-    axesActor->GetYAxisCaptionActor2D()->GetCaptionTextProperty()->SetColor(0.0, 0.0, 0.0);
-    axesActor->GetZAxisCaptionActor2D()->GetCaptionTextProperty()->SetColor(0.0, 0.0, 0.0);
-
-    axesActor->SetTotalLength(0.4, 0.4, 0.4); // 设置轴的长度
-    axesActor->SetConeRadius(0.1); // 设置轴锥体的半径
-    axesActor->SetCylinderRadius(0.1); // 设置轴圆柱体的半径
-    axesActor->SetSphereRadius(0.05); // 设置轴末端的球体半径
-    axesActor->SetPosition(0, 0, 0);
-    renderer->AddActor(axesActor); // 将坐标器添加到渲染器
-
-    getRenderWindow()->Render(); // 刷新渲染窗口
+    createAxes();
 }
 
 // 创建全局坐标器
