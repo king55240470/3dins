@@ -1375,6 +1375,7 @@ void ToolWidget::onConstructSphere(){
 void ToolWidget::onConstructDistance(){
     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
     DistanceConstructor constructor;
+    constructor.createTolerance(0,0);
     CDistance* newDistance=(CDistance*)constructor.create(entityList);
     if(newDistance==nullptr){
         WrongWidget("构造距离失败");
@@ -1388,7 +1389,6 @@ void ToolWidget::onConstructDistance(){
     // 加入Entitylist 和 ObjectList
     m_pMainWin->m_EntityListMgr->Add(newDistance);
     m_pMainWin->m_ObjectListMgr->Add(newDistance);
-
     m_pMainWin->NotifySubscribe();
 }
 

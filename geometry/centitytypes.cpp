@@ -548,17 +548,32 @@ void CDistance::setbegin(const CPosition &newbegin)
     begin=newbegin;
 }
 
-/*void CDistance::setend(const CPosition &newend)
+void CDistance::setend(const CPosition &newend)
 {
     end=newend;
-}*/
+}
 
 void CDistance::setplane(const CPlane &Plane)
 {
     plane=Plane;
 }
 
-double CDistance::getdistance()
+void CDistance::setcircle(const CCircle &Circle)
+{
+    circle=Circle;
+}
+
+void CDistance::setline(const CLine &Line)
+{
+    line=Line;
+}
+
+double CDistance::getdistancepoint()
+{
+    return sqrt(pow(begin.x - end.x, 2) + pow(begin.y - end.y, 2) + pow(begin.z - end.z, 2));
+}
+
+double CDistance::getdistanceplane()
 {
     QVector4D normal = plane.getNormal();
     CPosition center = plane.getCenter();
@@ -576,10 +591,62 @@ double CDistance::getdistance()
     return distance;
 }
 
+double CDistance::getdistancecircle()
+{
+    CPosition t=circle.getCenter();
+    return sqrt(pow(begin.x - t.x, 2) + pow(begin.y - t.y, 2) + pow(begin.z - t.z, 2));
+}
+
+double CDistance::getdistanceline()
+{
+    CPosition P=begin;
+    CPosition end=line.end;
+    CPosition begin=line.begin;
+    double ABx = end.x - begin.x;
+    double ABy = end.y - begin.y;
+    double ABz = end.z - begin.z;
+
+    double APx = P.x - begin.x;
+    double APy = P.y - begin.y;
+    double APz = P.z - begin.z;
+
+    // 计算 AB 的平方长度
+    double AB_squared = ABx * ABx + ABy * ABy + ABz * ABz;
+
+    // 计算点 P 在 AB 上的投影比例 t
+    double t = (ABx * APx + ABy * APy + ABz * APz) / AB_squared;
+
+    // 判断 t 的值,待判断.........
+    if (t < 0.0) {
+        // 返回 P 到 A 的距离
+        return sqrt(APx * APx + APy * APy + APz * APz);
+    } else if (t > 1.0) {
+        // 返回 P 到 B 的距离
+        double BPx = P.x - end.x;
+        double BPy = P.y - end.y;
+        double BPz = P.z - end.z;
+        return sqrt(BPx * BPx + BPy * BPy + BPz * BPz);
+    }
+
+    // 投影落在线段 AB 上
+    CPosition projection = {
+        begin.x + t * ABx,
+        begin.y + t * ABy,
+        begin.z + t * ABz
+    };
+
+    // 返回 P 到投影点的距离
+    double projPx = P.x - projection.x;
+    double projPy = P.y - projection.y;
+    double projPz = P.z - projection.z;
+
+    return sqrt(projPx * projPx + projPy * projPy + projPz * projPz);
+}
+
 bool CDistance::judge()
 {
     double dis=abs(uptolerance-undertolerance);
-    if(getdistance()<=dis){
+    if(getdistanceplane()<=dis||getdistancecircle()<=dis||getdistanceline()<=dis||getdistancepoint()<=dis){
         qualified=true;
     }
     return qualified;
