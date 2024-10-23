@@ -19,9 +19,6 @@
 #include <QPainter>
 #include <QApplication>
 
-#include "geometry/centity.h"
-
-class VtkWidget;
 class MainWindow;
 class ButtonDelegate;
 class FileManagerWidget : public QWidget
@@ -31,6 +28,7 @@ public:
     explicit FileManagerWidget(QWidget *parent = nullptr);
 private:
     QVBoxLayout *layout;
+    QPushButton *compareBtn;
     QTreeView *filetree;
     QStandardItemModel *model;
     QStandardItem *rootItem;
@@ -42,18 +40,24 @@ private:
     QMenu *contextMenu;//右键菜单
     QAction *deleteAction;
     MainWindow *m_pMainWin;
-    VtkWidget *m_pVtkWidget;
+
+    QModelIndex selectedIndex;//保存右键删除时选中的索引
+    QStandardItem *selectedItem;//保存右键删除时选中的子项
 public:
     void openModelFile(QString,QString);
     void openMeasuredFile(QString,QString);
-    void createPresetOpen(CEntity*);
-    void createPresetClose(CEntity*);
-    void contextMenuEvent(QContextMenuEvent *event);
+    void createContentItem();
+    // void createPresetOpen(CEntity*);
+    // void createPresetClose(CEntity*);
+    void showContextMenu(const QPoint &);
     void UpdateInfo();
     bool isChildOf(QStandardItem*, QStandardItem*);
 private slots:
     void getItem(const QModelIndex &);
-    void changeVtk(const QModelIndex &);
+    void changePlay(const QModelIndex &);
+    void changeModelFile(const QModelIndex &);
+    void changeMeasuredFile(const QModelIndex &);
+    void changeContentItem(const QModelIndex &);
     void deleteFile();
 signals:
 };

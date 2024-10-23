@@ -81,20 +81,25 @@ public:
     int addCoordActions(QStringList& ,int,int=-1);
     int addViewAngleActions(QStringList&,int,int=-1);
 
-     ~ToolWidget();
+    ~ToolWidget();
     void connectActionWithF();
     void updateele();
- public slots:
-    //构造
-     void onConstructPoint();
-     void onConstructLine();
-     void onConstructCircle();
-     void onConstructPlane();
-     void onConstructRectangle();
-     void onConstructCylinder();
-     void onConstructCone();
-     void onConstructSphere();
-     void onConstructDistance();
+
+    void addToList(CEntity*);
+
+    QVector<CEntity*>& getConstructEntityList();
+
+public slots:
+              //构造
+    void onConstructPoint();
+    void onConstructLine();
+    void onConstructCircle();
+    void onConstructPlane();
+    void onConstructRectangle();
+    void onConstructCylinder();
+    void onConstructCone();
+    void onConstructSphere();
+    void onConstructDistance();
 
 
 
@@ -132,5 +137,8 @@ private:
     QVector<CPoint*>m_selected_points;
     QVector<int> m_plane_index;
     QVector<CPlane*>m_selected_plane;
+
+    //存储构建的元素
+    QVector<CEntity*> constructEntityList;
 };
 #endif // TOOLWIDGET_H

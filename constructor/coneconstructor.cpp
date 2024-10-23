@@ -1,22 +1,15 @@
 #include "coneconstructor.h"
 
 ConeConstructor::ConeConstructor() {}
-bool ConeConstructor::setCone(QVector<CEntity*>& entitylist){
-    QVector<CPoint*>points;
-    for(int i=0;i<entitylist.size();i++){
-        CEntity* entity=entitylist[i];
-        if(!entity->IsSelected()||entity->GetUniqueType()!=enPoint){
-            continue;
-        }
-        CPoint * point=(CPoint*)entity;
-        points.push_back(point);
+CEntity* ConeConstructor::create(QVector<CEntity*>& entitylist){
+    Constructor::create(entitylist);
+    QVector<CPosition>& positions=Constructor::getPositions();
+    if(positions.size()==3){
+        return createCone(positions[0],positions[1],positions[2]);
     }
-    if(points.size()==3){
-        return setCone(*points[0],*points[1],*points[2]);
-    }
-    return false;
+    return nullptr;
 }
-bool ConeConstructor::setCone(CPosition p1,CPosition p2,CPosition p3){
+CCone* ConeConstructor::createCone(CPosition p1,CPosition p2,CPosition p3){
     CPosition A=p1;
     CPosition B=p2;
     CPosition C=p3;
@@ -46,20 +39,15 @@ bool ConeConstructor::setCone(CPosition p1,CPosition p2,CPosition p3){
     qDebug()<<radius<<"    "<<angle;
     qDebug()<<toQVector4D(posCenter);qDebug()<<bottomPoint<<topVertex;
     // 调用函数
-   m_cone.setCone_height(partH);
-   m_cone.setHeight(fullH);
-   m_cone.setAxis(axisVector);
-   m_cone.setRadian(angle);
-   m_cone.setVertex(posCenter);
-   return true;
+    return createCone(posCenter,axisVector,partH,fullH,angle);
 }
-bool ConeConstructor::setCone(CPoint p1,CPoint p2,CPoint p3){
-    CPosition pt1=p1.GetPt();
-    CPosition pt2=p2.GetPt();
-    CPosition pt3=p3.GetPt();
+CCone* ConeConstructor::createCone(CPosition posCenter, QVector4D axis, double partH, double fullH, double angle){
+    CCone* newCone=new CCone();
+    newCone->setCone_height(partH);
+    newCone->setHeight(fullH);
+    newCone->setAxis(axis);
+    newCone->setRadian(angle);
+    newCone->setVertex(posCenter);
+    return newCone;
 
-    return setCone(pt1,pt2,pt3);
-}
-CCone ConeConstructor::getCone(){
-    return m_cone;
 }

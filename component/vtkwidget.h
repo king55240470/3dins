@@ -2,6 +2,8 @@
 #define VTKWIDGET_H
 
 #include "mainwindow.h"
+#include "manager/filemgr.h"
+#include "component/toolwidget.h"
 #include <QWidget>
 #include <QVTKOpenGLWidget.h>
 #include <QVTKOpenGLNativeWidget.h>
@@ -38,6 +40,8 @@
 #include <vtkPropPicker.h>
 #include <vtkVertexGlyphFilter.h>
 #include <vtkCallbackCommand.h>
+#include <vtkGlyphSource2D.h>
+#include <vtkTextActor.h>
 #include <vtkAutoInit.h>
 VTK_MODULE_INIT(vtkRenderingOpenGL2);
 VTK_MODULE_INIT(vtkInteractionStyle);
@@ -54,6 +58,9 @@ public:
 
     // 配置vtk窗口
     void setUpVtk(QVBoxLayout *layout);
+
+    // 配置点云文件
+    void setUpPcl();
 
     // 获取m_renWin
     vtkSmartPointer<vtkRenderWindow> getRenderWindow();
@@ -76,14 +83,15 @@ public:
     void onFrontView(); // 正视
     void ononIsometricView(); // 旋转立体视角
 
-    // 加载点云图像
-    // void displayCloud(std::shared_ptr<pcl::PointCloud<pcl::PointXYZ>> cloud, const std::string &name);
-    // void displayComparisonCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, const std::string &name);
-
     // 将点云转为vtk的顶点图形并显示
     void showConvertedCloud();
-    void showConvertedCloud(std::shared_ptr<pcl::PointCloud<pcl::PointXYZ>> cloud, const std::string &name);
-    void showConvertedCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, const std::string &name);
+
+    // 比较两个点云
+    void onCompare();
+
+    // 用于显示对比完成的两个点云
+    // void showConvertedCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, const std::string &name);
+
 
 private:
     QVTKOpenGLNativeWidget* vtkWidget; // vtk窗口
@@ -101,17 +109,13 @@ private:
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud1; // 基准点云1
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud2;
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr comparisonCloud;
+
     pcl::visualization::PCLVisualizer::Ptr visualizer; // PCL 可视化器的智能指针
 
 private slots:
-    // 比较两个点云
-    void onCompare();
-
-    // 配准的槽函数
+    // 配准的函数
     void onAlign();
-
-signals:
-
 };
 
 #endif // VTKWIDGET_H

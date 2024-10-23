@@ -3,19 +3,16 @@
 #include"geometry/centitytypes.h"
 #include"planeconstructor.h"
 #include"constructor.h"
-class RectangleConstructor
+class RectangleConstructor:public Constructor
 {
 private:
     CPlane m_rectangle;
 public:
     RectangleConstructor();
-    bool setRectangle(QVector<CEntity*>& entitylist);
-    bool setRectangle(CPosition p1,CPosition p2,CPosition p3);
-    bool setRectangle(CPoint p1,CPoint p2,CPoint p3);
-    bool setRectangle(CPosition p1,CPosition p2,CPosition p3,CPosition p4);
-    bool setRectangle(CPoint p1,CPoint p2,CPoint p3,CPoint p4);
-    CPlane getRectabgle();
-
+    CEntity* create(QVector<CEntity*>& entitylist)override;
+    CPlane* createRectangle(CPosition p1,CPosition p2,CPosition p3);
+    CPlane* createRectangle(CPosition p1,CPosition p2,CPosition p3,CPosition p4);
+    CPlane* createRectangle(CPosition posCenter, QVector4D normal, QVector4D direction, double length, double width);
 };
 
 #endif // RECTANGLECONSTRUCTOR_H

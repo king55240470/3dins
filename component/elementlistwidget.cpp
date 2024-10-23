@@ -1,5 +1,6 @@
 #include "elementlistwidget.h"
 #include "mainwindow.h"
+#include "manager/filemgr.h"
 #include <QDebug>
 int ElementListWidget::pcscount = 0;
 ElementListWidget::ElementListWidget(QWidget *parent)
@@ -123,15 +124,27 @@ void ElementListWidget::onDeleteEllipse()
             }
             auto& objectList = m_pMainWin->m_ObjectListMgr->getObjectList();
             auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
-            auto& markList = m_pMainWin->m_EntityListMgr->getMarkList();//标记是否显示元素的列表
+            QVector<CEntity*> constructEntityList = m_pMainWin->getPWinToolWidget()->getConstructEntityList();//存储构建元素的列表
             if(objectList[index]->GetObjectCName().left(5)=="临时坐标系"||objectList[index]->GetObjectCName().left(5)=="工件坐标系"){
                 objectList.removeAt(index);
                 //pcscount--;
             }else{
+                //删除constructEntityList和contentItemMap中的元素
+                for(int i=0;i<constructEntityList.size();i++){
+                    if(constructEntityList[i]==entityList[entityindex]){
+                        QString key=constructEntityList[i]->GetObjectCName()+"  "+constructEntityList[i]->GetObjectAutoName();
+                        m_pMainWin->getpWinFileMgr()->getContentItemMap().remove(key);
+                        constructEntityList.removeAt(i);
+                        break;
+                    }
+                }
+                for(auto& l:constructEntityList){
+                    qDebug()<<"剩余"<<l;
+                }
+
                 objectList.removeAt(index);
                 entityList.removeAt(entityindex);
                 eleobjlist.removeAt(entityindex);
-                markList.removeAt(entityindex);
             }
         }
         m_pMainWin->NotifySubscribe();
