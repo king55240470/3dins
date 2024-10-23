@@ -398,6 +398,7 @@ class CDistance : public CEntity{
     CPlane plane;
     CCircle circle;
     CLine line;
+    double distance;
 public:
     CDistance(){
         uptolerance=0.0;
@@ -418,6 +419,8 @@ public:
     double getdistanceplane();
     double getdistancecircle();
     double getdistanceline();
+    double getdistance();
+    void setdistance(double d);
     bool judge();
 
     // CDistance的draw()

@@ -50,6 +50,7 @@ CDistance *DistanceConstructor::createDistance(CPoint* p1, CPlane* plane)
     CDistance *newdistance =new CDistance();
     newdistance->setbegin(pt1);
     newdistance->setplane(*plane);
+    newdistance->setdistance(newdistance->getdistanceplane());
     return newdistance;
 }
 
@@ -62,6 +63,7 @@ CDistance *DistanceConstructor::createDistance(CPoint *p1, CPoint *point)
     CDistance *newdistance =new CDistance();
     newdistance->setbegin(pt1);
     newdistance->setend(pt2);
+    newdistance->setdistance(newdistance->getdistancepoint());
     return newdistance;
 }
 
@@ -73,6 +75,7 @@ CDistance *DistanceConstructor::createDistance(CPoint *p1, CCircle *circle)
     CDistance *newdistance =new CDistance();
     newdistance->setbegin(pt1);
     newdistance->setcircle(*circle);
+    newdistance->setdistance(newdistance->getdistancecircle());
     return newdistance;
 }
 
@@ -84,6 +87,7 @@ CDistance *DistanceConstructor::createDistance(CPoint *p1, CLine *line)
     CDistance *newdistance =new CDistance();
     newdistance->setbegin(pt1);
     newdistance->setline(*line);
+    newdistance->setdistance(newdistance->getdistanceline());
     return newdistance;
 }
 

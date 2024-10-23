@@ -699,6 +699,17 @@ double CDistance::getdistanceline()
     return sqrt(projPx * projPx + projPy * projPy + projPz * projPz);
 }
 
+double CDistance::getdistance()
+{
+    return distance;
+}
+
+void CDistance::setdistance(double d)
+{
+    distance=d;
+}
+
+
 bool CDistance::judge()
 {
     double dis=abs(uptolerance-undertolerance);
