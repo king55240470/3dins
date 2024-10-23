@@ -3,16 +3,16 @@
 #include"geometry/centitytypes.h"
 #include"circleconstructor.h"
 #include"constructor.h"
-class ConeConstructor
+class ConeConstructor:public Constructor
 {
 private:
     CCone m_cone;
 public:
     ConeConstructor();
-    bool setCone(QVector<CEntity*>& entitylist);
-    bool setCone(CPosition p1,CPosition p2,CPosition p3);
-    bool setCone(CPoint p1,CPoint p2,CPoint p3);
-    CCone getCone();
+    CEntity* create(QVector<CEntity*>& entitylist)override;
+    CCone* createCone(CPosition p1,CPosition p2,CPosition p3);
+    CCone* createCone(CPosition posCenter, QVector4D axis, double partH, double fullH, double angle);
+
 };
 
 #endif // CONECONSTRUCTOR_H

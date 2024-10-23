@@ -9,10 +9,6 @@ private:
 public:
     DistanceConstructor();
     CEntity* create(QVector<CEntity*>& entitylist)override;
-    //CDistance* setDistance(CPosition p1,CPlane plane,double uptolerance,double undertolerance);
-    //CDistance* setDistance(CPoint p1,CPlane plane,double uptolerance,double undertolerance);
-    //CDistance* getDistance();
-    //CDistance* createDistance(CPosition p1,CPlane plane);
     CDistance* createDistance(CPoint *p1,CPlane *plane);
     CDistance* createDistance(CPoint *p1,CPoint *point);
     CDistance* createDistance(CPoint *p1,CCircle *circle);

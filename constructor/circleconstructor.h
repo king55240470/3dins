@@ -21,7 +21,7 @@ CPosition toCPosition(QVector4D P);
 CircleInfor centerCircle3d(CPosition p1,CPosition p2,CPosition p3);
 CircleInfor calculateCircle(const CPosition &A, const CPosition &B, const CPosition &C);
 QVector4D crossProduct(const QVector4D& a, const QVector4D& b);
- QVector4D  toQVector4D(CPosition P);
+QVector4D  toQVector4D(CPosition P);
 double distanceToPlane(const QVector4D& point, const QVector4D& planePoint, const QVector4D& normal);
 
 

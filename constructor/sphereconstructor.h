@@ -2,17 +2,15 @@
 #define SPHERECONSTRUCTOR_H
 #include"geometry/centitytypes.h"
 #include"constructor.h"
-class SphereConstructor
+class SphereConstructor:public Constructor
 {
 private:
     CSphere m_sphere;
 public:
     SphereConstructor();
-    bool setSphere(QVector<CEntity*>& entitylist);
-    bool setSphere(CPosition p1,CPosition p2,CPosition p3,CPosition p4);
-    bool setSphere(CPoint p1,CPoint p2,CPoint p3,CPoint p4);
-    CSphere getSphere();
-
+    CEntity* create(QVector<CEntity*>& entitylist)override;
+    CSphere* createSphere(CPosition p1,CPosition p2,CPosition p3,CPosition p4);
+    CSphere* createSphere(CPosition center,double radius);
 };
 
 #endif // SPHERECONSTRUCTOR_H

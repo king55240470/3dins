@@ -3,16 +3,15 @@
 #include"geometry/centitytypes.h"
 #include"circleconstructor.h"
 #include"constructor.h"
-class CylinderConstructor
+class CylinderConstructor:public Constructor
 {
 private:
     CCylinder m_cylinder;
 public:
     CylinderConstructor();
-    bool setCylinder(QVector<CEntity*>& entitylist);
-    bool setCylinder(CPosition p1,CPosition p2,CPosition p3,CPosition p4);
-    bool setCylinder(CPoint p1,CPoint p2,CPoint p3,CPoint p4);
-    CCylinder getCylinder();
+    CEntity* create(QVector<CEntity*>& entitylist)override;
+    CCylinder* createCylinder(CPosition p1,CPosition p2,CPosition p3,CPosition p4);
+    CCylinder* createCylinder(CPosition pos, QVector4D vec, double height, double diametre);
 };
 
 #endif // CYLINDERCONSTRUCTOR_H

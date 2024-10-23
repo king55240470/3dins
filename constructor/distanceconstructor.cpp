@@ -41,30 +41,6 @@ CEntity* DistanceConstructor::create(QVector<CEntity*>& entitylist){
     }
     return nullptr;
 }
-/*CDistance* DistanceConstructor::setDistance(CPosition p1,CPlane plane,double uptolerance=0.0,double undertolerance=0.0){
-    m_distance->setbegin(p1);
-    m_distance->setplane(plane);
-    m_distance->setUndertolerance(undertolerance);
-    m_distance->setUptolerance(uptolerance);
-    return m_distance;
-}
-CDistance* DistanceConstructor::setDistance(CPoint p1,CPlane plane,double uptolerance=0.0,double undertolerance=0.0){
-    CPosition pt1=p1.GetPt();
-    return setDistance(pt1,plane,uptolerance,undertolerance);
-}
-CDistance* DistanceConstructor::getDistance(){
-    return m_distance;
-}*/
-
-/*CDistance *DistanceConstructor::createDistance(CPosition p1, CPlane plane)
-{
-    m_distance.setbegin(p1);
-    m_distance.setplane(plane);
-    CDistance *newdistance =new CDistance();
-    newdistance->setbegin(p1);
-    newdistance->setplane(plane);
-    return newdistance;
-}*/
 
 CDistance *DistanceConstructor::createDistance(CPoint* p1, CPlane* plane)
 {
