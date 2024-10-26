@@ -41,12 +41,6 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
     renWin = vtkSmartPointer<vtkGenericOpenGLRenderWindow>::New();
     renWin->AddRenderer(renderer);  // 将渲染器添加到渲染窗口
 
-    auto renwin = vtkSmartPointer<vtkRenderWindow>::New();
-    renwin->AddRenderer(renderer);
-    auto interActor = vtkSmartPointer<vtkRenderWindowInteractor>::New();
-    interActor->SetRenderWindow(renwin);
-
-
     // 添加交互器
     interactor = vtkSmartPointer<vtkGenericRenderWindowInteractor>::New();
     // interactor->SetRenderWindow(renWin);
