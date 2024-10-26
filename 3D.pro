@@ -1,6 +1,8 @@
 QT       += core gui opengl openglwidgets
 QT += printsupport
 QT += axcontainer
+QT += opengl
+LIBS += -lOpengl32
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++17

@@ -58,6 +58,7 @@ public:
 
     // 配置vtk窗口
     void setUpVtk(QVBoxLayout *layout);
+    // void setUpVtk();
 
     // 配置点云文件
     void setUpPcl();
@@ -92,7 +93,6 @@ public:
     // 用于显示对比完成的两个点云
     // void showConvertedCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, const std::string &name);
 
-
 private:
     QVTKOpenGLNativeWidget* vtkWidget; // vtk窗口
     MainWindow *m_pMainWin=nullptr; // mainwindow指针
@@ -102,8 +102,6 @@ private:
     vtkSmartPointer<vtkGenericOpenGLRenderWindow> renWin;
     vtkSmartPointer<vtkGenericRenderWindowInteractor> interactor;
 
-    // 创建全局坐标器
-    vtkSmartPointer<vtkAxesActor> axesActor;
     // 创建交互部件来封装坐标器
     vtkSmartPointer<vtkOrientationMarkerWidget> orientationWidget;
 
