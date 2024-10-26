@@ -22,7 +22,7 @@ VtkWidget::VtkWidget(QWidget *parent)
     cloud1(new pcl::PointCloud<pcl::PointXYZ>()),  // 初始化第一个点云对象
     cloud2(new pcl::PointCloud<pcl::PointXYZ>()), // 初始化第二个点云对象
     comparisonCloud(new pcl::PointCloud<pcl::PointXYZRGB>())
-    // ,visualizer(new pcl::visualization::PCLVisualizer("Cloud Comparator"))  // 初始化可视化对象
+// ,visualizer(new pcl::visualization::PCLVisualizer("Cloud Comparator"))  // 初始化可视化对象
 {
     m_pMainWin = (MainWindow*) parent;
 
