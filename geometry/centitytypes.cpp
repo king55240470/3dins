@@ -305,6 +305,13 @@ vtkSmartPointer<vtkActor> CCone::draw(){
 }
 
 vtkSmartPointer<vtkActor> CDistance::draw(){
+    auto actor = pointToPlane();
+
+    return actor;
+}
+
+vtkSmartPointer<vtkActor> CDistance::pointToPlane()
+{
     // 取平面外一点
     CPosition pos_begin(begin.x, begin.y, begin.z);
     QVector4D posVec_begin = GetRefCoord()->m_mat * QVector4D(pos_begin.x, pos_begin.y, pos_begin.z, 1);
@@ -362,6 +369,11 @@ vtkSmartPointer<vtkActor> CDistance::draw(){
     actor->GetProperty()->SetLineWidth(3);
 
     return actor;
+}
+
+vtkSmartPointer<vtkActor> CDistance::pointToLine()
+{
+    return 0;
 }
 
 

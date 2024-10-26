@@ -2,12 +2,14 @@
 #include <vtkInteractorStyle.h>
 
 #include <QFileDialog>  // 用于文件对话框
-#include <QMessageBox>  // 用于消息框
-#include <pcl/common/common.h>  // PCL基础库
-#include <pcl/io/ply_io.h>  // PCL PLY文件读写
-#include <pcl/io/pcd_io.h>  // PCL PCD文件读写
-#include <cmath>  // 数学函数库
-#include <limits>  // 极限值定义
+#include <QOpenGLContext>
+#include <qopenglfunctions.h>
+#include <QMessageBox>
+#include <pcl/common/common.h>
+#include <pcl/io/ply_io.h>
+#include <pcl/io/pcd_io.h>
+#include <cmath>
+#include <limits>
 #include <pcl/common/distances.h>  // PCL距离计算函数
 #include <pcl/visualization/pcl_visualizer.h>  // PCL可视化库
 #include <pcl/registration/icp.h>
@@ -21,34 +23,39 @@ VtkWidget::VtkWidget(QWidget *parent)
     : QWidget(parent),
     cloud1(new pcl::PointCloud<pcl::PointXYZ>()),  // 初始化第一个点云对象
     cloud2(new pcl::PointCloud<pcl::PointXYZ>()), // 初始化第二个点云对象
-    comparisonCloud(new pcl::PointCloud<pcl::PointXYZRGB>())
-    // ,visualizer(new pcl::visualization::PCLVisualizer("Cloud Comparator"))  // 初始化可视化对象
+    comparisonCloud(new pcl::PointCloud<pcl::PointXYZRGB>()) // 初始化比较好的点云对象
+// ,visualizer(new pcl::visualization::PCLVisualizer("Cloud Comparator"))  // 初始化可视化对象
 {
     m_pMainWin = (MainWindow*) parent;
 
     // 设置 VTK 渲染窗口到 QWidget
-    QVBoxLayout *mainlayout = new QVBoxLayout;
+    QVBoxLayout *mainlayout = new QVBoxLayout(this);
     setUpVtk(mainlayout); // 配置vtk窗口
-
     this->setLayout(mainlayout);
-
 }
 
 void VtkWidget::setUpVtk(QVBoxLayout *layout){
     // 初始化渲染器和交互器
-    renWin = vtkSmartPointer<vtkGenericOpenGLRenderWindow>::New();
     renderer = vtkSmartPointer<vtkRenderer>::New();
     renderer->SetBackground(1, 1, 1); // 设置渲染器颜色为白
+    renWin = vtkSmartPointer<vtkGenericOpenGLRenderWindow>::New();
     renWin->AddRenderer(renderer);  // 将渲染器添加到渲染窗口
 
-    // 从visualizer得到渲染窗口
-    // renWin = visualizer->getRenderWindow();
-    // renderer = vtkSmartPointer<vtkRenderer>::New();
-    // renWin->AddRenderer(renderer);  // 将渲染器添加到渲染窗口
+    auto renwin = vtkSmartPointer<vtkRenderWindow>::New();
+    renwin->AddRenderer(renderer);
+    auto interActor = vtkSmartPointer<vtkRenderWindowInteractor>::New();
+    interActor->SetRenderWindow(renwin);
+
 
     // 添加交互器
     interactor = vtkSmartPointer<vtkGenericRenderWindowInteractor>::New();
     // interactor->SetRenderWindow(renWin);
+    interactor->Initialize();
+
+    // 创建QVTKOpenGLNativeWidget作为渲染窗口
+    vtkWidget = new QVTKOpenGLNativeWidget();
+    vtkWidget->setRenderWindow(renWin);
+    layout->addWidget(vtkWidget);
 
     // 创建坐标器
     createAxes();
@@ -72,18 +79,8 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
         camera->Zoom(0.5);
     }
 
-    // // 创建QVTKOpenGLNativeWidget作为渲染窗口
-    // vtkWidget = new QVTKOpenGLNativeWidget(this);
-    // vtkWidget->setRenderWindow(renWin);
-    // visualizer->setupInteractor(interactor, renWin);
-    // // 设置布局并将qvtkWidget添加到其中
-    // layout->addWidget(vtkWidget);
-
-    vtkWidget = new QVTKOpenGLNativeWidget(this);
-    vtkWidget->setRenderWindow(renWin);
-    layout->addWidget(vtkWidget);
-
     getRenderWindow()->Render();
+
 }
 
 // 配置点云的相关
@@ -130,6 +127,7 @@ void VtkWidget::reDraw(){
 
     QMap<QString, bool> map = m_pMainWin->getpWinFileMgr()->getContentItemMap();
     QVector<CEntity*> constructEntityList = m_pMainWin->getPWinToolWidget()->getConstructEntityList();//存储构建元素的列表
+
     // 遍历entitylist绘制图形并加入渲染器
     for(auto i = 0;i < entitylist.size();i++){
         int flag=0;
@@ -165,8 +163,8 @@ void VtkWidget::reDraw(){
 // 创建全局坐标器
 void VtkWidget::createAxes()
 {
-    // 初始化全局坐标系
-    axesActor = vtkSmartPointer<vtkAxesActor>::New();
+    // 创建并初始化全局坐标系
+    auto axesActor = vtkSmartPointer<vtkAxesActor>::New();
 
     // 设置 X Y Z 轴标题颜色为黑色
     axesActor->GetXAxisCaptionActor2D()->GetCaptionTextProperty()->SetColor(0.0, 0.0, 0.0);
@@ -178,18 +176,17 @@ void VtkWidget::createAxes()
     axesActor->SetCylinderRadius(0.1); // 设置轴圆柱体的半径
     axesActor->SetSphereRadius(0.05); // 设置轴末端的球体半径
     axesActor->SetPosition(0, 0, 0);
-    axesActor->SetScale(1.0); // 设置缩放因子（保持为1或所需固定大小的比例）
 
     renderer->AddActor(axesActor); // 将坐标器添加到渲染器
 
     // orientationWidget = vtkSmartPointer<vtkOrientationMarkerWidget>::New();
     // // 设置 X Y Z 轴标题颜色为黑色
-    // axes->GetXAxisCaptionActor2D()->GetCaptionTextProperty()->SetColor(0.0, 0.0, 0.0);
-    // axes->GetYAxisCaptionActor2D()->GetCaptionTextProperty()->SetColor(0.0, 0.0, 0.0);
-    // axes->GetZAxisCaptionActor2D()->GetCaptionTextProperty()->SetColor(0.0, 0.0, 0.0);
+    // axesActor->GetXAxisCaptionActor2D()->GetCaptionTextProperty()->SetColor(0.0, 0.0, 0.0);
+    // axesActor->GetYAxisCaptionActor2D()->GetCaptionTextProperty()->SetColor(0.0, 0.0, 0.0);
+    // axesActor->GetZAxisCaptionActor2D()->GetCaptionTextProperty()->SetColor(0.0, 0.0, 0.0);
 
     // // 将坐标轴演员添加到orientationWidget
-    // orientationWidget->SetOrientationMarker(axes);
+    // orientationWidget->SetOrientationMarker(axesActor);
     // // 将orientationWidget与交互器关联
     // orientationWidget->SetInteractor(renWin->GetInteractor());
     // // 设置视口

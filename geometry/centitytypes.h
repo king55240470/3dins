@@ -423,7 +423,9 @@ public:
     void setdistance(double d);
     bool judge();
 
-    // CDistance的draw()
+    // CDistance的draw()，这里要分别写几个显示不同的距离
     vtkSmartPointer<vtkActor> draw() override;
+    vtkSmartPointer<vtkActor> pointToPlane();
+    vtkSmartPointer<vtkActor> pointToLine();
 };
 #endif // CENTITYTYPES_H
