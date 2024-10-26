@@ -2,7 +2,7 @@
 #include "mainwindow.h"
 #include "manager/filemgr.h"
 #include "geometry/centity.h"
-#include "component/vtkwidget.h"
+#include "vtkwindow/vtkwidget.h"
 
 #include <QMainWindow>
 #include <QDebug>
