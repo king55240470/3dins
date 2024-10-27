@@ -22,6 +22,7 @@ class VtkWidget;
 class ReportWidget;
 class LogWidget;
 class PresetElemWidget;
+class FileMgr;
 
 class MainWindow : public QMainWindow
 {
@@ -43,6 +44,8 @@ private:
     ReportWidget *pWinReportWidget;
     LogWidget *pWinLogWidget;
     PresetElemWidget *pWinPresetElemWidget;
+
+    FileMgr *pWinFileMgr;
 
     QMenuBar * bar;
 
@@ -74,6 +77,7 @@ public:
     void OnPresetSphere(CPosition posCenter, double diametre);
     void OnPresetCylinder(CPosition pos, QVector4D vec, double height, double diametre);
     void OnPresetCone(CPosition posCenter, QVector4D axis, double partH, double fullH, double angle);
+
     CObjectMgr *getObjectListMgr();
     CEntity* CreateEntity(int nType);
     void NotifySubscribe();
@@ -99,6 +103,7 @@ public:
     void RestoreWidgets();
     void setupUi();
     void showPresetElemWidget(int);
+    FileMgr *getpWinFileMgr();
 
 public:
     RELY_ON_CS_TYPE m_nRelyOnWhichCs;

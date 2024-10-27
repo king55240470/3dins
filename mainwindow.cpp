@@ -3,13 +3,14 @@
 #include "component/elementlistwidget.h"
 #include "component/filemanagerwidget.h"
 #include "component/toolwidget.h"
-#include "component/vtkpresetwidget.h"
-#include "component/vtkwidget.h"
+#include "vtkwindow/vtkpresetwidget.h"
+#include "vtkwindow/vtkwidget.h"
 #include "component/ReportWidget.h"
 #include "component/LogWidget.h"
 #include"component/contralwidget.h"
 #include "geometry/centitytypes.h"
 #include "component/presetelemwidget.h"
+#include "manager/filemgr.h"
 
 #include <QSettings>
 #include <QLabel>
@@ -29,8 +30,6 @@ MainWindow::MainWindow(QWidget *parent)
     RestoreWidgets();
     loadManager();
     m_nRelyOnWhichCs=csRef;
-
-    //connect(pWinElementListWidget,&ElementListWidget::onItemClicked,pWinToolWidget,&ToolWidget::updateele);
 }
 
 void MainWindow::setupUi(){
@@ -202,19 +201,32 @@ MainWindow::~MainWindow() {
 
 void MainWindow::openFile(){
     // 使用QFileDialog打开文件对话框，允许多选
-    QString filePath = QFileDialog::getOpenFileName(this, tr("open  file"));
-    if (filePath.isEmpty()) { // 如果没有选择文件，返回
+    QStringList filePaths = QFileDialog::getOpenFileNames(this, tr("Open Files"));
+    //QString filePath = QFileDialog::getOpenFileName(this, tr("open  file"));
+    if (filePaths.isEmpty()) { // 如果没有选择文件，返回
         return;
     }
-    if (filePath.endsWith("stp")) {
+    for (const QString &filePath : filePaths) {
         QFileInfo fileInfo(filePath);
         QString fileName = fileInfo.fileName();
-        pWinFileManagerWidget->openModelFile(fileName,filePath);
-    }else if(filePath.endsWith("stl")||filePath.endsWith("pcd")||filePath.endsWith("ply")){
-        QFileInfo fileInfo(filePath);
-        QString fileName = fileInfo.fileName();
-        pWinFileManagerWidget->openMeasuredFile(fileName,filePath);
+
+        // 根据文件扩展名进行判断
+        if (filePath.endsWith("ply")) {
+            pWinFileManagerWidget->openModelFile(fileName, filePath);
+        } else if (filePath.endsWith("pcd")) {
+            pWinFileManagerWidget->openMeasuredFile(fileName, filePath);
         }
+    }
+
+    // if (filePath.endsWith("stp")) {
+    //     QFileInfo fileInfo(filePath);
+    //     QString fileName = fileInfo.fileName();
+    //     pWinFileManagerWidget->openModelFile(fileName,filePath);
+    // }else if(filePath.endsWith("stl")||filePath.endsWith("pcd")||filePath.endsWith("ply")){
+    //     QFileInfo fileInfo(filePath);
+    //     QString fileName = fileInfo.fileName();
+    //     pWinFileManagerWidget->openMeasuredFile(fileName,filePath);
+    //     }
 }
 void MainWindow::saveFile(){
 
@@ -295,6 +307,8 @@ void MainWindow::loadManager()
     m_ObjectListMgr=new CObjectMgr();
     m_EntityListMgr=new CEntityMgr();
 
+    pWinFileMgr=new FileMgr();
+
     m_pcsListMgr->Initialize();
 }
 
@@ -339,8 +353,8 @@ CEntity* MainWindow::CreateEntity(int nType){
 void MainWindow::NotifySubscribe()
 {
     pWinElementListWidget->upadteelementlist();
-    pWinVtkWidget->UpdateInfo(); // 更新vtkwidget信息
     pWinFileManagerWidget->UpdateInfo();
+    pWinVtkWidget->UpdateInfo(); // 更新vtkwidget信息
 }
 
 void MainWindow::OnPresetPoint(CPosition pt){
@@ -866,5 +880,9 @@ void MainWindow::on2dCoordSetRightY()
     }
     m_pcsListMgr->m_pNodeTemporary->pPcs->PlanarRotateYinXY(angle);
     NotifySubscribe();
+}
+
+FileMgr *MainWindow::getpWinFileMgr(){
+    return pWinFileMgr;
 }
 
