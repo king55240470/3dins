@@ -22,8 +22,10 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
     renWin = vtkSmartPointer<vtkGenericOpenGLRenderWindow>::New();
     renderer = vtkSmartPointer<vtkRenderer>::New();
     renWin->AddRenderer(renderer);  // 将渲染器添加到渲染窗口
-    // interactor = vtkSmartPointer<vtkGenericRenderWindowInteractor>::New();
+     interactor = vtkSmartPointer<vtkGenericRenderWindowInteractor>::New();
+    //interactor = vtkSmartPointer<vtkRenderWindowInteractor>::New();
     // interactor->SetRenderWindow(renWin);
+    interactor->SetRenderWindow(renWin);
 
     // 创建坐标器
     createAxes();
