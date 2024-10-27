@@ -81,8 +81,10 @@ public:
 
 private:
     PointCloudPtr cloudptr; // 点云智能指针
-    PCLViewer::Ptr cloud_viewer; // PCL 可视化器的智能指针
-
+    //PCLViewer::Ptr cloud_viewer; // PCL 可视化器的智能指针
+    PCLViewer::Ptr visualizer; // PCL 可视化器的智能指针
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud1;//对应点云
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud2;
     QVTKOpenGLNativeWidget* vtkWidget; // vtk窗口
 
     // 创建渲染器、渲染窗口和交互器
