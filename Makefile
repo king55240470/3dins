@@ -131,11 +131,11 @@ Makefile: 3D.pro C:\Qt\6.6.0\msvc2019_64\mkspecs\win32-msvc\qmake.conf C:\Qt\6.6
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_charts_private.pri \
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_chartsqml.pri \
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_chartsqml_private.pri \
+		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_coap.pri \
+		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_coap_private.pri \
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_concurrent.pri \
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_concurrent_private.pri \
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_core.pri \
-		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_core5compat.pri \
-		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_core5compat_private.pri \
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_core_private.pri \
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_datavisualization.pri \
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_datavisualization_private.pri \
@@ -143,6 +143,8 @@ Makefile: 3D.pro C:\Qt\6.6.0\msvc2019_64\mkspecs\win32-msvc\qmake.conf C:\Qt\6.6
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_datavisualizationqml_private.pri \
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_dbus.pri \
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_dbus_private.pri \
+		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_declarativeopcua.pri \
+		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_declarativeopcua_private.pri \
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_designer.pri \
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_designer_private.pri \
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_designercomponents_private.pri \
@@ -185,6 +187,8 @@ Makefile: 3D.pro C:\Qt\6.6.0\msvc2019_64\mkspecs\win32-msvc\qmake.conf C:\Qt\6.6
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_linguist_private.pri \
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_location.pri \
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_location_private.pri \
+		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_mqtt.pri \
+		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_mqtt_private.pri \
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_multimedia.pri \
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_multimedia_private.pri \
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_multimediaquick_private.pri \
@@ -196,6 +200,8 @@ Makefile: 3D.pro C:\Qt\6.6.0\msvc2019_64\mkspecs\win32-msvc\qmake.conf C:\Qt\6.6
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_networkauth_private.pri \
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_nfc.pri \
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_nfc_private.pri \
+		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_opcua.pri \
+		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_opcua_private.pri \
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_opengl.pri \
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_opengl_private.pri \
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_openglwidgets.pri \
@@ -231,6 +237,7 @@ Makefile: 3D.pro C:\Qt\6.6.0\msvc2019_64\mkspecs\win32-msvc\qmake.conf C:\Qt\6.6
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qml_private.pri \
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmlcompiler.pri \
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmlcompiler_private.pri \
+		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmlcompilerplus_private.pri \
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmlcore.pri \
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmlcore_private.pri \
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmldebug_private.pri \
@@ -345,6 +352,9 @@ Makefile: 3D.pro C:\Qt\6.6.0\msvc2019_64\mkspecs\win32-msvc\qmake.conf C:\Qt\6.6
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_uitools_private.pri \
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_virtualkeyboard.pri \
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_virtualkeyboard_private.pri \
+		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_vncserver.pri \
+		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_vncserver_private.pri \
+		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_vncserverquick_private.pri \
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_webchannel.pri \
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_webchannel_private.pri \
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_webchannelquick.pri \
@@ -469,11 +479,11 @@ C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_charts.pri:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_charts_private.pri:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_chartsqml.pri:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_chartsqml_private.pri:
+C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_coap.pri:
+C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_coap_private.pri:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_concurrent.pri:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_concurrent_private.pri:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_core.pri:
-C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_core5compat.pri:
-C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_core5compat_private.pri:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_core_private.pri:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_datavisualization.pri:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_datavisualization_private.pri:
@@ -481,6 +491,8 @@ C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_datavisualizationqml.pri:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_datavisualizationqml_private.pri:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_dbus.pri:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_dbus_private.pri:
+C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_declarativeopcua.pri:
+C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_declarativeopcua_private.pri:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_designer.pri:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_designer_private.pri:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_designercomponents_private.pri:
@@ -523,6 +535,8 @@ C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_linguist.pri:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_linguist_private.pri:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_location.pri:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_location_private.pri:
+C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_mqtt.pri:
+C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_mqtt_private.pri:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_multimedia.pri:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_multimedia_private.pri:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_multimediaquick_private.pri:
@@ -534,6 +548,8 @@ C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_networkauth.pri:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_networkauth_private.pri:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_nfc.pri:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_nfc_private.pri:
+C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_opcua.pri:
+C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_opcua_private.pri:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_opengl.pri:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_opengl_private.pri:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_openglwidgets.pri:
@@ -569,6 +585,7 @@ C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qml.pri:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qml_private.pri:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmlcompiler.pri:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmlcompiler_private.pri:
+C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmlcompilerplus_private.pri:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmlcore.pri:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmlcore_private.pri:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmldebug_private.pri:
@@ -683,6 +700,9 @@ C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_uitools.pri:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_uitools_private.pri:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_virtualkeyboard.pri:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_virtualkeyboard_private.pri:
+C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_vncserver.pri:
+C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_vncserver_private.pri:
+C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_vncserverquick_private.pri:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_webchannel.pri:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_webchannel_private.pri:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_webchannelquick.pri:
