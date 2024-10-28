@@ -2,6 +2,7 @@
 #define VTKWIDGET_H
 
 #include "mainwindow.h"
+#include "clickhighlightstyle.h"
 #include "manager/filemgr.h"
 #include "component/toolwidget.h"
 #include <QWidget>
@@ -66,7 +67,7 @@ public:
     // 获取m_renWin
     vtkSmartPointer<vtkRenderWindow> getRenderWindow();
 
-    // 获取渲染器
+    // 获取渲染器和交互器
     vtkSmartPointer<vtkRenderer>& getRenderer();
 
     // 在notifsubscribey里更新信息
@@ -82,7 +83,7 @@ public:
     void onTopView(); // 俯视
     void onRightView(); // 右侧
     void onFrontView(); // 正视
-    void ononIsometricView(); // 旋转立体视角
+    void onIsometricView(); // 旋转立体视角
 
     // 将点云转为vtk的顶点图形并显示
     void showConvertedCloud();
@@ -96,11 +97,12 @@ public:
 private:
     QVTKOpenGLNativeWidget* vtkWidget; // vtk窗口
     MainWindow *m_pMainWin=nullptr; // mainwindow指针
+    MouseInteractorHighlightActor *m_clickstyle = nullptr;
 
     // 创建渲染器、渲染窗口和交互器
     vtkSmartPointer<vtkRenderer> renderer;
     vtkSmartPointer<vtkGenericOpenGLRenderWindow> renWin;
-    vtkSmartPointer<vtkGenericRenderWindowInteractor> interactor;
+    // vtkSmartPointer<vtkGenericRenderWindowInteractor> interactor;
 
     // 创建交互部件来封装坐标器
     vtkSmartPointer<vtkOrientationMarkerWidget> orientationWidget;

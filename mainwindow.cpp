@@ -825,7 +825,7 @@ void MainWindow::onFrontViewClicked()
 
 void MainWindow::onIsometricViewClicked()
 {
-    pWinVtkWidget->ononIsometricView();
+    pWinVtkWidget->onIsometricView();
 }
 
 double MainWindow::AxesRotateX()

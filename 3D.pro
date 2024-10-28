@@ -41,6 +41,7 @@ SOURCES += \
     manager/cobjectmgr.cpp \
     manager/cpcsmgr.cpp \
     manager/filemgr.cpp \
+    vtkwindow/clickhighlightstyle.cpp \
     vtkwindow/vtkpresetwidget.cpp \
     vtkwindow/vtkwidget.cpp \
     vtkwindow/vtkwindowreportwidget.cpp
@@ -77,6 +78,7 @@ HEADERS += \
     manager/cobjectmgr.h \
     manager/cpcsmgr.h \
     manager/filemgr.h \
+    vtkwindow/clickhighlightstyle.h \
     vtkwindow/vtkpresetwidget.h \
     vtkwindow/vtkwidget.h \
     vtkwindow/vtkwindowreportwidget.h
