@@ -1,6 +1,5 @@
 #include "vtkwidget.h"
 #include <vtkInteractorStyle.h>
-
 #include <QFileDialog>  // 用于文件对话框
 #include <QOpenGLContext>
 #include <qopenglfunctions.h>
@@ -26,7 +25,10 @@ VtkWidget::VtkWidget(QWidget *parent)
     comparisonCloud(new pcl::PointCloud<pcl::PointXYZRGB>()) // 初始化比较好的点云对象
 // ,visualizer(new pcl::visualization::PCLVisualizer("Cloud Comparator"))  // 初始化可视化对象
 {
+    // 禁用 VTK 的错误处理弹窗
+    vtkObject::GlobalWarningDisplayOff();
     m_pMainWin = (MainWindow*) parent;
+    m_clickstyle = (MouseInteractorHighlightActor*) parent;
 
     // 设置 VTK 渲染窗口到 QWidget
     QVBoxLayout *mainlayout = new QVBoxLayout(this);
@@ -39,17 +41,19 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
     renderer = vtkSmartPointer<vtkRenderer>::New();
     renderer->SetBackground(1, 1, 1); // 设置渲染器颜色为白
     renWin = vtkSmartPointer<vtkGenericOpenGLRenderWindow>::New();
+    // renWin = vtkSmartPointer<vtkRenderWindow>::New();
     renWin->AddRenderer(renderer);  // 将渲染器添加到渲染窗口
-
-    // 添加交互器
-    interactor = vtkSmartPointer<vtkGenericRenderWindowInteractor>::New();
-    // interactor->SetRenderWindow(renWin);
-    interactor->Initialize();
 
     // 创建QVTKOpenGLNativeWidget作为渲染窗口
     vtkWidget = new QVTKOpenGLNativeWidget();
-    vtkWidget->setRenderWindow(renWin);
     layout->addWidget(vtkWidget);
+    vtkWidget->setRenderWindow(renWin);
+
+    // 添加交互器样式
+    auto clickstyle = vtkSmartPointer<MouseInteractorHighlightActor>::New();
+    clickstyle->SetRenderer(renderer);
+    renWin->GetInteractor()->SetInteractorStyle(clickstyle);
+
 
     // 创建坐标器
     createAxes();
@@ -114,25 +118,35 @@ void VtkWidget::reDraw(){
         renderer->RemoveViewProp(prop);
     }
 
-    QVector<bool> list = m_pMainWin->m_EntityListMgr->getMarkList();//获取标记是否隐藏元素的list
-    // 存储返回的引用对象，用于操作两个list
     auto entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
     auto objectlist = m_pMainWin->m_ObjectListMgr->getObjectList();
-
-    QMap<QString, bool> map = m_pMainWin->getpWinFileMgr()->getContentItemMap();
+    QVector<bool> list = m_pMainWin->m_EntityListMgr->getMarkList();//获取标记是否隐藏元素的list
+    QMap<QString, bool> filemap = m_pMainWin->getpWinFileMgr()->getContentItemMap();
     QVector<CEntity*> constructEntityList = m_pMainWin->getPWinToolWidget()->getConstructEntityList();//存储构建元素的列表
+    auto pickedActors = m_clickstyle->getPickedActors(); // 获取选中高亮的actor
+
 
     // 遍历entitylist绘制图形并加入渲染器
     for(auto i = 0;i < entitylist.size();i++){
         int flag=0;
         if(constructEntityList.isEmpty()){//没有构建的元素
+            // vtkActor* entity_actor = entitylist[i]->draw();
+            // // 遍历pickedActors，如果entitylist中有选中的成员则保持选中状态
+            // for(auto &pair : pickedActors){
+            //     // 判断entity_actor属性
+            //     if(entity_actor->GetProperty() == pair.second){
+            //         m_clickstyle->HighlightActor(entity_actor); // 高亮显示
+            //         getRenderer()->AddActor(entity_actor);
+            //     }
+            // }
             getRenderer()->AddActor(entitylist[i]->draw());
-        }else{
+        }
+        else{
             for(int j=0;j<constructEntityList.size();j++){
-                QString key=constructEntityList[j]->GetObjectCName()+"  "+constructEntityList[j]->GetObjectAutoName();
-                if(entitylist[i]==constructEntityList[j]){//是构建的元素
+                QString key=constructEntityList[j]->GetObjectCName() + "  " + constructEntityList[j]->GetObjectAutoName();
+                if(entitylist[i] == constructEntityList[j]){//是构建的元素
                     flag=1;
-                    if(map[key]){
+                    if(filemap[key]){
                         getRenderer()->AddActor(entitylist[i]->draw());
                         break;
                     }
@@ -150,8 +164,6 @@ void VtkWidget::reDraw(){
             getRenderer()->AddActor(object->draw());
     }
 
-    // 重新加载全局坐标系
-    createAxes();
 }
 
 // 创建全局坐标器
@@ -165,29 +177,21 @@ void VtkWidget::createAxes()
     axesActor->GetYAxisCaptionActor2D()->GetCaptionTextProperty()->SetColor(0.0, 0.0, 0.0);
     axesActor->GetZAxisCaptionActor2D()->GetCaptionTextProperty()->SetColor(0.0, 0.0, 0.0);
 
-    axesActor->SetTotalLength(0.4, 0.4, 0.4); // 设置轴的长度
+    axesActor->SetTotalLength(2, 2, 2); // 设置轴的长度
     axesActor->SetConeRadius(0.1); // 设置轴锥体的半径
     axesActor->SetCylinderRadius(0.1); // 设置轴圆柱体的半径
     axesActor->SetSphereRadius(0.05); // 设置轴末端的球体半径
-    axesActor->SetPosition(0, 0, 0);
 
-    renderer->AddActor(axesActor); // 将坐标器添加到渲染器
+    orientationWidget = vtkSmartPointer<vtkOrientationMarkerWidget>::New();
+    // 将坐标轴演员添加到orientationWidget
+    orientationWidget->SetOrientationMarker(axesActor);
+    // 将orientationWidget与交互器关联
+    orientationWidget->SetInteractor(renWin->GetInteractor());
+    // 设置视口
+    orientationWidget->SetViewport(0.0, 0.0, 0.2, 0.2);
 
-    // orientationWidget = vtkSmartPointer<vtkOrientationMarkerWidget>::New();
-    // // 设置 X Y Z 轴标题颜色为黑色
-    // axesActor->GetXAxisCaptionActor2D()->GetCaptionTextProperty()->SetColor(0.0, 0.0, 0.0);
-    // axesActor->GetYAxisCaptionActor2D()->GetCaptionTextProperty()->SetColor(0.0, 0.0, 0.0);
-    // axesActor->GetZAxisCaptionActor2D()->GetCaptionTextProperty()->SetColor(0.0, 0.0, 0.0);
-
-    // // 将坐标轴演员添加到orientationWidget
-    // orientationWidget->SetOrientationMarker(axesActor);
-    // // 将orientationWidget与交互器关联
-    // orientationWidget->SetInteractor(renWin->GetInteractor());
-    // // 设置视口
-    // orientationWidget->SetViewport(0.0, 0.0, 0.2, 0.2);
-
-    // // orientationWidget->SetEnabled(true);
-    // orientationWidget->InteractiveOn();
+    orientationWidget->SetEnabled(1);
+    orientationWidget->InteractiveOn();
 }
 
 // 切换相机视角1
@@ -239,7 +243,7 @@ void VtkWidget::onFrontView(){
 }
 
 // 切换相机视角4，立体视角可以在前三个的基础上旋转
-void VtkWidget::ononIsometricView(){
+void VtkWidget::onIsometricView(){
     vtkCamera *camera = renderer->GetActiveCamera();
     if (camera) {
         camera->SetPosition(0, 0, 0); // 重置相机位置
