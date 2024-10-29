@@ -12,6 +12,7 @@ public:
     CLine* createLine(CPosition begin,CPosition end);
     CLine* createLine(CPoint begin,CPoint end);
     CLine* createLine(CCircle* ,CCircle*);
+    CLine * createLine(CPoint*,CPlane*);
 };
 
 #endif // LINECONSTRUCTOR_H
