@@ -1003,7 +1003,7 @@ void ToolWidget::onConstructDistance(){
     m_pMainWin->m_EntityListMgr->Add(newDistance);
     m_pMainWin->m_ObjectListMgr->Add(newDistance);
     m_pMainWin->NotifySubscribe();
-    addToList(newDistance);
+    //addToList(newDistance);
 }
 
 void ToolWidget::updateele(){
