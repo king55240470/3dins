@@ -3,8 +3,8 @@
 #include "component/elementlistwidget.h"
 #include "component/filemanagerwidget.h"
 #include "component/toolwidget.h"
-#include "component/vtkpresetwidget.h"
-#include "component/vtkwidget.h"
+#include "vtkwindow/vtkpresetwidget.h"
+#include "vtkwindow/vtkwidget.h"
 #include "component/ReportWidget.h"
 #include "component/LogWidget.h"
 #include"component/contralwidget.h"
@@ -830,7 +830,7 @@ void MainWindow::onFrontViewClicked()
 
 void MainWindow::onIsometricViewClicked()
 {
-    pWinVtkWidget->ononIsometricView();
+    pWinVtkWidget->onIsometricView();
 }
 
 double MainWindow::AxesRotateX()

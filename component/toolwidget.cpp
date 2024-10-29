@@ -41,7 +41,7 @@
 #include<QLabel>
 #include"elementlistwidget.h"
 #include"geometry/centitytypes.h"
-#include"component/vtkwidget.h"
+#include"vtkwindow/vtkwidget.h"
 #include <vtkProperty.h>
 
 #include<QTreeWidgetItem>
