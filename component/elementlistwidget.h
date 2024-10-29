@@ -41,8 +41,12 @@ public:
     QList<QTreeWidgetItem*> getSelectedItems();
     QVector<CObject*> getEleobjlist();
     bool eventFilter(QObject *obj, QEvent *event)override;
-
+    void selectall();
+    void selectcommonitem();
     void onItemClicked();
+    void showDialog();
+    void setTolerance();
+    void BtnClicked();
 protected:
     void mousePressEvent(QMouseEvent *event)override;
     void keyPressEvent(QKeyEvent *event) override;
@@ -61,6 +65,9 @@ private:
     QVector<CObject*>eleobjlist;
     //std::unordered_map<QTreeWidgetItem*, size_t> itemToIndexMap;
     bool ctrlPressed = false;
+    QLineEdit* up;
+    QLineEdit* down;
+    QPushButton *updownBtn;
 signals:
     void itemSelected(int index);
 };
