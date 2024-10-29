@@ -616,11 +616,11 @@ void DataWidget::updateinfo()
                 table->setItem(2, 1, new QTableWidgetItem(QString::number(position.z,'f',6)));
                 table->setItem(2, 2, new QTableWidgetItem(""));
 
-                table->setItem(2, 0, new QTableWidgetItem("是否合格"));
+                table->setItem(3, 0, new QTableWidgetItem("是否合格"));
                 if(distance->judge()==true){
-                    table->setItem(2, 1, new QTableWidgetItem(QString("合格")));
+                    table->setItem(3, 1, new QTableWidgetItem(QString("合格")));
                 }else{
-                    table->setItem(2, 1, new QTableWidgetItem(QString("不合格")));
+                    table->setItem(3, 1, new QTableWidgetItem(QString("不合格")));
                 }
             }
         }

@@ -994,16 +994,7 @@ void ToolWidget::onConstructDistance(){
         WrongWidget("构造距离失败");
         return ;
     }
-    newDistance->m_CreateForm = ePreset;
-    newDistance->m_pRefCoord = m_pMainWin->m_pcsListMgr->m_pPcsCurrent;
-    newDistance->m_pCurCoord = m_pMainWin->m_pcsListMgr->m_pPcsCurrent;
-    newDistance->m_pExtCoord = m_pMainWin->m_pcsListMgr->m_pPcsCurrent;
-    // newPlane->SetNominal();
-    // 加入Entitylist 和 ObjectList
-    m_pMainWin->m_EntityListMgr->Add(newDistance);
-    m_pMainWin->m_ObjectListMgr->Add(newDistance);
-    m_pMainWin->NotifySubscribe();
-    //addToList(newDistance);
+    addToList(newDistance);
 }
 
 void ToolWidget::updateele(){
