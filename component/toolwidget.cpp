@@ -41,7 +41,7 @@
 #include<QLabel>
 #include"elementlistwidget.h"
 #include"geometry/centitytypes.h"
-#include"component/vtkwidget.h"
+#include"vtkwindow/vtkwidget.h"
 #include <vtkProperty.h>
 
 #include<QTreeWidgetItem>
@@ -986,7 +986,10 @@ void ToolWidget::onConstructDistance(){
 
     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
     DistanceConstructor constructor;
+    //constructor.createTolerance(0,0);
     CDistance* newDistance=(CDistance*)constructor.create(entityList);
+    newDistance->setUptolerance(0);
+    newDistance->setUndertolerance(0);
     if(newDistance==nullptr){
         WrongWidget("构造距离失败");
         return ;

@@ -1,6 +1,8 @@
 QT       += core gui opengl openglwidgets
 QT += printsupport
 QT += axcontainer
+QT += opengl
+LIBS += -lOpengl32
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++17
@@ -17,9 +19,6 @@ SOURCES += \
     component/reportwidget.cpp \
     component/toolaction.cpp \
     component/toolwidget.cpp \
-    component/vtkpresetwidget.cpp \
-    component/vtkwidget.cpp \
-    component/vtkwindowreportwidget.cpp \
     constructor/circleconstructor.cpp \
     constructor/coneconstructor.cpp \
     constructor/constructor.cpp \
@@ -41,7 +40,11 @@ SOURCES += \
     manager/centitymgr.cpp \
     manager/cobjectmgr.cpp \
     manager/cpcsmgr.cpp \
-    manager/filemgr.cpp
+    manager/filemgr.cpp \
+    vtkwindow/clickhighlightstyle.cpp \
+    vtkwindow/vtkpresetwidget.cpp \
+    vtkwindow/vtkwidget.cpp \
+    vtkwindow/vtkwindowreportwidget.cpp
 
 HEADERS += \
     component/contralwidget.h \
@@ -53,9 +56,6 @@ HEADERS += \
     component/reportwidget.h \
     component/toolaction.h \
     component/toolwidget.h \
-    component/vtkpresetwidget.h \
-    component/vtkwidget.h \
-    component/vtkwindowreportwidget.h \
     constructor/circleconstructor.h \
     constructor/coneconstructor.h \
     constructor/constructor.h \
@@ -77,7 +77,11 @@ HEADERS += \
     manager/centitymgr.h \
     manager/cobjectmgr.h \
     manager/cpcsmgr.h \
-    manager/filemgr.h
+    manager/filemgr.h \
+    vtkwindow/clickhighlightstyle.h \
+    vtkwindow/vtkpresetwidget.h \
+    vtkwindow/vtkwidget.h \
+    vtkwindow/vtkwindowreportwidget.h
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

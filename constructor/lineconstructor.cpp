@@ -2,6 +2,7 @@
 
 LineConstructor::LineConstructor() {}
 CEntity* LineConstructor::create(QVector<CEntity*>& entitylist){
+    Constructor::create(entitylist);
     QVector<CPoint*>points;
     QVector<CPlane*>planes;
     for(int i=0;i<entitylist.size();i++){
