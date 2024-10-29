@@ -40,7 +40,6 @@ public:
     void upadteelementlist();
     QList<QTreeWidgetItem*> getSelectedItems();
     QVector<CObject*> getEleobjlist();
-    bool eventFilter(QObject *obj, QEvent *event)override;
     void selectall();
     void selectcommonitem();
     void onItemClicked();
@@ -48,7 +47,6 @@ public:
     void setTolerance();
     void BtnClicked();
 protected:
-    void mousePressEvent(QMouseEvent *event)override;
     void keyPressEvent(QKeyEvent *event) override;
     void keyReleaseEvent(QKeyEvent *event) override;
 private:
