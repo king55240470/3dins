@@ -58,6 +58,7 @@ ElementListWidget::ElementListWidget(QWidget *parent)
     toolBar->installEventFilter(this);
 
     connect(treeWidgetNames, &QTreeWidget::itemClicked, this, &ElementListWidget::onItemClicked);
+    connect(treeWidgetNames, &QTreeWidget::itemDoubleClicked, this, &ElementListWidget::showDialog);
 }
 
 void ElementListWidget::CreateEllipse(CObject*obj)
@@ -157,10 +158,13 @@ void ElementListWidget::onCustomContextMenuRequested(const QPoint &pos)
     //if (!curItem) return;
     QMenu menu(this);
     QAction *action1 = menu.addAction("删除");
-    QAction *action2 = menu.addAction("操作 2");
-    QAction *action3 = menu.addAction("操作 3");
-    QAction *action4 = menu.addAction("操作 4");
+    QAction *action2 = menu.addAction("全部选中");
+    QAction *action3 = menu.addAction("选中所有相同项");
+    QAction *action4 = menu.addAction("设置公差");
     connect(action1, &QAction::triggered, this, &ElementListWidget::onDeleteEllipse);
+    connect(action2, &QAction::triggered, this, &ElementListWidget::selectall);
+    connect(action3, &QAction::triggered, this, &ElementListWidget::selectall);
+    connect(action4, &QAction::triggered, this, &ElementListWidget::setTolerance);
     menu.exec(mapToGlobal(pos));
 }
 
@@ -212,6 +216,83 @@ void ElementListWidget::onItemClicked()
     }
     m_pMainWin->getPWinToolWidget()->updateele();
 }
+
+void ElementListWidget::showDialog()
+{
+}
+
+void ElementListWidget::setTolerance()
+{
+    QDialog dialog(this);
+    dialog.setWindowTitle("设置公差");
+    dialog.resize(200,100);
+    QVBoxLayout *layout = new QVBoxLayout(&dialog);
+    QLabel *Up = new QLabel("上公差:");
+    up = new QLineEdit();
+    up->setText("0");
+    up->setMaximumWidth(150);
+    QLabel *Down = new QLabel("下公差:");
+    down = new QLineEdit();
+    down->setText("0");
+    down->setMaximumWidth(150);
+    updownBtn=new QPushButton("确定");
+    layout->addWidget(Up, 0);
+    layout->addWidget(up, 0);
+    layout->addWidget(Down, 1);
+    layout->addWidget(down, 1);
+    layout->addWidget(updownBtn);
+    dialog.setLayout(layout);
+    connect(updownBtn, &QPushButton::clicked, this, &ElementListWidget::BtnClicked);
+    dialog.exec();
+}
+
+void ElementListWidget::BtnClicked()
+{
+    double uper;
+    double downer;
+    bool ok;
+    QList<QTreeWidgetItem*> selectedItems = getSelectedItems();
+    if(selectedItems.size()!=1){
+        return;
+    }
+    uper = up->text().toDouble(&ok);
+    if (!ok) {
+        QMessageBox::critical(this, "输入错误", "圆柱体-底面中心坐标X需要是双精度浮点类型数。");
+        return;
+    }
+    downer = down->text().toDouble(&ok);
+    if (!ok) {
+        QMessageBox::critical(this, "输入错误", "圆柱体-底面中心坐标Y需要是双精度浮点类型数。");
+        return;
+    }
+    for(QTreeWidgetItem*item:selectedItems){
+        CObject *obj = item->data(0, Qt::UserRole).value<CObject*>();
+        if(obj->GetObjectCName().left(2)!="距离"){
+            QMessageBox::critical(this,"错误","该元素不是距离类型");
+            return;
+        }
+        int index=-1;
+        for(int i=0;i<m_pMainWin->getObjectListMgr()->getObjectList().size();i++){
+            if(m_pMainWin->getObjectListMgr()->getObjectList()[i]==obj){
+                index=i;
+            }
+        }
+        CDistance* dis = dynamic_cast<CDistance*>(m_pMainWin->getEntityListMgr()->getEntityList()[index]);
+        CDistance* dis1 = dynamic_cast<CDistance*>(m_pMainWin->getObjectListMgr()->getObjectList()[index]);
+        if(!dis||!dis1){
+            qDebug()<<"dis转换失败";
+            QMessageBox::critical(this, "错误", "对象转换失败，请检查。");
+            return;
+        }
+        dis->setUptolerance(uper);
+        dis->setUndertolerance(downer);
+        dis->judge();
+        dis1->setUptolerance(uper);
+        dis1->setUndertolerance(downer);
+        dis1->judge();
+    }
+    m_pMainWin->NotifySubscribe();
+}
 QList<QTreeWidgetItem*> ElementListWidget:: getSelectedItems(){
     return treeWidgetNames->selectedItems();
 }
@@ -219,15 +300,33 @@ QVector<CObject*> ElementListWidget::getEleobjlist(){
     return eleobjlist;
 }
 
-bool ElementListWidget::eventFilter(QObject *obj, QEvent *event)
+void ElementListWidget::selectall()
 {
-    if (event->type() == QEvent::MouseButtonPress) {
-        QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
-        qDebug() << "事件过滤器捕捉到鼠标按下:" << mouseEvent->button();
-        // 根据需要处理事件
+    int ItemCount = treeWidgetNames->topLevelItemCount();
+    qDebug()<<ItemCount;
+    for(int i=0;i<ItemCount;i++){
+        QTreeWidgetItem *item = treeWidgetNames->topLevelItem(i);
+        item->setSelected(true);
+        m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(true);
     }
-    // 继续传递事件
-    return QWidget::eventFilter(obj, event);
+}
+
+void ElementListWidget::selectcommonitem()
+{
+    QList<QTreeWidgetItem*> selectedItems = getSelectedItems();
+    if(selectedItems.size()!=1){
+        return;
+    }
+    int ItemCount = treeWidgetNames->topLevelItemCount();
+    CObject *obj = selectedItems[0]->data(0, Qt::UserRole).value<CObject*>();
+    for(int i=0;i<ItemCount;i++){
+        QTreeWidgetItem *item = treeWidgetNames->topLevelItem(i);
+        CObject *obj1=item->data(0, Qt::UserRole).value<CObject*>();
+        if(obj1->GetUniqueType()==obj->GetUniqueType()){
+            item->setSelected(true);
+            m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(true);
+        }
+    }
 }
 
 void ElementListWidget::keyPressEvent(QKeyEvent *event)
@@ -246,21 +345,6 @@ void ElementListWidget::keyReleaseEvent(QKeyEvent *event)
         treeWidgetNames->setSelectionMode(QAbstractItemView::SingleSelection); // 切换为单选模式
     }
     QWidget::keyReleaseEvent(event);
-}
-
-void ElementListWidget::mousePressEvent(QMouseEvent *event) {
-
-    qDebug()<<"鼠标事件0";
-    if(event->button() == Qt::RightButton){
-        // 获取右键点击的坐标
-        qDebug()<<"鼠标事件";
-        QPoint pos = event->pos();
-        //onCustomContextMenuRequested(pos);
-        event->ignore();
-    }else {
-        // 对于其他按钮（如中键），按默认行为处理
-        QWidget::mousePressEvent(event);
-    }
 }
 
 
