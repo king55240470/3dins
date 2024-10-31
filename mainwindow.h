@@ -8,10 +8,10 @@
 #include <QPushButton>
 #include "geometry/globes.h"
 #include "geometry/centity.h"
-//#include "component/vtkwidget.h"
 #include "manager/centitymgr.h"
 #include "manager/cobjectmgr.h"
 #include "manager/cpcsmgr.h"
+#include "manager/chosencentitymgr.h"
 
 class DataWidget;
 class ElementListWidget;
@@ -46,6 +46,7 @@ private:
     PresetElemWidget *pWinPresetElemWidget;
 
     FileMgr *pWinFileMgr;
+    ChosenCEntityMgr* chosenlistmgr;
 
     QMenuBar * bar;
 
@@ -104,6 +105,7 @@ public:
     void setupUi();
     void showPresetElemWidget(int);
     FileMgr *getpWinFileMgr();
+    ChosenCEntityMgr* getChosenCEntityMgr();
 
 public:
     RELY_ON_CS_TYPE m_nRelyOnWhichCs;

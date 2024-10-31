@@ -43,7 +43,7 @@ vtkSmartPointer<vtkActor> CPoint::draw(){
     // 创建执行器，添加mapper
     vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
-    actor->GetProperty()->SetPointSize(7); // 设置点的大小
+    actor->GetProperty()->SetPointSize(5); // 设置点的大小
     actor->GetProperty()->SetColor(0, 0, 0);
 
     return actor;

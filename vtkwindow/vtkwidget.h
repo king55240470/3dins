@@ -3,6 +3,7 @@
 
 #include "mainwindow.h"
 #include "clickhighlightstyle.h"
+#include "custominteractorstyle.h"
 #include "manager/filemgr.h"
 #include "component/toolwidget.h"
 #include <QWidget>
@@ -96,7 +97,7 @@ public:
 
 private:
     QVTKOpenGLNativeWidget* vtkWidget; // vtk窗口
-    MainWindow *m_pMainWin=nullptr; // mainwindow指针
+    MainWindow *m_pMainWin = nullptr; // mainwindow指针
     MouseInteractorHighlightActor *m_clickstyle = nullptr;
 
     // 创建渲染器、渲染窗口和交互器

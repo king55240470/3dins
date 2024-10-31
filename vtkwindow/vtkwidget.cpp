@@ -1,4 +1,5 @@
 #include "vtkwidget.h"
+
 #include <vtkInteractorStyle.h>
 #include <QFileDialog>  // 用于文件对话框
 #include <QOpenGLContext>
@@ -54,6 +55,9 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
     clickstyle->SetRenderer(renderer);
     renWin->GetInteractor()->SetInteractorStyle(clickstyle);
 
+    // auto customstyle = vtkSmartPointer<CustomInteractorStyle>::New();
+    // customstyle->SetRenderer(renderer);
+    // renWin->GetInteractor()->SetInteractorStyle(customstyle);
 
     // 创建坐标器
     createAxes();
@@ -135,7 +139,7 @@ void VtkWidget::reDraw(){
             // for(auto &pair : pickedActors){
             //     // 判断entity_actor属性
             //     if(entity_actor->GetProperty() == pair.second){
-            //         m_clickstyle->HighlightActor(entity_actor); // 高亮显示
+            //         m_clickstyle->BackChoosen(entity_actor); // 高亮显示
             //         getRenderer()->AddActor(entity_actor);
             //     }
             // }
@@ -296,7 +300,7 @@ void VtkWidget::showConvertedCloud(){
 
             vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
             actor->SetMapper(mapper);
-            actor->GetProperty()->SetPointSize(5); // 设置点大小
+            actor->GetProperty()->SetPointSize(6); // 设置点大小
             actor->GetProperty()->SetColor(0.5, 0.5, 0.5);
 
             renderer->AddActor(actor);
@@ -307,14 +311,14 @@ void VtkWidget::showConvertedCloud(){
     for(auto item = model_map.begin();item != model_map.end() ;item++){
         // 如果文件不隐藏
         if(item.value()){
-            pcl::io::loadPLYFile(item.key().toStdString(), *cloud_1);
+            pcl::io::loadPLYFile(item.key().toStdString(), *cloud_2);
 
             // 将cloud转换为VTK的点集
             vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
             points->SetNumberOfPoints(cloud_2->points.size());
-            for (size_t i = 0; i < cloud_1->points.size(); ++i)
+            for (size_t i = 0; i < cloud_2->points.size(); ++i)
             {
-                points->SetPoint(i, cloud_1->points[i].x, cloud_1->points[i].y, cloud_1->points[i].z);
+                points->SetPoint(i, cloud_2->points[i].x, cloud_2->points[i].y, cloud_2->points[i].z);
             }
 
             vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();

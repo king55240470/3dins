@@ -886,3 +886,8 @@ FileMgr *MainWindow::getpWinFileMgr(){
     return pWinFileMgr;
 }
 
+ChosenCEntityMgr *MainWindow::getChosenCEntityMgr()
+{
+    return chosenlistmgr;
+}
+
