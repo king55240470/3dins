@@ -38,10 +38,12 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     manager/centitymgr.cpp \
+    manager/chosencentitymgr.cpp \
     manager/cobjectmgr.cpp \
     manager/cpcsmgr.cpp \
     manager/filemgr.cpp \
     vtkwindow/clickhighlightstyle.cpp \
+    vtkwindow/custominteractorstyle.cpp \
     vtkwindow/vtkpresetwidget.cpp \
     vtkwindow/vtkwidget.cpp \
     vtkwindow/vtkwindowreportwidget.cpp
@@ -75,10 +77,12 @@ HEADERS += \
     geometry/globes.h \
     mainwindow.h \
     manager/centitymgr.h \
+    manager/chosencentitymgr.h \
     manager/cobjectmgr.h \
     manager/cpcsmgr.h \
     manager/filemgr.h \
     vtkwindow/clickhighlightstyle.h \
+    vtkwindow/custominteractorstyle.h \
     vtkwindow/vtkpresetwidget.h \
     vtkwindow/vtkwidget.h \
     vtkwindow/vtkwindowreportwidget.h
