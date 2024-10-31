@@ -685,7 +685,7 @@ double CDistance::getdistanceline()
     double t = (ABx * APx + ABy * APy + ABz * APz) / AB_squared;
 
     // 判断 t 的值,待判断.........
-    if (t < 0.0) {
+    /*if (t < 0.0) {
         // 返回 P 到 A 的距离
         return sqrt(APx * APx + APy * APy + APz * APz);
     } else if (t > 1.0) {
@@ -694,7 +694,7 @@ double CDistance::getdistanceline()
         double BPy = P.y - end.y;
         double BPz = P.z - end.z;
         return sqrt(BPx * BPx + BPy * BPy + BPz * BPz);
-    }
+    }*/
 
     // 投影落在线段 AB 上
     CPosition projection = {

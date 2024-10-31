@@ -1,5 +1,4 @@
-#include "vtkwidget.h"
-
+#include "vtkwindow/vtkwidget.h"
 #include <vtkInteractorStyle.h>
 #include <QFileDialog>  // 用于文件对话框
 #include <QOpenGLContext>

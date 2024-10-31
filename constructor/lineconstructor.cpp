@@ -3,6 +3,24 @@
 LineConstructor::LineConstructor() {}
 CEntity* LineConstructor::create(QVector<CEntity*>& entitylist){
     Constructor::create(entitylist);
+    QVector<CPoint*>points;
+    QVector<CPlane*>planes;
+    for(int i=0;i<entitylist.size();i++){
+        CEntity* entity=entitylist[i];
+        if(!entity->IsSelected())continue;
+        if(entity->GetUniqueType()==enPoint){
+            CPoint * point=(CPoint*)entity;
+            points.push_back(point);
+        }
+        if(entity->GetUniqueType()==enPlane){
+            CPlane* plane=(CPlane*)entity;
+            planes.push_back(plane);
+        }
+    }
+    if(points.size()==1&&planes.size()==1){
+
+        return createLine(points[0],planes[0]);
+    }
     QVector<CPosition>&positions=Constructor::getPositions();//存储有效点
     if(positions.size()==2){
         return createLine(positions[0],positions[1]);
@@ -38,4 +56,34 @@ CLine* LineConstructor::createLine(CCircle* Circle1,CCircle*Circle2){
     CPosition p1=Circle1->getCenter();
     CPosition p2=Circle2->getCenter();
     return createLine(p1,p2);
+}
+CLine * LineConstructor::createLine(CPoint* p,CPlane* plane){
+
+    // 点的坐标
+    CPosition position=p->GetPt();
+    CPosition center=plane->getCenter();
+    QVector4D normal_=plane->getNormal();
+    double point[3]={position.x,position.y,position.z};
+
+    // 计算垂足（点到平面的垂线段的另一端点）
+    double t;
+    double origin[3]={center.x,center.y,center.z};
+
+
+    double normal[3]={normal_[0],normal_[1],normal_[2]};
+
+
+    // 计算垂足的参数t
+    t = (normal[0] * (origin[0] - point[0]) + normal[1] * (origin[1] - point[1]) + normal[2] * (origin[2] - point[2])) /
+        (normal[0] * normal[0] + normal[1] * normal[1] + normal[2] * normal[2]);
+
+    // 垂足的坐标
+    double foot[3];
+    foot[0] = point[0] + t * normal[0];
+    foot[1] = point[1] + t * normal[1];
+    foot[2] = point[2] + t * normal[2];
+
+    CPosition foot_(foot[0],foot[1],foot[2]);
+    return createLine(position,foot_);
+
 }

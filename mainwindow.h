@@ -80,6 +80,7 @@ public:
     void OnPresetCone(CPosition posCenter, QVector4D axis, double partH, double fullH, double angle);
 
     CObjectMgr *getObjectListMgr();
+    CEntityMgr*getEntityListMgr();
     CEntity* CreateEntity(int nType);
     void NotifySubscribe();
     void loadManager();

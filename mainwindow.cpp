@@ -529,6 +529,11 @@ CObjectMgr *MainWindow::getObjectListMgr()
     return m_ObjectListMgr;
 }
 
+CEntityMgr *MainWindow::getEntityListMgr()
+{
+    return m_EntityListMgr;
+}
+
 void MainWindow::showPresetElemWidget(int index){
     pWinPresetElemWidget=new PresetElemWidget(this);
     switch(index){
