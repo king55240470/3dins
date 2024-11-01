@@ -46,7 +46,6 @@ private:
     PresetElemWidget *pWinPresetElemWidget;
 
     FileMgr *pWinFileMgr;
-    ChosenCEntityMgr* chosenlistmgr;
 
     QMenuBar * bar;
 
@@ -106,7 +105,6 @@ public:
     void setupUi();
     void showPresetElemWidget(int);
     FileMgr *getpWinFileMgr();
-    ChosenCEntityMgr* getChosenCEntityMgr();
 
 public:
     RELY_ON_CS_TYPE m_nRelyOnWhichCs;

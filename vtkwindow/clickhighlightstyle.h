@@ -58,13 +58,10 @@ public:
     QVector<std::pair<vtkSmartPointer<vtkActor>,vtkSmartPointer<vtkProperty>>>& getPickedActors();
 
 private:
-    // MainWindow* m_pMainWin; // 定义mainwindow指针成员
+    // ChsenCEntityMgr* chosenListMgr; // 初始化选中元素列表的管理器成员
 
     // 存储所有选中的actor和原始属性
     QVector<std::pair<vtkSmartPointer<vtkActor>,vtkSmartPointer<vtkProperty>>> pickedActors;
-
-    // 存储所有actor
-    QVector<vtkActor*> actors;
 
     // 存储所有用于高亮的顶点
     QVector<vtkActor*> point_actors;
