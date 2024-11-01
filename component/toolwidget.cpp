@@ -977,7 +977,7 @@ void ToolWidget::onConstructCylinder(){
     CylinderConstructor constructor;
     CCylinder* newCylinder=(CCylinder*)constructor.create(entityList);
     if(newCylinder==nullptr){
-        WrongWidget("构造球失败");
+        WrongWidget("构造圆柱失败");
         return ;
     }
     addToList(newCylinder);
