@@ -66,6 +66,7 @@ private:
     QLineEdit* up;
     QLineEdit* down;
     QPushButton *updownBtn;
+    QDialog *dialog;
 signals:
     void itemSelected(int index);
 };

@@ -223,10 +223,10 @@ void ElementListWidget::showDialog()
 
 void ElementListWidget::setTolerance()
 {
-    QDialog dialog(this);
-    dialog.setWindowTitle("设置公差");
-    dialog.resize(200,100);
-    QVBoxLayout *layout = new QVBoxLayout(&dialog);
+    dialog = new QDialog(this);
+    dialog->setWindowTitle("设置公差");
+    dialog->resize(200,100);
+    QVBoxLayout *layout = new QVBoxLayout(dialog);
     QLabel *Up = new QLabel("上公差:");
     up = new QLineEdit();
     up->setText("0");
@@ -241,9 +241,9 @@ void ElementListWidget::setTolerance()
     layout->addWidget(Down, 1);
     layout->addWidget(down, 1);
     layout->addWidget(updownBtn);
-    dialog.setLayout(layout);
+    dialog->setLayout(layout);
     connect(updownBtn, &QPushButton::clicked, this, &ElementListWidget::BtnClicked);
-    dialog.exec();
+    dialog->exec();
 }
 
 void ElementListWidget::BtnClicked()
@@ -291,7 +291,12 @@ void ElementListWidget::BtnClicked()
         dis1->setUndertolerance(downer);
         dis1->judge();
     }
-    m_pMainWin->NotifySubscribe();
+    QMessageBox::information(this,"ok","公差设置成功");
+    QMessageBox* infoBox = qobject_cast<QMessageBox*>(sender()); // 尝试获取发送者作为信息框（可选，用于直接关闭它，但通常不需要）
+    if (infoBox) {
+        infoBox->close(); // 通常不需要，因为信息框在用户点击后会自动关闭
+    }
+    dialog->close();
 }
 QList<QTreeWidgetItem*> ElementListWidget:: getSelectedItems(){
     return treeWidgetNames->selectedItems();
