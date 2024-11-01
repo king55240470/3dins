@@ -223,6 +223,12 @@ void ElementListWidget::showDialog()
 
 void ElementListWidget::setTolerance()
 {
+    QList<QTreeWidgetItem*> selectedItems = getSelectedItems();
+    CObject *obj = selectedItems[0]->data(0, Qt::UserRole).value<CObject*>();
+    if(obj->GetObjectCName().left(2)!="距离"){
+        QMessageBox::critical(this, "选择错误", "该元素不是距离类型。");
+        return;
+    }
     dialog = new QDialog(this);
     dialog->setWindowTitle("设置公差");
     dialog->resize(200,100);
