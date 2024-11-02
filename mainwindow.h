@@ -57,8 +57,8 @@ private:
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
 
-//私有的槽函数
-/*private slots:
+    //私有的槽函数
+    /*private slots:
     void open_clicked();
     void save_clicked();*/
 private:
@@ -69,6 +69,8 @@ public:
     CPcsMgr* m_pcsListMgr;
     CObjectMgr* m_ObjectListMgr;
     CEntityMgr* m_EntityListMgr;
+    ChosenCEntityMgr* m_ChosenListMgr;
+
     //预置
     void OnPresetPoint(CPosition pt);
     void OnPresetLine(CPosition ptStart, CPosition ptEnd);
@@ -105,6 +107,7 @@ public:
     void setupUi();
     void showPresetElemWidget(int);
     FileMgr *getpWinFileMgr();
+    ChosenCEntityMgr *getChosenListMgr(); // 获取窗口选中点的管理器成员
 
 public:
     RELY_ON_CS_TYPE m_nRelyOnWhichCs;
