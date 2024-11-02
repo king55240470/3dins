@@ -98,12 +98,10 @@ public:
 private:
     QVTKOpenGLNativeWidget* vtkWidget; // vtk窗口
     MainWindow *m_pMainWin = nullptr; // mainwindow指针
-    MouseInteractorHighlightActor *m_clickstyle = nullptr;
 
     // 创建渲染器、渲染窗口和交互器
     vtkSmartPointer<vtkRenderer> renderer;
     vtkSmartPointer<vtkGenericOpenGLRenderWindow> renWin;
-    // vtkSmartPointer<vtkGenericRenderWindowInteractor> interactor;
 
     // 创建交互部件来封装坐标器
     vtkSmartPointer<vtkOrientationMarkerWidget> orientationWidget;
@@ -111,8 +109,6 @@ private:
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud1; // 基准点云1
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud2;
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr comparisonCloud;
-
-    pcl::visualization::PCLVisualizer::Ptr visualizer; // PCL 可视化器的智能指针
 
 private slots:
     // 配准的函数
