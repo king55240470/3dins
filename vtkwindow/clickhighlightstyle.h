@@ -58,7 +58,7 @@ public:
     QVector<std::pair<vtkSmartPointer<vtkActor>,vtkSmartPointer<vtkProperty>>>& getPickedActors();
 
 private:
-    // MainWindow* m_pMainWin = nullptr; // mainwindow指针
+    MainWindow* m_pMainWin = nullptr; // mainwindow指针
     // ChosenCEntityMgr* chosenListMgr = new ChosenCEntityMgr; // 选中元素列表的管理器成员
 
     // 存储所有选中的actor和原始属性
