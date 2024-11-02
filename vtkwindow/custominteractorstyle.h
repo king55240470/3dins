@@ -1,9 +1,9 @@
 #ifndef CUSTOMINTERACTORSTYLE_H
 #define CUSTOMINTERACTORSTYLE_H
 
-#include "vtkwindow/vtkwidget.h"
 #include "vtkwindow/clickhighlightstyle.h"
 #include <vtkInteractionStyleModule.h>
+#include <vtkCommand.h>
 
 class CustomInteractorStyle : public vtkInteractorStyleTrackballCamera
 {

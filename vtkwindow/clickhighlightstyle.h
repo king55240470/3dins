@@ -58,7 +58,8 @@ public:
     QVector<std::pair<vtkSmartPointer<vtkActor>,vtkSmartPointer<vtkProperty>>>& getPickedActors();
 
 private:
-    // ChsenCEntityMgr* chosenListMgr; // 初始化选中元素列表的管理器成员
+    // MainWindow* m_pMainWin = nullptr; // mainwindow指针
+    // ChosenCEntityMgr* chosenListMgr = new ChosenCEntityMgr; // 选中元素列表的管理器成员
 
     // 存储所有选中的actor和原始属性
     QVector<std::pair<vtkSmartPointer<vtkActor>,vtkSmartPointer<vtkProperty>>> pickedActors;
@@ -69,6 +70,9 @@ private:
     // 渲染器和交互器
     vtkRenderer* renderer = nullptr;
     vtkGenericRenderWindowInteractor* interactor = nullptr;
+
+signals:
+    void MouseClicked(double pos[3]); // 定义信号，向qt窗口发送选中的坐标
 
 };
 

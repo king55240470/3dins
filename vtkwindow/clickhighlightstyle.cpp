@@ -5,7 +5,6 @@
 vtkStandardNewMacro(MouseInteractorHighlightActor);
 
 MouseInteractorHighlightActor::MouseInteractorHighlightActor(vtkInteractorStyleTrackballCamera* parent)
-// :chosenListMgr(new ChosenCEntityMgr)
 {
 
 }
@@ -38,7 +37,10 @@ void MouseInteractorHighlightActor::OnLeftButtonDown()
     {
         // 如果拾取成功，输出拾取点的世界坐标
         std::cout << "Picked point: " << pos[0] << ", " << pos[1] << ", " << pos[2] << std::endl;
-        // chosenListMgr->CreatPosition(pos); // 将选中的坐标传入管理器
+        // m_pMainWin->getChosenListMgr()->CreatPosition(pos); // 将选中的坐标传入管理器
+
+        // 通过MouseClicked将选中的坐标发送给其他窗口
+        // emit this->MouseClicked(pos);
 
         // 生成一个用于高亮的顶点，并存入pickedActors
         auto actor = CreatHighLightPoint(pos);
