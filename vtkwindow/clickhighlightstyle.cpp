@@ -37,7 +37,7 @@ void MouseInteractorHighlightActor::OnLeftButtonDown()
     {
         // 如果拾取成功，输出拾取点的世界坐标
         std::cout << "Picked point: " << pos[0] << ", " << pos[1] << ", " << pos[2] << std::endl;
-        // m_pMainWin->getChosenListMgr()->CreatPosition(pos); // 将选中的坐标传入管理器
+        m_pMainWin->getChosenListMgr()->CreatPosition(pos); // 将选中的坐标传入管理器
 
         // 通过MouseClicked将选中的坐标发送给其他窗口
         // emit this->MouseClicked(pos);
@@ -79,7 +79,7 @@ void MouseInteractorHighlightActor::OnRightButtonDown()
     if(newpickedActor){
         // 如果拾取成功，输出拾取点的世界坐标
         std::cout << "Picked point: " << pos[0] << ", " << pos[1] << ", " << pos[2] << std::endl;
-        // m_pMainWin->getChosenCEntityMgr()->DeletePosition(pos);
+        m_pMainWin->getChosenListMgr()->DeletePosition(pos);
 
         // 遍历存储的PickedActors，寻找并恢复被选中的actor的属性
         for (auto item = pickedActors.begin(); item != pickedActors.end();item++)
