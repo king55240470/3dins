@@ -39,8 +39,6 @@ void MouseInteractorHighlightActor::OnLeftButtonDown()
         std::cout << "Picked point: " << pos[0] << ", " << pos[1] << ", " << pos[2] << std::endl;
         // m_pMainWin->getChosenListMgr()->CreatPosition(pos); // 将选中的坐标传入管理器
 
-        // 通过MouseClicked将选中的坐标发送给其他窗口
-        // emit this->MouseClicked(pos);
 
         // 生成一个用于高亮的顶点，并存入pickedActors
         auto actor = CreatHighLightPoint(pos);
@@ -111,6 +109,11 @@ void MouseInteractorHighlightActor::OnRightButtonDown()
 void MouseInteractorHighlightActor::SetRenderer(vtkRenderer * renderer)
 {
     this->renderer = renderer;
+}
+
+void MouseInteractorHighlightActor::SetUpChosenListMgr(ChosenCEntityMgr *chosenListMgr)
+{
+    chosenlistmgr = chosenListMgr;
 }
 
 vtkActor* MouseInteractorHighlightActor::CreatHighLightPoint(double pos[3])

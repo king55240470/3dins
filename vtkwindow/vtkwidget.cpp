@@ -1,5 +1,6 @@
 #include "vtkwindow/vtkwidget.h"
 #include <vtkInteractorStyle.h>
+#include <vtkEventQtSlotConnect.h>
 #include <QFileDialog>  // 用于文件对话框
 #include <QOpenGLContext>
 #include <qopenglfunctions.h>
@@ -23,12 +24,10 @@ VtkWidget::VtkWidget(QWidget *parent)
     cloud1(new pcl::PointCloud<pcl::PointXYZ>()),  // 初始化第一个点云对象
     cloud2(new pcl::PointCloud<pcl::PointXYZ>()), // 初始化第二个点云对象
     comparisonCloud(new pcl::PointCloud<pcl::PointXYZRGB>()) // 初始化比较好的点云对象
-// ,visualizer(new pcl::visualization::PCLVisualizer("Cloud Comparator"))  // 初始化可视化对象
 {
     // 禁用 VTK 的错误处理弹窗
     vtkObject::GlobalWarningDisplayOff();
     m_pMainWin = (MainWindow*) parent;
-    m_clickstyle = (MouseInteractorHighlightActor*) parent;
 
     // 设置 VTK 渲染窗口到 QWidget
     QVBoxLayout *mainlayout = new QVBoxLayout(this);
@@ -50,9 +49,11 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
     vtkWidget->setRenderWindow(renWin);
 
     // 添加交互器样式
-    auto clickstyle = vtkSmartPointer<MouseInteractorHighlightActor>::New();
-    clickstyle->SetRenderer(renderer);
-    renWin->GetInteractor()->SetInteractorStyle(clickstyle);
+    auto m_highlightstyle = vtkSmartPointer<MouseInteractorHighlightActor>::New();
+    m_highlightstyle->SetRenderer(renderer);
+    m_highlightstyle->SetUpChosenListMgr(m_pMainWin->getChosenListMgr());
+    m_highlightstyle->SetUpMainWin(m_pMainWin);
+    renWin->GetInteractor()->SetInteractorStyle(m_highlightstyle);
 
     // auto customstyle = vtkSmartPointer<CustomInteractorStyle>::New();
     // customstyle->SetRenderer(renderer);
@@ -126,8 +127,6 @@ void VtkWidget::reDraw(){
     QVector<bool> list = m_pMainWin->m_EntityListMgr->getMarkList();//获取标记是否隐藏元素的list
     QMap<QString, bool> filemap = m_pMainWin->getpWinFileMgr()->getContentItemMap();
     QVector<CEntity*> constructEntityList = m_pMainWin->getPWinToolWidget()->getConstructEntityList();//存储构建元素的列表
-    auto pickedActors = m_clickstyle->getPickedActors(); // 获取选中高亮的actor
-
 
     // 遍历entitylist绘制图形并加入渲染器
     for(auto i = 0;i < entitylist.size();i++){

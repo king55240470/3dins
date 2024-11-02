@@ -39,8 +39,11 @@ public:
     virtual void OnRightButtonDown() override; // 重写右键按下事件，取消高亮
     // virtual void KeyPressEvent(char key) override;
 
-    // 绑定渲染器
-    void SetRenderer(vtkRenderer* renderer);
+    void SetRenderer(vtkRenderer* renderer);     // 绑定渲染器
+    void SetUpChosenListMgr(ChosenCEntityMgr* chosenListMgr); // 初始化chosenlistmgr
+    void SetUpMainWin(MainWindow* mainwindow){ // 初始化m_pMainWin
+        m_pMainWin = mainwindow;
+    }
 
     // 生成一个用于高亮的顶点
     vtkActor* CreatHighLightPoint(double pos[3]);
@@ -59,7 +62,7 @@ public:
 
 private:
     MainWindow* m_pMainWin = nullptr; // mainwindow指针
-    // ChosenCEntityMgr* chosenListMgr = new ChosenCEntityMgr; // 选中元素列表的管理器成员
+    ChosenCEntityMgr* chosenlistmgr; // 选中元素列表的管理器成员
 
     // 存储所有选中的actor和原始属性
     QVector<std::pair<vtkSmartPointer<vtkActor>,vtkSmartPointer<vtkProperty>>> pickedActors;
