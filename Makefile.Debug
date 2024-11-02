@@ -78,10 +78,12 @@ SOURCES       = component\contralwidget.cpp \
 		main.cpp \
 		mainwindow.cpp \
 		manager\centitymgr.cpp \
+		manager\chosencentitymgr.cpp \
 		manager\cobjectmgr.cpp \
 		manager\cpcsmgr.cpp \
 		manager\filemgr.cpp \
 		vtkwindow\clickhighlightstyle.cpp \
+		vtkwindow\custominteractorstyle.cpp \
 		vtkwindow\vtkpresetwidget.cpp \
 		vtkwindow\vtkwidget.cpp \
 		vtkwindow\vtkwindowreportwidget.cpp debug\qrc_filemanagerwidget.cpp \
@@ -128,10 +130,12 @@ OBJECTS       = debug\contralwidget.obj \
 		debug\main.obj \
 		debug\mainwindow.obj \
 		debug\centitymgr.obj \
+		debug\chosencentitymgr.obj \
 		debug\cobjectmgr.obj \
 		debug\cpcsmgr.obj \
 		debug\filemgr.obj \
 		debug\clickhighlightstyle.obj \
+		debug\custominteractorstyle.obj \
 		debug\vtkpresetwidget.obj \
 		debug\vtkwidget.obj \
 		debug\vtkwindowreportwidget.obj \
@@ -180,10 +184,12 @@ DIST          =  component\contralwidget.h \
 		geometry\globes.h \
 		mainwindow.h \
 		manager\centitymgr.h \
+		manager\chosencentitymgr.h \
 		manager\cobjectmgr.h \
 		manager\cpcsmgr.h \
 		manager\filemgr.h \
 		vtkwindow\clickhighlightstyle.h \
+		vtkwindow\custominteractorstyle.h \
 		vtkwindow\vtkpresetwidget.h \
 		vtkwindow\vtkwidget.h \
 		vtkwindow\vtkwindowreportwidget.h component\contralwidget.cpp \
@@ -214,10 +220,12 @@ DIST          =  component\contralwidget.h \
 		main.cpp \
 		mainwindow.cpp \
 		manager\centitymgr.cpp \
+		manager\chosencentitymgr.cpp \
 		manager\cobjectmgr.cpp \
 		manager\cpcsmgr.cpp \
 		manager\filemgr.cpp \
 		vtkwindow\clickhighlightstyle.cpp \
+		vtkwindow\custominteractorstyle.cpp \
 		vtkwindow\vtkpresetwidget.cpp \
 		vtkwindow\vtkwidget.cpp \
 		vtkwindow\vtkwindowreportwidget.cpp
@@ -377,8 +385,8 @@ all: Makefile.Debug  _debug64\AppName.exe
 
 _debug64\AppName.exe: C:\Qt\6.6.0\msvc2019_64\lib\Qt6OpenGLWidgetsd.lib C:\Qt\6.6.0\msvc2019_64\lib\Qt6OpenGLd.lib C:\Qt\6.6.0\msvc2019_64\lib\Qt6PrintSupportd.lib C:\Qt\6.6.0\msvc2019_64\lib\Qt6AxContainerd.lib C:\Qt\6.6.0\msvc2019_64\lib\Qt6Widgetsd.lib C:\Qt\6.6.0\msvc2019_64\lib\Qt6Guid.lib C:\Qt\6.6.0\msvc2019_64\lib\Qt6Cored.lib C:\Qt\6.6.0\msvc2019_64\lib\Qt6EntryPointd.lib $(OBJECTS) 
 	$(LINKER) $(LFLAGS) /MANIFEST:embed /OUT:$(DESTDIR_TARGET) @<<
-debug\contralwidget.obj debug\datawidget.obj debug\elementlistwidget.obj debug\filemanagerwidget.obj debug\logwidget.obj debug\presetelemwidget.obj debug\reportwidget.obj debug\toolaction.obj debug\toolwidget.obj debug\circleconstructor.obj debug\coneconstructor.obj debug\constructor.obj debug\cylinderconstructor.obj debug\distanceconstructor.obj debug\lineconstructor.obj debug\planeconstructor.obj debug\pointconstructor.obj debug\rectangleconstructor.obj debug\sphereconstructor.obj debug\centity.obj debug\centitytypes.obj debug\cobject.obj debug\cpcs.obj debug\cpcsnode.obj debug\cshape.obj debug\main.obj debug\mainwindow.obj debug\centitymgr.obj debug\cobjectmgr.obj debug\cpcsmgr.obj debug\filemgr.obj debug\clickhighlightstyle.obj debug\vtkpresetwidget.obj debug\vtkwidget.obj debug\vtkwindowreportwidget.obj debug\qrc_filemanagerwidget.obj debug\qrc_graph.obj debug\qrc_toolwidget.obj debug\moc_contralwidget.obj debug\moc_datawidget.obj debug\moc_elementlistwidget.obj
-debug\moc_filemanagerwidget.obj debug\moc_logwidget.obj debug\moc_presetelemwidget.obj debug\moc_reportwidget.obj debug\moc_toolaction.obj debug\moc_toolwidget.obj debug\moc_mainwindow.obj debug\moc_vtkpresetwidget.obj debug\moc_vtkwidget.obj debug\moc_vtkwindowreportwidget.obj
+debug\contralwidget.obj debug\datawidget.obj debug\elementlistwidget.obj debug\filemanagerwidget.obj debug\logwidget.obj debug\presetelemwidget.obj debug\reportwidget.obj debug\toolaction.obj debug\toolwidget.obj debug\circleconstructor.obj debug\coneconstructor.obj debug\constructor.obj debug\cylinderconstructor.obj debug\distanceconstructor.obj debug\lineconstructor.obj debug\planeconstructor.obj debug\pointconstructor.obj debug\rectangleconstructor.obj debug\sphereconstructor.obj debug\centity.obj debug\centitytypes.obj debug\cobject.obj debug\cpcs.obj debug\cpcsnode.obj debug\cshape.obj debug\main.obj debug\mainwindow.obj debug\centitymgr.obj debug\chosencentitymgr.obj debug\cobjectmgr.obj debug\cpcsmgr.obj debug\filemgr.obj debug\clickhighlightstyle.obj debug\custominteractorstyle.obj debug\vtkpresetwidget.obj debug\vtkwidget.obj debug\vtkwindowreportwidget.obj debug\qrc_filemanagerwidget.obj debug\qrc_graph.obj debug\qrc_toolwidget.obj debug\moc_contralwidget.obj
+debug\moc_datawidget.obj debug\moc_elementlistwidget.obj debug\moc_filemanagerwidget.obj debug\moc_logwidget.obj debug\moc_presetelemwidget.obj debug\moc_reportwidget.obj debug\moc_toolaction.obj debug\moc_toolwidget.obj debug\moc_mainwindow.obj debug\moc_vtkpresetwidget.obj debug\moc_vtkwidget.obj debug\moc_vtkwindowreportwidget.obj
 $(LIBS)
 <<
 
@@ -388,10 +396,10 @@ qmake: FORCE
 qmake_all: FORCE
 
 dist:
-	$(ZIP) AppName.zip $(SOURCES) $(DIST) 3D.pro C:\Qt\6.6.0\msvc2019_64\mkspecs\features\spec_pre.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\common\windows-desktop.conf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\win32\windows_vulkan_sdk.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\common\windows-vulkan.conf C:\Qt\6.6.0\msvc2019_64\mkspecs\common\msvc-desktop.conf C:\Qt\6.6.0\msvc2019_64\mkspecs\qconfig.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_ext_freetype.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_ext_libjpeg.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_ext_libpng.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3danimation.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3danimation_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3dcore.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3dcore_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3dextras.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3dextras_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3dinput.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3dinput_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3dlogic.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3dlogic_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3dquick.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3dquick_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3dquickanimation.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3dquickanimation_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3dquickextras.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3dquickextras_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3dquickinput.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3dquickinput_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3dquickrender.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3dquickrender_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3dquickscene2d.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3dquickscene2d_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3drender.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3drender_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_activeqt.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_activeqt_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_axbase_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_axcontainer.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_axcontainer_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_axserver.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_axserver_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_bluetooth.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_bluetooth_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_bodymovin_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_charts.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_charts_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_chartsqml.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_chartsqml_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_concurrent.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_concurrent_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_core.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_core5compat.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_core5compat_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_core_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_datavisualization.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_datavisualization_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_datavisualizationqml.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_datavisualizationqml_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_dbus.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_dbus_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_designer.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_designer_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_designercomponents_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_devicediscovery_support_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_entrypoint_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_example_icons_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_fb_support_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_freetype_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_graphs.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_graphs_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_grpc.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_grpc_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_gui.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_gui_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_harfbuzz_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_help.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_help_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_httpserver.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_httpserver_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_insighttracker.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_insighttracker_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_insighttrackerqml.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_insighttrackerqml_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_jpeg_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_jsonrpc_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_labsanimation.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_labsanimation_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_labsfolderlistmodel.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_labsfolderlistmodel_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_labsqmlmodels.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_labsqmlmodels_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_labssettings.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_labssettings_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_labssharedimage.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_labssharedimage_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_labswavefrontmesh.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_labswavefrontmesh_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_languageserver_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_linguist.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_linguist_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_location.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_location_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_multimedia.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_multimedia_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_multimediaquick_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_multimediawidgets.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_multimediawidgets_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_network.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_network_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_networkauth.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_networkauth_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_nfc.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_nfc_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_opengl.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_opengl_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_openglwidgets.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_openglwidgets_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_packetprotocol_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_pdf.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_pdf_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_pdfquick.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_pdfquick_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_pdfwidgets.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_pdfwidgets_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_png_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_positioning.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_positioning_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_positioningquick.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_positioningquick_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_printsupport.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_printsupport_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_protobuf.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_protobuf_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_protobufqtcoretypes.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_protobufqtcoretypes_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_protobufqtguitypes.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_protobufqtguitypes_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_protobufwellknowntypes.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_protobufwellknowntypes_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qdoccatch_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qdoccatchconversionsprivate.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qdoccatchconversionsprivate_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qdoccatchgeneratorsprivate.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qdoccatchgeneratorsprivate_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qml.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qml_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmlcompiler.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmlcompiler_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmlcore.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmlcore_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmldebug_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmldom_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmlintegration.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmlintegration_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmllocalstorage.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmllocalstorage_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmlls_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmlmodels.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmlmodels_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmltest.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmltest_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmltoolingsettings_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmltyperegistrar_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmlworkerscript.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmlworkerscript_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmlxmllistmodel.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmlxmllistmodel_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3d.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3d_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3dassetimport.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3dassetimport_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3dassetutils.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3dassetutils_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3deffects.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3deffects_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3dglslparser_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3dhelpers.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3dhelpers_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3dhelpersimpl.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3dhelpersimpl_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3diblbaker.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3diblbaker_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3dparticleeffects.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3dparticleeffects_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3dparticles.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3dparticles_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3dphysics.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3dphysics_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3dphysicshelpers.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3dphysicshelpers_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3druntimerender.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3druntimerender_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3dspatialaudio_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3dutils.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3dutils_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quickcontrols2.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quickcontrols2_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quickcontrols2impl.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quickcontrols2impl_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quickcontrolstestutilsprivate_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quickdialogs2.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quickdialogs2_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quickdialogs2quickimpl.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quickdialogs2quickimpl_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quickdialogs2utils.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quickdialogs2utils_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quickeffects_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quicklayouts.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quicklayouts_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quickparticles_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quickshapes_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quicktemplates2.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quicktemplates2_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quicktestutilsprivate_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quicktimeline.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quicktimeline_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quickwidgets.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quickwidgets_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_remoteobjects.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_remoteobjects_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_remoteobjectsqml.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_remoteobjectsqml_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_repparser.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_repparser_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_scxml.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_scxml_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_scxmlqml.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_scxmlqml_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_sensors.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_sensors_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_sensorsquick.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_sensorsquick_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_serialbus.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_serialbus_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_serialport.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_serialport_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_shadertools.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_shadertools_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_spatialaudio.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_spatialaudio_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_sql.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_sql_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_statemachine.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_statemachine_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_statemachineqml.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_statemachineqml_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_svg.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_svg_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_svgwidgets.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_svgwidgets_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_testlib.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_testlib_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_texttospeech.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_texttospeech_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_tools_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_uiplugin.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_uitools.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_uitools_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_virtualkeyboard.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_virtualkeyboard_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_webchannel.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_webchannel_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_webchannelquick.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_webchannelquick_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_webenginecore.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_webenginecore_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_webenginequick.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_webenginequick_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_webenginequickdelegatesqml.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_webenginequickdelegatesqml_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_webenginewidgets.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_webenginewidgets_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_websockets.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_websockets_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_webview.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_webview_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_webviewquick.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_webviewquick_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_widgets.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_widgets_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_xml.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_xml_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_zlib_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\features\qt_functions.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\qt_config.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\win32-msvc\qmake.conf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\spec_post.prf .qmake.stash C:\Qt\6.6.0\msvc2019_64\mkspecs\features\exclusive_builds.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\common\msvc-version.conf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\toolchain.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\default_pre.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\win32\default_pre.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\resolve_config.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\exclusive_builds_post.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\default_post.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\build_pass.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\qml_debug.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\entrypoint.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\precompile_header.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\warn_on.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\permissions.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\qt.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\resources_functions.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\resources.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\moc.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\win32\opengl.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\uic.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\win32\dumpcpp.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\qmake_use.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\file_copies.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\win32\windows.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\testcase_targets.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\exceptions.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\yacc.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\lex.prf 3D.pro filemanagerwidget.qrc graph.qrc toolwidget.qrc C:\Qt\6.6.0\msvc2019_64\lib\Qt6OpenGLWidgetsd.prl C:\Qt\6.6.0\msvc2019_64\lib\Qt6OpenGLd.prl C:\Qt\6.6.0\msvc2019_64\lib\Qt6PrintSupportd.prl C:\Qt\6.6.0\msvc2019_64\lib\Qt6AxContainerd.prl C:\Qt\6.6.0\msvc2019_64\lib\Qt6Widgetsd.prl C:\Qt\6.6.0\msvc2019_64\lib\Qt6Guid.prl C:\Qt\6.6.0\msvc2019_64\lib\Qt6Cored.prl C:\Qt\6.6.0\msvc2019_64\lib\Qt6EntryPointd.prl   filemanagerwidget.qrc graph.qrc toolwidget.qrc C:\Qt\6.6.0\msvc2019_64\mkspecs\features\data\dummy.cpp  component\contralwidget.h component\datawidget.h component\elementlistwidget.h component\filemanagerwidget.h component\logwidget.h component\presetelemwidget.h component\reportwidget.h component\toolaction.h component\toolwidget.h constructor\circleconstructor.h constructor\coneconstructor.h constructor\constructor.h constructor\cylinderconstructor.h constructor\distanceconstructor.h constructor\lineconstructor.h constructor\planeconstructor.h constructor\pointconstructor.h constructor\rectangleconstructor.h constructor\sphereconstructor.h geometry\centity.h geometry\centitytypes.h geometry\cobject.h geometry\cpcs.h geometry\cpcsnode.h geometry\cshape.h geometry\globes.h mainwindow.h manager\centitymgr.h manager\cobjectmgr.h manager\cpcsmgr.h manager\filemgr.h vtkwindow\clickhighlightstyle.h vtkwindow\vtkpresetwidget.h vtkwindow\vtkwidget.h vtkwindow\vtkwindowreportwidget.h  component\contralwidget.cpp component\datawidget.cpp component\elementlistwidget.cpp component\filemanagerwidget.cpp component\logwidget.cpp component\presetelemwidget.cpp component\reportwidget.cpp component\toolaction.cpp component\toolwidget.cpp constructor\circleconstructor.cpp constructor\coneconstructor.cpp constructor\constructor.cpp constructor\cylinderconstructor.cpp constructor\distanceconstructor.cpp constructor\lineconstructor.cpp constructor\planeconstructor.cpp constructor\pointconstructor.cpp constructor\rectangleconstructor.cpp constructor\sphereconstructor.cpp geometry\centity.cpp geometry\centitytypes.cpp geometry\cobject.cpp geometry\cpcs.cpp geometry\cpcsnode.cpp geometry\cshape.cpp main.cpp mainwindow.cpp manager\centitymgr.cpp manager\cobjectmgr.cpp manager\cpcsmgr.cpp manager\filemgr.cpp vtkwindow\clickhighlightstyle.cpp vtkwindow\vtkpresetwidget.cpp vtkwindow\vtkwidget.cpp vtkwindow\vtkwindowreportwidget.cpp      
+	$(ZIP) AppName.zip $(SOURCES) $(DIST) 3D.pro C:\Qt\6.6.0\msvc2019_64\mkspecs\features\spec_pre.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\common\windows-desktop.conf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\win32\windows_vulkan_sdk.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\common\windows-vulkan.conf C:\Qt\6.6.0\msvc2019_64\mkspecs\common\msvc-desktop.conf C:\Qt\6.6.0\msvc2019_64\mkspecs\qconfig.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_ext_freetype.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_ext_libjpeg.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_ext_libpng.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3danimation.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3danimation_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3dcore.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3dcore_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3dextras.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3dextras_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3dinput.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3dinput_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3dlogic.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3dlogic_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3dquick.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3dquick_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3dquickanimation.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3dquickanimation_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3dquickextras.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3dquickextras_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3dquickinput.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3dquickinput_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3dquickrender.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3dquickrender_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3dquickscene2d.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3dquickscene2d_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3drender.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_3drender_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_activeqt.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_activeqt_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_axbase_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_axcontainer.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_axcontainer_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_axserver.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_axserver_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_bluetooth.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_bluetooth_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_bodymovin_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_charts.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_charts_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_chartsqml.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_chartsqml_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_concurrent.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_concurrent_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_core.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_core5compat.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_core5compat_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_core_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_datavisualization.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_datavisualization_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_datavisualizationqml.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_datavisualizationqml_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_dbus.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_dbus_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_designer.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_designer_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_designercomponents_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_devicediscovery_support_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_entrypoint_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_example_icons_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_fb_support_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_freetype_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_graphs.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_graphs_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_grpc.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_grpc_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_gui.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_gui_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_harfbuzz_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_help.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_help_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_httpserver.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_httpserver_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_insighttracker.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_insighttracker_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_insighttrackerqml.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_insighttrackerqml_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_jpeg_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_jsonrpc_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_labsanimation.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_labsanimation_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_labsfolderlistmodel.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_labsfolderlistmodel_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_labsqmlmodels.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_labsqmlmodels_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_labssettings.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_labssettings_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_labssharedimage.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_labssharedimage_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_labswavefrontmesh.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_labswavefrontmesh_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_languageserver_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_linguist.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_linguist_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_location.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_location_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_multimedia.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_multimedia_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_multimediaquick_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_multimediawidgets.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_multimediawidgets_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_network.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_network_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_networkauth.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_networkauth_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_nfc.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_nfc_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_opengl.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_opengl_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_openglwidgets.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_openglwidgets_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_packetprotocol_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_pdf.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_pdf_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_pdfquick.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_pdfquick_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_pdfwidgets.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_pdfwidgets_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_png_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_positioning.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_positioning_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_positioningquick.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_positioningquick_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_printsupport.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_printsupport_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_protobuf.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_protobuf_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_protobufqtcoretypes.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_protobufqtcoretypes_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_protobufqtguitypes.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_protobufqtguitypes_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_protobufwellknowntypes.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_protobufwellknowntypes_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qdoccatch_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qdoccatchconversionsprivate.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qdoccatchconversionsprivate_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qdoccatchgeneratorsprivate.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qdoccatchgeneratorsprivate_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qml.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qml_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmlcompiler.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmlcompiler_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmlcore.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmlcore_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmldebug_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmldom_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmlintegration.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmlintegration_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmllocalstorage.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmllocalstorage_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmlls_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmlmodels.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmlmodels_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmltest.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmltest_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmltoolingsettings_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmltyperegistrar_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmlworkerscript.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmlworkerscript_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmlxmllistmodel.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_qmlxmllistmodel_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3d.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3d_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3dassetimport.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3dassetimport_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3dassetutils.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3dassetutils_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3deffects.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3deffects_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3dglslparser_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3dhelpers.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3dhelpers_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3dhelpersimpl.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3dhelpersimpl_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3diblbaker.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3diblbaker_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3dparticleeffects.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3dparticleeffects_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3dparticles.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3dparticles_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3dphysics.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3dphysics_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3dphysicshelpers.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3dphysicshelpers_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3druntimerender.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3druntimerender_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3dspatialaudio_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3dutils.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick3dutils_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quick_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quickcontrols2.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quickcontrols2_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quickcontrols2impl.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quickcontrols2impl_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quickcontrolstestutilsprivate_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quickdialogs2.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quickdialogs2_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quickdialogs2quickimpl.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quickdialogs2quickimpl_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quickdialogs2utils.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quickdialogs2utils_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quickeffects_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quicklayouts.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quicklayouts_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quickparticles_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quickshapes_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quicktemplates2.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quicktemplates2_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quicktestutilsprivate_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quicktimeline.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quicktimeline_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quickwidgets.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_quickwidgets_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_remoteobjects.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_remoteobjects_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_remoteobjectsqml.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_remoteobjectsqml_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_repparser.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_repparser_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_scxml.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_scxml_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_scxmlqml.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_scxmlqml_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_sensors.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_sensors_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_sensorsquick.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_sensorsquick_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_serialbus.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_serialbus_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_serialport.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_serialport_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_shadertools.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_shadertools_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_spatialaudio.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_spatialaudio_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_sql.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_sql_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_statemachine.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_statemachine_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_statemachineqml.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_statemachineqml_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_svg.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_svg_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_svgwidgets.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_svgwidgets_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_testlib.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_testlib_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_texttospeech.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_texttospeech_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_tools_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_uiplugin.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_uitools.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_uitools_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_virtualkeyboard.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_virtualkeyboard_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_webchannel.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_webchannel_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_webchannelquick.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_webchannelquick_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_webenginecore.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_webenginecore_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_webenginequick.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_webenginequick_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_webenginequickdelegatesqml.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_webenginequickdelegatesqml_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_webenginewidgets.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_webenginewidgets_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_websockets.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_websockets_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_webview.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_webview_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_webviewquick.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_webviewquick_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_widgets.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_widgets_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_xml.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_xml_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\modules\qt_lib_zlib_private.pri C:\Qt\6.6.0\msvc2019_64\mkspecs\features\qt_functions.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\qt_config.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\win32-msvc\qmake.conf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\spec_post.prf .qmake.stash C:\Qt\6.6.0\msvc2019_64\mkspecs\features\exclusive_builds.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\common\msvc-version.conf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\toolchain.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\default_pre.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\win32\default_pre.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\resolve_config.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\exclusive_builds_post.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\default_post.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\build_pass.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\qml_debug.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\entrypoint.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\precompile_header.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\warn_on.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\permissions.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\qt.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\resources_functions.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\resources.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\moc.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\win32\opengl.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\uic.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\win32\dumpcpp.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\qmake_use.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\file_copies.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\win32\windows.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\testcase_targets.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\exceptions.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\yacc.prf C:\Qt\6.6.0\msvc2019_64\mkspecs\features\lex.prf 3D.pro filemanagerwidget.qrc graph.qrc toolwidget.qrc C:\Qt\6.6.0\msvc2019_64\lib\Qt6OpenGLWidgetsd.prl C:\Qt\6.6.0\msvc2019_64\lib\Qt6OpenGLd.prl C:\Qt\6.6.0\msvc2019_64\lib\Qt6PrintSupportd.prl C:\Qt\6.6.0\msvc2019_64\lib\Qt6AxContainerd.prl C:\Qt\6.6.0\msvc2019_64\lib\Qt6Widgetsd.prl C:\Qt\6.6.0\msvc2019_64\lib\Qt6Guid.prl C:\Qt\6.6.0\msvc2019_64\lib\Qt6Cored.prl C:\Qt\6.6.0\msvc2019_64\lib\Qt6EntryPointd.prl   filemanagerwidget.qrc graph.qrc toolwidget.qrc C:\Qt\6.6.0\msvc2019_64\mkspecs\features\data\dummy.cpp  component\contralwidget.h component\datawidget.h component\elementlistwidget.h component\filemanagerwidget.h component\logwidget.h component\presetelemwidget.h component\reportwidget.h component\toolaction.h component\toolwidget.h constructor\circleconstructor.h constructor\coneconstructor.h constructor\constructor.h constructor\cylinderconstructor.h constructor\distanceconstructor.h constructor\lineconstructor.h constructor\planeconstructor.h constructor\pointconstructor.h constructor\rectangleconstructor.h constructor\sphereconstructor.h geometry\centity.h geometry\centitytypes.h geometry\cobject.h geometry\cpcs.h geometry\cpcsnode.h geometry\cshape.h geometry\globes.h mainwindow.h manager\centitymgr.h manager\chosencentitymgr.h manager\cobjectmgr.h manager\cpcsmgr.h manager\filemgr.h vtkwindow\clickhighlightstyle.h vtkwindow\custominteractorstyle.h vtkwindow\vtkpresetwidget.h vtkwindow\vtkwidget.h vtkwindow\vtkwindowreportwidget.h  component\contralwidget.cpp component\datawidget.cpp component\elementlistwidget.cpp component\filemanagerwidget.cpp component\logwidget.cpp component\presetelemwidget.cpp component\reportwidget.cpp component\toolaction.cpp component\toolwidget.cpp constructor\circleconstructor.cpp constructor\coneconstructor.cpp constructor\constructor.cpp constructor\cylinderconstructor.cpp constructor\distanceconstructor.cpp constructor\lineconstructor.cpp constructor\planeconstructor.cpp constructor\pointconstructor.cpp constructor\rectangleconstructor.cpp constructor\sphereconstructor.cpp geometry\centity.cpp geometry\centitytypes.cpp geometry\cobject.cpp geometry\cpcs.cpp geometry\cpcsnode.cpp geometry\cshape.cpp main.cpp mainwindow.cpp manager\centitymgr.cpp manager\chosencentitymgr.cpp manager\cobjectmgr.cpp manager\cpcsmgr.cpp manager\filemgr.cpp vtkwindow\clickhighlightstyle.cpp vtkwindow\custominteractorstyle.cpp vtkwindow\vtkpresetwidget.cpp vtkwindow\vtkwidget.cpp vtkwindow\vtkwindowreportwidget.cpp      
 
 clean: compiler_clean 
-	-$(DEL_FILE) debug\contralwidget.obj debug\datawidget.obj debug\elementlistwidget.obj debug\filemanagerwidget.obj debug\logwidget.obj debug\presetelemwidget.obj debug\reportwidget.obj debug\toolaction.obj debug\toolwidget.obj debug\circleconstructor.obj debug\coneconstructor.obj debug\constructor.obj debug\cylinderconstructor.obj debug\distanceconstructor.obj debug\lineconstructor.obj debug\planeconstructor.obj debug\pointconstructor.obj debug\rectangleconstructor.obj debug\sphereconstructor.obj debug\centity.obj debug\centitytypes.obj debug\cobject.obj debug\cpcs.obj debug\cpcsnode.obj debug\cshape.obj debug\main.obj debug\mainwindow.obj debug\centitymgr.obj debug\cobjectmgr.obj debug\cpcsmgr.obj debug\filemgr.obj debug\clickhighlightstyle.obj debug\vtkpresetwidget.obj debug\vtkwidget.obj debug\vtkwindowreportwidget.obj debug\qrc_filemanagerwidget.obj debug\qrc_graph.obj debug\qrc_toolwidget.obj debug\moc_contralwidget.obj debug\moc_datawidget.obj debug\moc_elementlistwidget.obj debug\moc_filemanagerwidget.obj debug\moc_logwidget.obj debug\moc_presetelemwidget.obj debug\moc_reportwidget.obj debug\moc_toolaction.obj debug\moc_toolwidget.obj debug\moc_mainwindow.obj debug\moc_vtkpresetwidget.obj debug\moc_vtkwidget.obj debug\moc_vtkwindowreportwidget.obj
+	-$(DEL_FILE) debug\contralwidget.obj debug\datawidget.obj debug\elementlistwidget.obj debug\filemanagerwidget.obj debug\logwidget.obj debug\presetelemwidget.obj debug\reportwidget.obj debug\toolaction.obj debug\toolwidget.obj debug\circleconstructor.obj debug\coneconstructor.obj debug\constructor.obj debug\cylinderconstructor.obj debug\distanceconstructor.obj debug\lineconstructor.obj debug\planeconstructor.obj debug\pointconstructor.obj debug\rectangleconstructor.obj debug\sphereconstructor.obj debug\centity.obj debug\centitytypes.obj debug\cobject.obj debug\cpcs.obj debug\cpcsnode.obj debug\cshape.obj debug\main.obj debug\mainwindow.obj debug\centitymgr.obj debug\chosencentitymgr.obj debug\cobjectmgr.obj debug\cpcsmgr.obj debug\filemgr.obj debug\clickhighlightstyle.obj debug\custominteractorstyle.obj debug\vtkpresetwidget.obj debug\vtkwidget.obj debug\vtkwindowreportwidget.obj debug\qrc_filemanagerwidget.obj debug\qrc_graph.obj debug\qrc_toolwidget.obj debug\moc_contralwidget.obj debug\moc_datawidget.obj debug\moc_elementlistwidget.obj debug\moc_filemanagerwidget.obj debug\moc_logwidget.obj debug\moc_presetelemwidget.obj debug\moc_reportwidget.obj debug\moc_toolaction.obj debug\moc_toolwidget.obj debug\moc_mainwindow.obj debug\moc_vtkpresetwidget.obj debug\moc_vtkwidget.obj debug\moc_vtkwindowreportwidget.obj
 	-$(DEL_FILE) debug\AppName.vc.pdb _debug64\AppName.ilk _debug64\AppName.idb
 
 distclean: clean 
@@ -806,6 +814,7 @@ debug\moc_contralwidget.cpp: component\contralwidget.h \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCommonMathModule.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkTransformFilter.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPointSetAlgorithm.h" \
+		manager\chosencentitymgr.h \
 		geometry\centitytypes.h \
 		debug\moc_predefs.h \
 		C:\Qt\6.6.0\msvc2019_64\bin\moc.exe
@@ -1156,6 +1165,7 @@ debug\moc_datawidget.cpp: component\datawidget.h \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCommonMathModule.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkTransformFilter.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPointSetAlgorithm.h" \
+		manager\chosencentitymgr.h \
 		geometry\centitytypes.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\QSettings \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qsettings.h \
@@ -1549,6 +1559,7 @@ debug\moc_elementlistwidget.cpp: component\elementlistwidget.h \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCommonMathModule.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkTransformFilter.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPointSetAlgorithm.h" \
+		manager\chosencentitymgr.h \
 		geometry\centitytypes.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\QSettings \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qsettings.h \
@@ -2822,6 +2833,7 @@ debug\moc_toolwidget.cpp: component\toolwidget.h \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCommonMathModule.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkTransformFilter.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPointSetAlgorithm.h" \
+		manager\chosencentitymgr.h \
 		geometry\centitytypes.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\QSettings \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qsettings.h \
@@ -3143,6 +3155,10 @@ debug\moc_mainwindow.cpp: mainwindow.h \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCommonMathModule.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkTransformFilter.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPointSetAlgorithm.h" \
+		manager\chosencentitymgr.h \
+		geometry\centitytypes.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\QSettings \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qsettings.h \
 		debug\moc_predefs.h \
 		C:\Qt\6.6.0\msvc2019_64\bin\moc.exe
 	C:\Qt\6.6.0\msvc2019_64\bin\moc.exe $(DEFINES) --compiler-flavor=msvc --include C:/Users/Lenovo/Desktop/computerprogram/项目文件/3dins/debug/moc_predefs.h -IC:/Qt/6.6.0/msvc2019_64/mkspecs/win32-msvc -IC:/Users/Lenovo/Desktop/computerprogram/项目文件/3dins -I"C:/Program Files/PCL 1.12.1/include/pcl-1.12" -I"C:/Program Files/PCL 1.12.1/3rdParty/Qhull/include" -I"C:/Program Files/PCL 1.12.1/3rdParty/FLANN/include" -I"C:/Program Files/PCL 1.12.1/3rdParty/Boost/include/boost-1_78" -I"C:/Program Files/PCL 1.12.1/3rdParty/Eigen/eigen3" -I"C:/Program Files/PCL 1.12.1/3rdParty/VTK/include/vtk-9.1" -I"C:/Program Files/PCL 1.12.1/3rdParty/OpenNI2/Include" -IC:/Qt/6.6.0/msvc2019_64/include -IC:/Qt/6.6.0/msvc2019_64/include/QtOpenGLWidgets -IC:/Qt/6.6.0/msvc2019_64/include/QtOpenGL -IC:/Qt/6.6.0/msvc2019_64/include/QtPrintSupport -IC:/Qt/6.6.0/msvc2019_64/include/QtAxContainer -IC:/Qt/6.6.0/msvc2019_64/include/QtWidgets -IC:/Qt/6.6.0/msvc2019_64/include/QtGui -IC:/Qt/6.6.0/msvc2019_64/include/QtCore -I"C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.41.34120\include" -I"C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.41.34120\ATLMFC\include" -I"C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\VS\include" -I"C:\Program Files (x86)\Windows Kits\10\include\10.0.22621.0\ucrt" -I"C:\Program Files (x86)\Windows Kits\10\\include\10.0.22621.0\\um" -I"C:\Program Files (x86)\Windows Kits\10\\include\10.0.22621.0\\shared" -I"C:\Program Files (x86)\Windows Kits\10\\include\10.0.22621.0\\winrt" -I"C:\Program Files (x86)\Windows Kits\10\\include\10.0.22621.0\\cppwinrt" mainwindow.h -o debug\moc_mainwindow.cpp
@@ -3633,6 +3649,10 @@ debug\moc_vtkwidget.cpp: vtkwindow\vtkwidget.h \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCommonMathModule.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkTransformFilter.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPointSetAlgorithm.h" \
+		manager\chosencentitymgr.h \
+		geometry\centitytypes.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\QSettings \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qsettings.h \
 		vtkwindow\clickhighlightstyle.h \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkRenderer.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkViewport.h" \
@@ -3654,9 +3674,12 @@ debug\moc_vtkwidget.cpp: vtkwindow\vtkwidget.h \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkInteractionStyleModule.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkInteractorStyle.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkInteractorObserver.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkVertexGlyphFilter.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPropPicker.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAbstractPropPicker.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAbstractPicker.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCellPicker.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPicker.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPointSource.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkFiltersSourcesModule.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkSphereSource.h" \
@@ -3665,6 +3688,7 @@ debug\moc_vtkwidget.cpp: vtkwindow\vtkwidget.h \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAbstractMapper3D.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAbstractMapper.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCallbackCommand.h" \
+		vtkwindow\custominteractorstyle.h \
 		manager\filemgr.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qmap \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qvector \
@@ -3679,9 +3703,6 @@ debug\moc_vtkwidget.cpp: vtkwindow\vtkwidget.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\qlayoutitem.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\qgridlayout.h \
 		component\toolaction.h \
-		geometry\centitytypes.h \
-		C:\Qt\6.6.0\msvc2019_64\include\QtCore\QSettings \
-		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qsettings.h \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\QVTKOpenGLWidget.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\QVTKOpenGLStereoWidget.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkGUISupportQtModule.h" \
@@ -5170,7 +5191,6 @@ debug\moc_vtkwidget.cpp: vtkwindow\vtkwidget.h \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkUnstructuredGrid.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkUnstructuredGridBase.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCubeAxesActor.h" \
-		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkVertexGlyphFilter.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkGlyphSource2D.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkTextActor.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkTexturedActor2D.h" \
@@ -5736,6 +5756,7 @@ debug\contralwidget.obj: component\contralwidget.cpp component\contralwidget.h \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCommonMathModule.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkTransformFilter.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPointSetAlgorithm.h" \
+		manager\chosencentitymgr.h \
 		geometry\centitytypes.h
 
 debug\datawidget.obj: component\datawidget.cpp component\datawidget.h \
@@ -6083,6 +6104,7 @@ debug\datawidget.obj: component\datawidget.cpp component\datawidget.h \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCommonMathModule.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkTransformFilter.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPointSetAlgorithm.h" \
+		manager\chosencentitymgr.h \
 		geometry\centitytypes.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\QSettings \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qsettings.h \
@@ -6479,6 +6501,7 @@ debug\elementlistwidget.obj: component\elementlistwidget.cpp component\elementli
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCommonMathModule.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkTransformFilter.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPointSetAlgorithm.h" \
+		manager\chosencentitymgr.h \
 		geometry\centitytypes.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\QSettings \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qsettings.h \
@@ -6877,6 +6900,10 @@ debug\filemanagerwidget.obj: component\filemanagerwidget.cpp component\filemanag
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCommonMathModule.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkTransformFilter.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPointSetAlgorithm.h" \
+		manager\chosencentitymgr.h \
+		geometry\centitytypes.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\QSettings \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qsettings.h \
 		manager\filemgr.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qmap \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qvector \
@@ -6902,9 +6929,12 @@ debug\filemanagerwidget.obj: component\filemanagerwidget.cpp component\filemanag
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkInteractionStyleModule.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkInteractorStyle.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkInteractorObserver.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkVertexGlyphFilter.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPropPicker.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAbstractPropPicker.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAbstractPicker.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCellPicker.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPicker.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPointSource.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkFiltersSourcesModule.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkSphereSource.h" \
@@ -6913,13 +6943,11 @@ debug\filemanagerwidget.obj: component\filemanagerwidget.cpp component\filemanag
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAbstractMapper3D.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAbstractMapper.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCallbackCommand.h" \
+		vtkwindow\custominteractorstyle.h \
 		component\toolwidget.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\QToolBar \
 		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\qtoolbar.h \
 		component\toolaction.h \
-		geometry\centitytypes.h \
-		C:\Qt\6.6.0\msvc2019_64\include\QtCore\QSettings \
-		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qsettings.h \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\QVTKOpenGLWidget.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\QVTKOpenGLStereoWidget.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkGUISupportQtModule.h" \
@@ -8408,7 +8436,6 @@ debug\filemanagerwidget.obj: component\filemanagerwidget.cpp component\filemanag
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkUnstructuredGrid.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkUnstructuredGridBase.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCubeAxesActor.h" \
-		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkVertexGlyphFilter.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkGlyphSource2D.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkTextActor.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkTexturedActor2D.h" \
@@ -8907,6 +8934,10 @@ debug\presetelemwidget.obj: component\presetelemwidget.cpp component\presetelemw
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCommonMathModule.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkTransformFilter.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPointSetAlgorithm.h" \
+		manager\chosencentitymgr.h \
+		geometry\centitytypes.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\QSettings \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qsettings.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\QGridLayout \
 		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\qgridlayout.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\qlayout.h \
@@ -9582,6 +9613,7 @@ debug\toolwidget.obj: component\toolwidget.cpp component\toolwidget.h \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCommonMathModule.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkTransformFilter.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPointSetAlgorithm.h" \
+		manager\chosencentitymgr.h \
 		geometry\centitytypes.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\QSettings \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qsettings.h \
@@ -9717,9 +9749,12 @@ debug\toolwidget.obj: component\toolwidget.cpp component\toolwidget.h \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkInteractionStyleModule.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkInteractorStyle.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkInteractorObserver.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkVertexGlyphFilter.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPropPicker.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAbstractPropPicker.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAbstractPicker.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCellPicker.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPicker.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPointSource.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkFiltersSourcesModule.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkSphereSource.h" \
@@ -9728,6 +9763,7 @@ debug\toolwidget.obj: component\toolwidget.cpp component\toolwidget.h \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAbstractMapper3D.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAbstractMapper.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCallbackCommand.h" \
+		vtkwindow\custominteractorstyle.h \
 		manager\filemgr.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qmap \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qvector \
@@ -11218,7 +11254,6 @@ debug\toolwidget.obj: component\toolwidget.cpp component\toolwidget.h \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkUnstructuredGrid.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkUnstructuredGridBase.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCubeAxesActor.h" \
-		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkVertexGlyphFilter.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkGlyphSource2D.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkTextActor.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkTexturedActor2D.h" \
@@ -14380,6 +14415,10 @@ debug\main.obj: main.cpp mainwindow.h \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCommonMathModule.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkTransformFilter.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPointSetAlgorithm.h" \
+		manager\chosencentitymgr.h \
+		geometry\centitytypes.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\QSettings \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qsettings.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\QApplication \
 		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\qapplication.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qcoreapplication.h \
@@ -14717,6 +14756,10 @@ debug\mainwindow.obj: mainwindow.cpp mainwindow.h \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCommonMathModule.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkTransformFilter.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPointSetAlgorithm.h" \
+		manager\chosencentitymgr.h \
+		geometry\centitytypes.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\QSettings \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qsettings.h \
 		component\datawidget.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\QVBoxLayout \
 		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\qboxlayout.h \
@@ -14748,9 +14791,6 @@ debug\mainwindow.obj: mainwindow.cpp mainwindow.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\qabstractitemview.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\qabstractscrollarea.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qitemselectionmodel.h \
-		geometry\centitytypes.h \
-		C:\Qt\6.6.0\msvc2019_64\include\QtCore\QSettings \
-		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qsettings.h \
 		component\elementlistwidget.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\QWidget \
 		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\QMenu \
@@ -14842,9 +14882,12 @@ debug\mainwindow.obj: mainwindow.cpp mainwindow.h \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkInteractionStyleModule.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkInteractorStyle.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkInteractorObserver.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkVertexGlyphFilter.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPropPicker.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAbstractPropPicker.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAbstractPicker.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCellPicker.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPicker.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPointSource.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkFiltersSourcesModule.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkSphereSource.h" \
@@ -14853,6 +14896,7 @@ debug\mainwindow.obj: mainwindow.cpp mainwindow.h \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAbstractMapper3D.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAbstractMapper.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCallbackCommand.h" \
+		vtkwindow\custominteractorstyle.h \
 		manager\filemgr.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qmap \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qvector \
@@ -16343,7 +16387,6 @@ debug\mainwindow.obj: mainwindow.cpp mainwindow.h \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkUnstructuredGrid.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkUnstructuredGridBase.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCubeAxesActor.h" \
-		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkVertexGlyphFilter.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkGlyphSource2D.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkTextActor.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkTexturedActor2D.h" \
@@ -16525,6 +16568,181 @@ debug\centitymgr.obj: manager\centitymgr.cpp manager\centitymgr.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\QVector \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qvector.h \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkActor.h"
+
+debug\chosencentitymgr.obj: manager\chosencentitymgr.cpp manager\chosencentitymgr.h \
+		geometry\centitytypes.h \
+		geometry\centity.h \
+		geometry\cobject.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\QString \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qstring.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qchar.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qglobal.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qtversionchecks.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qtconfiginclude.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qconfig.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qtcore-config.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qtconfigmacros.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qtcoreexports.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qcompilerdetection.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qsystemdetection.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qprocessordetection.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qtdeprecationmarkers.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qtpreprocessorsupport.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qassert.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qtnoop.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qtypes.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qtversion.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qtclasshelpermacros.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qtypeinfo.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qcontainerfwd.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qsysinfo.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qlogging.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qflags.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qcompare_impl.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qatomic.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qbasicatomic.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qatomic_cxx11.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qgenericatomic.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qconstructormacros.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qdarwinhelpers.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qexceptionhandling.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qforeach.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qttypetraits.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qfunctionpointer.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qglobalstatic.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qmalloc.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qminmax.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qnumeric.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qoverload.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qswap.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qtenvironmentvariables.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qtresource.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qttranslation.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qversiontagging.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qstringview.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qbytearray.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qrefcount.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qnamespace.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qtmetamacros.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qarraydata.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qpair.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qarraydatapointer.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qarraydataops.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qcontainertools_impl.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qxptype_traits.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\q20functional.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\q20memory.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qbytearrayalgorithms.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qbytearrayview.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qstringfwd.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\q20type_traits.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qstringliteral.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qstringalgorithms.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qlatin1stringview.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qanystringview.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qutf8stringview.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qstringtokenizer.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qstringbuilder.h \
+		geometry\cshape.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\QDataStream \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qdatastream.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qscopedpointer.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qiodevicebase.h \
+		geometry\CPcs.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\QMatrix4x4 \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qmatrix4x4.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qtguiglobal.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qtgui-config.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qtguiexports.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qvector3d.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qvectornd.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qpoint.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\q23utility.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qrect.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qhashfunctions.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qmargins.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qsize.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qmath.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qalgorithms.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qvector4d.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qquaternion.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qgenericmatrix.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qmetatype.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qcompare.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qfloat16.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qiterable.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qmetacontainer.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qcontainerinfo.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qtaggedpointer.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qobjectdefs.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qobjectdefs_impl.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qfunctionaltools_impl.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qscopeguard.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qdebug.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qtextstream.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qstringconverter_base.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qcontiguouscache.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qsharedpointer.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qshareddata.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qsharedpointer_impl.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qlist.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qiterator.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qbytearraylist.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qstringlist.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qstringmatcher.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qmap.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qshareddata_impl.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qset.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qhash.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qvarlengtharray.h \
+		geometry\globes.h \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkSmartPointer.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkSmartPointerBase.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCommonCoreModule.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkObjectBase.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkFeatures.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkIndent.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkSystemIncludes.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkWin32Header.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkABI.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkBuild.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPlatform.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkIOStreamFwd.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkIOStream.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkType.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCompiler.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkLegacy.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkOptions.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtk_kwiml.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkkwiml\abi.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkkwiml\int.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkWrappingHints.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkOStreamWrapper.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkOStrStreamWrapper.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkMeta.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkNew.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAxesActor.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkProp3D.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkProp.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkObject.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkSetGet.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkTimeStamp.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkWeakPointerBase.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkRenderingCoreModule.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkFiltersCoreModule.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAutoInit.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkDebugLeaksManager.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkRenderingAnnotationModule.h" \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\QVector \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qvector.h \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkActor.h" \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\QSettings \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qsettings.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qobject.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qcoreevent.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qobject_impl.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qbindingstorage.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qvariant.h
 
 debug\cobjectmgr.obj: manager\cobjectmgr.cpp manager\cobjectmgr.h \
 		geometry\cobject.h \
@@ -17024,10 +17242,11 @@ debug\filemgr.obj: manager\filemgr.cpp manager\filemgr.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qvector.h
 
 debug\clickhighlightstyle.obj: vtkwindow\clickhighlightstyle.cpp vtkwindow\clickhighlightstyle.h \
-		geometry\globes.h \
-		C:\Qt\6.6.0\msvc2019_64\include\QtCore\QDataStream \
-		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qdatastream.h \
-		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qscopedpointer.h \
+		mainwindow.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\QMainWindow \
+		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\qmainwindow.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\qtwidgetsglobal.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qtguiglobal.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qglobal.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qtversionchecks.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qtconfiginclude.h \
@@ -17071,26 +17290,32 @@ debug\clickhighlightstyle.obj: vtkwindow\clickhighlightstyle.cpp vtkwindow\click
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qtresource.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qttranslation.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qversiontagging.h \
-		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qiodevicebase.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qtgui-config.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qtguiexports.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\qtwidgets-config.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\qtwidgetsexports.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\qwidget.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qwindowdefs.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qobjectdefs.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qnamespace.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qtmetamacros.h \
-		C:\Qt\6.6.0\msvc2019_64\include\QtCore\QVector \
-		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qvector.h \
-		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qlist.h \
-		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qarraydatapointer.h \
-		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qarraydataops.h \
-		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qarraydata.h \
-		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qpair.h \
-		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qcontainertools_impl.h \
-		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qxptype_traits.h \
-		C:\Qt\6.6.0\msvc2019_64\include\QtCore\q20functional.h \
-		C:\Qt\6.6.0\msvc2019_64\include\QtCore\q20memory.h \
-		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qhashfunctions.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qobjectdefs_impl.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qfunctionaltools_impl.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qwindowdefs_win.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qobject.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qstring.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qchar.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qstringview.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qbytearray.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qrefcount.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qarraydata.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qpair.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qarraydatapointer.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qarraydataops.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qcontainertools_impl.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qxptype_traits.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\q20functional.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\q20memory.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qbytearrayalgorithms.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qbytearrayview.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qstringfwd.h \
@@ -17102,11 +17327,110 @@ debug\clickhighlightstyle.obj: vtkwindow\clickhighlightstyle.cpp vtkwindow\click
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qutf8stringview.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qstringtokenizer.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qstringbuilder.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qlist.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qhashfunctions.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qiterator.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qbytearraylist.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qstringlist.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qalgorithms.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qstringmatcher.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qcoreevent.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qscopedpointer.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qmetatype.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qcompare.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qdatastream.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qiodevicebase.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qfloat16.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qmath.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qiterable.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qmetacontainer.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qcontainerinfo.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qtaggedpointer.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qscopeguard.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qobject_impl.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qbindingstorage.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qmargins.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\q23utility.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qaction.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qkeysequence.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qicon.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qsize.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qpixmap.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qpaintdevice.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qrect.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qpoint.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qcolor.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qrgb.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qrgba64.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qshareddata.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qimage.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qpixelformat.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qtransform.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qpolygon.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qregion.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qline.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qvariant.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qdebug.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qtextstream.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qstringconverter_base.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qcontiguouscache.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qsharedpointer.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qsharedpointer_impl.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qmap.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qshareddata_impl.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qset.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qhash.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qvarlengtharray.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qpalette.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qbrush.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qfont.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qfontmetrics.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qfontinfo.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\qsizepolicy.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qcursor.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qbitmap.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qevent.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qiodevice.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qpointer.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qurl.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qeventpoint.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qvector2d.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qvectornd.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qpointingdevice.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qinputdevice.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qscreen.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\QList \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\QObject \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\QRect \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\QSize \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\QSizeF \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\QTransform \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qnativeinterface.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\qtabwidget.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\QSplitter \
+		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\qsplitter.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\qframe.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\QMenuBar \
+		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\qmenubar.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\qmenu.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\QStatusbar \
+		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\qstatusbar.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\QPushButton \
+		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\qpushbutton.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\qabstractbutton.h \
+		geometry\globes.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\QDataStream \
+		geometry\centity.h \
+		geometry\cobject.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\QString \
+		geometry\cshape.h \
+		geometry\CPcs.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\QMatrix4x4 \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qmatrix4x4.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qvector3d.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qvector4d.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qquaternion.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qgenericmatrix.h \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkSmartPointer.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkSmartPointerBase.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCommonCoreModule.h" \
@@ -17132,31 +17456,28 @@ debug\clickhighlightstyle.obj: vtkwindow\clickhighlightstyle.cpp vtkwindow\click
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkOStrStreamWrapper.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkMeta.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkNew.h" \
-		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkRenderer.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAxesActor.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkProp3D.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkProp.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkObject.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkSetGet.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkTimeStamp.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkWeakPointerBase.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkRenderingCoreModule.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkFiltersCoreModule.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAutoInit.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkDebugLeaksManager.h" \
-		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkTimeStamp.h" \
-		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkViewport.h" \
-		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkObject.h" \
-		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkSetGet.h" \
-		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkWeakPointerBase.h" \
-		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkActorCollection.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkRenderingAnnotationModule.h" \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\QVector \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qvector.h \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkActor.h" \
-		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkProp3D.h" \
-		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkProp.h" \
-		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPropCollection.h" \
-		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCollection.h" \
-		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkVolumeCollection.h" \
-		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkVolume.h" \
-		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkRenderWindow.h" \
-		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkDeprecation.h" \
-		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkVersion.h" \
-		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkVersionMacros.h" \
-		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkWindow.h" \
-		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkGenericOpenGLRenderWindow.h" \
-		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkOpenGLRenderWindow.h" \
+		manager\centitymgr.h \
+		manager\cobjectmgr.h \
+		manager\cpcsmgr.h \
+		geometry\cpcsnode.h \
+		geometry\cpcs.h \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkProperty.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCamera.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkRect.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkVector.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkTuple.h" \
@@ -17165,23 +17486,14 @@ debug\clickhighlightstyle.obj: vtkwindow\clickhighlightstyle.cpp vtkwindow\click
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkMatrixUtilities.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkTypeTraits.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkMathConfigure.h" \
-		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkRenderingOpenGL2Module.h" \
-		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkRenderingUIModule.h" \
-		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkGenericRenderWindowInteractor.h" \
-		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkRenderWindowInteractor.h" \
-		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCommand.h" \
-		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkInteractorStyleTrackballCamera.h" \
-		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkInteractionStyleModule.h" \
-		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkInteractorStyle.h" \
-		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkInteractorObserver.h" \
-		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPropPicker.h" \
-		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAbstractPropPicker.h" \
-		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAbstractPicker.h" \
-		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPointSource.h" \
-		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkFiltersSourcesModule.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAxes.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkFiltersGeneralModule.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPolyDataAlgorithm.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAlgorithm.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCommonExecutionModelModule.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkDeprecation.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkVersion.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkVersionMacros.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPolyData.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCommonDataModelModule.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPointSet.h" \
@@ -17231,38 +17543,413 @@ debug\clickhighlightstyle.obj: vtkwindow\clickhighlightstyle.cpp vtkwindow\click
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCellLinks.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAbstractCellLinks.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPolyDataInternals.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkTextProperty.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCaptionActor2D.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkActor2D.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCoordinate.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkTransform.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCommonTransformsModule.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkLinearTransform.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkHomogeneousTransform.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAbstractTransform.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkMatrix4x4.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCommonMathModule.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkTransformFilter.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPointSetAlgorithm.h" \
+		manager\chosencentitymgr.h \
+		geometry\centitytypes.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\QSettings \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qsettings.h \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkRenderer.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkViewport.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkActorCollection.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPropCollection.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCollection.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkVolumeCollection.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkVolume.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkRenderWindow.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkWindow.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkGenericOpenGLRenderWindow.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkOpenGLRenderWindow.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkRenderingOpenGL2Module.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkRenderingUIModule.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkGenericRenderWindowInteractor.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkRenderWindowInteractor.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCommand.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkInteractorStyleTrackballCamera.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkInteractionStyleModule.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkInteractorStyle.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkInteractorObserver.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkVertexGlyphFilter.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPropPicker.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAbstractPropPicker.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAbstractPicker.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCellPicker.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPicker.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPointSource.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkFiltersSourcesModule.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkSphereSource.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPolyDataMapper.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkMapper.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAbstractMapper3D.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAbstractMapper.h" \
-		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkProperty.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCallbackCommand.h" \
-		C:\Qt\6.6.0\msvc2019_64\include\QtCore\QDebug \
-		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qdebug.h \
-		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qtextstream.h \
-		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qstringconverter_base.h \
-		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qcontiguouscache.h \
-		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qsharedpointer.h \
-		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qshareddata.h \
-		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qsharedpointer_impl.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\QDebug
+
+debug\custominteractorstyle.obj: vtkwindow\custominteractorstyle.cpp vtkwindow\custominteractorstyle.h \
+		vtkwindow\clickhighlightstyle.h \
+		mainwindow.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\QMainWindow \
+		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\qmainwindow.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\qtwidgetsglobal.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qtguiglobal.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qglobal.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qtversionchecks.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qtconfiginclude.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qconfig.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qtcore-config.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qtconfigmacros.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qtcoreexports.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qcompilerdetection.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qsystemdetection.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qprocessordetection.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qtdeprecationmarkers.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qtpreprocessorsupport.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qassert.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qtnoop.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qtypes.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qtversion.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qtclasshelpermacros.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qtypeinfo.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qcontainerfwd.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qsysinfo.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qlogging.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qflags.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qcompare_impl.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qatomic.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qbasicatomic.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qatomic_cxx11.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qgenericatomic.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qconstructormacros.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qdarwinhelpers.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qexceptionhandling.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qforeach.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qttypetraits.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qfunctionpointer.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qglobalstatic.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qmalloc.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qminmax.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qnumeric.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qoverload.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qswap.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qtenvironmentvariables.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qtresource.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qttranslation.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qversiontagging.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qtgui-config.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qtguiexports.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\qtwidgets-config.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\qtwidgetsexports.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\qwidget.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qwindowdefs.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qobjectdefs.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qnamespace.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qtmetamacros.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qobjectdefs_impl.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qfunctionaltools_impl.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qwindowdefs_win.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qobject.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qstring.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qchar.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qstringview.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qbytearray.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qrefcount.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qarraydata.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qpair.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qarraydatapointer.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qarraydataops.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qcontainertools_impl.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qxptype_traits.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\q20functional.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\q20memory.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qbytearrayalgorithms.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qbytearrayview.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qstringfwd.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\q20type_traits.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qstringliteral.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qstringalgorithms.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qlatin1stringview.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qanystringview.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qutf8stringview.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qstringtokenizer.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qstringbuilder.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qlist.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qhashfunctions.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qiterator.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qbytearraylist.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qstringlist.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qalgorithms.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qstringmatcher.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qcoreevent.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qscopedpointer.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qmetatype.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qcompare.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qdatastream.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qiodevicebase.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qfloat16.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qmath.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qiterable.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qmetacontainer.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qcontainerinfo.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qtaggedpointer.h \
-		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qobjectdefs.h \
-		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qobjectdefs_impl.h \
-		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qfunctionaltools_impl.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qscopeguard.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qobject_impl.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qbindingstorage.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qmargins.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\q23utility.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qaction.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qkeysequence.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qicon.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qsize.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qpixmap.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qpaintdevice.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qrect.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qpoint.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qcolor.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qrgb.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qrgba64.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qshareddata.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qimage.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qpixelformat.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qtransform.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qpolygon.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qregion.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qline.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qvariant.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qdebug.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qtextstream.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qstringconverter_base.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qcontiguouscache.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qsharedpointer.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qsharedpointer_impl.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qmap.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qshareddata_impl.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qset.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qhash.h \
-		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qvarlengtharray.h
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qvarlengtharray.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qpalette.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qbrush.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qfont.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qfontmetrics.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qfontinfo.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\qsizepolicy.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qcursor.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qbitmap.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qevent.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qiodevice.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qpointer.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qurl.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qeventpoint.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qvector2d.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qvectornd.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qpointingdevice.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qinputdevice.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qscreen.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\QList \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\QObject \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\QRect \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\QSize \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\QSizeF \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\QTransform \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qnativeinterface.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\qtabwidget.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\QSplitter \
+		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\qsplitter.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\qframe.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\QMenuBar \
+		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\qmenubar.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\qmenu.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\QStatusbar \
+		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\qstatusbar.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\QPushButton \
+		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\qpushbutton.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\qabstractbutton.h \
+		geometry\globes.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\QDataStream \
+		geometry\centity.h \
+		geometry\cobject.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\QString \
+		geometry\cshape.h \
+		geometry\CPcs.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\QMatrix4x4 \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qmatrix4x4.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qvector3d.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qvector4d.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qquaternion.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtGui\qgenericmatrix.h \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkSmartPointer.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkSmartPointerBase.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCommonCoreModule.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkObjectBase.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkFeatures.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkIndent.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkSystemIncludes.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkWin32Header.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkABI.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkBuild.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPlatform.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkIOStreamFwd.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkIOStream.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkType.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCompiler.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkLegacy.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkOptions.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtk_kwiml.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkkwiml\abi.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkkwiml\int.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkWrappingHints.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkOStreamWrapper.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkOStrStreamWrapper.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkMeta.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkNew.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAxesActor.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkProp3D.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkProp.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkObject.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkSetGet.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkTimeStamp.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkWeakPointerBase.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkRenderingCoreModule.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkFiltersCoreModule.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAutoInit.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkDebugLeaksManager.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkRenderingAnnotationModule.h" \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\QVector \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qvector.h \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkActor.h" \
+		manager\centitymgr.h \
+		manager\cobjectmgr.h \
+		manager\cpcsmgr.h \
+		geometry\cpcsnode.h \
+		geometry\cpcs.h \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkProperty.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCamera.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkRect.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkVector.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkTuple.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkMath.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkMathPrivate.hxx" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkMatrixUtilities.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkTypeTraits.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkMathConfigure.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAxes.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkFiltersGeneralModule.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPolyDataAlgorithm.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAlgorithm.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCommonExecutionModelModule.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkDeprecation.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkVersion.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkVersionMacros.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPolyData.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCommonDataModelModule.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPointSet.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkDataSet.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkDataObject.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCellTypes.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCellType.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkIdTypeArray.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAOSDataArrayTemplate.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkBuffer.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkObjectFactory.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkGenericDataArray.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkDataArray.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAbstractArray.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkVariant.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkStdString.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkVariantInlineOperators.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkVTK_USE_SCALED_SOA_ARRAYS.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkGenericDataArrayLookupHelper.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkIdList.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkGenericDataArray.txx" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkVariantCast.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkIntArray.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkUnsignedCharArray.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkEmptyCell.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCell.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkBoundingBox.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkGenericCell.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPoints.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCellArray.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkDataArrayRange.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkDataArrayMeta.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAssume.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkDebugRangeIterators.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkDataArrayTupleRange_AOS.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkDataArrayTupleRange_Generic.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkDataArrayAccessor.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkDataArrayValueRange_AOS.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkDataArrayValueRange_Generic.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkTypeInt32Array.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkTypeInt64Array.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkLongArray.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkLongLongArray.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkTypeList.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkTypeListMacros.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkTypeList.txx" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCellLinks.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAbstractCellLinks.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPolyDataInternals.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkTextProperty.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCaptionActor2D.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkActor2D.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCoordinate.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkTransform.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCommonTransformsModule.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkLinearTransform.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkHomogeneousTransform.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAbstractTransform.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkMatrix4x4.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCommonMathModule.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkTransformFilter.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPointSetAlgorithm.h" \
+		manager\chosencentitymgr.h \
+		geometry\centitytypes.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\QSettings \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qsettings.h \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkRenderer.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkViewport.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkActorCollection.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPropCollection.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCollection.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkVolumeCollection.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkVolume.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkRenderWindow.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkWindow.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkGenericOpenGLRenderWindow.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkOpenGLRenderWindow.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkRenderingOpenGL2Module.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkRenderingUIModule.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkGenericRenderWindowInteractor.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkRenderWindowInteractor.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCommand.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkInteractorStyleTrackballCamera.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkInteractionStyleModule.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkInteractorStyle.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkInteractorObserver.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkVertexGlyphFilter.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPropPicker.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAbstractPropPicker.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAbstractPicker.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCellPicker.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPicker.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPointSource.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkFiltersSourcesModule.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkSphereSource.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPolyDataMapper.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkMapper.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAbstractMapper3D.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAbstractMapper.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCallbackCommand.h"
 
 debug\vtkpresetwidget.obj: vtkwindow\vtkpresetwidget.cpp vtkwindow\vtkpresetwidget.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\QLabel \
@@ -17747,6 +18434,10 @@ debug\vtkwidget.obj: vtkwindow\vtkwidget.cpp vtkwindow\vtkwidget.h \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCommonMathModule.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkTransformFilter.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPointSetAlgorithm.h" \
+		manager\chosencentitymgr.h \
+		geometry\centitytypes.h \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\QSettings \
+		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qsettings.h \
 		vtkwindow\clickhighlightstyle.h \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkRenderer.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkViewport.h" \
@@ -17768,9 +18459,12 @@ debug\vtkwidget.obj: vtkwindow\vtkwidget.cpp vtkwindow\vtkwidget.h \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkInteractionStyleModule.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkInteractorStyle.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkInteractorObserver.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkVertexGlyphFilter.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPropPicker.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAbstractPropPicker.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAbstractPicker.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCellPicker.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPicker.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkPointSource.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkFiltersSourcesModule.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkSphereSource.h" \
@@ -17779,6 +18473,7 @@ debug\vtkwidget.obj: vtkwindow\vtkwidget.cpp vtkwindow\vtkwidget.h \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAbstractMapper3D.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkAbstractMapper.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCallbackCommand.h" \
+		vtkwindow\custominteractorstyle.h \
 		manager\filemgr.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qmap \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qvector \
@@ -17793,9 +18488,6 @@ debug\vtkwidget.obj: vtkwindow\vtkwidget.cpp vtkwindow\vtkwidget.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\qlayoutitem.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\qgridlayout.h \
 		component\toolaction.h \
-		geometry\centitytypes.h \
-		C:\Qt\6.6.0\msvc2019_64\include\QtCore\QSettings \
-		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qsettings.h \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\QVTKOpenGLWidget.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\QVTKOpenGLStereoWidget.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkGUISupportQtModule.h" \
@@ -19284,10 +19976,10 @@ debug\vtkwidget.obj: vtkwindow\vtkwidget.cpp vtkwindow\vtkwidget.h \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkUnstructuredGrid.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkUnstructuredGridBase.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkCubeAxesActor.h" \
-		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkVertexGlyphFilter.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkGlyphSource2D.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkTextActor.h" \
 		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkTexturedActor2D.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1\vtkEventQtSlotConnect.h" \
 		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\QFileDialog \
 		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\qfiledialog.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtCore\qdir.h \
@@ -19751,7 +20443,111 @@ debug\vtkwidget.obj: vtkwindow\vtkwidget.cpp vtkwindow\vtkwidget.h \
 		"C:\Program Files\PCL 1.12.1\include\pcl-1.12\pcl\registration\impl\transformation_estimation_svd.hpp" \
 		"C:\Program Files\PCL 1.12.1\include\pcl-1.12\pcl\registration\transformation_estimation_symmetric_point_to_plane_lls.h" \
 		"C:\Program Files\PCL 1.12.1\include\pcl-1.12\pcl\registration\impl\transformation_estimation_symmetric_point_to_plane_lls.hpp" \
-		"C:\Program Files\PCL 1.12.1\include\pcl-1.12\pcl\registration\impl\icp.hpp"
+		"C:\Program Files\PCL 1.12.1\include\pcl-1.12\pcl\registration\impl\icp.hpp" \
+		"C:\Program Files\PCL 1.12.1\include\pcl-1.12\pcl\filters\voxel_grid.h" \
+		"C:\Program Files\PCL 1.12.1\include\pcl-1.12\pcl\filters\filter.h" \
+		"C:\Program Files\PCL 1.12.1\include\pcl-1.12\pcl\filters\impl\filter.hpp" \
+		"C:\Program Files\PCL 1.12.1\include\pcl-1.12\pcl\filters\impl\voxel_grid.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\sort\spreadsort\integer_sort.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\sort\spreadsort\detail\constants.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\sort\spreadsort\detail\integer_sort.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\sort\spreadsort\detail\spreadsort_common.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\sort\pdqsort\pdqsort.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\common_type.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\detail\common_type_impl.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\detail\common_arithmetic_type.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\detail\composite_pointer_type.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\detail\composite_member_pointer_type.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\detail\mp_defer.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\conjunction.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\disjunction.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\extent.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\floating_point_promotion.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\has_bit_and.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\has_bit_and_assign.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\has_bit_or.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\has_bit_or_assign.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\has_bit_xor.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\has_bit_xor_assign.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\has_complement.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\detail\has_prefix_operator.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\has_dereference.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\has_divides.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\has_divides_assign.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\has_equal_to.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\has_greater.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\has_greater_equal.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\has_left_shift_assign.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\has_less.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\has_less_equal.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\has_logical_and.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\has_logical_not.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\has_logical_or.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\has_modulus.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\has_modulus_assign.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\has_multiplies.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\has_multiplies_assign.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\has_negate.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\has_new_operator.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\has_not_equal_to.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\has_nothrow_destructor.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\has_post_decrement.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\detail\has_postfix_operator.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\has_post_increment.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\has_pre_decrement.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\has_pre_increment.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\has_right_shift_assign.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\has_unary_minus.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\has_unary_plus.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\has_virtual_destructor.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\is_complex.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\is_compound.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\is_copy_assignable.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\is_final.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\is_list_constructible.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\is_member_object_pointer.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\is_nothrow_swappable.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\is_object.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\is_scoped_enum.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\negation.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\is_trivially_copyable.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\is_unscoped_enum.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\is_virtual_base_of.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\rank.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\integral_promotion.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78\boost\type_traits\promote.hpp" \
+		"C:\Program Files\PCL 1.12.1\include\pcl-1.12\pcl\features\normal_3d.h" \
+		"C:\Program Files\PCL 1.12.1\include\pcl-1.12\pcl\features\feature.h" \
+		"C:\Program Files\PCL 1.12.1\include\pcl-1.12\pcl\features\impl\feature.hpp" \
+		"C:\Program Files\PCL 1.12.1\include\pcl-1.12\pcl\search\organized.h" \
+		"C:\Program Files\PCL 1.12.1\include\pcl-1.12\pcl\search\impl\organized.hpp" \
+		"C:\Program Files\PCL 1.12.1\include\pcl-1.12\pcl\common\projection_matrix.h" \
+		"C:\Program Files\PCL 1.12.1\include\pcl-1.12\pcl\common\impl\projection_matrix.hpp" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Eigen\eigen3\Eigen\Eigenvalues" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Eigen\eigen3\Eigen\src\Eigenvalues\Tridiagonalization.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Eigen\eigen3\Eigen\src\Eigenvalues\RealSchur.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Eigen\eigen3\Eigen\src\Eigenvalues\HessenbergDecomposition.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Eigen\eigen3\Eigen\src\Eigenvalues\EigenSolver.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Eigen\eigen3\Eigen\src\Eigenvalues\SelfAdjointEigenSolver.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Eigen\eigen3\Eigen\src\Eigenvalues\GeneralizedSelfAdjointEigenSolver.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Eigen\eigen3\Eigen\src\Eigenvalues\ComplexSchur.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Eigen\eigen3\Eigen\src\Eigenvalues\ComplexEigenSolver.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Eigen\eigen3\Eigen\src\Eigenvalues\RealQZ.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Eigen\eigen3\Eigen\src\Eigenvalues\GeneralizedEigenSolver.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Eigen\eigen3\Eigen\src\Eigenvalues\MatrixBaseEigenvalues.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Eigen\eigen3\Eigen\src\Eigenvalues\RealSchur_LAPACKE.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Eigen\eigen3\Eigen\src\Eigenvalues\ComplexSchur_LAPACKE.h" \
+		"C:\Program Files\PCL 1.12.1\3rdParty\Eigen\eigen3\Eigen\src\Eigenvalues\SelfAdjointEigenSolver_LAPACKE.h" \
+		"C:\Program Files\PCL 1.12.1\include\pcl-1.12\pcl\features\impl\normal_3d.hpp" \
+		"C:\Program Files\PCL 1.12.1\include\pcl-1.12\pcl\features\fpfh.h" \
+		"C:\Program Files\PCL 1.12.1\include\pcl-1.12\pcl\features\impl\fpfh.hpp" \
+		"C:\Program Files\PCL 1.12.1\include\pcl-1.12\pcl\features\pfh_tools.h" \
+		"C:\Program Files\PCL 1.12.1\include\pcl-1.12\pcl\registration\sample_consensus_prerejective.h" \
+		"C:\Program Files\PCL 1.12.1\include\pcl-1.12\pcl\registration\correspondence_rejection_poly.h" \
+		"C:\Program Files\PCL 1.12.1\include\pcl-1.12\pcl\registration\impl\correspondence_rejection_poly.hpp" \
+		"C:\Program Files\PCL 1.12.1\include\pcl-1.12\pcl\registration\transformation_validation.h" \
+		"C:\Program Files\PCL 1.12.1\include\pcl-1.12\pcl\registration\impl\sample_consensus_prerejective.hpp"
 
 debug\vtkwindowreportwidget.obj: vtkwindow\vtkwindowreportwidget.cpp vtkwindow\vtkwindowreportwidget.h \
 		C:\Qt\6.6.0\msvc2019_64\include\QtWidgets\QWidget \

@@ -879,19 +879,41 @@ void ToolWidget::addToList(CEntity* newEntity){
 
 }
 void ToolWidget::onConstructPoint(){
-    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+
+    QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenCEntityList();;
     PointConstructor constructor;
-    CPoint* newPoint=(CPoint*)constructor.create(entityList);
-    QVector<CPosition>& positions=constructor.getPositions();
-    if(newPoint==nullptr&&positions.size()==0){
+    CPoint* newPoint;
+    bool createPoint=false;
+    qDebug()<<positions.size();
+    for(int i=0;i<positions.size();i++){
+        qDebug()<<positions[i].x<<positions[i].y<<positions[i].z;
+    }
+    if(positions.size()!=0){
+        createPoint=true;
+        for(int i=0;i<positions.size();i++){
+            newPoint=constructor.createPoint(positions[i]);
+            if(newPoint!=nullptr){
+                addToList(newPoint);
+            }
+        }
+    }
+
+    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+    newPoint=(CPoint*)constructor.create(entityList);
+    positions=constructor.getPositions();
+    if(newPoint!=nullptr){
+        addToList(newPoint);
+        for(int i=0;i<positions.size();i++){
+            if(i!=0){
+                newPoint=constructor.createPoint(positions[i]);
+            }
+            addToList(newPoint);
+        }
+    }
+
+    if(!createPoint&&newPoint==nullptr){
         WrongWidget("构造点失败");
         return ;
-    }
-    for(int i=0;i<positions.size();i++){
-        if(i!=0){
-            newPoint=constructor.createPoint(positions[i]);
-        }
-        addToList(newPoint);
     }
     m_pMainWin->NotifySubscribe();
 }
@@ -923,7 +945,7 @@ void ToolWidget::onConstructCircle(){
     CircleConstructor constructor;
     CCircle* newCircle=(CCircle*)constructor.create(entityList);
     if(newCircle==nullptr){
-        WrongWidget("构造平面失败");
+        WrongWidget("构造圆失败");
         return ;
     }
     addToList(newCircle);
