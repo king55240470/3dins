@@ -26,6 +26,8 @@ void MouseInteractorHighlightActor::OnLeftButtonDown()
     // vtkSmartPointer<vtkCellPicker> picker = vtkSmartPointer<vtkCellPicker>::New();
     // picker->SetTolerance(0.0005); // 设置拾取容差
     // picker->Pick(clickPos[0], clickPos[1], 0, renderer);
+    // picker->SetTolerance(0.005); // 设置拾取容差
+    // double* pos = picker->GetPickPosition(); // 用于存储拾取点的世界坐标
 
     // vtkIdType cellId = picker->GetCellId(); // 拾取到的单元格ID
     // int subId = picker->GetSubId(); // 用于存储拾取到的单元格的子ID（例如，多边形的一个顶点）。
@@ -36,9 +38,7 @@ void MouseInteractorHighlightActor::OnLeftButtonDown()
     if (newPickedActor)
     {
         // 如果拾取成功，输出拾取点的世界坐标
-        std::cout << "Picked point: " << pos[0] << ", " << pos[1] << ", " << pos[2] << std::endl;
         m_pMainWin->getChosenListMgr()->CreatPosition(pos); // 将选中的坐标传入管理器
-
 
         // 生成一个用于高亮的顶点，并存入pickedActors
         auto actor = CreatHighLightPoint(pos);
@@ -76,7 +76,6 @@ void MouseInteractorHighlightActor::OnRightButtonDown()
     // 如果选中了actor
     if(newpickedActor){
         // 如果拾取成功，输出拾取点的世界坐标
-        std::cout << "Picked point: " << pos[0] << ", " << pos[1] << ", " << pos[2] << std::endl;
         m_pMainWin->getChosenListMgr()->DeletePosition(pos);
 
         // 遍历存储的PickedActors，寻找并恢复被选中的actor的属性
