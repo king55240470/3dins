@@ -9,6 +9,7 @@ private:
 
 public:
     PointConstructor();
+    CEntity* create(QVector<CPosition>& chosenlist);
     CEntity* create(QVector<CEntity*>& entitylist)override;
     CPoint* createPoint(CPosition);
     CPoint* createPoint(CPoint&);

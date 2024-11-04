@@ -306,6 +306,7 @@ void MainWindow::loadManager()
     m_pcsListMgr=new CPcsMgr();
     m_ObjectListMgr=new CObjectMgr();
     m_EntityListMgr=new CEntityMgr();
+    m_ChosenListMgr=new ChosenCEntityMgr();
 
     pWinFileMgr=new FileMgr();
 
@@ -889,5 +890,10 @@ void MainWindow::on2dCoordSetRightY()
 
 FileMgr *MainWindow::getpWinFileMgr(){
     return pWinFileMgr;
+}
+
+ChosenCEntityMgr *MainWindow::getChosenListMgr()
+{
+    return m_ChosenListMgr;
 }
 
