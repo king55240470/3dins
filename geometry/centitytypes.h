@@ -423,9 +423,16 @@ public:
     void setdistance(double d);
     bool judge();
 
+    // 分别判断出了begin以外的图形是哪种
+    bool isHavePlane = false;
+    bool isHaveLine = false;
+    bool isHaveCircle = false;
+
     // CDistance的draw()，这里要分别写几个显示不同的距离
     vtkSmartPointer<vtkActor> draw() override;
     vtkSmartPointer<vtkActor> pointToPlane();
     vtkSmartPointer<vtkActor> pointToLine();
+    vtkSmartPointer<vtkActor> pointToCircle();
+
 };
 #endif // CENTITYTYPES_H

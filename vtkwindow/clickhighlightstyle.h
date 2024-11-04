@@ -44,17 +44,14 @@ public:
         m_pMainWin = mainwindow;
     }
 
-    // 生成一个用于高亮的顶点
-    vtkActor* CreatHighLightPoint(double pos[3]);
+    vtkActor* CreatHighLightPoint(double pos[3]); // 生成一个用于高亮的顶点
+    void DeleteHighLightPoint(); // 删除所有临时高亮的顶点
 
     // 高亮显示指定的actor
     void HighlightActor(vtkActor* actor);
 
     // 恢复指定的actor的属性到之前的状态
     void ResetActor(vtkActor* actor);
-
-    // 恢复被点击选中的状态
-    void BackChoosen(vtkActor* actor);
 
     // 获取PickedActors
     QVector<std::pair<vtkSmartPointer<vtkActor>,vtkSmartPointer<vtkProperty>>>& getPickedActors();
