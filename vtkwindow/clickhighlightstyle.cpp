@@ -98,6 +98,7 @@ void MouseInteractorHighlightActor::OnRightButtonDown()
             ResetActor(item->first); // 恢复actor的属性
         }
         pickedActors.clear();
+        DeleteHighLightPoint();
     }
 
     // 调用基类的右键按下事件处理方法
@@ -139,6 +140,28 @@ vtkActor* MouseInteractorHighlightActor::CreatHighLightPoint(double pos[3])
     return actor;
 }
 
+void MouseInteractorHighlightActor::DeleteHighLightPoint()
+{
+    // 获取渲染器中的所有 actor
+    auto* actorCollection = renderer->GetActors();
+
+    // 创建一个迭代器用于遍历actor集合
+    vtkCollectionSimpleIterator it;
+
+    // 初始化迭代器，准备遍历actor集合
+    actorCollection->InitTraversal(it);
+
+    vtkActor* actor;
+    // 如果渲染器中有用于高亮的顶点，即point_actors不为空，则从窗口中移除
+    while ((actor = actorCollection->GetNextActor(it)) != nullptr){
+        for(auto i = 0;i != point_actors.size();i++){
+            if(point_actors[i] == actor)
+                renderer->RemoveActor(actor);
+        }
+        renderer->Modified(); // 更新渲染器
+    }
+}
+
 // 实现高亮显示actor的方法
 void MouseInteractorHighlightActor::HighlightActor(vtkActor* actor)
 {
@@ -161,12 +184,6 @@ void MouseInteractorHighlightActor::ResetActor(vtkActor* actor)
             break;
         }
     }
-}
-
-// 恢复到点击选中的状态
-void MouseInteractorHighlightActor::BackChoosen(vtkActor *actor)
-{
-    HighlightActor(actor); // 恢复高亮显示
 }
 
 QVector<std::pair<vtkSmartPointer<vtkActor>, vtkSmartPointer<vtkProperty> > > &MouseInteractorHighlightActor::getPickedActors()
