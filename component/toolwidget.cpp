@@ -894,25 +894,25 @@ void ToolWidget::onConstructPoint(){
             }
         }
     }
-
-    // auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
-    // newPoint=(CPoint*)constructor.create(entityList);
-    // positions=constructor.getPositions();
-    // if(newPoint!=nullptr){
-    //     addToList(newPoint);
-    //     for(int i=0;i<positions.size();i++){
-    //         if(i!=0){
-    //             newPoint=constructor.createPoint(positions[i]);
-    //         }
-    //         addToList(newPoint);
-    //     }
-    // }
+    positions.clear();
+    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+    newPoint=(CPoint*)constructor.create(entityList);
+    positions=constructor.getPositions();
+    if(newPoint!=nullptr){
+        addToList(newPoint);
+        for(int i=0;i<positions.size();i++){
+            if(i!=0){
+                newPoint=constructor.createPoint(positions[i]);
+                 addToList(newPoint);
+            }
+        }
+    }
 
     if(!createPoint&&newPoint==nullptr){
         WrongWidget("构造点失败");
         return ;
     }
-    positions.clear();
+
     m_pMainWin->NotifySubscribe();
 }
 
