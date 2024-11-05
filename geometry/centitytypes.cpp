@@ -4,6 +4,7 @@
 #include <vtkPolyDataMapper.h>
 #include <vtkPolyData.h>
 #include <vtkLineSource.h>
+#include <vtkLine.h>
 #include <vtkCellArray.h>
 #include <vtkPlaneSource.h>
 #include <vtkSphereSource.h>
@@ -43,7 +44,7 @@ vtkSmartPointer<vtkActor> CPoint::draw(){
     // 创建执行器，添加mapper
     vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
-    actor->GetProperty()->SetPointSize(7); // 设置点的大小
+    actor->GetProperty()->SetPointSize(5); // 设置点的大小
     actor->GetProperty()->SetColor(0, 0, 0);
 
     return actor;
@@ -304,15 +305,25 @@ vtkSmartPointer<vtkActor> CCone::draw(){
     return actor;
 }
 
+// 各种距离的draw
 vtkSmartPointer<vtkActor> CDistance::draw(){
-    auto actor = pointToPlane();
+    vtkSmartPointer<vtkActor> actor;
+
+    if(isHavePlane)
+        actor = pointToPlane();
+    else if(isHaveLine)
+        actor = pointToLine();
+    else {
+        actor = pointToCircle();
+    }
 
     return actor;
 }
 
+// 绘制点到面的垂线
 vtkSmartPointer<vtkActor> CDistance::pointToPlane()
 {
-    // 取平面外一点
+    // 将begin转为全局坐标
     CPosition pos_begin(begin.x, begin.y, begin.z);
     QVector4D posVec_begin = GetRefCoord()->m_mat * QVector4D(pos_begin.x, pos_begin.y, pos_begin.z, 1);
     CPosition glbPos_begin(posVec_begin.x(), posVec_begin.y(), posVec_begin.z());
@@ -324,15 +335,9 @@ vtkSmartPointer<vtkActor> CDistance::pointToPlane()
     // 取平面法向量
     QVector4D plane_nomal = plane.getNormal();
 
-    // 将法线单位化
-    double norm_length = sqrt(plane_nomal.x() * plane_nomal.x() + plane_nomal.y() * plane_nomal.y() + plane_nomal.z() * plane_nomal.z());
-    QVector4D unitNormal = plane_nomal / norm_length;
-
     // 计算点到平面的距离
     // 点到平面的距离公式: d = |(P - P0) · N| / ||N||
-    double distance = fabs((glbPos_begin.x - glbPos_point.x) * unitNormal.x() +
-                           (glbPos_begin.y - glbPos_point.y) * unitNormal.y() +
-                           (glbPos_begin.z - glbPos_point.z) * unitNormal.z());
+    double distance = getdistanceplane();
 
     // 计算glbPos_begin在平面上的落点
     CPosition projection;
@@ -371,7 +376,53 @@ vtkSmartPointer<vtkActor> CDistance::pointToPlane()
     return actor;
 }
 
+// 绘制点到线的垂线
 vtkSmartPointer<vtkActor> CDistance::pointToLine()
+{
+    // 将begin转为全局坐标
+    CPosition pos_begin(begin.x, begin.y, begin.z);
+    QVector4D posVec_begin = GetRefCoord()->m_mat * QVector4D(pos_begin.x, pos_begin.y, pos_begin.z, 1);
+    CPosition glbPos_begin(posVec_begin.x(), posVec_begin.y(), posVec_begin.z());
+
+    // 取直线首尾两点做方向向量
+    CPosition line_begin = line.begin;
+    CPosition line_end = line.getEnd();
+    QVector4D lineVec_begin = GetRefCoord()->m_mat * QVector4D(line_begin.x, line_begin.y, line_begin.z, 1);
+    QVector4D lineVec_end = GetRefCoord()->m_mat * QVector4D(line_end.x, line_end.y, line_end.z, 1);
+    CPosition glbline_begin(lineVec_begin.x(), lineVec_begin.y(), lineVec_begin.z());
+    CPosition glbline_end(lineVec_end.x(), lineVec_end.y(), lineVec_end.z());
+
+    // 得到方向向量并单位化
+    QVector4D lineVec(glbline_begin.x-glbline_end.x, glbline_begin.y-glbline_end.y
+                      , glbline_begin.z-glbline_end.z, 1);
+    lineVec.normalize();
+
+    // 计算垂直向量
+    // 这里要分别判断三个分量是否为0，来选取法向量
+    QVector3D verticVec;
+    if(lineVec.x())
+        verticVec = QVector3D(0, -lineVec.y(), lineVec.z());
+    else if(lineVec.y())
+        verticVec = QVector3D(-lineVec.x(), 0, lineVec.z());
+    else
+        verticVec = QVector3D(-lineVec.x(), lineVec.y(), 0);
+
+    // 得到点到直线的距离
+    double distance = getdistanceline();
+
+    // 计算落点
+    CPosition projection;
+    projection.x = glbPos_begin.x - distance * lineVec.x();
+    projection.y = glbPos_begin.y - distance * lineVec.y();
+    projection.z = glbPos_begin.z - distance * lineVec.z();
+    QVector4D posVec_pro = GetRefCoord()->m_mat * QVector4D(projection.x, projection.y, projection.z, 1);
+    CPosition glb_pro(posVec_pro.x(), posVec_pro.y(), posVec_pro.z());
+
+    return 0;
+}
+
+// 绘制点到圆面的垂线
+vtkSmartPointer<vtkActor> CDistance::pointToCircle()
 {
     return 0;
 }
@@ -624,16 +675,19 @@ void CDistance::setend(const CPosition &newend)
 void CDistance::setplane(const CPlane &Plane)
 {
     plane=Plane;
+    isHavePlane = true;
 }
 
 void CDistance::setcircle(const CCircle &Circle)
 {
     circle=Circle;
+    isHaveCircle = true;
 }
 
 void CDistance::setline(const CLine &Line)
 {
     line=Line;
+    isHaveLine = true;
 }
 
 double CDistance::getdistancepoint()

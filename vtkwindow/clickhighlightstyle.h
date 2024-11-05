@@ -1,7 +1,9 @@
 #ifndef CLICKSELECT_H
 #define CLICKSELECT_H
 
+#include "mainwindow.h"
 #include "geometry/globes.h"
+#include "manager/chosencentitymgr.h"
 
 #include <QVector>
 #include <vtkSmartPointer.h>
@@ -11,7 +13,9 @@
 #include <vtkGenericRenderWindowInteractor.h>
 #include <vtkRenderWindowInteractor.h>
 #include <vtkInteractorStyleTrackballCamera.h>
+#include <vtkVertexGlyphFilter.h>
 #include <vtkPropPicker.h>
+#include <vtkCellPicker.h>
 #include <vtkPointSource.h>
 #include <vtkSphereSource.h>
 #include <vtkPolyDataMapper.h>
@@ -25,19 +29,23 @@
 class MouseInteractorHighlightActor : public vtkInteractorStyleTrackballCamera
 {
 public:
-    // 静态方法，用于创建类的实例4
+    // 静态方法，用于创建类的实例
     static MouseInteractorHighlightActor* New();
     // 宏，用于设置类的类型和名称
     vtkTypeMacro(MouseInteractorHighlightActor, vtkInteractorStyleTrackballCamera);
+    MouseInteractorHighlightActor(vtkInteractorStyleTrackballCamera* parent = nullptr);
 
-    // 重写左键按下事件，点击高亮显
-    virtual void OnLeftButtonDown() override;
+    virtual void OnLeftButtonDown() override; // 重写左键按下事件，点击高亮
+    virtual void OnRightButtonDown() override; // 重写右键按下事件，取消高亮
+    // virtual void KeyPressEvent(char key) override;
 
-    // 重写右键按下事件，取消高亮
-    virtual void OnRightButtonDown() override;
+    void SetRenderer(vtkRenderer* renderer);     // 绑定渲染器
+    void SetUpMainWin(MainWindow* mainwindow){ // 初始化m_pMainWin
+        m_pMainWin = mainwindow;
+    }
 
-    // 绑定渲染器
-    void SetRenderer(vtkRenderer* renderer);
+    vtkActor* CreatHighLightPoint(double pos[3]); // 生成一个用于高亮的顶点
+    void DeleteHighLightPoint(); // 删除所有临时高亮的顶点
 
     // 高亮显示指定的actor
     void HighlightActor(vtkActor* actor);
@@ -49,15 +57,20 @@ public:
     QVector<std::pair<vtkSmartPointer<vtkActor>,vtkSmartPointer<vtkProperty>>>& getPickedActors();
 
 private:
+    MainWindow* m_pMainWin = nullptr; // mainwindow指针
+
     // 存储所有选中的actor和原始属性
     QVector<std::pair<vtkSmartPointer<vtkActor>,vtkSmartPointer<vtkProperty>>> pickedActors;
 
-    // 存储所有actor
-    QVector<vtkActor*> actors;
+    // 存储所有用于高亮的顶点
+    QVector<vtkActor*> point_actors;
 
     // 渲染器和交互器
     vtkRenderer* renderer = nullptr;
     vtkGenericRenderWindowInteractor* interactor = nullptr;
+
+signals:
+    void MouseClicked(double pos[3]); // 定义信号，向qt窗口发送选中的坐标
 
 };
 
