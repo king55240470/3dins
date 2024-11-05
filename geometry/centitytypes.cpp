@@ -398,7 +398,7 @@ vtkSmartPointer<vtkActor> CDistance::pointToLine()
     lineVec.normalize();
 
     // 选取不与直线共线的向量，这里要分别判断三个分量是否为0，来选取法向量
-    QVector3D vec;
+    QVector3D vec(1, 0, 0);
     if (lineVec.x() == 1.0 || lineVec.x() == -1.0) { // 避免与lineDirection共线
         vec = QVector3D(0, 1, 0);
         if (lineVec.y() == 1.0 || lineVec.y() == -1.0) {
@@ -415,9 +415,9 @@ vtkSmartPointer<vtkActor> CDistance::pointToLine()
 
     // 计算垂足
     CPosition projection;
-    projection.x = glbPos_begin.x - distance * normalVertical.x();
-    projection.y = glbPos_begin.y - distance * normalVertical.y();
-    projection.z = glbPos_begin.z - distance * normalVertical.z();
+    projection.x = (distance * normalVertical.x() - glbPos_begin.x) / 2.0;
+    projection.y = (distance * normalVertical.y() - glbPos_begin.y) / 2.0;
+    projection.z = (distance * normalVertical.z() - glbPos_begin.z) / 2.0;
 
 
     // 创建点集，并插入定义线的两个点
