@@ -13,9 +13,22 @@ static auto distance(const CPosition& p1, const CPosition& p2) {
 PlaneConstructor::PlaneConstructor() {}
 CEntity* PlaneConstructor::create(QVector<CEntity*>& entitylist){
     Constructor::create(entitylist);
+    QVector<CPoint*>points;
+    for(int i=0;i<entitylist.size();i++){
+        CEntity* entity=entitylist[i];
+        if(!entity->IsSelected())continue;
+        if(entity->GetUniqueType()==enPoint){
+            CPoint * point=(CPoint*)entity;
+            points.push_back(point);
+        }
+    }
     QVector<CPosition>&positions=Constructor::getPositions();//存储有效点
     if(positions.size()==3){
-        return createPlane(positions[0],positions[1],positions[2]);
+        CPlane*plane=createPlane(positions[0],positions[1],positions[2]);
+        plane->parent.push_back(points[0]);
+        plane->parent.push_back(points[1]);
+        plane->parent.push_back(points[2]);
+        return plane;
     }
     return nullptr;
 }

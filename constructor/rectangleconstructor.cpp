@@ -94,11 +94,29 @@ static auto checkAllCombinations=[](const QVector<QVector4D>& points,RectangleIn
 RectangleConstructor::RectangleConstructor() {}
 CEntity* RectangleConstructor::create(QVector<CEntity*>& entitylist){
     Constructor::create(entitylist);
+    QVector<CPoint*>point;
+    for(int i=0;i<entitylist.size();i++){
+        CEntity* entity=entitylist[i];
+        if(!entity->IsSelected())continue;
+        if(entity->GetUniqueType()==enPoint){
+            CPoint * point1=(CPoint*)entity;
+            point.push_back(point1);
+        }
+    }
     QVector<CPosition>&positions=Constructor::getPositions();//存储有效点
     if(positions.size()==3){
-        return createRectangle(positions[0],positions[1],positions[2]);
+        CPlane*rectangle=createRectangle(positions[0],positions[1],positions[2]);
+        rectangle->parent.push_back(point[0]);
+        rectangle->parent.push_back(point[1]);
+        rectangle->parent.push_back(point[2]);
+        return rectangle;
     }else if(positions.size()==4){
-        return createRectangle(positions[0],positions[1],positions[2],positions[3]);
+        CPlane*rectangle=createRectangle(positions[0],positions[1],positions[2],positions[3]);
+        rectangle->parent.push_back(point[0]);
+        rectangle->parent.push_back(point[1]);
+        rectangle->parent.push_back(point[2]);
+        rectangle->parent.push_back(point[3]);
+        return rectangle;
     }
     return nullptr;
 }
