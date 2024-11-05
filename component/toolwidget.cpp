@@ -1032,7 +1032,7 @@ void ToolWidget::onConstructDistance(){
     DistanceConstructor constructor;
     //constructor.createTolerance(0,0);
     CDistance* newDistance=(CDistance*)constructor.create(entityList);
-    newDistance->setUptolerance(0);
+    // newDistance->setUptolerance(0);
     newDistance->setUndertolerance(0);
     if(newDistance==nullptr){
         WrongWidget("构造距离失败");
