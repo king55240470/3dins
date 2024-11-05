@@ -41,11 +41,12 @@ public:
     QList<QTreeWidgetItem*> getSelectedItems();
     QVector<CObject*> getEleobjlist();
     void selectall();
+    void showDialog();
     void selectcommonitem();
     void onItemClicked();
-    void showDialog();
     void setTolerance();
     void BtnClicked();
+    void ShowParent(CObject*obj);
 protected:
     void keyPressEvent(QKeyEvent *event) override;
     void keyReleaseEvent(QKeyEvent *event) override;
