@@ -38,3 +38,10 @@ CPoint* PointConstructor::createPoint(double x,double y,double z){
     CPosition p(x,y,z);
     return createPoint(p);
 }
+CEntity* PointConstructor::create(QVector<CPosition>& chosenlist){
+    positions=chosenlist;
+    if(positions.size()>=1){
+        return createPoint(positions[0]);
+    }
+    return nullptr;
+}
