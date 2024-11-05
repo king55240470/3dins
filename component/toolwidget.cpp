@@ -983,13 +983,9 @@ void ToolWidget::onConstructCylinder(){
     addToList(newCylinder);
 }
 void ToolWidget::onConstructDistance(){
-
     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
     DistanceConstructor constructor;
-    //constructor.createTolerance(0,0);
     CDistance* newDistance=(CDistance*)constructor.create(entityList);
-    newDistance->setUptolerance(0);
-    newDistance->setUndertolerance(0);
     if(newDistance==nullptr){
         WrongWidget("构造距离失败");
         return ;

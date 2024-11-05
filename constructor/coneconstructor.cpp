@@ -3,9 +3,22 @@
 ConeConstructor::ConeConstructor() {}
 CEntity* ConeConstructor::create(QVector<CEntity*>& entitylist){
     Constructor::create(entitylist);
+    QVector<CPoint*>points;
+    for(int i=0;i<entitylist.size();i++){
+        CEntity* entity=entitylist[i];
+        if(!entity->IsSelected())continue;
+        if(entity->GetUniqueType()==enPoint){
+            CPoint * point=(CPoint*)entity;
+            points.push_back(point);
+        }
+    }
     QVector<CPosition>& positions=Constructor::getPositions();
     if(positions.size()==3){
-        return createCone(positions[0],positions[1],positions[2]);
+        CCone*cone=createCone(positions[0],positions[1],positions[2]);
+        cone->parent.push_back(points[0]);
+        cone->parent.push_back(points[1]);
+        cone->parent.push_back(points[2]);
+        return cone;
     }
     return nullptr;
 }

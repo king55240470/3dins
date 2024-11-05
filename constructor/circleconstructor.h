@@ -34,7 +34,7 @@ public:
     CircleConstructor();
     CEntity* create(QVector<CEntity*>& entitylist)override;
     CCircle* createCircle(CPosition p1,CPosition p2,CPosition p3);
-    CCircle* createCircle(CPoint p1,CPoint p2,CPoint p3);
+    CCircle* createCircle(CPoint *p1,CPoint *p2,CPoint *p3);
     CCircle* createCircle(CPosition center,double diameter);
     QVector4D getNormal();
 
