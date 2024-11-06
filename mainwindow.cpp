@@ -364,6 +364,7 @@ void MainWindow::OnPresetPoint(CPosition pt){
 
     //qDebug()<<"clicked3.1";
     CPoint *pPoint = (CPoint *)CreateEntity(enPoint);
+    pPoint->Form="预制";
     pPoint->SetPosition(pt);
     pPoint->m_CreateForm = ePreset;
     pPoint->m_pRefCoord = m_pcsListMgr->m_pPcsCurrent;
