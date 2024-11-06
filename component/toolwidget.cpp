@@ -63,6 +63,8 @@
 #include <pcl/point_cloud.h>     // PCL 的点云类
 #include <pcl/visualization/pcl_visualizer.h> // PCL 的可视化工具
 
+#include "pointfitting/fittingplane.h"//拟合平面算法
+
 
 int getImagePaths(const QString& directory, QStringList &iconPaths, QStringList &iconNames);
 
@@ -445,7 +447,7 @@ void ToolWidget::connectActionWithF(){
     connect(find_actions_[find_action_name_list_.indexOf("点")],&QAction::triggered,&  tool_widget::onFindPoint);
     connect(find_actions_[find_action_name_list_.indexOf("线")],&QAction::triggered,&  tool_widget::onFindLine);
     connect(find_actions_[find_action_name_list_.indexOf("圆")],&QAction::triggered,&  tool_widget::onFindCircle);
-    connect(find_actions_[find_action_name_list_.indexOf("平面")],&QAction::triggered,&  ToolWidget:: onFindPlane);
+    connect(find_actions_[find_action_name_list_.indexOf("平面")],&QAction::triggered,this,&  ToolWidget:: onFindPlane);
     connect(find_actions_[find_action_name_list_.indexOf("矩形")],&QAction::triggered,&  tool_widget::onFindRectangle);
     connect(find_actions_[find_action_name_list_.indexOf("圆柱")],&QAction::triggered,&  tool_widget::onFindCylinder);
     connect(find_actions_[find_action_name_list_.indexOf("圆锥")],&QAction::triggered,&  tool_widget::onFindCone);
@@ -892,6 +894,7 @@ void ToolWidget::onConstructPoint(){
         createPoint=true;
         for(int i=0;i<positions.size();i++){
             newPoint=constructor.createPoint(positions[i]);
+            newPoint->Form="构造";
             if(newPoint!=nullptr){
                 addToList(newPoint);
             }
@@ -1042,13 +1045,15 @@ void ToolWidget::onConstructDistance(){
 
 void ToolWidget:: onFindPlane(){
     QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenCEntityList();
-    pcl::PointXYZ  point;
+    pcl::PointXYZRGB  point;
     if(positions.size()==0)return ;
     point.x=positions[0].x;
     point.y=positions[0].y;
     point.y=positions[0].y;
     auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
-    if(cloudptr==nullptr)return ;
+    if(cloudptr==nullptr) return ;
+    FittingPlane FindPlane;
+    FindPlane.RANSAC(point,cloudptr);
     positions.clear();
 
 }
