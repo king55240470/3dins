@@ -734,7 +734,9 @@ double CDistance::getdistanceline()
 
     // 计算 AB 的平方长度
     double AB_squared = ABx * ABx + ABy * ABy + ABz * ABz;
-
+    if(AB_squared==0){
+        return 0;
+    }
     // 计算点 P 在 AB 上的投影比例 t
     double t = (ABx * APx + ABy * APy + ABz * APz) / AB_squared;
 
@@ -778,8 +780,7 @@ void CDistance::setdistance(double d)
 
 bool CDistance::judge()
 {
-    double dis=abs(uptolerance-undertolerance);
-    if(getdistanceplane()<=dis||getdistancecircle()<=dis||getdistanceline()<=dis||getdistancepoint()<=dis){
+    if(distance<=uptolerance&&distance>=undertolerance){
         qualified=true;
     }
     return qualified;
