@@ -22,7 +22,7 @@ FittingPlane::FittingPlane()
     cloud_subset.reset(new PointCloudT);
 
     //从指定路径加载 PCD 文件到点云对象中
-    pcl::io::loadPLYFile("D:/1_university/Code/Qt code/02G1_actual_cloud.ply", *cloudptr);
+    pcl::io::loadPLYFile("E:\\pcl\\box.ply", *cloudptr);
     //pcl::io::loadPCDFile("D:/1_university/Code/Qt code/maize.pcd", *cloudptr);
 
     coefficients.reset(new pcl::ModelCoefficients);
