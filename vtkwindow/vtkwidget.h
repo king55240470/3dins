@@ -110,7 +110,7 @@ private:
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud2;
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr comparisonCloud;
 
-private slots:
+public slots:
     // 配准的函数
     void onAlign();
 };
