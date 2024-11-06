@@ -1,6 +1,9 @@
 #ifndef SETDATAWIDGET_H
 #define SETDATAWIDGET_H
 
+#include <pcl/point_cloud.h>     // PCL 的点云类
+#include <pcl/visualization/pcl_visualizer.h> // PCL 的可视化工具
+
 #include <QWidget>
 #include <QDialog>
 #include <QGridLayout>
@@ -15,7 +18,7 @@ class setDataWidget : public QWidget
 public:
     explicit setDataWidget(QWidget *parent = nullptr);
 
-    void setPlaneData();//设置拟合平面的领域和距离阈值的对话框
+    void setPlaneData(pcl::PointXYZRGB,pcl::PointCloud<pcl::PointXYZRGB>::Ptr);//设置拟合平面的领域和距离阈值的对话框
     void PlaneBtnClick();
 
 private:
@@ -29,6 +32,8 @@ private:
     QLineEdit *p_rad;
     QLineEdit *p_dis;
     QPushButton *p_btn;
+    pcl::PointXYZRGB p_point;
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr p_cloudptr;
 
 signals:
 };

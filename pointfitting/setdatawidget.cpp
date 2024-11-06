@@ -2,14 +2,18 @@
 #include "mainwindow.h"
 #include "pointfitting/fittingplane.h"
 
+#include <QTimer>
+
 setDataWidget::setDataWidget(QWidget *parent)
     : QWidget{parent}
 {
     m_pMainWin=(MainWindow*)parent;
 }
 
-void setDataWidget::setPlaneData(){
-    p_dialog = new QDialog(nullptr);
+void setDataWidget::setPlaneData(pcl::PointXYZRGB searchPoint,pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudptr){
+    p_point=searchPoint;
+    p_cloudptr=cloudptr;
+    p_dialog = new QDialog(this);
     p_dialog->resize(400,150);
     p_layout = new QGridLayout(p_dialog);
     p_lab1 = new QLabel("请输入邻域：");
@@ -28,6 +32,15 @@ void setDataWidget::setPlaneData(){
 }
 
 void setDataWidget::PlaneBtnClick(){
-    m_pMainWin->getPWinFittingPlane()->setRadious(p_rad->text().toDouble());
-    m_pMainWin->getPWinFittingPlane()->setDistance(p_dis->text().toInt());
+    double radius = p_rad->text().toDouble();
+    int distance = p_dis->text().toInt();
+
+    auto fittingPlane = m_pMainWin->getPWinFittingPlane();
+    fittingPlane->setRadious(radius);  // 设置半径
+    fittingPlane->setDistance(distance);  // 设置距离阈值
+
+    p_dialog->close();
+
+    fittingPlane->RANSAC(p_point, p_cloudptr);
+
 }
