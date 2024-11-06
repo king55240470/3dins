@@ -11,6 +11,7 @@
 #include "geometry/centitytypes.h"
 #include "component/presetelemwidget.h"
 #include "manager/filemgr.h"
+#include "pointfitting/fittingplane.h"
 
 #include <QSettings>
 #include <QLabel>
@@ -29,6 +30,7 @@ MainWindow::MainWindow(QWidget *parent)
     setupUi();
     RestoreWidgets();
     loadManager();
+    LoadPointFitting();
     m_nRelyOnWhichCs=csRef;
 }
 
@@ -905,3 +907,10 @@ ChosenCEntityMgr *MainWindow::getChosenListMgr()
     return m_ChosenListMgr;
 }
 
+void MainWindow::LoadPointFitting(){
+    pWinFittingPlane=new FittingPlane();
+}
+
+FittingPlane *MainWindow::getPWinFittingPlane(){
+    return pWinFittingPlane;
+}
