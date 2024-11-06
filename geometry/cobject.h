@@ -21,7 +21,7 @@ public:
     bool m_bBreak=false;//是否中断
 
     int m_nCsForm;//表示使用哪种坐标系
-
+    QVector<CObject*>parent;
 public:
     CObject()
     {};

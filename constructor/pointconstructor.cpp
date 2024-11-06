@@ -3,9 +3,20 @@
 PointConstructor::PointConstructor() {}
 CEntity* PointConstructor::create(QVector<CEntity*>& entitylist){
     Constructor::create(entitylist);
+    QVector<CPoint*>points;
+    for(int i=0;i<entitylist.size();i++){
+        CEntity* entity=entitylist[i];
+        if(!entity->IsSelected())continue;
+        if(entity->GetUniqueType()==enPoint){
+            CPoint * point=(CPoint*)entity;
+            points.push_back(point);
+        }
+    }
     positions=Constructor::getPositions();//存储有效点
     if(positions.size()>=1){
-        return createPoint(positions[0]);
+        CPoint*point=createPoint(positions[0]);
+        point->parent.push_back(points[0]);
+        return point;
     }
     return nullptr;
 }

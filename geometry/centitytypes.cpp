@@ -4,6 +4,7 @@
 #include <vtkPolyDataMapper.h>
 #include <vtkPolyData.h>
 #include <vtkLineSource.h>
+#include <vtkLine.h>
 #include <vtkCellArray.h>
 #include <vtkPlaneSource.h>
 #include <vtkSphereSource.h>
@@ -304,15 +305,25 @@ vtkSmartPointer<vtkActor> CCone::draw(){
     return actor;
 }
 
+// 各种距离的draw
 vtkSmartPointer<vtkActor> CDistance::draw(){
-    auto actor = pointToPlane();
+    vtkSmartPointer<vtkActor> actor;
+
+    if(isHavePlane)
+        actor = pointToPlane();
+    else if(isHaveLine)
+        actor = pointToLine();
+    else {
+        actor = pointToCircle();
+    }
 
     return actor;
 }
 
+// 绘制点到面的垂线
 vtkSmartPointer<vtkActor> CDistance::pointToPlane()
 {
-    // 取平面外一点
+    // 将begin转为全局坐标
     CPosition pos_begin(begin.x, begin.y, begin.z);
     QVector4D posVec_begin = GetRefCoord()->m_mat * QVector4D(pos_begin.x, pos_begin.y, pos_begin.z, 1);
     CPosition glbPos_begin(posVec_begin.x(), posVec_begin.y(), posVec_begin.z());
@@ -324,15 +335,9 @@ vtkSmartPointer<vtkActor> CDistance::pointToPlane()
     // 取平面法向量
     QVector4D plane_nomal = plane.getNormal();
 
-    // 将法线单位化
-    double norm_length = sqrt(plane_nomal.x() * plane_nomal.x() + plane_nomal.y() * plane_nomal.y() + plane_nomal.z() * plane_nomal.z());
-    QVector4D unitNormal = plane_nomal / norm_length;
-
     // 计算点到平面的距离
     // 点到平面的距离公式: d = |(P - P0) · N| / ||N||
-    double distance = fabs((glbPos_begin.x - glbPos_point.x) * unitNormal.x() +
-                           (glbPos_begin.y - glbPos_point.y) * unitNormal.y() +
-                           (glbPos_begin.z - glbPos_point.z) * unitNormal.z());
+    double distance = getdistanceplane();
 
     // 计算glbPos_begin在平面上的落点
     CPosition projection;
@@ -371,7 +376,80 @@ vtkSmartPointer<vtkActor> CDistance::pointToPlane()
     return actor;
 }
 
+// 绘制点到线的垂线
 vtkSmartPointer<vtkActor> CDistance::pointToLine()
+{
+    // 将begin转为全局坐标
+    CPosition pos_begin(begin.x, begin.y, begin.z);
+    QVector4D posVec_begin = GetRefCoord()->m_mat * QVector4D(pos_begin.x, pos_begin.y, pos_begin.z, 1);
+    CPosition glbPos_begin(posVec_begin.x(), posVec_begin.y(), posVec_begin.z());
+
+    // 取直线首尾两点做方向向量
+    CPosition line_begin = line.begin;
+    CPosition line_end = line.getEnd();
+    QVector4D lineVec_begin = GetRefCoord()->m_mat * QVector4D(line_begin.x, line_begin.y, line_begin.z, 1);
+    QVector4D lineVec_end = GetRefCoord()->m_mat * QVector4D(line_end.x, line_end.y, line_end.z, 1);
+    CPosition glbline_begin(lineVec_begin.x(), lineVec_begin.y(), lineVec_begin.z());
+    CPosition glbline_end(lineVec_end.x(), lineVec_end.y(), lineVec_end.z());
+
+    // 得到方向向量并单位化
+    QVector3D lineVec(glbline_begin.x-glbline_end.x, glbline_begin.y-glbline_end.y
+                      , glbline_begin.z-glbline_end.z);
+    lineVec.normalize();
+
+    // 选取不与直线共线的向量，这里要分别判断三个分量是否为0，来选取法向量
+    QVector3D vec(1, 0, 0);
+    if (lineVec.x() == 1.0 || lineVec.x() == -1.0) { // 避免与lineDirection共线
+        vec = QVector3D(0, 1, 0);
+        if (lineVec.y() == 1.0 || lineVec.y() == -1.0) {
+            vec = QVector3D(0, 0, 1);
+        }
+    }
+    // 计算垂直向量
+    QVector3D normalVertical = QVector3D::crossProduct(lineVec, vec);
+
+    // 得到点到直线的距离
+    QVector3D pointToLineVec(glbPos_begin.x - glbline_begin.x, glbPos_begin.y - glbline_begin.y
+                             , glbPos_begin.z - glbline_begin.z);
+    double distance = getdistanceline();
+
+    // 计算垂足
+    CPosition projection;
+    projection.x = (distance * normalVertical.x() - glbPos_begin.x) / 2.0;
+    projection.y = (distance * normalVertical.y() - glbPos_begin.y) / 2.0;
+    projection.z = (distance * normalVertical.z() - glbPos_begin.z) / 2.0;
+
+
+    // 创建点集，并插入定义线的两个点
+    auto points = vtkSmartPointer<vtkPoints>::New();
+    points->InsertNextPoint(glbPos_begin.x, glbPos_begin.y, glbPos_begin.z);
+    points->InsertNextPoint(projection.x, projection.y, projection.z);
+
+    // 创建线源
+    auto lines = vtkSmartPointer<vtkCellArray>::New();
+    vtkIdType line[2] = {0, 1}; // 索引从0开始
+    lines->InsertNextCell(2, line); // 插入一条包含两个顶点的线
+
+    // 创建几何图形容器并设置点和线
+    vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
+    polyData->SetPoints(points);
+    polyData->SetLines(lines);
+
+    // 创建映射器
+    auto mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    mapper->SetInputData(polyData);
+
+    // 创建执行器
+    auto actor = vtkSmartPointer<vtkActor>::New();
+    actor->SetMapper(mapper);
+    actor->GetProperty()->SetColor(0.0, 0.0, 0.0);
+    actor->GetProperty()->SetLineWidth(3);
+
+    return actor;
+}
+
+// 绘制点到圆面的垂线
+vtkSmartPointer<vtkActor> CDistance::pointToCircle()
 {
     return 0;
 }
@@ -624,16 +702,19 @@ void CDistance::setend(const CPosition &newend)
 void CDistance::setplane(const CPlane &Plane)
 {
     plane=Plane;
+    isHavePlane = true;
 }
 
 void CDistance::setcircle(const CCircle &Circle)
 {
     circle=Circle;
+    isHaveCircle = true;
 }
 
 void CDistance::setline(const CLine &Line)
 {
     line=Line;
+    isHaveLine = true;
 }
 
 double CDistance::getdistancepoint()

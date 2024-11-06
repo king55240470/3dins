@@ -18,12 +18,23 @@ CEntity* LineConstructor::create(QVector<CEntity*>& entitylist){
         }
     }
     if(points.size()==1&&planes.size()==1){
-
-        return createLine(points[0],planes[0]);
+        CLine*line=createLine(points[0],planes[0]);
+        line->parent.push_back(points[0]);
+        line->parent.push_back(planes[0]);
+        return line;
+    }
+    if(points.size()==2){
+        CLine*line=createLine(points[0],points[1]);
+        line->parent.push_back(points[0]);
+        line->parent.push_back(points[1]);
+        return line;
     }
     QVector<CPosition>&positions=Constructor::getPositions();//存储有效点
     if(positions.size()==2){
-        return createLine(positions[0],positions[1]);
+        CLine*line=createLine(positions[0],positions[1]);
+        //line->parent.push_back(points[0]);
+        //line->parent.push_back(points[1]);
+        return line;
     }
     return nullptr;
 }
@@ -40,9 +51,9 @@ CLine* LineConstructor::createLine(CPosition begin,CPosition end){
     return newLine;
 }
 
-CLine* LineConstructor::createLine(CPoint begin,CPoint end){
-    CPosition pt1=begin.GetPt();
-    CPosition pt2=end.GetPt();
+CLine* LineConstructor::createLine(CPoint *begin,CPoint *end){
+    CPosition pt1=begin->GetPt();
+    CPosition pt2=end->GetPt();
     if(pt1.x==pt2.x
         &&pt1.y==pt2.y
         &&pt1.z==pt2.z)

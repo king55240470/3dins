@@ -27,7 +27,7 @@ ElementListWidget::ElementListWidget(QWidget *parent)
 
     // 元素信息列表
     treeWidgetInfo = new QTreeWidget(this);
-    treeWidgetInfo->setHeaderLabel("元素");
+    treeWidgetInfo->setHeaderLabel("构造源");
 
     //工具栏
     toolBar = new QToolBar(this);
@@ -67,8 +67,8 @@ void ElementListWidget::CreateEllipse(CObject*obj)
     item->setData(0, Qt::UserRole, QVariant::fromValue<CObject*>(obj));
     item->setText(0,obj->m_strCName);
     item->setText(1,obj->m_strAutoName);
-    QTreeWidgetItem *infoItem = new QTreeWidgetItem(treeWidgetInfo);
-    infoItem->setText(0,obj->m_strCName);
+    //QTreeWidgetItem *infoItem = new QTreeWidgetItem(treeWidgetInfo);
+    //infoItem->setText(0,obj->m_strCName);
     if(obj->GetUniqueType()==enPoint){
         QIcon icon(":/component/find/point.jpg");
         item->setIcon(0, icon);
@@ -96,9 +96,6 @@ void ElementListWidget::CreateEllipse(CObject*obj)
     if(obj->GetUniqueType()==enCylinder){
         QIcon icon(":/component/find/cylinder.jpg");
         item->setIcon(0, icon);
-    }
-    if(obj->GetUniqueType()==enPlane){
-
     }
 }
 
@@ -215,10 +212,38 @@ void ElementListWidget::onItemClicked()
         m_pMainWin->getPWinDataWidget()->updateinfo();
     }
     m_pMainWin->getPWinToolWidget()->updateele();
-}
+    if(selectedItems.size()==1){
+        for(QTreeWidgetItem*item:selectedItems){
+            CObject *obj1 = item->data(0, Qt::UserRole).value<CObject*>();
+            ShowParent(obj1);
+            /*if(obj1->GetUniqueType()==enPoint){
+                ShowParent(obj1);
+            }
+            if(obj1->GetUniqueType()==enLine){
+                CLine* line = dynamic_cast<CLine*>(obj1);
+                CPosition begin=line->getBegin();
+                CPosition end=line->getEnd();
+                for(CObject*obj:m_pMainWin->getObjectListMgr()->getObjectList()){
+                    if(obj->GetUniqueType()==enPoint){
+                        CPoint* point = dynamic_cast<CPoint*>(obj);
+                        if(point->GetPt().x==begin.x&&point->GetPt().y==begin.y&&point->GetPt().z==begin.z){
+                            parent.push_back(obj);
+                        }
+                        if(point->GetPt().x==end.x&&point->GetPt().y==end.y&&point->GetPt().z==end.z){
+                            parent.push_back(obj);
+                        }
+                    }
+                }
+            }
+            if(obj1->GetUniqueType()==enPlane){
 
-void ElementListWidget::showDialog()
-{
+            }
+            if(obj1->GetObjectCName().left(2)=="距离"){
+                CDistance* dis = dynamic_cast<CDistance*>(obj1);
+            }*/
+        }
+    }
+
 }
 
 void ElementListWidget::setTolerance()
@@ -304,6 +329,16 @@ void ElementListWidget::BtnClicked()
     }
     dialog->close();
 }
+
+void ElementListWidget::ShowParent(CObject*obj)
+{
+    treeWidgetInfo->clear();
+    for(CObject*obj1:obj->parent){
+        qDebug()<<obj1->GetObjectCName();
+        QTreeWidgetItem *infoItem = new QTreeWidgetItem(treeWidgetInfo);
+        infoItem->setText(0,obj1->m_strCName);
+    }
+}
 QList<QTreeWidgetItem*> ElementListWidget:: getSelectedItems(){
     return treeWidgetNames->selectedItems();
 }
@@ -320,6 +355,11 @@ void ElementListWidget::selectall()
         item->setSelected(true);
         m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(true);
     }
+}
+
+void ElementListWidget::showDialog()
+{
+
 }
 
 void ElementListWidget::selectcommonitem()

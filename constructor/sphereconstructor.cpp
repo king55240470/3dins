@@ -53,15 +53,19 @@ static auto calculateSphere=[](const QVector4D& p1, const QVector4D& p2, const Q
 SphereConstructor::SphereConstructor() {}
 CEntity* SphereConstructor::create(QVector<CEntity*>& entitylist){
     QVector<CPosition>positions;//存储有效点
+    QVector<CPoint*>points;
+    QVector<CCircle*>circles;
     CCircle* Circle=nullptr;//存储圆
     for(int i=0;i<entitylist.size();i++){
         CEntity* entity=entitylist[i];
         if(!entity->IsSelected())continue;
         if(entity->GetUniqueType()==enPoint){
             CPoint * point=(CPoint*)entity;
+            points.push_back(point);
             positions.push_back(point->GetPt());
         }else if(entity->GetUniqueType()==enCircle){
             CCircle* circle=(CCircle*)entity;
+            circles.push_back(circle);
             positions.push_back(circle->getCenter());
             Circle=circle;
         }else if(entity->GetUniqueType()==enSphere){
@@ -87,10 +91,17 @@ CEntity* SphereConstructor::create(QVector<CEntity*>& entitylist){
         qDebug()<<"构造球读取圆失败";
     }
     if(positions.size()==4){
-        return createSphere(positions[0],positions[1],positions[2],positions[3]);
+        CSphere*sphere=createSphere(positions[0],positions[1],positions[2],positions[3]);
+        sphere->parent.push_back(points[0]);
+        sphere->parent.push_back(points[1]);
+        sphere->parent.push_back(points[2]);
+        sphere->parent.push_back(points[3]);
+        return sphere;
     }
     if(Circle){
-        return createSphere(Circle->getCenter(),Circle->getDiameter()/2);
+        CSphere*sphere=createSphere(Circle->getCenter(),Circle->getDiameter()/2);
+        sphere->parent.push_back(circles[0]);
+        return sphere;
     }
     return nullptr;
 }
