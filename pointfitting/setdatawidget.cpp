@@ -23,7 +23,7 @@ void setDataWidget::setPlaneData(){
     p_layout->addWidget(p_dis,1,1,1,2);
     p_layout->addWidget(p_btn,2,2,1,1);
     p_dialog->setLayout(p_layout);
-
+    p_dialog->show();
     connect(p_btn,&QPushButton::clicked,this,&setDataWidget::PlaneBtnClick);
 }
 
