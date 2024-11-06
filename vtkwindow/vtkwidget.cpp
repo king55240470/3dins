@@ -272,12 +272,13 @@ void VtkWidget::showConvertedCloud(){
     auto model_map = m_pMainWin->getpWinFileMgr()->getModelFileMap();
 
     // 分别用迭代器遍历两个map的所有文件
-    auto cloud_1(new pcl::PointCloud<pcl::PointXYZ>);
+    pcl::shared_ptr<pcl::PointCloud<pcl::PointXYZ>> cloud_1 = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+    // auto cloud_1(new pcl::PointCloud<pcl::PointXYZ>);
     for(auto item = measured_map.begin();item != measured_map.end() ;item++){
         // 如果文件不隐藏
         if(item.value()){
             pcl::io::loadPCDFile(item.key().toStdString(), *cloud_1);
-
+            m_pMainWin->getpWinFileMgr()->cloudptr=cloud_1;
             // 将cloud转换为VTK的点集
             vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
             points->SetNumberOfPoints(cloud_1->points.size());
@@ -308,13 +309,13 @@ void VtkWidget::showConvertedCloud(){
             renderer->AddActor(actor);
         }
     }
-
-    auto cloud_2(new pcl::PointCloud<pcl::PointXYZ>);
+  pcl::shared_ptr<pcl::PointCloud<pcl::PointXYZ>> cloud_2 = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+    //auto cloud_2(new pcl::PointCloud<pcl::PointXYZ>);
     for(auto item = model_map.begin();item != model_map.end() ;item++){
         // 如果文件不隐藏
         if(item.value()){
             pcl::io::loadPLYFile(item.key().toStdString(), *cloud_2);
-
+            m_pMainWin->getpWinFileMgr()->cloudptr=cloud_2;
             // 将cloud转换为VTK的点集
             vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
             points->SetNumberOfPoints(cloud_2->points.size());
