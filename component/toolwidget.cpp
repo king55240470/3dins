@@ -64,7 +64,7 @@
 #include <pcl/visualization/pcl_visualizer.h> // PCL 的可视化工具
 
 #include "pointfitting/fittingplane.h"//拟合平面算法
-
+#include "pointfitting/setdatawidget.h"
 
 int getImagePaths(const QString& directory, QStringList &iconPaths, QStringList &iconNames);
 
@@ -1052,8 +1052,7 @@ void ToolWidget:: onFindPlane(){
     point.y=positions[0].y;
     auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
     if(cloudptr==nullptr) return ;
-    FittingPlane FindPlane;
-    FindPlane.RANSAC(point,cloudptr);
+    m_pMainWin->getPWinSetDataWidget()->setPlaneData(point,cloudptr);
     positions.clear();
 
 }

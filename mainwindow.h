@@ -24,6 +24,7 @@ class LogWidget;
 class PresetElemWidget;
 class FileMgr;
 class FittingPlane;
+class setDataWidget;
 
 class MainWindow : public QMainWindow
 {
@@ -49,6 +50,7 @@ private:
     FileMgr *pWinFileMgr;
 
     FittingPlane *pWinFittingPlane;
+    setDataWidget *pWinSetDataWidget;
 
     QMenuBar * bar;
 
@@ -113,6 +115,7 @@ public:
     ChosenCEntityMgr *getChosenListMgr(); // 获取窗口选中点的管理器成员
     void LoadPointFitting();
     FittingPlane *getPWinFittingPlane();
+    setDataWidget *getPWinSetDataWidget();
 
 public:
     RELY_ON_CS_TYPE m_nRelyOnWhichCs;

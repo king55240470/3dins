@@ -907,3 +907,7 @@ void MainWindow::LoadPointFitting(){
 FittingPlane *MainWindow::getPWinFittingPlane(){
     return pWinFittingPlane;
 }
+
+setDataWidget *MainWindow::getPWinSetDataWidget(){
+    return pWinSetDataWidget;
+}
