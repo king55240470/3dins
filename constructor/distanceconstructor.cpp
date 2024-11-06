@@ -28,16 +28,28 @@ CEntity* DistanceConstructor::create(QVector<CEntity*>& entitylist){
         }
     }
     if(points.size()==1&&planes.size()==1){
-        return createDistance(points[0],planes[0]);
+        CDistance*dis=createDistance(points[0],planes[0]);
+        dis->parent.push_back(points[0]);
+        dis->parent.push_back(planes[0]);
+        return dis;
     }
     if(points.size()==2){
-        return createDistance(points[0],points[1]);
+        CDistance*dis=createDistance(points[0],points[1]);
+        dis->parent.push_back(points[0]);
+        dis->parent.push_back(points[1]);
+        return dis;
     }
     if(points.size()==1&&circles.size()==1){
-        return createDistance(points[0],circles[0]);
+        CDistance*dis=createDistance(points[0],circles[0]);
+        dis->parent.push_back(points[0]);
+        dis->parent.push_back(circles[0]);
+         return dis;
     }
     if(points.size()==1&&lines.size()==1){
-        return createDistance(points[0],lines[0]);
+        CDistance*dis=createDistance(points[0],lines[0]);
+        dis->parent.push_back(points[0]);
+        dis->parent.push_back(lines[0]);
+        return dis;
     }
     return nullptr;
 }

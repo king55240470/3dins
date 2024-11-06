@@ -90,9 +90,22 @@ CircleInfor calculateCircle(const CPosition &A, const CPosition &B, const CPosit
 CircleConstructor::CircleConstructor() {}
 CEntity* CircleConstructor::create(QVector<CEntity*>& entitylist){
     Constructor::create(entitylist);
+    QVector<CPoint*>points;
+    for(int i=0;i<entitylist.size();i++){
+        CEntity* entity=entitylist[i];
+        if(!entity->IsSelected())continue;
+        if(entity->GetUniqueType()==enPoint){
+            CPoint * point=(CPoint*)entity;
+            points.push_back(point);
+        }
+    }
     QVector<CPosition>&positions=Constructor::getPositions();//存储有效点
     if(positions.size()==3){
-        return  createCircle(positions[0],positions[1],positions[2]);
+        CCircle*circle=createCircle(positions[0],positions[1],positions[2]);
+        circle->parent.push_back(points[0]);
+        circle->parent.push_back(points[1]);
+        circle->parent.push_back(points[2]);
+        return  circle;
     }
     return nullptr;
 }
@@ -103,10 +116,10 @@ CCircle* CircleConstructor::createCircle(CPosition p1,CPosition p2,CPosition p3)
         return nullptr;
     return createCircle(toCPosition(Circle.center),Circle.radius*2);
 }
-CCircle* CircleConstructor::createCircle(CPoint p1,CPoint p2,CPoint p3){
-    CPosition pt1=p1.GetPt();
-    CPosition pt2=p2.GetPt();
-    CPosition pt3=p3.GetPt();
+CCircle* CircleConstructor::createCircle(CPoint *p1,CPoint *p2,CPoint *p3){
+    CPosition pt1=p1->GetPt();
+    CPosition pt2=p2->GetPt();
+    CPosition pt3=p3->GetPt();
     return createCircle(pt1,pt2,pt3);
 }
 CCircle* CircleConstructor::createCircle(CPosition center,double diameter){

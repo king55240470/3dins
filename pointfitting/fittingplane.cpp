@@ -1,4 +1,5 @@
 #include "pointfitting/fittingplane.h"
+#include "pointfitting/setdatawidget.h"
 
 #include<pcl/io/pcd_io.h>// PCL 的 PCD 文件输入输出类
 #include<pcl/io/ply_io.h>
@@ -21,18 +22,25 @@ FittingPlane::FittingPlane()
     // //从指定路径加载 PCD 文件到点云对象中
     // pcl::io::loadPLYFile("D:/1_university/Code/Qt code/02G1_actual_cloud.ply", *cloudptr);
     // //pcl::io::loadPCDFile("D:/1_university/Code/Qt code/maize.pcd", *cloudptr);
+    //从指定路径加载 PCD 文件到点云对象中
+    //pcl::io::loadPLYFile("E:\\pcl\\box.ply", *cloudptr);
+    //pcl::io::loadPCDFile("D:/1_university/Code/Qt code/maize.pcd", *cloudptr);
 
     coefficients.reset(new pcl::ModelCoefficients);
     inliers.reset(new pcl::PointIndices);
+
+    p_setDataWidget=new setDataWidget();
 
     //RANSAC();
 
 }
 
-void FittingPlane::RANSAC(pcl::PointXYZ searchPoint,pcl::PointCloud<pcl::PointXYZ>::Ptr cloudptr)
+void FittingPlane::RANSAC(pcl::PointXYZRGB searchPoint,pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudptr)
 {
+    p_setDataWidget->setPlaneData();
+
     //创建KD树用于邻域搜索
-    pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
+    pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree;
     kdtree.setInputCloud(cloudptr);
 
     // 初始化一个点来搜索其邻域（这里选择点云中的第一个点作为示例）
@@ -45,7 +53,7 @@ void FittingPlane::RANSAC(pcl::PointXYZ searchPoint,pcl::PointCloud<pcl::PointXY
         pcl::copyPointCloud(*cloudptr, pointIdxRadiusSearch, *cloud_subset);//在邻域点中实现RANSAC算法
 
         // 创建RANSAC分割对象
-        pcl::SACSegmentation<pcl::PointXYZ> seg;
+        pcl::SACSegmentation<pcl::PointXYZRGB> seg;
         seg.setOptimizeCoefficients(true);
         seg.setModelType(pcl::SACMODEL_PLANE);
         seg.setMethodType(pcl::SAC_RANSAC);
@@ -70,19 +78,24 @@ void FittingPlane::RANSAC(pcl::PointXYZ searchPoint,pcl::PointCloud<pcl::PointXY
         planeCloud->height = 1;
         planeCloud->is_dense = true;
 
+        for (auto& point : planeCloud->points){
+            point.r = 255;
+            point.g = 0;
+            point.b = 0;
+        }
+
         // 打印平面方程的系数
         std::cout << "Plane coefficients: " << coefficients->values[0] << " "
                   << coefficients->values[1] << " " << coefficients->values[2] << " "
                   << coefficients->values[3] << std::endl;
 
-        //visualizePlane();
     } else {
         PCL_ERROR("Couldn't find more points within radius\n");
         return;
     }
 }
 
-bool FittingPlane::isPointInPlane(const pcl::PointXYZ& point){
+bool FittingPlane::isPointInPlane(const pcl::PointXYZRGB& point){
     double d = coefficients->values[0] * point.x +
                       coefficients->values[1] * point.y +
                       coefficients->values[2] * point.z +
@@ -90,40 +103,14 @@ bool FittingPlane::isPointInPlane(const pcl::PointXYZ& point){
     return std::abs(d) <= 0.01;
 }
 
-// void FittingPlane::visualizePlane() {
-
-//     pcl::visualization::PCLVisualizer viewer("3D Viewer");
-
-//     viewer.addPointCloud<pcl::PointXYZ>(cloudptr, "allCloud");
-//     viewer.addPointCloud<pcl::PointXYZ>(planeCloud, "planeCloud");
-//     viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_COLOR, 1.0, 0.0, 0.0, "planeCloud"); // 设置拟合平面内点的颜色为红色
-//     viewer.setBackgroundColor(0.0, 0.0, 0.0); // 设置背景色为黑色
-
-//     while (!viewer.wasStopped()) {
-//         viewer.spinOnce(100);
-//     }
-// }
-
-void FittingPlane::setDis(){
-    dialog = new QDialog(nullptr);
-    dialog->resize(400,150);
-    layout = new QGridLayout(dialog);
-    lab1 = new QLabel("请输入邻域：");
-    lab2 = new QLabel("请输入距离阈值：");
-    rad = new QLineEdit();
-    dis = new QLineEdit();
-    btn = new QPushButton("确定");
-    layout->addWidget(lab1,0,0,1,1);
-    layout->addWidget(rad,0,1,1,2);
-    layout->addWidget(lab2,1,0,1,1);
-    layout->addWidget(dis,1,1,1,2);
-    layout->addWidget(btn,2,2,1,1);
-    dialog->setLayout(layout);
-
-    //connect(btn,&QPushButton::clicked,this,&FittingPlane::onBtnClick);
+double &FittingPlane::getRadious(){
+    return radious;
 }
 
-void FittingPlane::onBtnClick(){
-    radious=rad->text().toDouble();
-    distance=dis->text().toInt();
+int &FittingPlane::getDistance(){
+    return distance;
+}
+
+pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingPlane::getPlaneCloud(){
+    return planeCloud;
 }
