@@ -17,10 +17,20 @@
 #include <QTimer>
 #include <QPixmap>
 
-#include <pcl/point_cloud.h>     // PCL 的点云类
-#include <pcl/point_types.h>     // PCL 的点类型定义
-#include <pcl/io/pcd_io.h>       // PCL 的 PCD 文件输入输出类
-#include <pcl/visualization/pcl_visualizer.h> // PCL 的可视化工具
+#include <pcl/common/common.h>
+#include <pcl/io/ply_io.h>
+#include <pcl/io/pcd_io.h>
+#include <cmath>
+#include <limits>
+#include <pcl/common/distances.h>  // PCL距离计算函数
+#include <pcl/visualization/pcl_visualizer.h>  // PCL可视化库
+#include <pcl/registration/icp.h>
+#include <pcl/kdtree/kdtree_flann.h>
+#include <pcl/filters/voxel_grid.h>
+#include <pcl/features/normal_3d.h>
+#include <pcl/features/fpfh.h>
+#include <pcl/registration/sample_consensus_prerejective.h>
+#include <pcl/registration/icp.h>
 
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
@@ -93,7 +103,7 @@ public:
     void onCompare();
 
     // 用于显示对比完成的两个点云
-    // void showConvertedCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, const std::string &name);
+    void VtkWidget::showConvertedCloud(pcl::PointCloud<pcl::PointXYZRGB> cloud_rgb_1);
 
 private:
     QVTKOpenGLNativeWidget* vtkWidget; // vtk窗口
