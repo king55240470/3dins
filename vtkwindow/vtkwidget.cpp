@@ -272,7 +272,7 @@ void VtkWidget::showConvertedCloud(){
     auto model_map = m_pMainWin->getpWinFileMgr()->getModelFileMap();
 
     // 分别用迭代器遍历两个map的所有文件
-    pcl::shared_ptr<pcl::PointCloud<pcl::PointXYZ>> cloud_1 = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+    pcl::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>> cloud_1 = std::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>();
     // auto cloud_1(new pcl::PointCloud<pcl::PointXYZ>);
     for(auto item = measured_map.begin();item != measured_map.end() ;item++){
         // 如果文件不隐藏
@@ -309,7 +309,7 @@ void VtkWidget::showConvertedCloud(){
             renderer->AddActor(actor);
         }
     }
-  pcl::shared_ptr<pcl::PointCloud<pcl::PointXYZ>> cloud_2 = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  pcl::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>> cloud_2 = std::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>();
     //auto cloud_2(new pcl::PointCloud<pcl::PointXYZ>);
     for(auto item = model_map.begin();item != model_map.end() ;item++){
         // 如果文件不隐藏

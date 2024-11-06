@@ -27,7 +27,8 @@ ElementListWidget::ElementListWidget(QWidget *parent)
 
     // 元素信息列表
     treeWidgetInfo = new QTreeWidget(this);
-    treeWidgetInfo->setHeaderLabel("构造源");
+    treeWidgetInfo->setColumnCount(2);
+    treeWidgetInfo->setHeaderLabel("源");
 
     //工具栏
     toolBar = new QToolBar(this);
@@ -216,31 +217,6 @@ void ElementListWidget::onItemClicked()
         for(QTreeWidgetItem*item:selectedItems){
             CObject *obj1 = item->data(0, Qt::UserRole).value<CObject*>();
             ShowParent(obj1);
-            /*if(obj1->GetUniqueType()==enPoint){
-                ShowParent(obj1);
-            }
-            if(obj1->GetUniqueType()==enLine){
-                CLine* line = dynamic_cast<CLine*>(obj1);
-                CPosition begin=line->getBegin();
-                CPosition end=line->getEnd();
-                for(CObject*obj:m_pMainWin->getObjectListMgr()->getObjectList()){
-                    if(obj->GetUniqueType()==enPoint){
-                        CPoint* point = dynamic_cast<CPoint*>(obj);
-                        if(point->GetPt().x==begin.x&&point->GetPt().y==begin.y&&point->GetPt().z==begin.z){
-                            parent.push_back(obj);
-                        }
-                        if(point->GetPt().x==end.x&&point->GetPt().y==end.y&&point->GetPt().z==end.z){
-                            parent.push_back(obj);
-                        }
-                    }
-                }
-            }
-            if(obj1->GetUniqueType()==enPlane){
-
-            }
-            if(obj1->GetObjectCName().left(2)=="距离"){
-                CDistance* dis = dynamic_cast<CDistance*>(obj1);
-            }*/
         }
     }
 
@@ -333,10 +309,16 @@ void ElementListWidget::BtnClicked()
 void ElementListWidget::ShowParent(CObject*obj)
 {
     treeWidgetInfo->clear();
+    if(obj->GetUniqueType()==enPoint){
+        QTreeWidgetItem *infoItem = new QTreeWidgetItem(treeWidgetInfo);
+        infoItem->setText(0,obj->m_strCName);
+        infoItem->setText(1,obj->Form);
+        return;
+    }
     for(CObject*obj1:obj->parent){
-        qDebug()<<obj1->GetObjectCName();
         QTreeWidgetItem *infoItem = new QTreeWidgetItem(treeWidgetInfo);
         infoItem->setText(0,obj1->m_strCName);
+        infoItem->setText(1,obj1->Form);
     }
 }
 QList<QTreeWidgetItem*> ElementListWidget:: getSelectedItems(){

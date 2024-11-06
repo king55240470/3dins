@@ -16,8 +16,8 @@ public:
     QMap<QString, bool>& getMeasuredFileMap();
     QMap<QString, bool>& getContentItemMap();
     QMap<QString, bool>& getIdentifyItemMap();
-    pcl::PointCloud<pcl::PointXYZ>::Ptr& getCloudPtr();
-    pcl::PointCloud<pcl::PointXYZ>::Ptr  cloudptr;
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr& getCloudPtr();
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr  cloudptr;
 private:
     QMap<QString, bool> modelFileLMap;
     QMap<QString, bool> measuredFileMap;
