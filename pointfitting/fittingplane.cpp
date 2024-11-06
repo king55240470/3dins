@@ -103,12 +103,12 @@ bool FittingPlane::isPointInPlane(const pcl::PointXYZRGB& point){
     return std::abs(d) <= 0.01;
 }
 
-double &FittingPlane::getRadious(){
-    return radious;
+void FittingPlane::setRadious(double rad){
+    radious=rad;
 }
 
-int &FittingPlane::getDistance(){
-    return distance;
+void FittingPlane::setDistance(int dis){
+    distance=dis;
 }
 
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingPlane::getPlaneCloud(){

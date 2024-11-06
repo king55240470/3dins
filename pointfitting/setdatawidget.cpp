@@ -28,7 +28,6 @@ void setDataWidget::setPlaneData(){
 }
 
 void setDataWidget::PlaneBtnClick(){
-    m_pMainWin->getPWinFittingPlane()->getRadious()=p_rad->text().toDouble();
-    m_pMainWin->getPWinFittingPlane()->getDistance()=p_dis->text().toInt();
-    //m_pMainWin->getPWinFittingPlane()->
+    m_pMainWin->getPWinFittingPlane()->setRadious(p_rad->text().toDouble());
+    m_pMainWin->getPWinFittingPlane()->setDistance(p_dis->text().toInt());
 }
