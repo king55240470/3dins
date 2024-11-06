@@ -393,32 +393,60 @@ vtkSmartPointer<vtkActor> CDistance::pointToLine()
     CPosition glbline_end(lineVec_end.x(), lineVec_end.y(), lineVec_end.z());
 
     // 得到方向向量并单位化
-    QVector4D lineVec(glbline_begin.x-glbline_end.x, glbline_begin.y-glbline_end.y
-                      , glbline_begin.z-glbline_end.z, 1);
+    QVector3D lineVec(glbline_begin.x-glbline_end.x, glbline_begin.y-glbline_end.y
+                      , glbline_begin.z-glbline_end.z);
     lineVec.normalize();
 
+    // 选取不与直线共线的向量，这里要分别判断三个分量是否为0，来选取法向量
+    QVector3D vec(1, 0, 0);
+    if (lineVec.x() == 1.0 || lineVec.x() == -1.0) { // 避免与lineDirection共线
+        vec = QVector3D(0, 1, 0);
+        if (lineVec.y() == 1.0 || lineVec.y() == -1.0) {
+            vec = QVector3D(0, 0, 1);
+        }
+    }
+
     // 计算垂直向量
-    // 这里要分别判断三个分量是否为0，来选取法向量
-    QVector3D verticVec;
-    if(lineVec.x())
-        verticVec = QVector3D(0, -lineVec.y(), lineVec.z());
-    else if(lineVec.y())
-        verticVec = QVector3D(-lineVec.x(), 0, lineVec.z());
-    else
-        verticVec = QVector3D(-lineVec.x(), lineVec.y(), 0);
+    QVector3D normalVertical = QVector3D::crossProduct(lineVec, vec);
 
     // 得到点到直线的距离
+    QVector3D pointToLineVec(glbPos_begin.x - glbline_begin.x, glbPos_begin.y - glbline_begin.y
+                             , glbPos_begin.z - glbline_begin.z);
     double distance = getdistanceline();
 
     // 计算落点
     CPosition projection;
-    projection.x = glbPos_begin.x - distance * lineVec.x();
-    projection.y = glbPos_begin.y - distance * lineVec.y();
-    projection.z = glbPos_begin.z - distance * lineVec.z();
-    QVector4D posVec_pro = GetRefCoord()->m_mat * QVector4D(projection.x, projection.y, projection.z, 1);
-    CPosition glb_pro(posVec_pro.x(), posVec_pro.y(), posVec_pro.z());
+    projection.x = (distance * normalVertical.x() - glbPos_begin.x) / 2.0;
+    projection.y = (distance * normalVertical.y() - glbPos_begin.y) / 2.0;
+    projection.z = (distance * normalVertical.z() - glbPos_begin.z) / 2.0;
 
-    return 0;
+
+    // 创建点集，并插入定义线的两个点
+    auto points = vtkSmartPointer<vtkPoints>::New();
+    points->InsertNextPoint(glbPos_begin.x, glbPos_begin.y, glbPos_begin.z);
+    points->InsertNextPoint(projection.x, projection.y, projection.z);
+
+    // 创建线源
+    auto lines = vtkSmartPointer<vtkCellArray>::New();
+    vtkIdType line[2] = {0, 1}; // 索引从0开始
+    lines->InsertNextCell(2, line); // 插入一条包含两个顶点的线
+
+    // 创建几何图形容器并设置点和线
+    vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
+    polyData->SetPoints(points);
+    polyData->SetLines(lines);
+
+    // 创建映射器
+    auto mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    mapper->SetInputData(polyData);
+
+    // 创建执行器
+    auto actor = vtkSmartPointer<vtkActor>::New();
+    actor->SetMapper(mapper);
+    actor->GetProperty()->SetColor(0.0, 0.0, 0.0);
+    actor->GetProperty()->SetLineWidth(3);
+
+    return actor;
 }
 
 // 绘制点到圆面的垂线
