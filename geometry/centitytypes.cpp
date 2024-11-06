@@ -407,24 +407,26 @@ vtkSmartPointer<vtkActor> CDistance::pointToLine()
     }
 
     // 计算垂直向量
-    QVector3D normalVertical = QVector3D::crossProduct(lineVec, vec);
+    // QVector3D normalVertical = QVector3D::crossProduct(lineVec, vec);
 
     // 得到点到直线的距离
+    // double distance = getdistanceline();
+    // 计算从直线起点到点的向量
     QVector3D pointToLineVec(glbPos_begin.x - glbline_begin.x, glbPos_begin.y - glbline_begin.y
                              , glbPos_begin.z - glbline_begin.z);
-    double distance = getdistanceline();
 
-    // 计算落点
-    CPosition projection;
-    projection.x = (distance * normalVertical.x() - glbPos_begin.x) / 2.0;
-    projection.y = (distance * normalVertical.y() - glbPos_begin.y) / 2.0;
-    projection.z = (distance * normalVertical.z() - glbPos_begin.z) / 2.0;
+    // 计算点积 v · w
+    double dotProduct = QVector3D::dotProduct(pointToLineVec, lineVec);
 
+    // 计算垂足
+    // 垂足计算公式
+    // p = p0 + v.w.w / |w|^2
+    QVector3D projection = QVector3D(lineVec_begin) + dotProduct * lineVec;
 
     // 创建点集，并插入定义线的两个点
     auto points = vtkSmartPointer<vtkPoints>::New();
     points->InsertNextPoint(glbPos_begin.x, glbPos_begin.y, glbPos_begin.z);
-    points->InsertNextPoint(projection.x, projection.y, projection.z);
+    points->InsertNextPoint(projection.x(), projection.y(), projection.z());
 
     // 创建线源
     auto lines = vtkSmartPointer<vtkCellArray>::New();
