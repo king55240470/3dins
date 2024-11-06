@@ -897,3 +897,8 @@ ChosenCEntityMgr *MainWindow::getChosenListMgr()
     return m_ChosenListMgr;
 }
 
+PointCloudListMgr *MainWindow::getPointCloudListMgr()
+{
+    return pWinPclMgr;
+}
+
