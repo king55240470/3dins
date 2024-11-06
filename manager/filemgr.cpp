@@ -3,7 +3,9 @@
 FileMgr::FileMgr() {
 
 }
-
+pcl::PointCloud<pcl::PointXYZ>::Ptr& FileMgr:: getCloudPtr(){
+    return cloudptr;
+}
 QMap<QString, bool>& FileMgr::getModelFileMap(){
     return modelFileLMap;
 }
