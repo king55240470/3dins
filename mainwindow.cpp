@@ -83,6 +83,13 @@ void MainWindow::setupUi(){
         showPresetElemWidget(6);
     });
 
+    QMenu *cloudOperation=bar->addMenu("点云操作");
+    QAction* compareAction=cloudOperation->addAction("点云对比");
+    QAction* alignAction=cloudOperation->addAction("点云对齐");
+    connect(alignAction,&QAction::triggered,this,[&](){
+        pWinVtkWidget->onAlign();
+    });
+
     // 添加竖线分隔符
     QFrame *line = new QFrame();
     line->setFrameShape(QFrame::VLine);  // 设置形状为垂直线
@@ -217,6 +224,11 @@ void MainWindow::openFile(){
             pWinFileManagerWidget->openModelFile(fileName, filePath);
         } else if (filePath.endsWith("pcd")) {
             pWinFileManagerWidget->openMeasuredFile(fileName, filePath);
+        }else if(filePath.endsWith("txt")){
+            QFile file(filePath);
+            QDataStream in(&file);
+            in>>*m_ObjectListMgr;
+            file.close();
         }
     }
 
