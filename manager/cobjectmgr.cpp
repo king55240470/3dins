@@ -61,5 +61,34 @@ QVector<CObject *> &CObjectMgr::getObjectList()
     return m_objectList;
 }
 
+QDataStream& operator<<(QDataStream& out, const CObjectMgr& mgr){
+    out<<mgr.m_objectList.count();
+    qDebug()<<mgr.m_objectList.count();
+
+    for(CObject* obj:mgr.m_objectList){
+        if(obj){
+            obj->serialize(out);
+        }
+    }
+    return out;
+}
+
+QDataStream& operator>>(QDataStream& in, CObjectMgr& mgr){
+    mgr.RemoveAll();
+
+    qsizetype objectCount;
+    in >> objectCount;
+
+    // 反序列化每个对象
+    for (int i = 0; i < objectCount; ++i)
+    {
+        CObject* obj = new CObject();
+        obj->deserialize(in);
+        mgr.Add(obj);
+    }
+
+    return in;
+}
+
 
 

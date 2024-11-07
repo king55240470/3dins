@@ -224,6 +224,11 @@ void MainWindow::openFile(){
             pWinFileManagerWidget->openModelFile(fileName, filePath);
         } else if (filePath.endsWith("pcd")) {
             pWinFileManagerWidget->openMeasuredFile(fileName, filePath);
+        }else if(filePath.endsWith("txt")){
+            QFile file(filePath);
+            QDataStream in(&file);
+            in>>*m_ObjectListMgr;
+            file.close();
         }
     }
 

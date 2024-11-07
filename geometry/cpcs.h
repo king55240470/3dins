@@ -15,16 +15,9 @@ public:
     int m_nPcsID;
 
     //序列化/反序列化CPcs对象
-    friend QDataStream& operator<<(QDataStream& out, const CPcs& pcs) {
-        out << pcs.m_mat << pcs.m_poso << pcs.m_nRef << pcs.m_nPcsID;
-        return out;
-    }
+    friend QDataStream& operator<<(QDataStream& out, const CPcs& pcs);
 
-
-    friend QDataStream& operator>>(QDataStream& in, CPcs& pcs) {
-        in >> pcs.m_mat >> pcs.m_poso >> pcs.m_nRef >> pcs.m_nPcsID;
-        return in;
-    }
+    friend QDataStream& operator>>(QDataStream& in, CPcs& pcs);
 
     //ID
     int nPcsID() const;
