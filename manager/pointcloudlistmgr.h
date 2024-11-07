@@ -12,10 +12,17 @@ class PointCloudListMgr
 {
 public:
     PointCloudListMgr();
-    QVector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr>& getPclList();
+    std::unordered_map<QString, pcl::PointCloud<pcl::PointXYZRGB>> &getPointCloudList();
+    QVector<pcl::PointCloud<pcl::PointXYZRGB>>& getProductCloudList();
+
+    void CreateCloudFromFile(QString str);// 给打开的文件分配点云
 
 private:
-    QVector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> pointCloudList; // 存储所有打开的点云
+    // 存储所有打开的点云和对应的文件路径
+    std::unordered_map<QString, pcl::PointCloud<pcl::PointXYZRGB>> pointCloudList;
+
+    // 存储所有生成的点云，通过对比和拟合等
+    QVector<pcl::PointCloud<pcl::PointXYZRGB>> productCloudList;
 
 };
 

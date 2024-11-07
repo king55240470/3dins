@@ -68,42 +68,26 @@ public:
     VtkWidget(QWidget *parent = nullptr);
     ~VtkWidget() {};
 
-    // 配置vtk窗口
-    void setUpVtk(QVBoxLayout *layout);
-    // void setUpVtk();
+    void setUpVtk(QVBoxLayout *layout);// 配置vtk窗口
+    vtkSmartPointer<vtkRenderWindow> getRenderWindow();// 获取m_renWin
+    vtkSmartPointer<vtkRenderer>& getRenderer();// 获取渲染器
 
-    // 配置点云文件
-    void setUpPcl();
+    void UpdateInfo();// 在notifsubscribey里更新信息
+    void reDrawCentity();// 重新绘制基本图形和坐标轴
+    void reDrawCloud();// 重新绘制点云
 
-    // 获取m_renWin
-    vtkSmartPointer<vtkRenderWindow> getRenderWindow();
-
-    // 获取渲染器和交互器
-    vtkSmartPointer<vtkRenderer>& getRenderer();
-
-    // 在notifsubscribey里更新信息
-    void UpdateInfo();
-
-    // 当添加新的元素后，遍历m_entityList重新绘制
-    void reDraw();
-
-    // 创建左下角坐标轴
-    void createAxes();
+    void createAxes();// 创建左下角坐标轴
 
     // 切换相机视角
     void onTopView(); // 俯视
     void onRightView(); // 右侧
     void onFrontView(); // 正视
-    void onIsometricView(); // 旋转立体视角
+    void onIsometricView(); // 旋转立体
 
-    // 将点云转为vtk的顶点图形并显示
-    void showConvertedCloud();
-
-    // 比较两个点云
-    void onCompare();
-
-    // 用于显示对比完成的两个点云
-    void VtkWidget::showConvertedCloud(pcl::PointCloud<pcl::PointXYZRGB> cloud_rgb_1);
+    void showConvertedCloud();// 将点云转为vtk的顶点图形并显示
+    void onCompare();// 比较两个点云
+    void showConvertedCloud(pcl::PointCloud<pcl::PointXYZRGB> cloud_rgb_1);// 显示对比完成的两个点云
+    QVector<vtkSmartPointer<vtkActor>> &getCloudActors();
 
 private:
     QVTKOpenGLNativeWidget* vtkWidget; // vtk窗口
@@ -112,9 +96,10 @@ private:
     // 创建渲染器、渲染窗口和交互器
     vtkSmartPointer<vtkRenderer> renderer;
     vtkSmartPointer<vtkGenericOpenGLRenderWindow> renWin;
-
     // 创建交互部件来封装坐标器
     vtkSmartPointer<vtkOrientationMarkerWidget> orientationWidget;
+
+    QVector<vtkSmartPointer<vtkActor>> cloudActors; // 管理点云生成的actor
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud1; // 基准点云1
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud2;
