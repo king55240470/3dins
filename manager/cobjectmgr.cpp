@@ -63,7 +63,7 @@ QVector<CObject *> &CObjectMgr::getObjectList()
 
 QDataStream& operator<<(QDataStream& out, const CObjectMgr& mgr){
     out<<mgr.m_objectList.count();
-    qDebug()<<mgr.m_objectList.count();
+    qDebug()<<"mgr.m_objectList.count:"<<mgr.m_objectList.count();
 
     for(CObject* obj:mgr.m_objectList){
         if(obj){
@@ -78,6 +78,7 @@ QDataStream& operator>>(QDataStream& in, CObjectMgr& mgr){
 
     qsizetype objectCount;
     in >> objectCount;
+    qDebug()<<"objectcount:"<<objectCount;
 
     // 反序列化每个对象
     for (int i = 0; i < objectCount; ++i)
