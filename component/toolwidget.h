@@ -100,7 +100,7 @@ public slots:
     void onConstructCone();
     void onConstructSphere();
     void onConstructDistance();
-
+    void onFindPlane();
 
 
 private:
