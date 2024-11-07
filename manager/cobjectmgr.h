@@ -27,6 +27,11 @@ public:
     void SelectAll(bool);
     CObject* findObject();
     QVector<CObject*>& getObjectList();
+
+    //序列化与反序列化
+    friend QDataStream& operator<<(QDataStream& out, const CObjectMgr& mgr);
+
+    friend QDataStream& operator>>(QDataStream& in, CObjectMgr& mgr);
 };
 
 #endif // COBJECTMGR_H
