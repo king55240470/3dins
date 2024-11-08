@@ -389,9 +389,16 @@ void VtkWidget::showConvertedCloud(pcl::PointCloud<pcl::PointXYZRGB> cloud_rgb_1
 // 比较两个点云的处理函数
 void VtkWidget::onCompare()
 {
+    if(m_pMainWin->getpWinFileMgr()->getModelFileMap().empty() ||
+        m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().empty()){
+        QMessageBox::warning(this, "Warning", "打开的文件不足");
+        return;
+    }
+
     // 获取打开的模型文件和实测文件
     auto file_model = m_pMainWin->getpWinFileMgr()->getModelFileMap().lastKey();
     auto file_measure = m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().lastKey();
+
 
     // 初始化两个点云
     pcl::io::loadPLYFile(file_model.toStdString(), *cloud1);
