@@ -5,20 +5,7 @@
 #include <QOpenGLContext>
 #include <qopenglfunctions.h>
 #include <QMessageBox>
-#include <pcl/common/common.h>
-#include <pcl/io/ply_io.h>
-#include <pcl/io/pcd_io.h>
-#include <cmath>
-#include <limits>
-#include <pcl/common/distances.h>  // PCL距离计算函数
-#include <pcl/visualization/pcl_visualizer.h>  // PCL可视化库
-#include <pcl/registration/icp.h>
-#include <pcl/kdtree/kdtree_flann.h>
-#include <pcl/filters/voxel_grid.h>
-#include <pcl/features/normal_3d.h>
-#include <pcl/features/fpfh.h>
-#include <pcl/registration/sample_consensus_prerejective.h>
-#include <pcl/registration/icp.h>
+
 
 // 渲染窗口大小
 #define WIDTH 1000
@@ -89,12 +76,6 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
 
 }
 
-// 配置点云的相关
-void VtkWidget::setUpPcl()
-{
-
-}
-
 vtkSmartPointer<vtkRenderWindow> VtkWidget::getRenderWindow(){
     return renWin;
 }
@@ -104,12 +85,13 @@ vtkSmartPointer<vtkRenderer>& VtkWidget::getRenderer(){
     return renderer;
 }
 
+// 刷新vtk窗口
 void VtkWidget::UpdateInfo(){
-    reDraw();
-    showConvertedCloud();
+    reDrawCentity();
+    reDrawCloud();
 }
 
-void VtkWidget::reDraw(){
+void VtkWidget::reDrawCentity(){
     // 获取渲染器中的所有 actor
     auto* actorCollection = getRenderer()->GetViewProps();
 
@@ -136,15 +118,7 @@ void VtkWidget::reDraw(){
     for(auto i = 0;i < entitylist.size();i++){
         int flag=0;
         if(constructEntityList.isEmpty()){//没有构建的元素
-            // vtkActor* entity_actor = entitylist[i]->draw();
-            // // 遍历pickedActors，如果entitylist中有选中的成员则保持选中状态
-            // for(auto &pair : pickedActors){
-            //     // 判断entity_actor属性
-            //     if(entity_actor->GetProperty() == pair.second){
-            //         m_clickstyle->BackChoosen(entity_actor); // 高亮显示
-            //         getRenderer()->AddActor(entity_actor);
-            //     }
-            // }
+
             getRenderer()->AddActor(entitylist[i]->draw());
         }
         else{
@@ -170,6 +144,11 @@ void VtkWidget::reDraw(){
             getRenderer()->AddActor(object->draw());
     }
 
+}
+
+void VtkWidget::reDrawCloud()
+{
+    showConvertedCloud();
 }
 
 // 创建全局坐标器
@@ -271,26 +250,34 @@ void VtkWidget::showConvertedCloud(){
     auto measured_map = m_pMainWin->getpWinFileMgr()->getMeasuredFileMap();
     auto model_map = m_pMainWin->getpWinFileMgr()->getModelFileMap();
 
+
+    auto cloud_rgb_1(new pcl::PointCloud<pcl::PointXYZRGB>);
     // 分别用迭代器遍历两个map的所有文件
-    pcl::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>> cloud_1 = std::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>();
-    // auto cloud_1(new pcl::PointCloud<pcl::PointXYZ>);
-    for(auto item = measured_map.begin();item != measured_map.end() ;item++){
+    for(auto item = measured_map.begin(); item != measured_map.end(); item++){
         // 如果文件不隐藏
         if(item.value()){
-            pcl::io::loadPCDFile(item.key().toStdString(), *cloud_1);
-            m_pMainWin->getpWinFileMgr()->cloudptr=cloud_1;
+            pcl::io::loadPCDFile(item.key().toStdString(), *cloud_rgb_1);
+
+            // 将临时点云指针传给toolwidget，暂时查看拟合功能
+            m_pMainWin->getpWinFileMgr()->cloudptr=pcl::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>>(cloud_rgb_1);
+
             // 将cloud转换为VTK的点集
             vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-            points->SetNumberOfPoints(cloud_1->points.size());
-            for (size_t i = 0; i < cloud_1->points.size(); ++i)
+            vtkSmartPointer<vtkUnsignedCharArray> colors = vtkSmartPointer<vtkUnsignedCharArray>::New();
+            colors->SetNumberOfComponents(3);
+            colors->SetName("Colors");
+
+            points->SetNumberOfPoints(cloud_rgb_1->points.size());
+            for (size_t i = 0; i < cloud_rgb_1->points.size(); ++i)
             {
-                points->SetPoint(i, cloud_1->points[i].x, cloud_1->points[i].y, cloud_1->points[i].z);
+                points->SetPoint(i, cloud_rgb_1->points[i].x, cloud_rgb_1->points[i].y, cloud_rgb_1->points[i].z);
             }
 
             vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
             polyData->SetPoints(points);
+            polyData->GetPointData()->SetScalars(colors);
 
-            // 创建一个顶点过滤器来生成顶点表示（可选，但通常用于点云）
+            // 创建一个顶点过滤器来生成顶点表示
             vtkSmartPointer<vtkVertexGlyphFilter> glyphFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
             glyphFilter->SetInputData(polyData);
             glyphFilter->Update();
@@ -303,21 +290,29 @@ void VtkWidget::showConvertedCloud(){
 
             vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
             actor->SetMapper(mapper);
-            actor->GetProperty()->SetPointSize(6); // 设置点大小
+            actor->GetProperty()->SetPointSize(5); // 设置点大小
             actor->GetProperty()->SetColor(0.5, 0.5, 0.5);
 
+            // getCloudActors().push_back(actor); // 将转化后的点云存入列表
             renderer->AddActor(actor);
         }
     }
-  pcl::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>> cloud_2 = std::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>();
-    //auto cloud_2(new pcl::PointCloud<pcl::PointXYZ>);
+
+    pcl::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>> cloud_2 = std::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>();
+    //auto cloud_2(new pcl::PointCloud<pcl::PointXYZRGB>);
     for(auto item = model_map.begin();item != model_map.end() ;item++){
         // 如果文件不隐藏
         if(item.value()){
             pcl::io::loadPLYFile(item.key().toStdString(), *cloud_2);
+            // 将加载的点云存入列表
             m_pMainWin->getpWinFileMgr()->cloudptr=cloud_2;
+
             // 将cloud转换为VTK的点集
             vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+            vtkSmartPointer<vtkUnsignedCharArray> colors = vtkSmartPointer<vtkUnsignedCharArray>::New();
+            colors->SetNumberOfComponents(3);
+            colors->SetName("Colors");
+
             points->SetNumberOfPoints(cloud_2->points.size());
             for (size_t i = 0; i < cloud_2->points.size(); ++i)
             {
@@ -326,6 +321,7 @@ void VtkWidget::showConvertedCloud(){
 
             vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
             polyData->SetPoints(points);
+            polyData->GetPointData()->SetScalars(colors);
 
             // 创建一个顶点过滤器来生成顶点表示（可选，但通常用于点云）
             vtkSmartPointer<vtkVertexGlyphFilter> glyphFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
@@ -341,7 +337,7 @@ void VtkWidget::showConvertedCloud(){
             vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
             actor->SetMapper(mapper);
             actor->GetProperty()->SetPointSize(5); // 设置点大小
-            actor->GetProperty()->SetColor(0.3, 0.3, 0.3);
+            actor->GetProperty()->SetColor(0.5, 0.5, 0.5);
 
             renderer->AddActor(actor);
         }
@@ -350,24 +346,67 @@ void VtkWidget::showConvertedCloud(){
     getRenderWindow()->Render(); // 刷新渲染窗口
 }
 
-// void VtkWidget::showConvertedCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, const std::string &name){
-// }
+void VtkWidget::showConvertedCloud(pcl::PointCloud<pcl::PointXYZRGB> cloud_rgb_1){
+    // 将cloud转换为VTK的点集
+    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+    vtkSmartPointer<vtkUnsignedCharArray> colors = vtkSmartPointer<vtkUnsignedCharArray>::New();
+    colors->SetNumberOfComponents(3);
+    colors->SetName("Colors");
+
+    points->SetNumberOfPoints(cloud_rgb_1.points.size());
+    for (size_t i = 0; i < cloud_rgb_1.points.size(); ++i)
+    {
+        points->SetPoint(i, cloud_rgb_1.points[i].x, cloud_rgb_1.points[i].y, cloud_rgb_1.points[i].z);
+        unsigned char r = static_cast<unsigned char>(cloud_rgb_1.points[i].r);
+        unsigned char g = static_cast<unsigned char>(cloud_rgb_1.points[i].g);
+        unsigned char b = static_cast<unsigned char>(cloud_rgb_1.points[i].b);
+        colors->InsertNextTuple3(r, g, b);
+    }
+
+    vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
+    polyData->SetPoints(points);
+    polyData->GetPointData()->SetScalars(colors);
+
+    // 创建一个顶点过滤器来生成顶点表示（可选，但通常用于点云）
+    vtkSmartPointer<vtkVertexGlyphFilter> glyphFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
+    glyphFilter->SetInputData(polyData);
+    glyphFilter->Update();
+
+    polyData = glyphFilter->GetOutput();
+
+    // 创建映射器并将glyphFilter的几何数据输入
+    vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    mapper->SetInputData(polyData);
+
+    vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
+    actor->SetMapper(mapper);
+    actor->GetProperty()->SetPointSize(6); // 设置点大小
+
+    renderer->AddActor(actor);
+    getRenderWindow()->Render(); // 刷新渲染窗口
+}
 
 // 比较两个点云的处理函数
 void VtkWidget::onCompare()
 {
+    if(m_pMainWin->getpWinFileMgr()->getModelFileMap().empty() ||
+        m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().empty()){
+        QMessageBox::warning(this, "Warning", "打开的文件不足");
+        return;
+    }
+
     // 获取打开的模型文件和实测文件
-    // auto file_model = m_pMainWin->getpWinFileMgr()->getModelFileMap().firstKey();
-    auto file_model = m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().firstKey();
+    auto file_model = m_pMainWin->getpWinFileMgr()->getModelFileMap().lastKey();
     auto file_measure = m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().lastKey();
 
+
     // 初始化两个点云
-    pcl::io::loadPCDFile(file_model.toStdString(), *cloud1);
+    pcl::io::loadPLYFile(file_model.toStdString(), *cloud1);
     pcl::io::loadPCDFile(file_measure.toStdString(), *cloud2);
 
     // 检查点云是否为空
     if (cloud1->empty() || cloud2->empty()) {
-        QMessageBox::warning(this, "Warning", "One or both point clouds are empty!");
+        QMessageBox::warning(this, "Warning", "其中一个或两个点云为空!");
         return;
     }
 
@@ -606,7 +645,7 @@ void VtkWidget::onCompare()
 void VtkWidget::onAlign()
 {
     // 获取打开的模型文件和实测文件
-    auto file_model = m_pMainWin->getpWinFileMgr()->getModelFileMap().firstKey();
+    auto file_model = m_pMainWin->getpWinFileMgr()->getModelFileMap().lastKey();
     auto file_measure = m_pMainWin->getpWinFileMgr()->getModelFileMap().lastKey();
 
     // 初始化两个点云
