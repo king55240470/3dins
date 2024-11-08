@@ -224,6 +224,11 @@ void MainWindow::openFile(){
             pWinFileManagerWidget->openModelFile(fileName, filePath);
         } else if (filePath.endsWith("pcd")) {
             pWinFileManagerWidget->openMeasuredFile(fileName, filePath);
+        }else if(filePath.endsWith("txt")){
+            QFile file(filePath);
+            QDataStream in(&file);
+            in>>*m_ObjectListMgr;
+            file.close();
         }
     }
 
@@ -905,6 +910,11 @@ FileMgr *MainWindow::getpWinFileMgr(){
 ChosenCEntityMgr *MainWindow::getChosenListMgr()
 {
     return m_ChosenListMgr;
+}
+
+PointCloudListMgr *MainWindow::getPointCloudListMgr()
+{
+    return pWinPclMgr;
 }
 
 void MainWindow::LoadPointFitting(){
