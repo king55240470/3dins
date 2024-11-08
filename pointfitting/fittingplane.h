@@ -9,7 +9,7 @@ class FittingPlane
 {
 public:
     FittingPlane();
-    void RANSAC(pcl::PointXYZRGB,pcl::PointCloud<pcl::PointXYZRGB>::Ptr);
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr RANSAC(pcl::PointXYZRGB,pcl::PointCloud<pcl::PointXYZRGB>::Ptr);
     bool isPointInPlane(const pcl::PointXYZRGB&);
     void visualizePlane();
 
