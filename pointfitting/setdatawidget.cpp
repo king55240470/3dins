@@ -15,8 +15,8 @@ void setDataWidget::setPlaneData(pcl::PointXYZRGB searchPoint,pcl::PointCloud<pc
     p_dialog->resize(400,150);
     p_dialog->setWindowTitle("设置邻域和阈值");
     p_layout = new QGridLayout(p_dialog);
-    p_lab1 = new QLabel("请输入邻域：");
-    p_lab2 = new QLabel("请输入距离阈值：");
+    p_lab1 = new QLabel("请输入邻域（一般设置为0.1）：");
+    p_lab2 = new QLabel("请输入距离阈值（一般设置为0.01）：");
     p_rad = new QLineEdit();
     p_dis = new QLineEdit();
     p_btn = new QPushButton("确定");
