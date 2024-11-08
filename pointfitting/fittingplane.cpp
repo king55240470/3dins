@@ -35,7 +35,7 @@ FittingPlane::FittingPlane()
 
 }
 
-void FittingPlane::RANSAC(pcl::PointXYZRGB searchPoint,pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudptr)
+pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingPlane::RANSAC(pcl::PointXYZRGB searchPoint,pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudptr)
 {
     //创建KD树用于邻域搜索
     pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree;
@@ -89,7 +89,7 @@ void FittingPlane::RANSAC(pcl::PointXYZRGB searchPoint,pcl::PointCloud<pcl::Poin
 
     } else {
         PCL_ERROR("Couldn't find more points within radius\n");
-        return;
+        return 0;
     }
 }
 
