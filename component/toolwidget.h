@@ -32,7 +32,7 @@ void onConstructSphere();
 void onCreateCoord();
 void onSpinCoord();
 void onSaveCoord();
-//Save
+// //Save
 void onSavePdf();
 void onSaveExcel();
 void onSaveTxt();
@@ -101,6 +101,7 @@ public slots:
     void onConstructSphere();
     void onConstructDistance();
     void onFindPlane();
+
 
 
 private:

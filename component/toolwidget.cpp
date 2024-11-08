@@ -75,7 +75,6 @@ ToolWidget::ToolWidget(QWidget *parent)
     m_pMainWin =(MainWindow*)parent;
 
 
-
     resize(400,250);
 
     m_nSaveActionNum=5;
@@ -470,6 +469,10 @@ void ToolWidget::connectActionWithF(){
     connect(save_actions_[save_action_name_list_.indexOf("txt")],&QAction::triggered,&  tool_widget::onSaveTxt);
     connect(save_actions_[save_action_name_list_.indexOf("pdf")],&QAction::triggered,&  tool_widget::onSavePdf);
     connect(save_actions_[save_action_name_list_.indexOf("image")],&QAction::triggered,&  tool_widget::onSaveImage);
+
+    // connect(save_actions_[save_action_name_list_.indexOf("txt")],&QAction::triggered,this,&  ToolWidget::onSaveTxt);
+
+
     //坐标系
     connect(coord_actions_[coord_action_name_list_.indexOf("创建坐标系")],&QAction::triggered,this,[&](){
         tool_widget::onCreateCoord();
@@ -501,6 +504,37 @@ void ToolWidget::connectActionWithF(){
         m_pMainWin->onIsometricViewClicked();
     });
 }
+
+// void ToolWidget::onSaveTxt(){
+//     QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("txt(*.txt )"));
+
+//     if (filePath.isEmpty()){
+//         return ;
+//     }
+
+//     if (QFileInfo(filePath).suffix().isEmpty())
+//         filePath.append(".txt");
+
+//     // 创建 QFile 对象
+//     QFile file(filePath);
+
+//     // 打开文件以进行写入
+//     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+//         qWarning() << "无法打开文件:" << file.errorString();
+//         return;
+//     }
+
+//     QDataStream out(&file);
+//     out.setVersion(QDataStream::Qt_6_0);
+
+//     // 写入内容
+//     out<<*(m_pMainWin->getObjectListMgr()); // 返回为指针，需要解引用
+
+//     // 关闭文件
+//     file.close();
+//     QMessageBox::information(nullptr, "提示", "保存成功");
+
+// }
 
 
 
@@ -705,11 +739,14 @@ void   onSaveExcel(){
     excel.dynamicCall("Quit()");		//关闭excel
     QMessageBox::information(nullptr, "提示", "保存成功");
 }
+
 void  onSaveTxt(){
     QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("txt(*.txt )"));
+
     if (filePath.isEmpty()){
         return ;
     }
+
     if (QFileInfo(filePath).suffix().isEmpty())
         filePath.append(".txt");
 
@@ -734,6 +771,7 @@ void  onSaveTxt(){
     QMessageBox::information(nullptr, "提示", "保存成功");
 
 }
+
 void   onSaveWord(){
     QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("word(*.doc *.docx)"));
     if (filePath.isEmpty()){
