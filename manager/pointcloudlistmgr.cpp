@@ -7,7 +7,7 @@ QVector<pcl::PointCloud<pcl::PointXYZRGB>> &PointCloudListMgr::getProductCloudLi
     return productCloudList;
 }
 
-std::unordered_map<QString, pcl::PointCloud<pcl::PointXYZRGB>> &PointCloudListMgr::getPointCloudList()
+QMap<QString, pcl::PointCloud<pcl::PointXYZRGB>> &PointCloudListMgr::getPointCloudList()
 {
     return pointCloudList;
 }
@@ -19,5 +19,5 @@ void PointCloudListMgr::CreateCloudFromFile(QString str)
     pcl::io::loadPCDFile(str.toStdString(), cloud);
 
     // 将新的点云加入容器
-    getPointCloudList()[str] = cloud;
+    getPointCloudList().insert(str, cloud);
 }

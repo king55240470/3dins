@@ -258,7 +258,7 @@ void VtkWidget::showConvertedCloud(){
         if(item.value()){
             pcl::io::loadPCDFile(item.key().toStdString(), *cloud_rgb_1);
 
-            // 临时点云，用来看拟合功能
+            // 将临时点云指针传给toolwidget，暂时查看拟合功能
             m_pMainWin->getpWinFileMgr()->cloudptr=pcl::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>>(cloud_rgb_1);
 
             // 将cloud转换为VTK的点集
@@ -293,6 +293,7 @@ void VtkWidget::showConvertedCloud(){
             actor->GetProperty()->SetPointSize(5); // 设置点大小
             actor->GetProperty()->SetColor(0.5, 0.5, 0.5);
 
+            // getCloudActors().push_back(actor); // 将转化后的点云存入列表
             renderer->AddActor(actor);
         }
     }
@@ -389,8 +390,7 @@ void VtkWidget::showConvertedCloud(pcl::PointCloud<pcl::PointXYZRGB> cloud_rgb_1
 void VtkWidget::onCompare()
 {
     // 获取打开的模型文件和实测文件
-    // auto file_model = m_pMainWin->getpWinFileMgr()->getModelFileMap().lastKey();
-    auto file_model = m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().lastKey();
+    auto file_model = m_pMainWin->getpWinFileMgr()->getModelFileMap().lastKey();
     auto file_measure = m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().lastKey();
 
     // 初始化两个点云
@@ -638,7 +638,7 @@ void VtkWidget::onCompare()
 void VtkWidget::onAlign()
 {
     // 获取打开的模型文件和实测文件
-    auto file_model = m_pMainWin->getpWinFileMgr()->getModelFileMap().firstKey();
+    auto file_model = m_pMainWin->getpWinFileMgr()->getModelFileMap().lastKey();
     auto file_measure = m_pMainWin->getpWinFileMgr()->getModelFileMap().lastKey();
 
     // 初始化两个点云
