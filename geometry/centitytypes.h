@@ -399,12 +399,14 @@ class CDistance : public CEntity{
     CCircle circle;
     CLine line;
     double distance;
+
 public:
     CDistance(){
         uptolerance=0.0;
         undertolerance=0.0;
         m_strAutoName = QString("距离%1").arg(currentCdistacneId);
         m_strCName = QString("距离%1").arg(currentCdistacneId);
+        currentCdistacneId++;
     }
     double getUptolerance();
     double getUndertolerance();
