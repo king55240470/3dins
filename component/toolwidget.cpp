@@ -60,6 +60,11 @@
 #include"constructor/distanceconstructor.h"
 #include"constructor/distanceconstructor.h"
 
+#include <pcl/point_cloud.h>     // PCL 的点云类
+#include <pcl/visualization/pcl_visualizer.h> // PCL 的可视化工具
+
+#include "pointfitting/fittingplane.h"//拟合平面算法
+
 
 int getImagePaths(const QString& directory, QStringList &iconPaths, QStringList &iconNames);
 
@@ -68,7 +73,6 @@ ToolWidget::ToolWidget(QWidget *parent)
     QVBoxLayout *layout = new QVBoxLayout(this);
 
     m_pMainWin =(MainWindow*)parent;
-
 
 
     resize(400,250);
@@ -442,7 +446,7 @@ void ToolWidget::connectActionWithF(){
     connect(find_actions_[find_action_name_list_.indexOf("点")],&QAction::triggered,&  tool_widget::onFindPoint);
     connect(find_actions_[find_action_name_list_.indexOf("线")],&QAction::triggered,&  tool_widget::onFindLine);
     connect(find_actions_[find_action_name_list_.indexOf("圆")],&QAction::triggered,&  tool_widget::onFindCircle);
-    connect(find_actions_[find_action_name_list_.indexOf("平面")],&QAction::triggered,&  tool_widget::onFindPlan);
+    connect(find_actions_[find_action_name_list_.indexOf("平面")],&QAction::triggered,this,&  ToolWidget:: onFindPlane);
     connect(find_actions_[find_action_name_list_.indexOf("矩形")],&QAction::triggered,&  tool_widget::onFindRectangle);
     connect(find_actions_[find_action_name_list_.indexOf("圆柱")],&QAction::triggered,&  tool_widget::onFindCylinder);
     connect(find_actions_[find_action_name_list_.indexOf("圆锥")],&QAction::triggered,&  tool_widget::onFindCone);
@@ -465,6 +469,10 @@ void ToolWidget::connectActionWithF(){
     connect(save_actions_[save_action_name_list_.indexOf("txt")],&QAction::triggered,&  tool_widget::onSaveTxt);
     connect(save_actions_[save_action_name_list_.indexOf("pdf")],&QAction::triggered,&  tool_widget::onSavePdf);
     connect(save_actions_[save_action_name_list_.indexOf("image")],&QAction::triggered,&  tool_widget::onSaveImage);
+
+    // connect(save_actions_[save_action_name_list_.indexOf("txt")],&QAction::triggered,this,&  ToolWidget::onSaveTxt);
+
+
     //坐标系
     connect(coord_actions_[coord_action_name_list_.indexOf("创建坐标系")],&QAction::triggered,this,[&](){
         tool_widget::onCreateCoord();
@@ -496,6 +504,37 @@ void ToolWidget::connectActionWithF(){
         m_pMainWin->onIsometricViewClicked();
     });
 }
+
+// void ToolWidget::onSaveTxt(){
+//     QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("txt(*.txt )"));
+
+//     if (filePath.isEmpty()){
+//         return ;
+//     }
+
+//     if (QFileInfo(filePath).suffix().isEmpty())
+//         filePath.append(".txt");
+
+//     // 创建 QFile 对象
+//     QFile file(filePath);
+
+//     // 打开文件以进行写入
+//     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+//         qWarning() << "无法打开文件:" << file.errorString();
+//         return;
+//     }
+
+//     QDataStream out(&file);
+//     out.setVersion(QDataStream::Qt_6_0);
+
+//     // 写入内容
+//     out<<*(m_pMainWin->getObjectListMgr()); // 返回为指针，需要解引用
+
+//     // 关闭文件
+//     file.close();
+//     QMessageBox::information(nullptr, "提示", "保存成功");
+
+// }
 
 
 
@@ -700,11 +739,14 @@ void   onSaveExcel(){
     excel.dynamicCall("Quit()");		//关闭excel
     QMessageBox::information(nullptr, "提示", "保存成功");
 }
+
 void  onSaveTxt(){
     QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("txt(*.txt )"));
+
     if (filePath.isEmpty()){
         return ;
     }
+
     if (QFileInfo(filePath).suffix().isEmpty())
         filePath.append(".txt");
 
@@ -729,6 +771,7 @@ void  onSaveTxt(){
     QMessageBox::information(nullptr, "提示", "保存成功");
 
 }
+
 void   onSaveWord(){
     QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("word(*.doc *.docx)"));
     if (filePath.isEmpty()){
@@ -1038,6 +1081,20 @@ void ToolWidget::onConstructDistance(){
     addToList(newDistance);
 }
 
+void ToolWidget:: onFindPlane(){
+    QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenCEntityList();
+    pcl::PointXYZRGB  point;
+    if(positions.size()==0)return ;
+    point.x=positions[0].x;
+    point.y=positions[0].y;
+    point.y=positions[0].y;
+    auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
+    if(cloudptr==nullptr) return ;
+    FittingPlane FindPlane;
+    FindPlane.RANSAC(point,cloudptr);
+    positions.clear();
+
+}
 void ToolWidget::updateele(){
 
     ElementListWidget* p_elementListwidget= m_pMainWin->getPWinElementListWidget();

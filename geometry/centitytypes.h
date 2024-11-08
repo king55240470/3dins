@@ -399,7 +399,7 @@ class CDistance : public CEntity{
     CCircle circle;
     CLine line;
     double distance;
-
+    CPosition Projection;
 public:
     CDistance(){
         uptolerance=0.0;
@@ -424,7 +424,7 @@ public:
     double getdistance();
     void setdistance(double d);
     bool judge();
-
+    void setProjection(CPosition pos);
     // 分别判断出了begin以外的图形是哪种
     bool isHavePlane = false;
     bool isHaveLine = false;

@@ -12,6 +12,7 @@
 #include "manager/cobjectmgr.h"
 #include "manager/cpcsmgr.h"
 #include "manager/chosencentitymgr.h"
+#include "manager/pointcloudlistmgr.h"
 
 class DataWidget;
 class ElementListWidget;
@@ -23,6 +24,7 @@ class ReportWidget;
 class LogWidget;
 class PresetElemWidget;
 class FileMgr;
+class FittingPlane;
 
 class MainWindow : public QMainWindow
 {
@@ -46,6 +48,9 @@ private:
     PresetElemWidget *pWinPresetElemWidget;
 
     FileMgr *pWinFileMgr;
+    PointCloudListMgr *pWinPclMgr;
+
+    FittingPlane *pWinFittingPlane;
 
     QMenuBar * bar;
 
@@ -108,6 +113,9 @@ public:
     void showPresetElemWidget(int);
     FileMgr *getpWinFileMgr();
     ChosenCEntityMgr *getChosenListMgr(); // 获取窗口选中点的管理器成员
+    PointCloudListMgr *getPointCloudListMgr(); // 获取打开的点云列表
+    void LoadPointFitting();
+    FittingPlane *getPWinFittingPlane();
 
 public:
     RELY_ON_CS_TYPE m_nRelyOnWhichCs;
