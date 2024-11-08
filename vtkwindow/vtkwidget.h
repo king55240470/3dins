@@ -45,6 +45,7 @@
 #include <vtkGlyphSource2D.h>
 #include <vtkTextActor.h>
 #include <vtkAutoInit.h>
+#include <vtkCommand.h>
 VTK_MODULE_INIT(vtkRenderingOpenGL2);
 VTK_MODULE_INIT(vtkInteractionStyle);
 VTK_MODULE_INIT(vtkRenderingVolumeOpenGL2);
@@ -95,6 +96,8 @@ public:
     // 用于显示对比完成的两个点云
     // void showConvertedCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, const std::string &name);
 
+    void OnMouseMove();
+
 private:
     QVTKOpenGLNativeWidget* vtkWidget; // vtk窗口
     MainWindow *m_pMainWin = nullptr; // mainwindow指针
@@ -109,6 +112,8 @@ private:
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud1; // 基准点云1
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud2;
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr comparisonCloud;
+
+    vtkSmartPointer<vtkTextActor> infoTextActor;// 浮动信息文本演员
 
 private slots:
     // 配准的函数

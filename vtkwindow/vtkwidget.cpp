@@ -87,6 +87,61 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
 
     getRenderWindow()->Render();
 
+    // 创建浮动信息的文本演员
+    infoTextActor = vtkSmartPointer<vtkTextActor>::New();
+    infoTextActor->GetPositionCoordinate()->SetCoordinateSystemToNormalizedDisplay();
+    infoTextActor->GetTextProperty()->SetFontSize(100);
+    infoTextActor->GetTextProperty()->SetColor(1,0, 0);
+    infoTextActor->SetInput("浮动窗口");
+    infoTextActor->SetVisibility(true); // 初始隐藏
+    renderer->AddActor(infoTextActor);
+    getRenderWindow()->Render();
+    qDebug()<<"执行了hhhhhhhhhhhhhh";
+    // 设置交互器的鼠标移动回调
+    auto interactor = renWin->GetInteractor();
+    interactor->AddObserver(vtkCommand::MouseMoveEvent, this, &VtkWidget::OnMouseMove);
+
+}
+void VtkWidget::OnMouseMove()
+{
+    //qDebug()<<"执行了move";
+    auto* interactor = renWin->GetInteractor();
+    int clickPos[2];
+    interactor->GetEventPosition(clickPos);
+
+    vtkSmartPointer<vtkPropPicker> picker = vtkSmartPointer<vtkPropPicker>::New();
+    picker->Pick(clickPos[0], clickPos[1], 0, renderer);
+
+    // 遍历所有高亮点，检测鼠标是否靠近
+    bool isMouseNearHighlightedPoint = false;
+    for (CPosition actor : m_pMainWin->getChosenListMgr()->getChosenCEntityList()) {
+        double* pos = picker->GetPickPosition();
+        double distance = std::sqrt(std::pow(actor.x - pos[0], 2) +
+                                    std::pow(actor.y - pos[1], 2) +
+                                    std::pow(actor.z - pos[2], 2));
+        if (distance < 0.1) { // 如果鼠标在高亮点附近
+            isMouseNearHighlightedPoint = true;
+            break;
+        }
+    }
+
+    vtkActor* pickedActor = picker->GetActor();
+    if (pickedActor) {
+        if (isMouseNearHighlightedPoint){
+            double* pos = picker->GetPickPosition();
+            std::ostringstream oss;
+            oss << "Point: (" << pos[0] << ", " << pos[1] << ", " << pos[2] << ")";
+            infoTextActor->SetInput(oss.str().c_str()); // 确保传入 const char*
+            infoTextActor->SetPosition(clickPos[0], clickPos[1]);
+            infoTextActor->SetVisibility(true);
+            qDebug()<<"执行了move";
+        }
+        qDebug()<<infoTextActor->GetVisibility();
+    } else {
+        infoTextActor->SetVisibility(false);
+        qDebug()<<"没有执行了move";
+    }
+    getRenderWindow()->Render();
 }
 
 // 配置点云的相关
@@ -425,7 +480,6 @@ void VtkWidget::onCompare()
     vtkSmartPointer<vtkUnsignedCharArray> colors = vtkSmartPointer<vtkUnsignedCharArray>::New();
     colors->SetNumberOfComponents(3);
     colors->SetNumberOfTuples(comparisonCloud->points.size());
-
     // 创建一个新的VTK单元格数组对象，用于存储顶点信息
     vtkSmartPointer<vtkCellArray> vertexCells = vtkSmartPointer<vtkCellArray>::New();
 
@@ -464,6 +518,8 @@ void VtkWidget::onCompare()
     renderer->AddActor(actor);
     renWin->Render();
 }
+
+
 
 //FPFH(粗配准)+ICP(精配准)
 void VtkWidget::onAlign()
