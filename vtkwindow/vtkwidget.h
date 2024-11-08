@@ -86,7 +86,7 @@ public:
 
     void showConvertedCloud();// 将点云转为vtk的顶点图形并显示
     void onCompare();// 比较两个点云
-    void showConvertedCloud(pcl::PointCloud<pcl::PointXYZRGB> cloud_rgb_1);// 显示对比完成的两个点云
+    void showProductCloud(pcl::PointCloud<pcl::PointXYZRGB> cloud_rgb_1);// 显示调用拟合对比等功能生成的点云
     QVector<vtkSmartPointer<vtkActor>> &getCloudActors();
 
 private:

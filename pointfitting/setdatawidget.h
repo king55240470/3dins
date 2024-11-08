@@ -15,7 +15,7 @@ class setDataWidget : public QWidget
 public:
     explicit setDataWidget(QWidget *parent = nullptr);
 
-    void setPlaneData();//设置拟合平面的领域和距离阈值的对话框
+    void setPlaneData();//设置拟合平面的领z域和距离阈值的对话框
     void PlaneBtnClick();
 
 private:

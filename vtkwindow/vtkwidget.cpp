@@ -346,7 +346,8 @@ void VtkWidget::showConvertedCloud(){
     getRenderWindow()->Render(); // 刷新渲染窗口
 }
 
-void VtkWidget::showConvertedCloud(pcl::PointCloud<pcl::PointXYZRGB> cloud_rgb_1){
+// 显示调用拟合对比等功能生成的点云
+void VtkWidget::showProductCloud(pcl::PointCloud<pcl::PointXYZRGB> cloud_rgb_1){
     // 将cloud转换为VTK的点集
     vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
     vtkSmartPointer<vtkUnsignedCharArray> colors = vtkSmartPointer<vtkUnsignedCharArray>::New();

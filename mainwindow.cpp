@@ -323,6 +323,7 @@ void MainWindow::loadManager()
     m_ChosenListMgr=new ChosenCEntityMgr();
 
     pWinFileMgr=new FileMgr();
+    pWinPclMgr = new PointCloudListMgr();
 
     m_pcsListMgr->Initialize();
 }
