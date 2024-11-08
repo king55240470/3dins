@@ -788,7 +788,7 @@ double CDistance::getdistanceline()
         begin.y + t * ABy,
         begin.z + t * ABz
     };
-
+    setProjection(projection);
     // 返回 P 到投影点的距离
     double projPx = P.x - projection.x;
     double projPy = P.y - projection.y;
@@ -815,4 +815,11 @@ bool CDistance::judge()
     }
     return qualified;
 }
+
+void CDistance::setProjection(CPosition pos)
+{
+    Projection=pos;
+}
+
+
 
