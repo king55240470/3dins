@@ -33,12 +33,7 @@ void setDataWidget::setPlaneData(pcl::PointXYZRGB searchPoint,pcl::PointCloud<pc
 void setDataWidget::PlaneBtnClick(){
     FittingPlane *plane=new FittingPlane();
     plane->setRadious(p_rad->text().toDouble());  // 设置半径
-<<<<<<< HEAD
     plane->setDistance(p_dis->text().toDouble());  // 设置距离阈值
-    plane->RANSAC(p_point, p_cloudptr);
-=======
-    plane->setDistance(p_dis->text().toInt());  // 设置距离阈值
     *fittingPlane=plane->RANSAC(p_point, p_cloudptr);
->>>>>>> 80ae09fa06a8b9e3451c52defcb08a33a8ba821e
     //p_dialog->close();
 }
