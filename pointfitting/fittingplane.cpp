@@ -37,8 +37,6 @@ FittingPlane::FittingPlane()
 
 void FittingPlane::RANSAC(pcl::PointXYZRGB searchPoint,pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudptr)
 {
-    p_setDataWidget->setPlaneData();
-
     //创建KD树用于邻域搜索
     pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree;
     kdtree.setInputCloud(cloudptr);
@@ -103,12 +101,12 @@ bool FittingPlane::isPointInPlane(const pcl::PointXYZRGB& point){
     return std::abs(d) <= 0.01;
 }
 
-double &FittingPlane::getRadious(){
-    return radious;
+void FittingPlane::setRadious(double rad){
+    radious=rad;
 }
 
-int &FittingPlane::getDistance(){
-    return distance;
+void FittingPlane::setDistance(int dis){
+    distance=dis;
 }
 
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingPlane::getPlaneCloud(){
