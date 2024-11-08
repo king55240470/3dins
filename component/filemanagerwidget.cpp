@@ -73,8 +73,9 @@ void FileManagerWidget::openModelFile(QString fileName,QString filePath){
     newFileItem->setData(true, Qt::UserRole+1); //设置初始数据以便按钮绘制（Qt::UserRole+1用来存储用户第二个定义的数据：按钮状态）
     modelFile->appendRow(newFileItem);
 
-    //在modelFileMap中添加新值
+    //在modelFileMap中添加添加新文件，并分配新的cloud
     m_pMainWin->getpWinFileMgr()->getModelFileMap().insert(filePath, true);
+    m_pMainWin->getPointCloudListMgr()->CreateCloudFromFile(filePath);
     m_pMainWin->NotifySubscribe();
 }
 
@@ -84,8 +85,9 @@ void FileManagerWidget::openMeasuredFile(QString fileName,QString filePath){
     newFileItem->setData(true, Qt::UserRole+1);
     measuredFile->appendRow(newFileItem);
 
-    //在measuredFileMap中添加新值
+    //在measuredFileMap中添加新文件，并分配新的cloud
     m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().insert(filePath, true);
+    // m_pMainWin->getPointCloudListMgr()->CreateCloudFromFile(filePath);
     m_pMainWin->NotifySubscribe();
 }
 

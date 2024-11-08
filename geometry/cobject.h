@@ -22,6 +22,7 @@ public:
 
     int m_nCsForm;//表示使用哪种坐标系
     QVector<CObject*>parent;
+    QString Form;
 public:
     CObject()
     {};
