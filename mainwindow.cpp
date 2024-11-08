@@ -11,8 +11,7 @@
 #include "geometry/centitytypes.h"
 #include "component/presetelemwidget.h"
 #include "manager/filemgr.h"
-#include "pointfitting/fittingplane.h"
-#include "pointfitting/setDataWidget.h"
+#include "pointfitting/setdatawidget.h"
 
 #include <QSettings>
 #include <QLabel>
@@ -31,7 +30,7 @@ MainWindow::MainWindow(QWidget *parent)
     setupUi();
     RestoreWidgets();
     loadManager();
-    LoadPointFitting();
+    LoadSetDataWidget();
     m_nRelyOnWhichCs=csRef;
 }
 
@@ -164,7 +163,6 @@ void MainWindow::setupUi(){
     spMainWindow->setHandleWidth(5);
 
     setCentralWidget(spMainWindow);
-
 
     ContralWidget * contralWidget=new ContralWidget(pWinToolWidget,this);
     connect(contralAction,&QAction::triggered,[=](){contralWidget->show();});
@@ -951,13 +949,8 @@ PointCloudListMgr *MainWindow::getPointCloudListMgr()
     return pWinPclMgr;
 }
 
-void MainWindow::LoadPointFitting(){
-    pWinFittingPlane=new FittingPlane();
+void MainWindow::LoadSetDataWidget(){
     pWinSetDataWidget=new setDataWidget();
-}
-
-FittingPlane *MainWindow::getPWinFittingPlane(){
-    return pWinFittingPlane;
 }
 
 setDataWidget *MainWindow::getPWinSetDataWidget(){
