@@ -32,12 +32,12 @@ void onConstructSphere();
 void onCreateCoord();
 void onSpinCoord();
 void onSaveCoord();
-//Save
-void onSavePdf();
-void onSaveExcel();
-void onSaveTxt();
-void onSaveWord();
-void onSaveImage();
+// //Save
+// void onSavePdf();
+// void onSaveExcel();
+// void onSaveTxt();
+// void onSaveWord();
+// void onSaveImage();
 //ViewAngle
 void onFrontViewAngle();
 void onIsometricViewAngle();
@@ -100,6 +100,13 @@ public slots:
     void onConstructCone();
     void onConstructSphere();
     void onConstructDistance();
+    void onFindPlane();
+
+    void onSavePdf();
+    void onSaveExcel();
+    void onSaveTxt();
+    void onSaveWord();
+    void onSaveImage();
 
 
 

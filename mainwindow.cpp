@@ -11,6 +11,7 @@
 #include "geometry/centitytypes.h"
 #include "component/presetelemwidget.h"
 #include "manager/filemgr.h"
+#include "pointfitting/fittingplane.h"
 
 #include <QSettings>
 #include <QLabel>
@@ -29,6 +30,7 @@ MainWindow::MainWindow(QWidget *parent)
     setupUi();
     RestoreWidgets();
     loadManager();
+    LoadPointFitting();
     m_nRelyOnWhichCs=csRef;
 }
 
@@ -79,6 +81,13 @@ void MainWindow::setupUi(){
     QAction* coneAction =presetMenu->addAction("圆锥");
     connect(coneAction,&QAction::triggered,this,[&](){
         showPresetElemWidget(6);
+    });
+
+    QMenu *cloudOperation=bar->addMenu("点云操作");
+    QAction* compareAction=cloudOperation->addAction("点云对比");
+    QAction* alignAction=cloudOperation->addAction("点云对齐");
+    connect(alignAction,&QAction::triggered,this,[&](){
+        pWinVtkWidget->onAlign();
     });
 
     // 添加竖线分隔符
@@ -215,6 +224,11 @@ void MainWindow::openFile(){
             pWinFileManagerWidget->openModelFile(fileName, filePath);
         } else if (filePath.endsWith("pcd")) {
             pWinFileManagerWidget->openMeasuredFile(fileName, filePath);
+        }else if(filePath.endsWith("txt")){
+            QFile file(filePath);
+            QDataStream in(&file);
+            in>>*m_ObjectListMgr;
+            file.close();
         }
     }
 
@@ -362,6 +376,7 @@ void MainWindow::OnPresetPoint(CPosition pt){
 
     //qDebug()<<"clicked3.1";
     CPoint *pPoint = (CPoint *)CreateEntity(enPoint);
+    pPoint->Form="预制";
     pPoint->SetPosition(pt);
     pPoint->m_CreateForm = ePreset;
     pPoint->m_pRefCoord = m_pcsListMgr->m_pPcsCurrent;
@@ -897,3 +912,15 @@ ChosenCEntityMgr *MainWindow::getChosenListMgr()
     return m_ChosenListMgr;
 }
 
+PointCloudListMgr *MainWindow::getPointCloudListMgr()
+{
+    return pWinPclMgr;
+}
+
+void MainWindow::LoadPointFitting(){
+    pWinFittingPlane=new FittingPlane();
+}
+
+FittingPlane *MainWindow::getPWinFittingPlane(){
+    return pWinFittingPlane;
+}
