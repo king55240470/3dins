@@ -394,12 +394,12 @@ void VtkWidget::onCompare()
     auto file_measure = m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().lastKey();
 
     // 初始化两个点云
-    pcl::io::loadPCDFile(file_model.toStdString(), *cloud1);
+    pcl::io::loadPLYFile(file_model.toStdString(), *cloud1);
     pcl::io::loadPCDFile(file_measure.toStdString(), *cloud2);
 
     // 检查点云是否为空
     if (cloud1->empty() || cloud2->empty()) {
-        QMessageBox::warning(this, "Warning", "One or both point clouds are empty!");
+        QMessageBox::warning(this, "Warning", "其中一个或两个点云为空!");
         return;
     }
 
