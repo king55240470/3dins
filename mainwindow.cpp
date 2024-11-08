@@ -43,7 +43,7 @@ void MainWindow::setupUi(){
     connect(openAction, &QAction::triggered, this, &MainWindow::openFile); // 连接打开文件的信号与槽
     //fileMenu->addAction(openAction);
     QAction *saveAction=fileMenu->addAction("保存文件");
-    //connect(saveAction, &QAction::triggered, this, &MainWindow::saveFile); // 连接保存文件的信号与槽
+    connect(saveAction, &QAction::triggered, this, &MainWindow::saveFile); // 连接保存文件的信号与槽
     //fileMenu->addAction(saveAction);
     fileMenu->addSeparator();
     QAction *exitAction=fileMenu->addAction("退出");
@@ -81,6 +81,13 @@ void MainWindow::setupUi(){
     QAction* coneAction =presetMenu->addAction("圆锥");
     connect(coneAction,&QAction::triggered,this,[&](){
         showPresetElemWidget(6);
+    });
+
+    QMenu *cloudOperation=bar->addMenu("点云操作");
+    QAction* compareAction=cloudOperation->addAction("点云对比");
+    QAction* alignAction=cloudOperation->addAction("点云对齐");
+    connect(alignAction,&QAction::triggered,this,[&](){
+        pWinVtkWidget->onAlign();
     });
 
     // 添加竖线分隔符
@@ -217,6 +224,17 @@ void MainWindow::openFile(){
             pWinFileManagerWidget->openModelFile(fileName, filePath);
         } else if (filePath.endsWith("pcd")) {
             pWinFileManagerWidget->openMeasuredFile(fileName, filePath);
+        }else if(filePath.endsWith("dat")){
+            QFile file(filePath);
+            if (!file.open(QIODevice::ReadOnly)) {
+                // 如果文件无法打开，输出错误信息
+                qDebug() << "Failed to open file:" << file.errorString();
+                return;
+            }
+            QDataStream in(&file);
+            in.setVersion(QDataStream::Qt_6_0);
+            in>>*(getObjectListMgr());
+            file.close();
         }
     }
 
@@ -231,7 +249,34 @@ void MainWindow::openFile(){
     //     }
 }
 void MainWindow::saveFile(){
+    //保存ObjectList
+    QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("dat(*.dat )"));
 
+    if (filePath.isEmpty()){
+        return ;
+    }
+
+    if (QFileInfo(filePath).suffix().isEmpty())
+        filePath.append(".dat");
+
+    // 创建 QFile 对象
+    QFile file(filePath);
+
+    // 打开文件以进行写入
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        qWarning() << "无法打开文件:" << file.errorString();
+        return;
+    }
+
+    QDataStream out(&file);
+    out.setVersion(QDataStream::Qt_6_0);
+
+    // 写入内容
+    out<<*(getObjectListMgr()); // 返回为指针，需要解引用
+
+    // 关闭文件
+    file.close();
+    QMessageBox::information(nullptr, "提示", "保存成功");
 }
 /*void MainWindow::open_clicked() {
     // 打开文件对话框，允许用户选择文件
@@ -898,6 +943,11 @@ FileMgr *MainWindow::getpWinFileMgr(){
 ChosenCEntityMgr *MainWindow::getChosenListMgr()
 {
     return m_ChosenListMgr;
+}
+
+PointCloudListMgr *MainWindow::getPointCloudListMgr()
+{
+    return pWinPclMgr;
 }
 
 void MainWindow::LoadPointFitting(){
