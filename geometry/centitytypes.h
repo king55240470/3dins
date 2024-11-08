@@ -399,12 +399,14 @@ class CDistance : public CEntity{
     CCircle circle;
     CLine line;
     double distance;
+    CPosition Projection;
 public:
     CDistance(){
         uptolerance=0.0;
         undertolerance=0.0;
         m_strAutoName = QString("距离%1").arg(currentCdistacneId);
         m_strCName = QString("距离%1").arg(currentCdistacneId);
+        currentCdistacneId++;
     }
     double getUptolerance();
     double getUndertolerance();
@@ -422,7 +424,7 @@ public:
     double getdistance();
     void setdistance(double d);
     bool judge();
-
+    void setProjection(CPosition pos);
     // 分别判断出了begin以外的图形是哪种
     bool isHavePlane = false;
     bool isHaveLine = false;
