@@ -24,7 +24,7 @@ public:
 private:
     MainWindow *m_pMainWin;
 
-    //拟合平面对话框
+    //拟合平面对话框  
     QDialog *p_dialog;
     QGridLayout *p_layout;
     QLabel *p_lab1;
