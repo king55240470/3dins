@@ -42,7 +42,9 @@ SOURCES += \
     manager/cobjectmgr.cpp \
     manager/cpcsmgr.cpp \
     manager/filemgr.cpp \
+    manager/pointcloudlistmgr.cpp \
     pointfitting/fittingplane.cpp \
+    pointfitting/setdatawidget.cpp \
     vtkwindow/clickhighlightstyle.cpp \
     vtkwindow/custominteractorstyle.cpp \
     vtkwindow/vtkpresetwidget.cpp \
@@ -82,7 +84,9 @@ HEADERS += \
     manager/cobjectmgr.h \
     manager/cpcsmgr.h \
     manager/filemgr.h \
+    manager/pointcloudlistmgr.h \
     pointfitting/fittingplane.h \
+    pointfitting/setdatawidget.h \
     vtkwindow/clickhighlightstyle.h \
     vtkwindow/custominteractorstyle.h \
     vtkwindow/vtkpresetwidget.h \
