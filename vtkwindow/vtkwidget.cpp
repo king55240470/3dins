@@ -273,7 +273,7 @@ void VtkWidget::showConvertedCloud(){
 
     // 分别用迭代器遍历两个map的所有文件
     pcl::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>> cloud_1 = std::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>();
-    // auto cloud_1(new pcl::PointCloud<pcl::PointXYZ>);
+     // auto cloud_1(new pcl::PointCloud<pcl::PointXYZRGB>);
     for(auto item = measured_map.begin();item != measured_map.end() ;item++){
         // 如果文件不隐藏
         if(item.value()){
