@@ -55,6 +55,8 @@ public:
 
     // 获取PickedActors
     QVector<std::pair<vtkSmartPointer<vtkActor>,vtkSmartPointer<vtkProperty>>>& getPickedActors();
+    // 获取point_actors
+    QVector<vtkActor*> getpoint_actors();
 
 private:
     MainWindow* m_pMainWin = nullptr; // mainwindow指针
