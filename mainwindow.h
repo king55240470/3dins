@@ -25,6 +25,7 @@ class LogWidget;
 class PresetElemWidget;
 class FileMgr;
 class FittingPlane;
+class setDataWidget;
 
 class MainWindow : public QMainWindow
 {
@@ -50,7 +51,7 @@ private:
     FileMgr *pWinFileMgr;
     PointCloudListMgr *pWinPclMgr;
 
-    FittingPlane *pWinFittingPlane;
+    setDataWidget *pWinSetDataWidget;
 
     QMenuBar * bar;
 
@@ -116,6 +117,7 @@ public:
     PointCloudListMgr *getPointCloudListMgr(); // 获取打开的点云列表
     void LoadPointFitting();
     FittingPlane *getPWinFittingPlane();
+    setDataWidget *getPWinSetDataWidget();
 
 public:
     RELY_ON_CS_TYPE m_nRelyOnWhichCs;

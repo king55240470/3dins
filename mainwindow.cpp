@@ -12,6 +12,7 @@
 #include "component/presetelemwidget.h"
 #include "manager/filemgr.h"
 #include "pointfitting/fittingplane.h"
+#include "pointfitting/setDataWidget.h"
 
 #include <QSettings>
 #include <QLabel>
@@ -952,9 +953,10 @@ PointCloudListMgr *MainWindow::getPointCloudListMgr()
 }
 
 void MainWindow::LoadPointFitting(){
-    pWinFittingPlane=new FittingPlane();
+    pWinSetDataWidget=new setDataWidget();
 }
 
-FittingPlane *MainWindow::getPWinFittingPlane(){
-    return pWinFittingPlane;
+
+setDataWidget *MainWindow::getPWinSetDataWidget(){
+    return pWinSetDataWidget;
 }
