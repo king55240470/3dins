@@ -37,8 +37,6 @@ FittingPlane::FittingPlane()
 
 void FittingPlane::RANSAC(pcl::PointXYZRGB searchPoint,pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudptr)
 {
-    p_setDataWidget->setPlaneData();
-
     //创建KD树用于邻域搜索
     pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree;
     kdtree.setInputCloud(cloudptr);
@@ -49,9 +47,9 @@ void FittingPlane::RANSAC(pcl::PointXYZRGB searchPoint,pcl::PointCloud<pcl::Poin
 
     // 搜索给定半径内的点
     if (kdtree.radiusSearch(searchPoint, radious, pointIdxRadiusSearch, pointRadiusSquaredDistance) > 3) {
-
+qDebug()<<"here is ok 1";
         pcl::copyPointCloud(*cloudptr, pointIdxRadiusSearch, *cloud_subset);//在邻域点中实现RANSAC算法
-
+qDebug()<<"here is ok 1";
         // 创建RANSAC分割对象
         pcl::SACSegmentation<pcl::PointXYZRGB> seg;
         seg.setOptimizeCoefficients(true);
@@ -59,7 +57,7 @@ void FittingPlane::RANSAC(pcl::PointXYZRGB searchPoint,pcl::PointCloud<pcl::Poin
         seg.setMethodType(pcl::SAC_RANSAC);
         seg.setMaxIterations(1000);//设置最大迭代次数
         seg.setDistanceThreshold(distance);//设置阈值
-
+qDebug()<<"here is ok 2";
         // 提供输入点云
         seg.setInputCloud(cloud_subset);
 
@@ -77,13 +75,13 @@ void FittingPlane::RANSAC(pcl::PointXYZRGB searchPoint,pcl::PointCloud<pcl::Poin
         planeCloud->width = planeCloud->points.size();
         planeCloud->height = 1;
         planeCloud->is_dense = true;
-
+qDebug()<<"here is ok 3";
         for (auto& point : planeCloud->points){
             point.r = 255;
             point.g = 0;
             point.b = 0;
         }
-
+qDebug()<<"here is ok 4";
         // 打印平面方程的系数
         std::cout << "Plane coefficients: " << coefficients->values[0] << " "
                   << coefficients->values[1] << " " << coefficients->values[2] << " "
@@ -103,12 +101,12 @@ bool FittingPlane::isPointInPlane(const pcl::PointXYZRGB& point){
     return std::abs(d) <= 0.01;
 }
 
-double &FittingPlane::getRadious(){
-    return radious;
+void FittingPlane::setRadious(double rad){
+    radious=rad;
 }
 
-int &FittingPlane::getDistance(){
-    return distance;
+void FittingPlane::setDistance(int dis){
+    distance=dis;
 }
 
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingPlane::getPlaneCloud(){
