@@ -132,8 +132,7 @@ void VtkWidget::createText()
     renderer->AddActor(infoTextActor);
     qDebug()<<"执行了hhhhhhhhhhhhhh";
     // 设置交互器的鼠标移动回调
-    auto interactor = renWin->GetInteractor();
-    interactor->AddObserver(vtkCommand::MouseMoveEvent, this, &VtkWidget::OnMouseMove);
+    renWin->GetInteractor()->AddObserver(vtkCommand::MouseMoveEvent, this, &VtkWidget::OnMouseMove);
 }
 
 vtkSmartPointer<vtkRenderWindow> VtkWidget::getRenderWindow(){
@@ -208,7 +207,15 @@ void VtkWidget::reDrawCentity(){
 
 void VtkWidget::reDrawCloud()
 {
-    showConvertedCloud();
+    showConvertedCloud(); // 显示刚打开的点云文件
+
+    // 如果有生成的点云，即productedlist不为空则继续显示
+    auto productedlist = m_pMainWin->getPointCloudListMgr()->getProductCloudList();
+    if(!productedlist.empty()){
+        for(auto i = 0;i < productedlist.size();i++){
+            showProductCloud(*productedlist[i]);
+        }
+    }
 }
 
 // 创建全局坐标器
