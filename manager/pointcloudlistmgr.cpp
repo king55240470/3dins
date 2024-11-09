@@ -2,7 +2,7 @@
 
 PointCloudListMgr::PointCloudListMgr() {}
 
-QVector<pcl::PointCloud<pcl::PointXYZRGB>> &PointCloudListMgr::getProductCloudList()
+QVector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &PointCloudListMgr::getProductCloudList()
 {
     return productCloudList;
 }
