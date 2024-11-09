@@ -43,7 +43,6 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingPlane::RANSAC(pcl::PointXYZRGB sea
         seg.setMethodType(pcl::SAC_RANSAC);
         seg.setMaxIterations(1000);//设置最大迭代次数
         seg.setDistanceThreshold(distance);//设置阈值
-qDebug()<<"here is ok 2";
         // 提供输入点云
         seg.setInputCloud(cloud_subset);
 
