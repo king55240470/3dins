@@ -25,6 +25,8 @@ FittingPlane::FittingPlane()
 
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingPlane::RANSAC(pcl::PointXYZRGB searchPoint,pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudptr)
 {
+    planeCloud->points.clear();
+
     //创建KD树用于邻域搜索
     pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree;
     kdtree.setInputCloud(cloudptr);
