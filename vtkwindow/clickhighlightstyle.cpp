@@ -190,3 +190,8 @@ QVector<std::pair<vtkSmartPointer<vtkActor>, vtkSmartPointer<vtkProperty> > > &M
 {
     return pickedActors;
 }
+
+QVector<vtkActor *> MouseInteractorHighlightActor::getpoint_actors()
+{
+    return  point_actors;
+}

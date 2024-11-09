@@ -1,5 +1,4 @@
 #include "pointfitting/fittingplane.h"
-#include "pointfitting/setdatawidget.h"
 
 #include<pcl/io/pcd_io.h>// PCL 的 PCD 文件输入输出类
 #include<pcl/io/ply_io.h>
@@ -12,44 +11,31 @@
 #include <pcl/filters/statistical_outlier_removal.h>
 #include <pcl/sample_consensus/ransac.h>
 
+#include <QMessageBox>
+
 FittingPlane::FittingPlane()
 {
     //创建点云智能指针
-    // cloudptr.reset(new pcl::PointCloud<pcl::PointXYZ>);
-    // planeCloud.reset(new pcl::PointCloud<pcl::PointXYZ>);
-    // cloud_subset.reset(new pcl::PointCloud<pcl::PointXYZ>);
-
-    // //从指定路径加载 PCD 文件到点云对象中
-    // pcl::io::loadPLYFile("D:/1_university/Code/Qt code/02G1_actual_cloud.ply", *cloudptr);
-    // //pcl::io::loadPCDFile("D:/1_university/Code/Qt code/maize.pcd", *cloudptr);
-    //从指定路径加载 PCD 文件到点云对象中
-    //pcl::io::loadPLYFile("E:\\pcl\\box.ply", *cloudptr);
-    //pcl::io::loadPCDFile("D:/1_university/Code/Qt code/maize.pcd", *cloudptr);
+    planeCloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
+    cloud_subset.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
 
     coefficients.reset(new pcl::ModelCoefficients);
     inliers.reset(new pcl::PointIndices);
-
-    p_setDataWidget=new setDataWidget();
-
-    //RANSAC();
-
 }
 
-void FittingPlane::RANSAC(pcl::PointXYZRGB searchPoint,pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudptr)
+pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingPlane::RANSAC(pcl::PointXYZRGB searchPoint,pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudptr)
 {
     //创建KD树用于邻域搜索
     pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree;
     kdtree.setInputCloud(cloudptr);
 
-    // 初始化一个点来搜索其邻域（这里选择点云中的第一个点作为示例）
-    std::vector<int> pointIdxRadiusSearch;
+    std::vector<int> pointIdxRadiusSearch;//存储邻域点的索引
     std::vector<float> pointRadiusSquaredDistance; // 用于存储找到的点到查询点的平方距离
 
     // 搜索给定半径内的点
     if (kdtree.radiusSearch(searchPoint, radious, pointIdxRadiusSearch, pointRadiusSquaredDistance) > 3) {
-qDebug()<<"here is ok 1";
+
         pcl::copyPointCloud(*cloudptr, pointIdxRadiusSearch, *cloud_subset);//在邻域点中实现RANSAC算法
-qDebug()<<"here is ok 1";
         // 创建RANSAC分割对象
         pcl::SACSegmentation<pcl::PointXYZRGB> seg;
         seg.setOptimizeCoefficients(true);
@@ -69,27 +55,30 @@ qDebug()<<"here is ok 2";
                 planeCloud->points.push_back(cloudptr->points[i]);
             }
         }
-        // for (int index : inliers->indices) {
-        //     planeCloud->points.push_back(cloudptr->points[index]);
-        // }
         planeCloud->width = planeCloud->points.size();
         planeCloud->height = 1;
         planeCloud->is_dense = true;
-qDebug()<<"here is ok 3";
+
         for (auto& point : planeCloud->points){
             point.r = 255;
             point.g = 0;
             point.b = 0;
         }
-qDebug()<<"here is ok 4";
+
         // 打印平面方程的系数
         std::cout << "Plane coefficients: " << coefficients->values[0] << " "
                   << coefficients->values[1] << " " << coefficients->values[2] << " "
                   << coefficients->values[3] << std::endl;
 
+        return planeCloud;
     } else {
+        QMessageBox *messagebox=new QMessageBox();
+        messagebox->setText("输入的邻域或距离阈值太小，\n请重新输入！");
+        messagebox->setIcon(QMessageBox::Warning);
+        messagebox->show();
+        messagebox->exec();
         PCL_ERROR("Couldn't find more points within radius\n");
-        return;
+        return 0;
     }
 }
 
@@ -105,10 +94,6 @@ void FittingPlane::setRadious(double rad){
     radious=rad;
 }
 
-void FittingPlane::setDistance(int dis){
+void FittingPlane::setDistance(double dis){
     distance=dis;
-}
-
-pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingPlane::getPlaneCloud(){
-    return planeCloud;
 }
