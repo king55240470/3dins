@@ -8,8 +8,10 @@ setDataWidget::setDataWidget(QWidget *parent)
     m_pMainWin=(MainWindow*)parent;
 }
 
-void setDataWidget::setPlaneData(){
-    p_dialog = new QDialog(nullptr);
+void setDataWidget::setPlaneData(pcl::PointXYZRGB searchPoint,pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudptr){
+    p_point=searchPoint;
+    p_cloudptr=cloudptr;
+    p_dialog = new QDialog(this);
     p_dialog->resize(400,150);
     p_layout = new QGridLayout(p_dialog);
     p_lab1 = new QLabel("请输入邻域：");
@@ -25,10 +27,13 @@ void setDataWidget::setPlaneData(){
     p_dialog->setLayout(p_layout);
     p_dialog->show();
     connect(p_btn,&QPushButton::clicked,this,&setDataWidget::PlaneBtnClick);
+    p_dialog->exec();
 }
 
 void setDataWidget::PlaneBtnClick(){
-    m_pMainWin->getPWinFittingPlane()->getRadious()=p_rad->text().toDouble();
-    m_pMainWin->getPWinFittingPlane()->getDistance()=p_dis->text().toInt();
-    //m_pMainWin->getPWinFittingPlane()->
+    FittingPlane *plane=new FittingPlane();
+    plane->setRadious(p_rad->text().toDouble());  // 设置半径
+    plane->setDistance(p_dis->text().toInt());  // 设置距离阈值
+    plane->RANSAC(p_point, p_cloudptr);
+    //p_dialog->close();
 }
