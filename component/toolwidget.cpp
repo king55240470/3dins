@@ -188,8 +188,8 @@ ToolWidget::ToolWidget(QWidget *parent)
         find_actions_[i]=action;
 
     }
-    qDebug()<<"ok3";
-    qDebug()<<m_nViewAngleActionNum;
+
+    qDebug()<<"4";
     for(int i=0;i<m_nViewAngleActionNum;i++){
 
         ToolAction* action=new ToolAction(this);
@@ -211,8 +211,6 @@ ToolWidget::ToolWidget(QWidget *parent)
 
     //设置QAction信号槽
     connectActionWithF();
-
-
 
 
 }

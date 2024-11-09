@@ -6,6 +6,8 @@ setDataWidget::setDataWidget(QWidget *parent)
     : QWidget{parent}
 {
     m_pMainWin=(MainWindow*)parent;
+    p_cloudptr.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
+    fittingPlane.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
 }
 
 void setDataWidget::setPlaneData(pcl::PointXYZRGB searchPoint,pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudptr){
@@ -36,5 +38,5 @@ void setDataWidget::PlaneBtnClick(){
     FittingPlane *plane=new FittingPlane();
     plane->setRadious(p_rad->text().toDouble());  // 设置半径
     plane->setDistance(p_dis->text().toDouble());  // 设置距离阈值
-    *fittingPlane=plane->RANSAC(p_point, p_cloudptr);
+    fittingPlane=plane->RANSAC(p_point, p_cloudptr);
 }

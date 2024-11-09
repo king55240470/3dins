@@ -178,6 +178,7 @@ void MainWindow::LoadWidgets(){
     pWinVtkWidget=new VtkWidget(this);
     pWinReportWidget=new ReportWidget(this);
     pWinLogWidget=new LogWidget(this);
+
 }
 
 void MainWindow::RestoreWidgets() {
