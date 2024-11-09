@@ -108,13 +108,8 @@ void VtkWidget::OnMouseMove()
             oss << "Point: (" << pos[0] << ", " << pos[1] << ", " << pos[2] << ")";
             infoTextActor->SetInput(oss.str().c_str()); // 确保传入 const char*
             infoTextActor->SetPosition(clickPos[0], clickPos[1]);
-            infoTextActor->SetVisibility(true);
-            qDebug()<<"执行了move";
+            // infoTextActor->SetVisibility(true);
         }
-        qDebug()<<infoTextActor->GetVisibility();
-    } else {
-        infoTextActor->SetVisibility(false);
-        qDebug()<<"没有执行了move";
     }
     getRenderWindow()->Render();
 }
@@ -127,12 +122,23 @@ void VtkWidget::createText()
     infoTextActor->GetTextProperty()->SetFontSize(24);
     infoTextActor->GetTextProperty()->SetColor(1,0, 0);
     infoTextActor->SetInput("浮动窗口");
-
-    // infoTextActor->SetVisibility(false); // 初始隐藏
+    infoTextActor->SetVisibility(false); // 初始隐藏
     renderer->AddActor(infoTextActor);
     qDebug()<<"执行了hhhhhhhhhhhhhh";
     // 设置交互器的鼠标移动回调
     renWin->GetInteractor()->AddObserver(vtkCommand::MouseMoveEvent, this, &VtkWidget::OnMouseMove);
+
+    // auto orientationWidget = vtkSmartPointer<vtkOrientationMarkerWidget>::New();
+    // // 将文本信息演员添加到orientationWidget
+    // orientationWidget->SetOrientationMarker(infoTextActor);
+    // orientationWidget->AddObserver(vtkCommand::MouseMoveEvent, this, &VtkWidget::OnMouseMove);
+    // // 将orientationWidget与交互器关联
+    // orientationWidget->SetInteractor(renWin->GetInteractor());
+    // // 设置视口
+    // orientationWidget->SetViewport(0.8, 0.8, 0.2, 0.2);
+
+    // orientationWidget->SetEnabled(1);
+    // orientationWidget->InteractiveOn();
 }
 
 vtkSmartPointer<vtkRenderWindow> VtkWidget::getRenderWindow(){
@@ -213,7 +219,7 @@ void VtkWidget::reDrawCloud()
     auto productedlist = m_pMainWin->getPointCloudListMgr()->getProductCloudList();
     if(!productedlist.empty()){
         for(auto i = 0;i < productedlist.size();i++){
-            showProductCloud(*productedlist[i]);
+            showProductCloud(productedlist[i]);
         }
     }
 }
