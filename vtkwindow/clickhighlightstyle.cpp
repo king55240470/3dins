@@ -42,7 +42,9 @@ void MouseInteractorHighlightActor::OnLeftButtonDown()
 
         QMap<vtkSmartPointer<vtkActor>, CEntity*>& actorToEntity=m_pMainWin->getactorToEntityMap();
         CEntity* entity=actorToEntity[newPickedActor];
-        qDebug()<<entity->m_strAutoName;
+        if(entity!=nullptr){
+            qDebug()<<entity->m_strAutoName;
+        }
 
         // 生成一个用于高亮的顶点，并存入pickedActors
         auto actor = CreatHighLightPoint(pos);
