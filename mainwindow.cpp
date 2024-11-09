@@ -956,3 +956,6 @@ void MainWindow::LoadSetDataWidget(){
 setDataWidget *MainWindow::getPWinSetDataWidget(){
     return pWinSetDataWidget;
 }
+QMap<vtkSmartPointer<vtkActor>, CEntity*>& MainWindow::getactorToEntityMap(){
+    return  actorToEntityMap;
+}

@@ -100,7 +100,15 @@ public slots:
     void onConstructCone();
     void onConstructSphere();
     void onConstructDistance();
+    //识别
     void onFindPlane();
+    void onFindPoint();
+    void onFindLine();
+    void onFindCircle();
+    void onFindRectangle();
+    void onFindCylinder();
+    void onFindCone();
+    void onFindSphere();
 
 
 

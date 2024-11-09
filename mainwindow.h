@@ -13,6 +13,7 @@
 #include "manager/cpcsmgr.h"
 #include "manager/chosencentitymgr.h"
 #include "manager/pointcloudlistmgr.h"
+#include <QMap>//从actor映射到centity
 
 class DataWidget;
 class ElementListWidget;
@@ -58,6 +59,8 @@ private:
     QStatusBar *stbar;
     QPushButton* switchRefCsBtn;
     QPushButton* switchCsBtn;
+
+    QMap<vtkSmartPointer<vtkActor>, CEntity*> actorToEntityMap;
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
@@ -122,7 +125,9 @@ public:
 
     //坐标系摆正
     double AxesRotateX(); // X-Y平面, 线段与X轴正方向之间的夹角
-    void on2dCoordSetRightX(); // 摆正X坐标系
+    void on2dCoordSetRightX(); // 摆正X坐标系-+
     void on2dCoordSetRightY(); // 摆正Y坐标系
+public:
+    QMap<vtkSmartPointer<vtkActor>, CEntity*>& getactorToEntityMap();
 };
 #endif // MAINWINDOW_H
