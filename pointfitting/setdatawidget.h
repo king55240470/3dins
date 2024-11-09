@@ -26,7 +26,7 @@ private:
     MainWindow *m_pMainWin;
 
     //拟合平面对话框
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr *fittingPlane;
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr fittingPlane;
     QDialog *p_dialog;
     QGridLayout *p_layout;
     QLabel *p_lab1;
