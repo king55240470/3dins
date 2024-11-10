@@ -355,7 +355,7 @@ void MainWindow::loadManager()
     m_ChosenListMgr=new ChosenCEntityMgr();
 
     pWinFileMgr=new FileMgr();
-    pWinPclMgr = new PointCloudListMgr();
+    m_CloudListMgr = new PointCloudListMgr();
 
     m_pcsListMgr->Initialize();
 }
@@ -947,7 +947,7 @@ ChosenCEntityMgr *MainWindow::getChosenListMgr()
 
 PointCloudListMgr *MainWindow::getPointCloudListMgr()
 {
-    return pWinPclMgr;
+    return m_CloudListMgr;
 }
 
 void MainWindow::LoadSetDataWidget(){
