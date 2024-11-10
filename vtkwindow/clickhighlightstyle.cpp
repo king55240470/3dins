@@ -40,6 +40,12 @@ void MouseInteractorHighlightActor::OnLeftButtonDown()
         // 如果拾取成功，输出拾取点的世界坐标
         m_pMainWin->getChosenListMgr()->CreatPosition(pos); // 将选中的坐标传入管理器
 
+        QMap<vtkSmartPointer<vtkActor>, CEntity*>& actorToEntity=m_pMainWin->getactorToEntityMap();
+        CEntity* entity=actorToEntity[newPickedActor];
+        if(entity!=nullptr){
+            qDebug()<<entity->m_strAutoName;
+        }
+
         // 生成一个用于高亮的顶点，并存入pickedActors
         auto actor = CreatHighLightPoint(pos);
 
@@ -71,6 +77,8 @@ void MouseInteractorHighlightActor::OnRightButtonDown()
     picker->Pick(clickPos[0], clickPos[1], clickPos[2], renderer);
     // 获取选中的actor并取消高亮
     vtkActor* newpickedActor = picker->GetActor();
+
+
     double* pos = picker->GetPickPosition(); // 用于存储拾取点的世界坐标
 
     // 如果选中了actor

@@ -38,7 +38,6 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingPlane::RANSAC(pcl::PointXYZRGB sea
     if (kdtree.radiusSearch(searchPoint, radious, pointIdxRadiusSearch, pointRadiusSquaredDistance) > 3) {
 
         pcl::copyPointCloud(*cloudptr, pointIdxRadiusSearch, *cloud_subset);//在邻域点中实现RANSAC算法
-
         // 创建RANSAC分割对象
         pcl::SACSegmentation<pcl::PointXYZRGB> seg;
         seg.setOptimizeCoefficients(true);
@@ -46,7 +45,6 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingPlane::RANSAC(pcl::PointXYZRGB sea
         seg.setMethodType(pcl::SAC_RANSAC);
         seg.setMaxIterations(1000);//设置最大迭代次数
         seg.setDistanceThreshold(distance);//设置阈值
-
         // 提供输入点云
         seg.setInputCloud(cloud_subset);
 
@@ -58,9 +56,6 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingPlane::RANSAC(pcl::PointXYZRGB sea
                 planeCloud->points.push_back(cloudptr->points[i]);
             }
         }
-        // for (int index : inliers->indices) {
-        //     planeCloud->points.push_back(cloudptr->points[index]);
-        // }
         planeCloud->width = planeCloud->points.size();
         planeCloud->height = 1;
         planeCloud->is_dense = true;
