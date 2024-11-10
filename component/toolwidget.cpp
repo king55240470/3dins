@@ -1090,6 +1090,7 @@ void ToolWidget:: onFindPlane(){
     auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
     if(cloudptr==nullptr) return ;
     m_pMainWin->getPWinSetDataWidget()->setPlaneData(point,cloudptr);
+    // 生成点云对象并添加到entitylist
     CPointCloud* pointCloud=new CPointCloud();
     pointCloud->setPointCloud(*m_pMainWin->getPWinSetDataWidget()->getFittingPlane());
     for (size_t i = 0; i < pointCloud->m_pointCloud.points.size(); ++i)
