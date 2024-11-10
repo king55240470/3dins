@@ -463,7 +463,7 @@ public:
     }
 
 
-    // 点类的draw
+    // 点云类的draw
     vtkSmartPointer<vtkActor> draw() override;
     int GetUniqueType() override {
         return enPointCloud;

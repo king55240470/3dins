@@ -322,7 +322,7 @@ vtkSmartPointer<vtkActor> CDistance::draw(){
     return actor;
 }
 int CPointCloud::pointCloudCount = 0;
-vtkSmartPointer<vtkActor>CPointCloud:: draw(){
+vtkSmartPointer<vtkActor> CPointCloud::draw(){
 
     vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
     vtkSmartPointer<vtkUnsignedCharArray> colors = vtkSmartPointer<vtkUnsignedCharArray>::New();

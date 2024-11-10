@@ -101,8 +101,9 @@ private:
     // 创建渲染器、渲染窗口和交互器
     vtkSmartPointer<vtkRenderer> renderer;
     vtkSmartPointer<vtkGenericOpenGLRenderWindow> renWin;
-    // 创建交互部件来封装坐标器
-    vtkSmartPointer<vtkOrientationMarkerWidget> orientationWidget;
+
+    vtkSmartPointer<vtkOrientationMarkerWidget> axeWidget; // 创建窗口部件来封装坐标器
+    vtkSmartPointer<vtkOrientationMarkerWidget> textWidget; // 浮动窗口，用于显示信息
 
     QVector<vtkSmartPointer<vtkActor>> cloudActors; // 管理点云生成的actor
 
