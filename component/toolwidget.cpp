@@ -937,6 +937,7 @@ void ToolWidget::onConstructPoint(){
         }
     }
     positions.clear();
+
     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
     newPoint=(CPoint*)constructor.create(entityList);
     positions=constructor.getPositions();
@@ -1085,10 +1086,17 @@ void ToolWidget:: onFindPlane(){
     if(positions.size()==0)return ;
     point.x=positions[0].x;
     point.y=positions[0].y;
-    point.y=positions[0].y;
+    point.z=positions[0].z;
     auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
     if(cloudptr==nullptr) return ;
     m_pMainWin->getPWinSetDataWidget()->setPlaneData(point,cloudptr);
+    CPointCloud* pointCloud=new CPointCloud();
+    pointCloud->setPointCloud(*m_pMainWin->getPWinSetDataWidget()->getFittingPlane());
+    for (size_t i = 0; i < pointCloud->m_pointCloud.points.size(); ++i)
+    {
+       qDebug()<<pointCloud->m_pointCloud.points[i].x<<pointCloud->m_pointCloud.points[i].y<< pointCloud->m_pointCloud.points[i].z;
+    }
+    addToList(pointCloud);
     positions.clear();
 
 }
