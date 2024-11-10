@@ -84,7 +84,7 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingPlane::RANSAC(pcl::PointXYZRGB sea
         messagebox->show();
         messagebox->exec();
         PCL_ERROR("Couldn't find more points within radius\n");
-        return 0;
+        return nullptr;
     }
 }
 

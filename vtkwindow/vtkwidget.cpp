@@ -214,14 +214,15 @@ void VtkWidget::reDrawCentity(){
 void VtkWidget::reDrawCloud()
 {
     showConvertedCloud(); // 显示刚打开的点云文件
+    showProductCloud(m_pMainWin->fitcloud);
 
     // 如果有生成的点云，即productedlist不为空则继续显示
-    auto productedlist = m_pMainWin->getPointCloudListMgr()->getProductCloudList();
-    if(!productedlist.empty()){
-        for(auto i = 0;i < productedlist.size();i++){
-            showProductCloud(productedlist[i]);
-        }
-    }
+    // auto productedlist = m_pMainWin->getPointCloudListMgr()->getProductCloudList();
+    // if(!productedlist.empty()){
+    //     for(auto i = 0;i < productedlist.size();i++){
+    //         showProductCloud(productedlist[i]);
+    //     }
+    // }
 }
 
 // 创建全局坐标器
