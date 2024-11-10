@@ -93,9 +93,9 @@ void VtkWidget::OnMouseMove()
         if (isMouseNearHighlightedPoint){
             double* pos = picker->GetPickPosition();
             std::ostringstream oss;
-            oss << "Point: (" << pos[0] << ", " << pos[1] << ", " << pos[2] << ")";
+            oss << "picked entity: (" << pos[0] << ", " << pos[1] << ", " << pos[2] << ")";
             infoTextActor->SetInput(oss.str().c_str()); // 确保传入 const char*
-            infoTextActor->SetPosition(clickPos[0], clickPos[1]);
+            infoTextActor->SetPosition(clickPos[0]*1.1, clickPos[1]*1.1);
             infoTextActor->SetVisibility(true);
         }
     }
@@ -105,9 +105,9 @@ void VtkWidget::createText()
 {
     // 创建浮动信息的文本演员
     infoTextActor = vtkSmartPointer<vtkTextActor>::New();
-    infoTextActor->GetTextProperty()->SetFontSize(12);
+    infoTextActor->GetTextProperty()->SetFontSize(15);
     infoTextActor->GetTextProperty()->SetColor(0.9, 0.1, 0.1);
-    infoTextActor->SetPosition(renWin->GetSize()[0]*0.9,renWin->GetSize()[1]*0.9);
+    infoTextActor->SetPosition(renWin->GetSize()[0]*0.8,renWin->GetSize()[1]*0.8);
     infoTextActor->SetInput("浮动窗口");
     infoTextActor->SetVisibility(false); // 初始隐藏
 
