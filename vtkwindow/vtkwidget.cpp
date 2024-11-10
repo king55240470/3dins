@@ -80,9 +80,8 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
 void VtkWidget::OnMouseMove()
 {
     //qDebug()<<"执行了move";
-    auto* interactor = renWin->GetInteractor();
     int clickPos[2];
-    interactor->GetEventPosition(clickPos);
+    renWin->GetInteractor()->GetEventPosition(clickPos);
 
     vtkSmartPointer<vtkPropPicker> picker = vtkSmartPointer<vtkPropPicker>::New();
     picker->Pick(clickPos[0], clickPos[1], 0, renderer);
@@ -123,6 +122,7 @@ void VtkWidget::createText()
     // 创建浮动信息的文本演员
     infoTextActor = vtkSmartPointer<vtkTextActor>::New();
     infoTextActor->GetPositionCoordinate()->SetCoordinateSystemToNormalizedDisplay();
+
     //orientationWidget->SetOrientationMarker(infoTextActor);
     infoTextActor->GetTextProperty()->SetFontSize(24);
     infoTextActor->GetTextProperty()->SetColor(1,0, 0);
@@ -132,8 +132,7 @@ void VtkWidget::createText()
     renderer->AddActor(infoTextActor);
     qDebug()<<"执行了hhhhhhhhhhhhhh";
     // 设置交互器的鼠标移动回调
-    auto interactor = renWin->GetInteractor();
-    interactor->AddObserver(vtkCommand::MouseMoveEvent, this, &VtkWidget::OnMouseMove);
+    renWin->GetInteractor()->AddObserver(vtkCommand::MouseMoveEvent, this, &VtkWidget::OnMouseMove);
 }
 
 vtkSmartPointer<vtkRenderWindow> VtkWidget::getRenderWindow(){
