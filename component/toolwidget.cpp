@@ -188,8 +188,8 @@ ToolWidget::ToolWidget(QWidget *parent)
         find_actions_[i]=action;
 
     }
-    qDebug()<<"ok3";
-    qDebug()<<m_nViewAngleActionNum;
+
+    qDebug()<<"4";
     for(int i=0;i<m_nViewAngleActionNum;i++){
 
         ToolAction* action=new ToolAction(this);
@@ -211,8 +211,6 @@ ToolWidget::ToolWidget(QWidget *parent)
 
     //设置QAction信号槽
     connectActionWithF();
-
-
 
 
 }
@@ -443,14 +441,14 @@ int ToolWidget::getViewAngleActionNum(){
 
 void ToolWidget::connectActionWithF(){
     //识别
-    connect(find_actions_[find_action_name_list_.indexOf("点")],&QAction::triggered,&  tool_widget::onFindPoint);
-    connect(find_actions_[find_action_name_list_.indexOf("线")],&QAction::triggered,&  tool_widget::onFindLine);
-    connect(find_actions_[find_action_name_list_.indexOf("圆")],&QAction::triggered,&  tool_widget::onFindCircle);
+    connect(find_actions_[find_action_name_list_.indexOf("点")],&QAction::triggered,this,&   ToolWidget::onFindPoint);
+    connect(find_actions_[find_action_name_list_.indexOf("线")],&QAction::triggered,this,&   ToolWidget::onFindLine);
+    connect(find_actions_[find_action_name_list_.indexOf("圆")],&QAction::triggered,this,&   ToolWidget::onFindCircle);
     connect(find_actions_[find_action_name_list_.indexOf("平面")],&QAction::triggered,this,&  ToolWidget:: onFindPlane);
-    connect(find_actions_[find_action_name_list_.indexOf("矩形")],&QAction::triggered,&  tool_widget::onFindRectangle);
-    connect(find_actions_[find_action_name_list_.indexOf("圆柱")],&QAction::triggered,&  tool_widget::onFindCylinder);
-    connect(find_actions_[find_action_name_list_.indexOf("圆锥")],&QAction::triggered,&  tool_widget::onFindCone);
-    connect(find_actions_[find_action_name_list_.indexOf("球形")],&QAction::triggered,&  tool_widget::onFindSphere);
+    connect(find_actions_[find_action_name_list_.indexOf("矩形")],&QAction::triggered,this,&   ToolWidget::onFindRectangle);
+    connect(find_actions_[find_action_name_list_.indexOf("圆柱")],&QAction::triggered,this,&   ToolWidget::onFindCylinder);
+    connect(find_actions_[find_action_name_list_.indexOf("圆锥")],&QAction::triggered,this,&   ToolWidget::onFindCone);
+    connect(find_actions_[find_action_name_list_.indexOf("球形")],&QAction::triggered,this,&   ToolWidget::onFindSphere);
 
     //构造
     connect(construct_actions_[construct_action_name_list_.indexOf("点")],&QAction::triggered,this,& ToolWidget::onConstructPoint);
@@ -939,6 +937,7 @@ void ToolWidget::onConstructPoint(){
         }
     }
     positions.clear();
+
     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
     newPoint=(CPoint*)constructor.create(entityList);
     positions=constructor.getPositions();
@@ -1087,13 +1086,38 @@ void ToolWidget:: onFindPlane(){
     if(positions.size()==0)return ;
     point.x=positions[0].x;
     point.y=positions[0].y;
-    point.y=positions[0].y;
+    point.z=positions[0].z;
     auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
     if(cloudptr==nullptr) return ;
     m_pMainWin->getPWinSetDataWidget()->setPlaneData(point,cloudptr);
+    CPointCloud* pointCloud=new CPointCloud();
+    pointCloud->setPointCloud(*m_pMainWin->getPWinSetDataWidget()->getFittingPlane());
+    for (size_t i = 0; i < pointCloud->m_pointCloud.points.size(); ++i)
+    {
+       qDebug()<<pointCloud->m_pointCloud.points[i].x<<pointCloud->m_pointCloud.points[i].y<< pointCloud->m_pointCloud.points[i].z;
+    }
+    addToList(pointCloud);
     positions.clear();
 
 }
+
+void ToolWidget::onFindPoint(){
+    QMap<vtkSmartPointer<vtkActor>, CEntity*>& actorToEntityMapRef = m_pMainWin->getactorToEntityMap();
+    for (auto it = actorToEntityMapRef.begin(); it != actorToEntityMapRef.end(); ++it) {
+        vtkSmartPointer<vtkActor> actor = it.key();
+        CEntity* entity = it.value();
+        std::string description = actor->GetMapper()->GetInput()->GetClassName();
+        qDebug() << "ActorDescription: " << description ;
+        qDebug()  << " Entity name: "<<entity->m_strAutoName;
+
+    }
+}
+void ToolWidget::onFindLine(){}
+void ToolWidget::onFindCircle(){}
+void ToolWidget::onFindRectangle(){}
+void ToolWidget::onFindCylinder(){}
+void ToolWidget::onFindCone(){}
+void ToolWidget::onFindSphere(){}
 void ToolWidget::updateele(){
 
     ElementListWidget* p_elementListwidget= m_pMainWin->getPWinElementListWidget();

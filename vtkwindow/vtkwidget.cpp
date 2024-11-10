@@ -178,13 +178,16 @@ void VtkWidget::reDrawCentity(){
     QVector<bool> list = m_pMainWin->m_EntityListMgr->getMarkList();//获取标记是否隐藏元素的list
     QMap<QString, bool> filemap = m_pMainWin->getpWinFileMgr()->getContentItemMap();
     QVector<CEntity*> constructEntityList = m_pMainWin->getPWinToolWidget()->getConstructEntityList();//存储构建元素的列表
-
+    QMap<vtkSmartPointer<vtkActor>, CEntity*>& actorToEntity=m_pMainWin->getactorToEntityMap();
+    actorToEntity.clear();
     // 遍历entitylist绘制图形并加入渲染器
     for(auto i = 0;i < entitylist.size();i++){
         int flag=0;
         if(constructEntityList.isEmpty()){//没有构建的元素
 
-            getRenderer()->AddActor(entitylist[i]->draw());
+            vtkSmartPointer<vtkActor>actor=entitylist[i]->draw();
+            actorToEntity.insert(actor,entitylist[i]);
+            getRenderer()->AddActor(actor);
         }
         else{
             for(int j=0;j<constructEntityList.size();j++){
@@ -192,13 +195,17 @@ void VtkWidget::reDrawCentity(){
                 if(entitylist[i] == constructEntityList[j]){//是构建的元素
                     flag=1;
                     if(filemap[key]){
-                        getRenderer()->AddActor(entitylist[i]->draw());
+                        vtkSmartPointer<vtkActor>actor=entitylist[i]->draw();
+                        actorToEntity.insert(actor,entitylist[i]);
+                        getRenderer()->AddActor(actor);
                         break;
                     }
                 }
             }
             if(flag==0){//不是构建的元素
-                getRenderer()->AddActor(entitylist[i]->draw());
+                vtkSmartPointer<vtkActor>actor=entitylist[i]->draw();
+                actorToEntity.insert(actor,entitylist[i]);
+                getRenderer()->AddActor(actor);
             }
         }
     }
@@ -327,7 +334,9 @@ void VtkWidget::showConvertedCloud(){
 
     auto cloud_rgb_1(new pcl::PointCloud<pcl::PointXYZRGB>);
     // 分别用迭代器遍历两个map的所有文件
+
     for(auto item = measured_map.begin(); item != measured_map.end(); item++){
+
         // 如果文件不隐藏
         if(item.value()){
             pcl::io::loadPCDFile(item.key().toStdString(), *cloud_rgb_1);

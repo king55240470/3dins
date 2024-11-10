@@ -178,6 +178,7 @@ void MainWindow::LoadWidgets(){
     pWinVtkWidget=new VtkWidget(this);
     pWinReportWidget=new ReportWidget(this);
     pWinLogWidget=new LogWidget(this);
+
 }
 
 void MainWindow::RestoreWidgets() {
@@ -956,4 +957,7 @@ void MainWindow::LoadSetDataWidget(){
 
 setDataWidget *MainWindow::getPWinSetDataWidget(){
     return pWinSetDataWidget;
+}
+QMap<vtkSmartPointer<vtkActor>, CEntity*>& MainWindow::getactorToEntityMap(){
+    return  actorToEntityMap;
 }
