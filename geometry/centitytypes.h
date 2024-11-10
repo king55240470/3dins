@@ -466,7 +466,7 @@ public:
     // 点类的draw
     vtkSmartPointer<vtkActor> draw() override;
     int GetUniqueType() override {
-        return enPoint;
+        return enPointCloud;
     }
 
     void SetPosition(CPosition pt)
