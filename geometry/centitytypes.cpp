@@ -307,20 +307,6 @@ vtkSmartPointer<vtkActor> CCone::draw(){
     return actor;
 }
 
-// 各种距离的draw
-vtkSmartPointer<vtkActor> CDistance::draw(){
-    vtkSmartPointer<vtkActor> actor;
-
-    if(isHavePlane)
-        actor = pointToPlane();
-    else if(isHaveLine)
-        actor = pointToLine();
-    else {
-        actor = pointToCircle();
-    }
-
-    return actor;
-}
 int CPointCloud::pointCloudCount = 0;
 vtkSmartPointer<vtkActor> CPointCloud::draw(){
 
@@ -333,6 +319,8 @@ vtkSmartPointer<vtkActor> CPointCloud::draw(){
     for (size_t i = 0; i < m_pointCloud.points.size(); ++i)
     {
         points->SetPoint(i, m_pointCloud.points[i].x, m_pointCloud.points[i].y, m_pointCloud.points[i].z);
+        if(isFileCloud || isFittingCloud) // 若为生成的点云则带颜色
+            colors->SetTuple3(i, m_pointCloud.points[i].r, m_pointCloud.points[i].g, m_pointCloud.points[i].b);
     }
 
     vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
@@ -353,7 +341,22 @@ vtkSmartPointer<vtkActor> CPointCloud::draw(){
     vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
     actor->GetProperty()->SetPointSize(5); // 设置点大小
-    actor->GetProperty()->SetColor(1, 0, 0);
+    actor->GetProperty()->SetColor(1, 0.8, 0);
+
+    return actor;
+}
+
+// 各种距离的draw
+vtkSmartPointer<vtkActor> CDistance::draw(){
+    vtkSmartPointer<vtkActor> actor;
+
+    if(isHavePlane)
+        actor = pointToPlane();
+    else if(isHaveLine)
+        actor = pointToLine();
+    else {
+        actor = pointToCircle();
+    }
 
     return actor;
 }
