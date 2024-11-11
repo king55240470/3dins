@@ -1099,7 +1099,6 @@ void ToolWidget:: onFindPlane(){
     }
     addToList(pointCloud);
     positions.clear();
-
 }
 
 void ToolWidget::onFindPoint(){

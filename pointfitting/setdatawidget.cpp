@@ -41,6 +41,5 @@ void setDataWidget::PlaneBtnClick(){
     FittingPlane *plane=new FittingPlane();
     plane->setRadious(p_rad->text().toDouble());  // 设置半径
     plane->setDistance(p_dis->text().toDouble());  // 设置距离阈值
-    // m_pMainWin->fitcloud = *plane->RANSAC(p_point, p_cloudptr);
     // m_pMainWin->getPointCloudListMgr()->getProductCloudList().push_back(*plane->RANSAC(p_point, p_cloudptr).get());
 }

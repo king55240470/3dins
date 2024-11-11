@@ -82,7 +82,7 @@ void VtkWidget::OnMouseMove()
         double distance = std::sqrt(std::pow(actor.x - pos[0], 2) +
                                     std::pow(actor.y - pos[1], 2) +
                                     std::pow(actor.z - pos[2], 2));
-        if (distance < 0.1) { // 如果鼠标在高亮点附近
+        if (distance < 0.05) { // 如果鼠标在高亮点附近
             isMouseNearHighlightedPoint = true;
             break;
         }
@@ -95,7 +95,7 @@ void VtkWidget::OnMouseMove()
             std::ostringstream oss;
             oss << "picked entity: (" << pos[0] << ", " << pos[1] << ", " << pos[2] << ")";
             infoTextActor->SetInput(oss.str().c_str()); // 确保传入 const char*
-            infoTextActor->SetPosition(clickPos[0]*1.1, clickPos[1]*1.1);
+            infoTextActor->SetPosition(clickPos[0], clickPos[1]);
             infoTextActor->SetVisibility(true);
         }
     }
@@ -109,20 +109,19 @@ void VtkWidget::createText()
     infoTextActor->GetTextProperty()->SetColor(0.9, 0.1, 0.1);
     infoTextActor->SetPosition(renWin->GetSize()[0]*0.8,renWin->GetSize()[1]*0.8);
     infoTextActor->SetInput("浮动窗口");
-    infoTextActor->SetVisibility(false); // 初始隐藏
+    infoTextActor->SetVisibility(true); // 初始隐藏
 
-    textWidget = vtkSmartPointer<vtkOrientationMarkerWidget>::New();
-    // 将坐标轴演员添加到orientationWidget
-    textWidget->SetOrientationMarker(infoTextActor);
-    // 将orientationWidget与交互器关联
-    textWidget->SetInteractor(renWin->GetInteractor());
-    // 设置视口
-    textWidget->SetViewport(0.8, 0.8, 1, 1);// 调整信息窗口的位置
-    textWidget->SetEnabled(1);
-    textWidget->InteractiveOn();
+    // textWidget = vtkSmartPointer<vtkOrientationMarkerWidget>::New();
+    // // 将坐标轴演员添加到orientationWidget
+    // textWidget->SetOrientationMarker(infoTextActor);
+    // // 将orientationWidget与交互器关联
+    // textWidget->SetInteractor(renWin->GetInteractor());
+    // // 设置视口
+    // textWidget->SetViewport(0.8, 0.8, 1, 1);// 调整信息窗口的位置
+    // textWidget->SetEnabled(1);
+    // textWidget->InteractiveOn();
 
     renderer->AddActor(infoTextActor);
-    qDebug()<<"执行了hhhhhhhhhhhhhh";
     // 设置交互器的鼠标移动回调
     renWin->GetInteractor()->AddObserver(vtkCommand::MouseMoveEvent, this, &VtkWidget::OnMouseMove);
 }
@@ -163,13 +162,13 @@ void VtkWidget::reDrawCentity(){
     QVector<bool> list = m_pMainWin->m_EntityListMgr->getMarkList();//获取标记是否隐藏元素的list
     QMap<QString, bool> filemap = m_pMainWin->getpWinFileMgr()->getContentItemMap();
     QVector<CEntity*> constructEntityList = m_pMainWin->getPWinToolWidget()->getConstructEntityList();//存储构建元素的列表
+
     QMap<vtkSmartPointer<vtkActor>, CEntity*>& actorToEntity=m_pMainWin->getactorToEntityMap();
     actorToEntity.clear();
     // 遍历entitylist绘制图形并加入渲染器
     for(auto i = 0;i < entitylist.size();i++){
         int flag=0;
         if(constructEntityList.isEmpty()){//没有构建的元素
-
             vtkSmartPointer<vtkActor>actor=entitylist[i]->draw();
             actorToEntity.insert(actor,entitylist[i]);
             getRenderer()->AddActor(actor);
@@ -200,21 +199,13 @@ void VtkWidget::reDrawCentity(){
         if(object)
             getRenderer()->AddActor(object->draw());
     }
-    createText();
+    createText(); // 恢复浮动窗口
 }
 
 void VtkWidget::reDrawCloud()
 {
     showConvertedCloud(); // 显示刚打开的点云文件
-    showProductCloud(m_pMainWin->fitcloud);
 
-    // 如果有生成的点云，即productedlist不为空则继续显示
-    // auto productedlist = m_pMainWin->getPointCloudListMgr()->getProductCloudList();
-    // if(!productedlist.empty()){
-    //     for(auto i = 0;i < productedlist.size();i++){
-    //         showProductCloud(productedlist[i]);
-    //     }
-    // }
 }
 
 // 创建全局坐标器
@@ -361,7 +352,6 @@ void VtkWidget::showConvertedCloud(){
             actor->GetProperty()->SetPointSize(5); // 设置点大小
             actor->GetProperty()->SetColor(0.5, 0.5, 0.5);
 
-            // getCloudActors().push_back(actor); // 将转化后的点云存入列表
             renderer->AddActor(actor);
         }
     }

@@ -78,7 +78,6 @@ public:
     CEntityMgr* m_EntityListMgr;
     ChosenCEntityMgr* m_ChosenListMgr;
     PointCloudListMgr *m_CloudListMgr;
-    pcl::PointCloud<pcl::PointXYZRGB> fitcloud;
 
     //预置
     void OnPresetPoint(CPosition pt);
