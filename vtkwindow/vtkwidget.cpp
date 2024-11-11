@@ -448,20 +448,28 @@ void VtkWidget::showProductCloud(pcl::PointCloud<pcl::PointXYZRGB> cloud_rgb_1){
 // 比较两个点云的处理函数
 void VtkWidget::onCompare()
 {
-    if(m_pMainWin->getpWinFileMgr()->getModelFileMap().empty() ||
-        m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().empty()){
-        QMessageBox::warning(this, "Warning", "打开的文件不足");
-        return;
-    }
+    // if(m_pMainWin->getpWinFileMgr()->getModelFileMap().empty() ||
+    //     m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().empty()){
+    //     QMessageBox::warning(this, "Warning", "打开的文件不足");
+    //     return;
+    // }
+
+    // // 获取打开的模型文件和实测文件
+    // auto file_model = m_pMainWin->getpWinFileMgr()->getModelFileMap().lastKey();
+    // auto file_measure = m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().lastKey();
+
+
+    // // 初始化两个点云
+    // pcl::io::loadPLYFile(file_model.toStdString(), *cloud1);
+    // pcl::io::loadPCDFile(file_measure.toStdString(), *cloud2);
 
     // 获取打开的模型文件和实测文件
     auto file_model = m_pMainWin->getpWinFileMgr()->getModelFileMap().lastKey();
-    auto file_measure = m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().lastKey();
-
+    auto file_measure = m_pMainWin->getpWinFileMgr()->getModelFileMap().lastKey();
 
     // 初始化两个点云
     pcl::io::loadPLYFile(file_model.toStdString(), *cloud1);
-    pcl::io::loadPCDFile(file_measure.toStdString(), *cloud2);
+    pcl::io::loadPLYFile(file_measure.toStdString(), *cloud2);
 
     // 检查点云是否为空
     if (cloud1->empty() || cloud2->empty()) {
@@ -635,7 +643,9 @@ void VtkWidget::onAlign()
         actor->GetProperty()->SetPointSize(6); // 设置点大小
         actor->GetProperty()->SetColor(0.5, 0.5, 0.5);
 
+        //renderer->Clear();
         renderer->AddActor(actor);
+        //renWin->Render();
 
         // 输出 RMSE
         double rmse = icp.getFitnessScore();
