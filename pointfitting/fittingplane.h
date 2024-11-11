@@ -9,13 +9,10 @@ class FittingPlane
 {
 public:
     FittingPlane();
-    void RANSAC(pcl::PointXYZRGB,pcl::PointCloud<pcl::PointXYZRGB>::Ptr);
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr RANSAC(pcl::PointXYZRGB,pcl::PointCloud<pcl::PointXYZRGB>::Ptr);
     bool isPointInPlane(const pcl::PointXYZRGB&);
-    void visualizePlane();
-
-    double &getRadious();
-    int &getDistance();
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr getPlaneCloud();
+    void setRadious(double);
+    void setDistance(double);
 private:
     // pcl::PointXYZRGB searchPoint;//实现拟合平面的点
     // pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudptr;//存储打开的点云
@@ -24,9 +21,7 @@ private:
     pcl::ModelCoefficients::Ptr coefficients;//存储拟合平面方程的4个系数
     pcl::PointIndices::Ptr inliers;//存储内点
     double radious;
-    int distance;
-
-    setDataWidget *p_setDataWidget;
+    double distance;
 };
 
 #endif // FITTINGPLANE_H

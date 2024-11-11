@@ -5,7 +5,10 @@
 #include <QSettings>
 
 #include "globes.h"
-
+#include <pcl/common/common.h>
+#include <pcl/io/ply_io.h>
+#include <pcl/io/pcd_io.h>
+#include <pcl/common/distances.h>
 #include <vtkSmartPointer.h>
 #include <vtkActor.h>
 
@@ -399,12 +402,14 @@ class CDistance : public CEntity{
     CCircle circle;
     CLine line;
     double distance;
+    CPosition Projection;
 public:
     CDistance(){
         uptolerance=0.0;
         undertolerance=0.0;
         m_strAutoName = QString("距离%1").arg(currentCdistacneId);
         m_strCName = QString("距离%1").arg(currentCdistacneId);
+        currentCdistacneId++;
     }
     double getUptolerance();
     double getUndertolerance();
@@ -422,7 +427,7 @@ public:
     double getdistance();
     void setdistance(double d);
     bool judge();
-
+    void setProjection(CPosition pos);
     // 分别判断出了begin以外的图形是哪种
     bool isHavePlane = false;
     bool isHaveLine = false;
@@ -435,4 +440,59 @@ public:
     vtkSmartPointer<vtkActor> pointToCircle();
 
 };
+
+
+
+
+class CPointCloud : public CEntity
+{
+public:
+    CPosition m_pt;
+    pcl::PointCloud<pcl::PointXYZRGB> m_pointCloud;
+    static int pointCloudCount;
+    int currentPointCloudId;
+public:
+     CPointCloud()
+    {
+        m_pt.x=0;
+        m_pt.y=0;
+        m_pt.z=0;
+        currentPointCloudId = ++pointCloudCount;
+        m_strAutoName = QString("点云%1").arg(currentPointCloudId);
+        m_strCName = QString("点云%1").arg(currentPointCloudId);
+    }
+
+
+    // 点云类的draw
+    vtkSmartPointer<vtkActor> draw() override;
+    int GetUniqueType() override {
+        return enPointCloud;
+    }
+
+    void SetPosition(CPosition pt)
+    {
+        m_pt = pt;
+    }
+    int getId()  {
+        return currentPointCloudId; // 返回该点对象的唯一标识符
+    }
+    void setPointCloud(pcl::PointCloud<pcl::PointXYZRGB> pointCloud){
+        m_pointCloud=pointCloud;
+    }
+
+    CPosition GetPt()
+    {
+        return m_pt;
+    }
+
+    CPosition GetObjectCenterLocalPoint()
+    {
+        return m_pt;
+    }
+    CPosition GetObjectCenterGlobalPoint()
+    {
+        return GetWorldPcsPos(m_pt);
+    }
+};
+
 #endif // CENTITYTYPES_H
