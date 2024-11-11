@@ -54,7 +54,9 @@
 #include <vtkCallbackCommand.h>
 #include <vtkGlyphSource2D.h>
 #include <vtkTextActor.h>
+#include <vtkTextProperty.h>
 #include <vtkAutoInit.h>
+#include <vtkCommand.h>
 VTK_MODULE_INIT(vtkRenderingOpenGL2);
 VTK_MODULE_INIT(vtkInteractionStyle);
 VTK_MODULE_INIT(vtkRenderingVolumeOpenGL2);
@@ -86,8 +88,11 @@ public:
 
     void showConvertedCloud();// 将点云转为vtk的顶点图形并显示
     void onCompare();// 比较两个点云
-    void showConvertedCloud(pcl::PointCloud<pcl::PointXYZRGB> cloud_rgb_1);// 显示对比完成的两个点云
+    void showProductCloud(pcl::PointCloud<pcl::PointXYZRGB> cloud_rgb_1);// 显示调用拟合对比等功能生成的点云
     QVector<vtkSmartPointer<vtkActor>> &getCloudActors();
+
+    void OnMouseMove();
+    void createText();
 
 private:
     QVTKOpenGLNativeWidget* vtkWidget; // vtk窗口
@@ -96,14 +101,16 @@ private:
     // 创建渲染器、渲染窗口和交互器
     vtkSmartPointer<vtkRenderer> renderer;
     vtkSmartPointer<vtkGenericOpenGLRenderWindow> renWin;
-    // 创建交互部件来封装坐标器
-    vtkSmartPointer<vtkOrientationMarkerWidget> orientationWidget;
+
+    vtkSmartPointer<vtkOrientationMarkerWidget> axeWidget; // 创建窗口部件来封装坐标器
+    vtkSmartPointer<vtkOrientationMarkerWidget> textWidget; // 浮动窗口，用于显示信息
 
     QVector<vtkSmartPointer<vtkActor>> cloudActors; // 管理点云生成的actor
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud1; // 基准点云1
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud2;
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr comparisonCloud;
+    vtkSmartPointer<vtkTextActor> infoTextActor;// 浮动信息文本演员
 
 public slots:
     // 配准的函数
