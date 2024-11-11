@@ -85,6 +85,9 @@ void MainWindow::setupUi(){
 
     QMenu *cloudOperation=bar->addMenu("点云操作");
     QAction* compareAction=cloudOperation->addAction("点云对比");
+    connect(compareAction,&QAction::triggered,this,[&](){
+        pWinVtkWidget->onCompare();
+    });
     QAction* alignAction=cloudOperation->addAction("点云对齐");
     connect(alignAction,&QAction::triggered,this,[&](){
         pWinVtkWidget->onAlign();
@@ -233,7 +236,8 @@ void MainWindow::openFile(){
             }
             QDataStream in(&file);
             in.setVersion(QDataStream::Qt_6_0);
-            in>>*(getObjectListMgr());
+            in>>*m_EntityListMgr;
+            in>>*m_ObjectListMgr;
             file.close();
         }
     }
@@ -272,7 +276,9 @@ void MainWindow::saveFile(){
     out.setVersion(QDataStream::Qt_6_0);
 
     // 写入内容
-    out<<*(getObjectListMgr()); // 返回为指针，需要解引用
+    // out<<*(getObjectListMgr()); // 返回为指针，需要解引用
+    out<<*m_EntityListMgr;
+    out<<*m_ObjectListMgr;
 
     // 关闭文件
     file.close();
