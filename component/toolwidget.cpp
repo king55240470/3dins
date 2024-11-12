@@ -462,11 +462,11 @@ void ToolWidget::connectActionWithF(){
     connect(construct_actions_[construct_action_name_list_.indexOf("距离")],&QAction::triggered,this,&  ToolWidget::onConstructDistance);
 
     //保存
-    connect(save_actions_[save_action_name_list_.indexOf("excel")],&QAction::triggered,&  tool_widget::onSaveExcel);
-    connect(save_actions_[save_action_name_list_.indexOf("word")],&QAction::triggered,&  tool_widget::onSaveWord);
-    connect(save_actions_[save_action_name_list_.indexOf("txt")],&QAction::triggered,&  tool_widget::onSaveTxt);
-    connect(save_actions_[save_action_name_list_.indexOf("pdf")],&QAction::triggered,&  tool_widget::onSavePdf);
-    connect(save_actions_[save_action_name_list_.indexOf("image")],&QAction::triggered,&  tool_widget::onSaveImage);
+    connect(save_actions_[save_action_name_list_.indexOf("excel")],&QAction::triggered,this,&  ToolWidget::onSaveExcel);
+    connect(save_actions_[save_action_name_list_.indexOf("word")],&QAction::triggered,this,&  ToolWidget::onSaveWord);
+    connect(save_actions_[save_action_name_list_.indexOf("txt")],&QAction::triggered,this,&  ToolWidget::onSaveTxt);
+    connect(save_actions_[save_action_name_list_.indexOf("pdf")],&QAction::triggered,this,&  ToolWidget::onSavePdf);
+    connect(save_actions_[save_action_name_list_.indexOf("image")],&QAction::triggered,this,&  ToolWidget::onSaveImage);
 
     // connect(save_actions_[save_action_name_list_.indexOf("txt")],&QAction::triggered,this,&  ToolWidget::onSaveTxt);
 
@@ -542,29 +542,13 @@ void onFrontViewAngle(){qDebug()<<"点击了主视角";}
 void onIsometricViewAngle(){qDebug()<<"点击了立体视角";}
 void onRightViewAngle(){qDebug()<<"点击了侧视角";}
 void onUpViewAngle(){qDebug()<<"点击了俯视角";}
-void  onFindPoint(){ qDebug()<<"点击了识别点";}
-void  onFindLine(){  qDebug()<<"点击了识别线";}
-void  onFindCircle(){ qDebug()<<"点击了识别圆";}
-void  onFindPlan(){qDebug()<<"点击了识别平面";}
-void  onFindRectangle(){qDebug()<<"点击了识别矩形";}
-void  onFindCylinder(){qDebug()<<"点击了识别圆柱";}
-void  onFindCone(){qDebug()<<"点击了识别圆锥";}
-void   onFindSphere(){qDebug()<<"点击了识别球形";}
-//Construct
-void   onConstructPoint(){qDebug()<<"点击了构造点";}
-void   onConstructLine(){qDebug()<<"点击了构造线";}
-void   onConstructCircle(){qDebug()<<"点击了构造圆";}
-void   onConstructPlane(){qDebug()<<"点击了构造平面";}
-void   onConstructRectangle(){qDebug()<<"点击了构造矩形";}
-void   onConstructCylinder(){qDebug()<<"点击了构造圆柱";}
-void   onConstructCone(){qDebug()<<"点击了构造圆锥";}
-void   onConstructSphere(){qDebug()<<"点击了构造球形";}
 //Coord
 void   onCreateCoord(){qDebug()<<"点击了创建坐标系";}
 void   onSpinCoord(){qDebug()<<"点击了旋转坐标系";}
 void   onSaveCoord(){qDebug()<<"点击了保存坐标系";}
+}
 //Save
-void   onSavePdf(){
+void   ToolWidget::onSavePdf(){
     QString path = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("Pdf(*.pdf)"));
     if (path.isEmpty()){
         return ;
@@ -641,7 +625,7 @@ void   onSavePdf(){
 
     pdfFile.close();
 }
-void   onSaveExcel(){
+void   ToolWidget::onSaveExcel(){
     QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("Excel(*.xlsx *.xls)"));
     if (filePath.isEmpty()){
         return ;
@@ -738,9 +722,8 @@ void   onSaveExcel(){
     QMessageBox::information(nullptr, "提示", "保存成功");
 }
 
-void  onSaveTxt(){
-    QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("txt(*.txt )"));
-
+void ToolWidget::onSaveTxt(){
+    QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("txt(*.txt )"));  
     if (filePath.isEmpty()){
         return ;
     }
@@ -759,18 +742,94 @@ void  onSaveTxt(){
 
     // 创建 QTextStream 对象
     QTextStream out(&file);
-
+    auto& entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
     // 写入内容
-    out << "Hello, World!" ;
-    out << "This is a line of text." ;
 
+    for(int i=0;i<entitylist.size();i++){
+        CEntity* entity=entitylist[i];
+        if(entity->GetUniqueType()==enPoint){
+            CPoint * point=(CPoint*)entity;
+            CPosition position =point->GetPt();
+            out<<"类型：点 名称:"<<point->m_strAutoName<<Qt::endl;
+            out<<"坐标:("<<position.x<<","<<position.y<<","<<position.z<<",)"<<Qt::endl;
+            out<<Qt::endl;
+        }else if(entity->GetUniqueType()==enCircle){
+            CCircle* circle=(CCircle*)entity;
+            CPosition position=circle->getCenter();
+            out<<"类型：圆 名称:"<<circle->m_strAutoName<<Qt::endl;
+            out<<"中心:("<<position.x<<","<<position.y<<","<<position.z<<",)"<<Qt::endl;
+            out<<"直径D:"<<circle->getDiameter();
+            out<<Qt::endl;
+
+        }else if(entity->GetUniqueType()==enSphere){
+            CSphere* sphere=(CSphere*)entity;
+            CPosition position=sphere->getCenter();
+            out<<"类型：球 名称:"<<sphere->m_strAutoName<<Qt::endl;
+            out<<"中心:("<<position.x<<","<<position.y<<","<<position.z<<",)"<<Qt::endl;
+            out<<"直径D:"<<sphere->getDiameter();
+            out<<Qt::endl;
+
+        }else if(entity->GetUniqueType()==enPlane){
+            CPlane* plane=(CPlane*)entity;
+            CPosition position=plane->getCenter();
+            QVector4D normal,dir_long_edge;
+            normal=plane->getNormal();
+            dir_long_edge=plane->getDir_long_edge();
+             out<<"类型：平面 名称:"<<plane->m_strAutoName<<Qt::endl;
+             out<<"中心:("<<position.x<<","<<position.y<<","<<position.z<<",)"<<Qt::endl;
+             out<<"法线:("<<normal.x()<<","<<normal.y()<<","<<normal.z()<<",)"<<Qt::endl;
+             out<<"边向量:("<<dir_long_edge.x()<<","<<dir_long_edge.y()<<","<<dir_long_edge.z()<<",)"<<Qt::endl;
+             out<<"长:"<<plane->getLength()<<" 宽:"<<plane->getWidth()<<Qt::endl;
+
+        }else if(entity->GetUniqueType()==enCone){
+            CCone* cone=(CCone*)entity;
+
+            CPosition position=cone->getVertex();
+            QVector4D axis;
+            axis=cone->getAxis();
+            out<<"类型：圆锥 名称:"<<cone->m_strAutoName<<Qt::endl;
+            out<<"顶点:("<<position.x<<","<<position.y<<","<<position.z<<",)"<<Qt::endl;
+            out<<"轴线向量:("<<axis.x()<<","<<axis.y()<<","<<axis.z()<<",)"<<Qt::endl;
+            out<<"高:"<<cone->getHeight()<<" 弧度:"<<cone->getRadian()<<" 圆锥高:"<<cone->getCone_height()<<Qt::endl;
+
+
+        }else if(entity->GetUniqueType()==enCylinder){
+            CCylinder* cylinder=(CCylinder*)entity;
+            CPosition position=cylinder->getBtm_center();
+            QVector4D axis;
+            axis=cylinder->getAxis();
+            out<<"类型：圆柱 名称:"<<cylinder->m_strAutoName<<Qt::endl;
+            out<<"底面中心:("<<position.x<<","<<position.y<<","<<position.z<<",)"<<Qt::endl;
+            out<<"轴线向量:("<<axis.x()<<","<<axis.y()<<","<<axis.z()<<",)"<<Qt::endl;
+            out<<"高:"<<cylinder->getHeight()<<" 直径:"<<cylinder->getDiameter()<<Qt::endl;
+
+        }else if(entity->GetUniqueType()==enLine){
+            CLine* line=(CLine*)entity;
+            CPosition position1,position2;
+            position1=line->getPosition1();
+            position2=line->getPosition2();
+            out<<"类型：线 名称:"<<line->m_strAutoName<<Qt::endl;
+             out<<"起点:("<<position1.x<<","<<position1.y<<","<<position1.z<<",)"<<Qt::endl;
+             out<<"终点:("<<position2.x<<","<<position2.y<<","<<position2.z<<",)"<<Qt::endl;
+
+        }else if(entity->GetUniqueType()==enDistance){
+            CDistance* Distance=(CDistance*) entity;
+            out<<"类型：距离 名称:"<<Distance->m_strCName<<Qt::endl;
+            out<<"大小:"<<Distance->getdistance()<<" 上公差："<<Distance->getUptolerance()<<" 下公差:"<<Distance->getUndertolerance();
+            out<<Qt::endl;
+        }else if(entity->GetUniqueType()==enPointCloud){
+            CPointCloud* PointCloud=(CPointCloud*) entity;
+            out<<"类型：距离 名称:"<<PointCloud->m_strCName<<Qt::endl;
+        }
+        ;
+    }
     // 关闭文件
     file.close();
     QMessageBox::information(nullptr, "提示", "保存成功");
 
 }
 
-void   onSaveWord(){
+void   ToolWidget::onSaveWord(){
     QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("word(*.doc *.docx)"));
     if (filePath.isEmpty()){
         return ;
@@ -860,7 +919,7 @@ void   onSaveWord(){
         file.close();
         QMessageBox::information(nullptr, "提示", "保存成功");
     }}
-void   onSaveImage(){
+void   ToolWidget::onSaveImage(){
     QString imagePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("Excel(*.png *.jpg)"));
     if (imagePath.isEmpty()){
         return ;
@@ -899,7 +958,7 @@ void   onSaveImage(){
     // 保存为图片
     pixmap.save(imagePath);
 }
-}
+
 static void WrongWidget(QString message);
 void ToolWidget::addToList(CEntity* newEntity){
     newEntity->m_CreateForm = ePreset;
