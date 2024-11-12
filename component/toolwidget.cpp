@@ -967,15 +967,18 @@ void ToolWidget::addToList(CEntity* newEntity){
     newEntity->m_pExtCoord = m_pMainWin->m_pcsListMgr->m_pPcsCurrent;
     // newEntity->SetNominal();
     // 加入Entitylist 和 ObjectList
+
     m_pMainWin->m_EntityListMgr->Add(newEntity);
     m_pMainWin->m_ObjectListMgr->Add(newEntity);
 
     //加入constructEntityList
     constructEntityList.push_back(newEntity);
+
     //加入contentItemMap
     m_pMainWin->getpWinFileMgr()->getContentItemMap().insert(newEntity->GetObjectCName()+"  "+newEntity->GetObjectAutoName(), true);
 
     m_pMainWin->NotifySubscribe();
+
 
 }
 void ToolWidget::onConstructPoint(){
@@ -1147,17 +1150,19 @@ void ToolWidget:: onFindPlane(){
     point.y=positions[0].y;
     point.z=positions[0].z;
     auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
-    if(cloudptr==nullptr) return ;
+    qDebug()<<cloudptr->size();
+    if(cloudptr==nullptr){
+        qDebug()<<"点云指针为空";
+        return ;
+    }
     m_pMainWin->getPWinSetDataWidget()->setPlaneData(point,cloudptr);
+    // 生成点云对象并添加到entitylist
     CPointCloud* pointCloud=new CPointCloud();
     pointCloud->setPointCloud(*m_pMainWin->getPWinSetDataWidget()->getFittingPlane());
-    for (size_t i = 0; i < pointCloud->m_pointCloud.points.size(); ++i)
-    {
-       qDebug()<<pointCloud->m_pointCloud.points[i].x<<pointCloud->m_pointCloud.points[i].y<< pointCloud->m_pointCloud.points[i].z;
-    }
+    qDebug()<<"ok 1";
     addToList(pointCloud);
+    qDebug()<<"ok 2";
     positions.clear();
-
 }
 
 void ToolWidget::onFindPoint(){

@@ -88,8 +88,7 @@ public:
 
     void showConvertedCloud();// 将点云转为vtk的顶点图形并显示
     void onCompare();// 比较两个点云
-    void showConvertedCloud(pcl::PointCloud<pcl::PointXYZRGB> cloud_rgb_1);// 显示对比完成的两个点云
-    QVector<vtkSmartPointer<vtkActor>> &getCloudActors();
+    void showProductCloud(pcl::PointCloud<pcl::PointXYZRGB> cloud_rgb_1);// 显示调用拟合对比等功能生成的点云
 
     void OnMouseMove();
     void createText();
@@ -101,10 +100,9 @@ private:
     // 创建渲染器、渲染窗口和交互器
     vtkSmartPointer<vtkRenderer> renderer;
     vtkSmartPointer<vtkGenericOpenGLRenderWindow> renWin;
-    // 创建交互部件来封装坐标器
-    vtkSmartPointer<vtkOrientationMarkerWidget> orientationWidget;
 
-    QVector<vtkSmartPointer<vtkActor>> cloudActors; // 管理点云生成的actor
+    vtkSmartPointer<vtkOrientationMarkerWidget> axeWidget; // 创建窗口部件来封装坐标器
+    vtkSmartPointer<vtkOrientationMarkerWidget> textWidget; // 浮动窗口，用于显示信息
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud1; // 基准点云1
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud2;
