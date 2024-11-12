@@ -1,6 +1,8 @@
 #ifndef COBJECTMGR_H
 #define COBJECTMGR_H
 #include "geometry/cobject.h"
+#include "geometry/centity.h"
+#include "geometry/centitytypes.h"
 
 class CObjectMgr
 {

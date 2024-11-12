@@ -97,6 +97,7 @@ void MouseInteractorHighlightActor::OnRightButtonDown()
                 break; // 找到并恢复后退出循环
             }
         }
+        DeleteHighLightPoint();
     }
     // 如果选中的是空白，则取消全部高亮
     else {
@@ -105,8 +106,8 @@ void MouseInteractorHighlightActor::OnRightButtonDown()
         {
             ResetActor(item->first); // 恢复actor的属性
         }
-        pickedActors.clear();
         DeleteHighLightPoint();
+        m_pMainWin->getChosenListMgr()->getChosenCEntityList().clear();
     }
 
     // 调用基类的右键按下事件处理方法

@@ -49,7 +49,6 @@ private:
     PresetElemWidget *pWinPresetElemWidget;
 
     FileMgr *pWinFileMgr;
-    PointCloudListMgr *pWinPclMgr;
 
     setDataWidget *pWinSetDataWidget;
 
@@ -78,6 +77,7 @@ public:
     CObjectMgr* m_ObjectListMgr;
     CEntityMgr* m_EntityListMgr;
     ChosenCEntityMgr* m_ChosenListMgr;
+    PointCloudListMgr *m_CloudListMgr;
 
     //预置
     void OnPresetPoint(CPosition pt);
