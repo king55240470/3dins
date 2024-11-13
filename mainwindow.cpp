@@ -420,6 +420,7 @@ void MainWindow::NotifySubscribe()
     pWinElementListWidget->upadteelementlist();
     pWinFileManagerWidget->UpdateInfo();
     pWinVtkWidget->UpdateInfo(); // 更新vtkwidget信息
+
 }
 
 void MainWindow::OnPresetPoint(CPosition pt){

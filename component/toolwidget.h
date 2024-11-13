@@ -10,34 +10,10 @@
 #include"geometry/centitytypes.h"
 //槽函数
 namespace tool_widget{
-//Find
-void onFindPoint();
-void onFindLine();
-void onFindCircle();
-void onFindPlan();
-void onFindRectangle();
-void onFindCylinder();
-void onFindCone();
-void onFindSphere();
-//Construct
-void onConstructPoint();
-void onConstructLine();
-void onConstructCircle();
-void onConstructPlane();
-void onConstructRectangle();
-void onConstructCylinder();
-void onConstructCone();
-void onConstructSphere();
 //Coord
 void onCreateCoord();
 void onSpinCoord();
 void onSaveCoord();
-// //Save
-void onSavePdf();
-void onSaveExcel();
-void onSaveTxt();
-void onSaveWord();
-void onSaveImage();
 //ViewAngle
 void onFrontViewAngle();
 void onIsometricViewAngle();
@@ -109,6 +85,12 @@ public slots:
     void onFindCylinder();
     void onFindCone();
     void onFindSphere();
+    //保存
+    void onSavePdf();
+    void onSaveExcel();
+    void onSaveTxt();
+    void onSaveWord();
+    void onSaveImage();
 
 
 

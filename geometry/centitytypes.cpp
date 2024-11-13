@@ -307,23 +307,49 @@ vtkSmartPointer<vtkActor> CCone::draw(){
     return actor;
 }
 
-// 各种距离的draw
-vtkSmartPointer<vtkActor> CDistance::draw(){
-    vtkSmartPointer<vtkActor> actor;
-
-    if(isHavePlane)
-        actor = pointToPlane();
-    else if(isHaveLine)
-        actor = pointToLine();
-    else {
-        actor = pointToCircle();
-    }
-
-    return actor;
-}
 int CPointCloud::pointCloudCount = 0;
 vtkSmartPointer<vtkActor> CPointCloud::draw(){
 
+    // vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+    // vtkSmartPointer<vtkUnsignedCharArray> colors = vtkSmartPointer<vtkUnsignedCharArray>::New();
+    // colors->SetNumberOfComponents(3);
+    // colors->SetName("Colors");
+
+    // points->SetNumberOfPoints(m_pointCloud.points.size());
+    // for (size_t i = 0; i < m_pointCloud.points.size(); ++i)
+    // {
+    //     points->SetPoint(i, m_pointCloud.points[i].x, m_pointCloud.points[i].y, m_pointCloud.points[i].z);
+    //     if(isFileCloud || isFittingCloud) // 若为生成的点云则带颜色
+    //         colors->SetTuple3(i, m_pointCloud.points[i].r, m_pointCloud.points[i].g, m_pointCloud.points[i].b);
+    // }
+
+    // vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
+    // polyData->SetPoints(points);
+    // polyData->GetPointData()->SetScalars(colors);
+
+    // // 创建一个顶点过滤器来生成顶点表示
+    // vtkSmartPointer<vtkVertexGlyphFilter> glyphFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
+    // glyphFilter->SetInputData(polyData);
+    // glyphFilter->Update();
+
+    // polyData = glyphFilter->GetOutput();
+
+    // // 创建映射器并将glyphFilter的几何数据输入
+    // vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    // mapper->SetInputData(polyData);
+
+    // vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
+    // actor->SetMapper(mapper);
+    // actor->GetProperty()->SetPointSize(5); // 设置点大小
+    // actor->GetProperty()->SetColor(1, 0.8, 0);
+
+    // return actor;
+
+
+
+
+
+    // 将cloud转换为VTK的点集
     vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
     vtkSmartPointer<vtkUnsignedCharArray> colors = vtkSmartPointer<vtkUnsignedCharArray>::New();
     colors->SetNumberOfComponents(3);
@@ -353,7 +379,22 @@ vtkSmartPointer<vtkActor> CPointCloud::draw(){
     vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
     actor->GetProperty()->SetPointSize(5); // 设置点大小
-    actor->GetProperty()->SetColor(1, 0, 0);
+    actor->GetProperty()->SetColor(0.5, 0.5, 0.5);
+
+    return actor;
+}
+
+// 各种距离的draw
+vtkSmartPointer<vtkActor> CDistance::draw(){
+    vtkSmartPointer<vtkActor> actor;
+
+    if(isHavePlane)
+        actor = pointToPlane();
+    else if(isHaveLine)
+        actor = pointToLine();
+    else {
+        actor = pointToCircle();
+    }
 
     return actor;
 }
