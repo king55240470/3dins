@@ -454,7 +454,6 @@ public:
     bool isFileCloud = true; // 是否是文件生成的点云
     bool isFittingCloud = false; // 是否是拟合出来的点云
     bool isComparsionCloud = false; //  是否是对比得到的点云
-
 public:
     CPointCloud()
     {
