@@ -71,7 +71,7 @@ public:
     //序列化
     QDataStream& serialize(QDataStream& out) const override{
         CObject::serialize(out);//序列化基类部分
-        out<<m_pRefCoord<<m_pCurCoord<<m_pExtCoord;//将指针的值（地址）写入数据流中，不涉及对象内容的读写
+        out<<m_pRefCoord<<m_pCurCoord<<m_pExtCoord;//将指针的值（地址）写入数据流中，不涉及对象内容的读写?
         out<<static_cast<int>(m_ConstructList.size());
         for(const auto& entity:m_ConstructList){//auto让编译器自动推断元素的类型
             out<<*entity;
@@ -81,10 +81,14 @@ public:
             out<<*entity;
         }*/
         out<<m_bShowCNameLabel
+            <<static_cast<int>(m_CompenType)
             <<m_nRef
             <<m_bRemeasure;
         return out;
     }
+
+
+
     //反序列化
     QDataStream& deserialize(QDataStream& in) override{
         CObject::deserialize(in);//反序列化基类部分
@@ -109,6 +113,7 @@ public:
         }*/
 
         in>>m_bShowCNameLabel
+            >>reinterpret_cast<int&>(m_CompenType)
             >>m_nRef
             >>m_bRemeasure;
         return in;
