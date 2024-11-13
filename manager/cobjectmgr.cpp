@@ -118,7 +118,7 @@ QDataStream& operator>>(QDataStream& in, CObjectMgr& mgr){
         int type;
         in >> type;
 
-        CObject* object = nullptr;
+        CObject* object = new CEntity();
         switch (type) {
         case enCircle:
             object = new CCircle();
@@ -129,11 +129,10 @@ QDataStream& operator>>(QDataStream& in, CObjectMgr& mgr){
             break;
         }
 
-        if (object) {
-            object->deserialize(in);  // 调用反序列化函数处理特有数据
-            // mgr.m_objectList.append(object);
-            mgr.Add(object);
-        }
+        object->deserialize(in);  // 调用反序列化函数处理特有数据
+        mgr.m_objectList.append(object);
+        // mgr.Add(object);
+
     }
 
     return in;
