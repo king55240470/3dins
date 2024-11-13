@@ -946,7 +946,7 @@ void ToolWidget::onConstructPoint(){
         for(int i=0;i<positions.size();i++){
             if(i!=0){
                 newPoint=constructor.createPoint(positions[i]);
-                 addToList(newPoint);
+                addToList(newPoint);
             }
         }
     }
@@ -972,9 +972,9 @@ void ToolWidget::onConstructLine(){
     }
     positions.clear();
     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
-     newLine=(CLine*)constructor.create(entityList);
+    newLine=(CLine*)constructor.create(entityList);
     if(newLine!=nullptr){
-         addToList(newLine);
+        addToList(newLine);
     }
     if(!createLine&&newLine==nullptr){
         WrongWidget("构造线失败");
@@ -1015,9 +1015,9 @@ void ToolWidget::onConstructPlane(){
     positions.clear();
     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
 
-     newPlane=(CPlane*)constructor.create(entityList);
+    newPlane=(CPlane*)constructor.create(entityList);
     if(newPlane!=nullptr){
-         addToList(newPlane);
+        addToList(newPlane);
     }
     if(!createPlane&&newPlane==nullptr){
         WrongWidget("构造平面失败");
@@ -1090,13 +1090,10 @@ void ToolWidget:: onFindPlane(){
     auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
     if(cloudptr==nullptr) return ;
     m_pMainWin->getPWinSetDataWidget()->setPlaneData(point,cloudptr);
+
     // 生成点云对象并添加到entitylist
-    CPointCloud* pointCloud=new CPointCloud();
-    pointCloud->setPointCloud(*m_pMainWin->getPWinSetDataWidget()->getFittingPlane());
-    for (size_t i = 0; i < pointCloud->m_pointCloud.points.size(); ++i)
-    {
-       qDebug()<<pointCloud->m_pointCloud.points[i].x<<pointCloud->m_pointCloud.points[i].y<< pointCloud->m_pointCloud.points[i].z;
-    }
+    auto pointCloud = m_pMainWin->getPointCloudListMgr()->CreateFittingCloud(
+        *m_pMainWin->getPWinSetDataWidget()->getFittingPlane());
     addToList(pointCloud);
     positions.clear();
 }

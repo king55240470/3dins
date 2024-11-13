@@ -11,13 +11,26 @@ QMap<QString, pcl::PointCloud<pcl::PointXYZRGB>> &PointCloudListMgr::getPointClo
 {
     return pointCloudList;
 }
-
-void PointCloudListMgr::CreateCloudFromFile(QString str)
+CPointCloud* PointCloudListMgr::CreateCloudFromFile(QString str)
 {
     // 创建并加载RGB点云
-    pcl::PointCloud<pcl::PointXYZRGB> cloud;
     pcl::io::loadPCDFile(str.toStdString(), cloud);
 
+    // 创建新的点云实体
+    CPointCloud* pointCloud=new CPointCloud();
+    pointCloud->isFileCloud = true;
+    pointCloud->setPointCloud(cloud);
+
     // 将新的点云加入容器
-    getPointCloudList().insert(str, cloud);
+    // getPointCloudList().insert(str, cloud);
+    return pointCloud;
+}
+
+CPointCloud *PointCloudListMgr::CreateFittingCloud(pcl::PointCloud<pcl::PointXYZRGB> plane)
+{
+    CPointCloud* pointCloud=new CPointCloud();
+    pointCloud->isFittingCloud = true; // 拟合出的点云
+    pointCloud->setPointCloud(plane);
+
+    return pointCloud;
 }

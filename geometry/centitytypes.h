@@ -448,7 +448,7 @@ class CPointCloud : public CEntity
 {
 public:
     CPosition m_pt;
-    pcl::PointCloud<pcl::PointXYZRGB> m_pointCloud; // 存储的点云对象
+    pcl::PointCloud<pcl::PointXYZRGB> m_pointCloud; // 存储的点云对象（已经加载过的）
     static int pointCloudCount;
     int currentPointCloudId;
     bool isFileCloud = true; // 是否是文件生成的点云
