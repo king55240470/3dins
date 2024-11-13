@@ -75,7 +75,8 @@ void FileManagerWidget::openModelFile(QString fileName,QString filePath){
 
     //在modelFileMap中添加添加新文件，并分配新的cloud
     m_pMainWin->getpWinFileMgr()->getModelFileMap().insert(filePath, true);
-    m_pMainWin->getPointCloudListMgr()->CreateCloudFromFile(filePath);
+    auto cloud = m_pMainWin->getPointCloudListMgr()->CreateCloudFromFile(filePath);
+    m_pMainWin->getPWinToolWidget()->addToList(cloud);
     m_pMainWin->NotifySubscribe();
 }
 
@@ -87,7 +88,8 @@ void FileManagerWidget::openMeasuredFile(QString fileName,QString filePath){
 
     //在measuredFileMap中添加新文件，并分配新的cloud
     m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().insert(filePath, true);
-    m_pMainWin->getPointCloudListMgr()->CreateCloudFromFile(filePath);
+    auto cloud = m_pMainWin->getPointCloudListMgr()->CreateCloudFromFile(filePath);
+    m_pMainWin->getPWinToolWidget()->addToList(cloud);
     m_pMainWin->NotifySubscribe();
 }
 

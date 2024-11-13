@@ -70,11 +70,16 @@ private:
 
     // 渲染器和交互器
     vtkRenderer* renderer = nullptr;
-    vtkGenericRenderWindowInteractor* interactor = nullptr;
 
+    int lastRightClickPos[2]; // 记录上次右键点击位置
+    vtkTimeStamp lastRightClickTime; // 时间戳，记录上次右键发生的 时间
+    int DOUBLE_CLICK_INTERVAL = 300; // 双击间隔时间，单位毫秒
+
+    QMenu* vtkMenu; // 右键双击菜单
 signals:
-    void MouseClicked(double pos[3]); // 定义信号，向qt窗口发送选中的坐标
-
+    void onRightButtonDoubleClick(){
+        OnRightButtonDown();
+    }; // 向vtkwidget发送事件，弹出菜单栏
 };
 
 

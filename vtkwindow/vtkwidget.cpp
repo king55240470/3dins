@@ -13,8 +13,7 @@ VtkWidget::VtkWidget(QWidget *parent)
     cloud2(new pcl::PointCloud<pcl::PointXYZ>()), // 初始化第二个点云对象
     comparisonCloud(new pcl::PointCloud<pcl::PointXYZRGB>()) // 初始化比较好的点云对象
 {
-    // 禁用 VTK 的错误处理弹窗
-    vtkObject::GlobalWarningDisplayOff();
+    vtkObject::GlobalWarningDisplayOff();// 禁用 VTK 的错误处理弹窗
     m_pMainWin = (MainWindow*) parent;
 
     // 设置 VTK 渲染窗口到 QWidget
@@ -95,7 +94,7 @@ void VtkWidget::OnMouseMove()
             std::ostringstream oss;
             oss << "picked entity: (" << pos[0] << ", " << pos[1] << ", " << pos[2] << ")";
             infoTextActor->SetInput(oss.str().c_str()); // 确保传入 const char*
-            infoTextActor->SetPosition(clickPos[0], clickPos[1]);
+            // infoTextActor->SetPosition(clickPos[0], clickPos[1]);
             infoTextActor->SetVisibility(true);
         }
     }
@@ -107,19 +106,19 @@ void VtkWidget::createText()
     infoTextActor = vtkSmartPointer<vtkTextActor>::New();
     infoTextActor->GetTextProperty()->SetFontSize(15);
     infoTextActor->GetTextProperty()->SetColor(0.9, 0.1, 0.1);
-    infoTextActor->SetPosition(renWin->GetSize()[0]*0.8,renWin->GetSize()[1]*0.8);
+    // infoTextActor->SetPosition(renWin->GetSize()[0]*0.6,renWin->GetSize()[1]*0.8);
     infoTextActor->SetInput("浮动窗口");
     infoTextActor->SetVisibility(true); // 初始隐藏
 
-    // textWidget = vtkSmartPointer<vtkOrientationMarkerWidget>::New();
-    // // 将坐标轴演员添加到orientationWidget
-    // textWidget->SetOrientationMarker(infoTextActor);
-    // // 将orientationWidget与交互器关联
-    // textWidget->SetInteractor(renWin->GetInteractor());
-    // // 设置视口
-    // textWidget->SetViewport(0.8, 0.8, 1, 1);// 调整信息窗口的位置
-    // textWidget->SetEnabled(1);
-    // textWidget->InteractiveOn();
+    textWidget = vtkSmartPointer<vtkOrientationMarkerWidget>::New();
+    // 将坐标轴演员添加到orientationWidget
+    textWidget->SetOrientationMarker(infoTextActor);
+    // 将orientationWidget与交互器关联
+    textWidget->SetInteractor(renWin->GetInteractor());
+    // 设置视口
+    textWidget->SetViewport(0.8, 0.8, 1, 1);// 调整信息窗口的位置
+    textWidget->SetEnabled(1);
+    textWidget->InteractiveOn();
 
     renderer->AddActor(infoTextActor);
     // 设置交互器的鼠标移动回调
@@ -141,6 +140,13 @@ void VtkWidget::UpdateInfo(){
 }
 
 void VtkWidget::reDrawCentity(){
+    auto entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
+    auto objectlist = m_pMainWin->m_ObjectListMgr->getObjectList();
+    QVector<bool> list = m_pMainWin->m_EntityListMgr->getMarkList();//获取标记是否隐藏元素的list
+    QMap<QString, bool> filemap = m_pMainWin->getpWinFileMgr()->getContentItemMap();
+    QVector<CEntity*> constructEntityList = m_pMainWin->getPWinToolWidget()->getConstructEntityList();//存储构建元素的列表
+    QMap<vtkSmartPointer<vtkActor>, CEntity*>& actorToEntity = m_pMainWin->getactorToEntityMap();
+
     // 获取渲染器中的所有 actor
     auto* actorCollection = getRenderer()->GetViewProps();
 
@@ -151,35 +157,28 @@ void VtkWidget::reDrawCentity(){
     actorCollection->InitTraversal(it);
 
     vtkSmartPointer<vtkProp> prop;
-    // 遍历并移除 vtkProp 对象（包括 vtkActor 和 vtkAxesActor）
+    // 遍历并移除 vtkProp 对象，若有点云actor则跳过
     while ((prop = actorCollection->GetNextProp(it)) != nullptr)
     {
         renderer->RemoveViewProp(prop);
     }
 
-    auto entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
-    auto objectlist = m_pMainWin->m_ObjectListMgr->getObjectList();
-    QVector<bool> list = m_pMainWin->m_EntityListMgr->getMarkList();//获取标记是否隐藏元素的list
-    QMap<QString, bool> filemap = m_pMainWin->getpWinFileMgr()->getContentItemMap();
-    QVector<CEntity*> constructEntityList = m_pMainWin->getPWinToolWidget()->getConstructEntityList();//存储构建元素的列表
-
-    QMap<vtkSmartPointer<vtkActor>, CEntity*>& actorToEntity=m_pMainWin->getactorToEntityMap();
     actorToEntity.clear();
     // 遍历entitylist绘制图形并加入渲染器
     for(auto i = 0;i < entitylist.size();i++){
         int flag=0;
         if(constructEntityList.isEmpty()){//没有构建的元素
-            vtkSmartPointer<vtkActor>actor=entitylist[i]->draw();
+            vtkSmartPointer<vtkActor>actor = entitylist[i]->draw();
             actorToEntity.insert(actor,entitylist[i]);
             getRenderer()->AddActor(actor);
         }
         else{
-            for(int j=0;j<constructEntityList.size();j++){
+            for(int j = 0;j < constructEntityList.size();j++){
                 QString key=constructEntityList[j]->GetObjectCName() + "  " + constructEntityList[j]->GetObjectAutoName();
                 if(entitylist[i] == constructEntityList[j]){//是构建的元素
                     flag=1;
                     if(filemap[key]){
-                        vtkSmartPointer<vtkActor>actor=entitylist[i]->draw();
+                        vtkSmartPointer<vtkActor>actor = entitylist[i]->draw();
                         actorToEntity.insert(actor,entitylist[i]);
                         getRenderer()->AddActor(actor);
                         break;
@@ -309,13 +308,12 @@ void VtkWidget::showConvertedCloud(){
 
 
     auto cloud_rgb_1(new pcl::PointCloud<pcl::PointXYZRGB>);
+    // auto cloud_rgb_1 = m_pMainWin->getPointCloudListMgr()->getTempCloud();
     // 分别用迭代器遍历两个map的所有文件
-
     for(auto item = measured_map.begin(); item != measured_map.end(); item++){
-
         // 如果文件不隐藏
         if(item.value()){
-            pcl::io::loadPCDFile(item.key().toStdString(), *cloud_rgb_1);
+            // pcl::io::loadPCDFile(item.key().toStdString(), *cloud_rgb_1);
 
             // 将临时点云指针传给toolwidget，暂时查看拟合功能
             m_pMainWin->getpWinFileMgr()->cloudptr=pcl::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>>(cloud_rgb_1);
@@ -448,28 +446,23 @@ void VtkWidget::showProductCloud(pcl::PointCloud<pcl::PointXYZRGB> cloud_rgb_1){
 // 比较两个点云的处理函数
 void VtkWidget::onCompare()
 {
-    // if(m_pMainWin->getpWinFileMgr()->getModelFileMap().empty() ||
-    //     m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().empty()){
-    //     QMessageBox::warning(this, "Warning", "打开的文件不足");
-    //     return;
-    // }
+    if(m_pMainWin->getpWinFileMgr()->getModelFileMap().empty() ||
+        m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().empty()){
+        QMessageBox::warning(this, "Warning", "打开的文件不足");
+        return;
+    }
 
     // // 获取打开的模型文件和实测文件
-    // auto file_model = m_pMainWin->getpWinFileMgr()->getModelFileMap().lastKey();
-    // auto file_measure = m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().lastKey();
-
-
-    // // 初始化两个点云
-    // pcl::io::loadPLYFile(file_model.toStdString(), *cloud1);
-    // pcl::io::loadPCDFile(file_measure.toStdString(), *cloud2);
+    auto file_model = m_pMainWin->getpWinFileMgr()->getModelFileMap().lastKey();
+    auto file_measure = m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().lastKey();
 
     // 获取打开的模型文件和实测文件
-    auto file_model = m_pMainWin->getpWinFileMgr()->getModelFileMap().lastKey();
-    auto file_measure = m_pMainWin->getpWinFileMgr()->getModelFileMap().lastKey();
+    // auto file_model = m_pMainWin->getpWinFileMgr()->getModelFileMap().lastKey();
+    // auto file_measure = m_pMainWin->getpWinFileMgr()->getModelFileMap().lastKey();
 
     // 初始化两个点云
     pcl::io::loadPLYFile(file_model.toStdString(), *cloud1);
-    pcl::io::loadPLYFile(file_measure.toStdString(), *cloud2);
+    pcl::io::loadPCDFile(file_measure.toStdString(), *cloud2);
 
     // 检查点云是否为空
     if (cloud1->empty() || cloud2->empty()) {
