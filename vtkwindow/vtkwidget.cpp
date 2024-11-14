@@ -77,7 +77,7 @@ void VtkWidget::OnMouseMove()
     // 遍历所有高亮点，检测鼠标是否靠近
     bool isMouseNearHighlightedPoint = false;
     CPosition posi;
-    for (CPosition actor : m_pMainWin->getChosenListMgr()->getChosenCEntityList()) {
+    for (CPosition actor : m_pMainWin->getChosenListMgr()->getChosenActorAxes()) {
         double* pos = picker->GetPickPosition();
         double distance = std::sqrt(std::pow(actor.x - pos[0], 2) +
                                     std::pow(actor.y - pos[1], 2) +

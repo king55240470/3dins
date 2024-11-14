@@ -983,7 +983,7 @@ void ToolWidget::addToList(CEntity* newEntity){
 }
 void ToolWidget::onConstructPoint(){
 
-    QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenCEntityList();;
+    QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenActorAxes();
     PointConstructor constructor;
     CPoint* newPoint;
     bool createPoint=false;
@@ -1022,7 +1022,7 @@ void ToolWidget::onConstructPoint(){
 }
 
 void ToolWidget::onConstructLine(){
-    QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenCEntityList();;
+    QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenActorAxes();
     LineConstructor constructor;
     CLine* newLine;
     bool createLine=false;
@@ -1064,7 +1064,7 @@ void ToolWidget::onConstructCircle(){
     addToList(newCircle);
 }
 void ToolWidget::onConstructPlane(){
-    QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenCEntityList();;
+    QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenActorAxes();
     PlaneConstructor constructor;
     CPlane* newPlane;
     bool createPlane=false;
@@ -1143,7 +1143,7 @@ void ToolWidget::onConstructDistance(){
 }
 
 void ToolWidget:: onFindPlane(){
-    QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenCEntityList();
+    QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenActorAxes();
     pcl::PointXYZRGB  point;
     if(positions.size()==0)return ;
     point.x=positions[0].x;
