@@ -1,4 +1,6 @@
 #include "centitymgr.h"
+#include "geometry/centitytypes.h"
+#include "geometry/globes.h"
 
 CEntityMgr::CEntityMgr() {
 
@@ -68,6 +70,97 @@ QVector<CEntity *>& CEntityMgr::getEntityList()
 QVector<bool> &CEntityMgr::getMarkList()
 {
     return marklist;
+}
+
+QDataStream& operator<<(QDataStream& out, const CEntityMgr& mgr) {
+    out << mgr.m_nSize << mgr.m_nCount << mgr.m_bRedraw << mgr.m_nRedrawIndex;
+
+    // 序列化 m_entityList
+    out << static_cast<int>(mgr.m_entityList.size());
+    for (const auto& entity : mgr.m_entityList) {
+        int typeInt = entity->GetUniqueType();  // 获取对象的类型标识符
+        ENTITY_TYPE type=static_cast<ENTITY_TYPE>(typeInt);
+        out << type;  // 序列化类型标识符
+        entity->serialize(out);  // 调用对象的序列化方法（通过多态性处理具体类型）
+    }
+
+    // // 序列化 m_SelList
+    // out << static_cast<int>(mgr.m_SelList.size());
+    // for (const auto& entity : mgr.m_SelList) {
+    //     ENTITY_TYPE type = entity->GetEntityType();  // 获取对象的类型标识符
+    //     out << type;  // 序列化类型标识符
+    //     entity->serialize(out);  // 调用对象的序列化方法
+    // }
+    // qDebug()<<"m_entityList.size and m_SelList.size"<<mgr.m_entityList.size()<<mgr.m_SelList.size();
+    return out;
+}
+
+QDataStream& operator>>(QDataStream& in, CEntityMgr& mgr) {
+    int entityListSize, selListSize;
+
+    in >> mgr.m_nSize >> mgr.m_nCount >> mgr.m_bRedraw >> mgr.m_nRedrawIndex;
+
+    // 反序列化 m_entityList
+    in >> entityListSize;
+    mgr.m_entityList.clear();  // 清空现有数据
+    for (int i = 0; i < entityListSize; ++i) {
+        int typeInt;
+        in >> typeInt;
+        ENTITY_TYPE type = static_cast<ENTITY_TYPE>(typeInt);
+
+        CEntity* entity = nullptr;
+        switch (type) {
+        case enCircle:
+            entity = new CCircle();
+            break;
+        // 添加其他类型的处理逻辑
+        case enLine:
+            entity = new CLine();
+            break;
+        // ...其他类型
+        default:
+            entity = new CEntity();
+            break;
+        }
+
+        if (entity) {
+            entity->deserialize(in);  // 调用对象的反序列化方法
+            mgr.m_entityList.append(entity);
+            // mgr.Add(entity);
+        }
+    }
+
+    // // 反序列化 m_SelList
+    // in >> selListSize;
+    // mgr.m_SelList.clear();  // 清空现有数据
+    // for (int i = 0; i < selListSize; ++i) {
+    //     int typeInt;
+    //     in >> typeInt;
+    //     ENTITY_TYPE type = static_cast<ENTITY_TYPE>(typeInt);
+
+    //     CEntity* entity = nullptr;
+    //     switch (type) {
+    //     case enCircle:
+    //         entity = new CCircle();
+    //         break;
+    //     // 添加其他类型的处理逻辑
+    //     case enLine:
+    //         // entity = new CLine();
+    //         break;
+    //     // ...其他类型
+    //     default:
+    //         entity = new CEntity();
+    //         break;
+    //     }
+
+    //     if (entity) {
+    //         entity->deserialize(in);  // 调用对象的反序列化方法
+    //         mgr.m_SelList.append(entity);
+    //     }
+    // }
+
+    // qDebug() << "m_entityList.size and m_SelList.size" << entityListSize << selListSize;
+    return in;
 }
 
 

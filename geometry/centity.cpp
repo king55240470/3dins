@@ -1,8 +1,13 @@
 #include "centity.h"
 #include <QString>
+#include "manager/cpcsmgr.h"
 
 //QList<CEntity*> CEntity::m_ConstructList;
-CEntity::CEntity() {}
+CEntity::CEntity() {
+    m_pRefCoord=CPcsMgr::m_pPcsCurrent;
+    m_pCurCoord=CPcsMgr::m_pPcsCurrent;
+    m_pExtCoord=CPcsMgr::m_pPcsCurrent;
+}
 CEntity::~CEntity() {}
 CPcs *CEntity::GetRefCoord(){
     return m_pRefCoord;
