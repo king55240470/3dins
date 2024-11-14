@@ -1024,7 +1024,7 @@ void ToolWidget::addToList(CEntity* newEntity){
 }
 void ToolWidget::onConstructPoint(){
 
-    QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenCEntityList();;
+    QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenActorAxes();
     PointConstructor constructor;
     CPoint* newPoint;
     bool createPoint=false;
@@ -1048,7 +1048,7 @@ void ToolWidget::onConstructPoint(){
             addToList(newPoint);
             for(int i=1;i<positions.size();i++){
                 newPoint=constructor.createPoint(positions[i]);
-                 addToList(newPoint);
+                addToList(newPoint);
             }
         }
     }
@@ -1060,7 +1060,7 @@ void ToolWidget::onConstructPoint(){
 }
 
 void ToolWidget::onConstructLine(){
-    QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenCEntityList();;
+    QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenActorAxes();
     LineConstructor constructor;
     CLine* newLine;
     bool createLine=false;
@@ -1076,7 +1076,6 @@ void ToolWidget::onConstructLine(){
         newLine=(CLine*)constructor.create(entityList);
         if(newLine!=nullptr){
             addToList(newLine);
-
         }
 
     }
@@ -1110,7 +1109,7 @@ void ToolWidget::onConstructCircle(){
 
 }
 void ToolWidget::onConstructPlane(){
-    QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenCEntityList();;
+    QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenActorAxes();
     PlaneConstructor constructor;
     CPlane* newPlane;
     bool createPlane=false;
@@ -1201,7 +1200,7 @@ void ToolWidget::onConstructDistance(){
 }
 
 void ToolWidget:: onFindPlane(){
-    QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenCEntityList();
+    QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenActorAxes();
     pcl::PointXYZRGB  point;
     if(positions.size()==0)return ;
     point.x=positions[0].x;
@@ -1213,9 +1212,15 @@ void ToolWidget:: onFindPlane(){
         return ;
     }
     m_pMainWin->getPWinSetDataWidget()->setPlaneData(point,cloudptr);
-    // 生成点云对象并添加到entitylist
-    CPointCloud* pointCloud=new CPointCloud();
-    pointCloud->setPointCloud(*m_pMainWin->getPWinSetDataWidget()->getFittingPlane());
+// <<<<<<< HEAD
+//     // 生成点云对象并添加到entitylist
+//     CPointCloud* pointCloud=new CPointCloud();
+//     pointCloud->setPointCloud(*m_pMainWin->getPWinSetDataWidget()->getFittingPlane());
+// =======
+
+    // 生成拟合出的点云并添加到entitylist
+    auto pointCloud = m_pMainWin->getPointCloudListMgr()->CreateFittingCloud(
+        *m_pMainWin->getPWinSetDataWidget()->getFittingPlane());
     addToList(pointCloud);
     positions.clear();
     m_pMainWin->NotifySubscribe();
