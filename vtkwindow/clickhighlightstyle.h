@@ -78,9 +78,7 @@ private:
 
     QMenu* vtkMenu; // 右键双击菜单
 signals:
-    void onRightButtonDoubleClick(){
-        OnRightButtonDown();
-    }; // 向vtkwidget发送事件，弹出菜单栏
+
 };
 
 
