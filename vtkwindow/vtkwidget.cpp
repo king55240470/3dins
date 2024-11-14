@@ -93,22 +93,6 @@ void VtkWidget::OnMouseMove()
     vtkActor* pickedActor = picker->GetActor();
     if (pickedActor) {
         if (isMouseNearHighlightedPoint){
-            /*QString infoText = QString("Point: (") + QString::number(posi.x, 'f', 7) +
-                               QString(", ") + QString::number(posi.y, 'f', 7) +
-                               QString(", ") + QString::number(posi.z, 'f', 7) + QString(")");*/
-            /*infoLabel->setText(infoText);
-            QFontMetrics fm(infoLabel->font());
-            int width = fm.horizontalAdvance(infoText);
-            int height = fm.height();
-
-            // 调整标签的大小
-            infoLabel->setFixedSize(width+20, height+20);
-            double point[3]={posi.x,posi.y,posi.z};
-            double screenCoord[2];
-            GetScreenCoordinates(renderer, point, screenCoord);
-            qDebug()<<screenCoord[0]<<screenCoord[1];
-            infoLabel->move(screenCoord[0], screenCoord[1]);
-            infoLabel->setVisible(true);*/
             std::ostringstream oss;
             std::ostringstream oss1;
             std::ostringstream oss2;
@@ -117,11 +101,13 @@ void VtkWidget::OnMouseMove()
             oss2 << "Z: " << posi.z;
             std::string infoText = oss.str() + oss1.str() + oss2.str();
             infoTextActor->SetInput(infoText.c_str());   // 设置文本输入
+            infoTextActor->SetPosition(clickPos[0]+20, clickPos[1]+20);
             infoTextActor->SetVisibility(true);
-
+            rectangleActor->SetPosition(clickPos[0]+20, clickPos[1]);
+            rectangleActor->SetVisibility(true);
         }else{
-            //infoTextActor->SetVisibility(false);
-            //infoLabel->setVisible(false);
+            infoTextActor->SetVisibility(false);
+            rectangleActor->SetVisibility(false);
         }
     }
     getRenderWindow()->Render();
@@ -152,21 +138,18 @@ void VtkWidget::createText()
     rectangle->SetPoints(points);
     rectangle->SetPolys(polygons);
 
-    // 为矩形创建一个映射器和演员
-    vtkSmartPointer<vtkPolyDataMapper> rectangleMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    // 创建 PolyData 映射器
+    vtkSmartPointer<vtkPolyDataMapper2D> rectangleMapper = vtkSmartPointer<vtkPolyDataMapper2D>::New();
     rectangleMapper->SetInputData(rectangle);
 
-    vtkSmartPointer<vtkActor> rectangleActor = vtkSmartPointer<vtkActor>::New();
+    // 创建 vtkActor2D
+    rectangleActor = vtkSmartPointer<vtkActor2D>::New();
     rectangleActor->SetMapper(rectangleMapper);
-
     // 设置矩形的颜色（例如淡蓝色）
     rectangleActor->GetProperty()->SetColor(0.3, 0.3, 0.3); // 填充颜色
     rectangleActor->GetProperty()->SetOpacity(0.5); // 设置透明度
-    rectangleActor->SetScale(1.0, 1.0, 0.0);
+    rectangleActor->SetPosition(1,1);
     textWidget = vtkSmartPointer<vtkOrientationMarkerWidget>::New();
-    // 将坐标轴演员添加到orientationWidget
-    textWidget->SetOrientationMarker(infoTextActor);
-    //textWidget->SetOrientationMarker(rectangleActor);
     // 将orientationWidget与交互器关联
     textWidget->SetInteractor(renWin->GetInteractor());
     // 设置视口
@@ -175,6 +158,7 @@ void VtkWidget::createText()
     textWidget->InteractiveOn();
     // 设置交互器的鼠标移动回调
     renderer->AddActor(infoTextActor);
+    renderer->AddActor(rectangleActor);
     renWin->GetInteractor()->AddObserver(vtkCommand::MouseMoveEvent, this, &VtkWidget::OnMouseMove);
 }
 
@@ -289,6 +273,7 @@ void VtkWidget::reDrawCentity(){
         if(object)
             getRenderer()->AddActor(object->draw());
     }
+    createText();
 }
 
 void VtkWidget::reDrawCloud()
