@@ -226,6 +226,7 @@ void VtkWidget::UpdateInfo(){
 }
 
 void VtkWidget::reDrawCentity(){
+
     // 获取渲染器中的所有 actor
     auto* actorCollection = getRenderer()->GetViewProps();
 
@@ -247,22 +248,23 @@ void VtkWidget::reDrawCentity(){
     QVector<bool> list = m_pMainWin->m_EntityListMgr->getMarkList();//获取标记是否隐藏元素的list
     QMap<QString, bool> filemap = m_pMainWin->getpWinFileMgr()->getContentItemMap();
     QVector<CEntity*> constructEntityList = m_pMainWin->getPWinToolWidget()->getConstructEntityList();//存储构建元素的列表
+
     QMap<vtkSmartPointer<vtkActor>, CEntity*>& actorToEntity=m_pMainWin->getactorToEntityMap();
     actorToEntity.clear();
     // 遍历entitylist绘制图形并加入渲染器
     for(auto i = 0;i < entitylist.size();i++){
         int flag=0;
         if(constructEntityList.isEmpty()){//没有构建的元素
-
             vtkSmartPointer<vtkActor>actor=entitylist[i]->draw();
             actorToEntity.insert(actor,entitylist[i]);
             getRenderer()->AddActor(actor);
         }
         else{
+
             for(int j=0;j<constructEntityList.size();j++){
                 QString key=constructEntityList[j]->GetObjectCName() + "  " + constructEntityList[j]->GetObjectAutoName();
                 if(entitylist[i] == constructEntityList[j]){//是构建的元素
-                    flag=1;
+                     flag=1;
                     if(filemap[key]){
                         vtkSmartPointer<vtkActor>actor=entitylist[i]->draw();
                         actorToEntity.insert(actor,entitylist[i]);
@@ -270,13 +272,16 @@ void VtkWidget::reDrawCentity(){
                         break;
                     }
                 }
+                ;
             }
+
             if(flag==0){//不是构建的元素
                 vtkSmartPointer<vtkActor>actor=entitylist[i]->draw();
                 actorToEntity.insert(actor,entitylist[i]);
                 getRenderer()->AddActor(actor);
             }
         }
+
     }
 
     // 遍历objectlist绘制坐标系并加入渲染器
@@ -289,15 +294,7 @@ void VtkWidget::reDrawCentity(){
 void VtkWidget::reDrawCloud()
 {
     showConvertedCloud(); // 显示刚打开的点云文件
-    showProductCloud(m_pMainWin->fitcloud);
 
-    // 如果有生成的点云，即productedlist不为空则继续显示
-    // auto productedlist = m_pMainWin->getPointCloudListMgr()->getProductCloudList();
-    // if(!productedlist.empty()){
-    //     for(auto i = 0;i < productedlist.size();i++){
-    //         showProductCloud(productedlist[i]);
-    //     }
-    // }
 }
 
 // 创建全局坐标器
@@ -444,7 +441,6 @@ void VtkWidget::showConvertedCloud(){
             actor->GetProperty()->SetPointSize(5); // 设置点大小
             actor->GetProperty()->SetColor(0.5, 0.5, 0.5);
 
-            // getCloudActors().push_back(actor); // 将转化后的点云存入列表
             renderer->AddActor(actor);
         }
     }
@@ -541,20 +537,28 @@ void VtkWidget::showProductCloud(pcl::PointCloud<pcl::PointXYZRGB> cloud_rgb_1){
 // 比较两个点云的处理函数
 void VtkWidget::onCompare()
 {
-    if(m_pMainWin->getpWinFileMgr()->getModelFileMap().empty() ||
-        m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().empty()){
-        QMessageBox::warning(this, "Warning", "打开的文件不足");
-        return;
-    }
+    // if(m_pMainWin->getpWinFileMgr()->getModelFileMap().empty() ||
+    //     m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().empty()){
+    //     QMessageBox::warning(this, "Warning", "打开的文件不足");
+    //     return;
+    // }
+
+    // // 获取打开的模型文件和实测文件
+    // auto file_model = m_pMainWin->getpWinFileMgr()->getModelFileMap().lastKey();
+    // auto file_measure = m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().lastKey();
+
+
+    // // 初始化两个点云
+    // pcl::io::loadPLYFile(file_model.toStdString(), *cloud1);
+    // pcl::io::loadPCDFile(file_measure.toStdString(), *cloud2);
 
     // 获取打开的模型文件和实测文件
     auto file_model = m_pMainWin->getpWinFileMgr()->getModelFileMap().lastKey();
-    auto file_measure = m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().lastKey();
-
+    auto file_measure = m_pMainWin->getpWinFileMgr()->getModelFileMap().lastKey();
 
     // 初始化两个点云
     pcl::io::loadPLYFile(file_model.toStdString(), *cloud1);
-    pcl::io::loadPCDFile(file_measure.toStdString(), *cloud2);
+    pcl::io::loadPLYFile(file_measure.toStdString(), *cloud2);
 
     // 检查点云是否为空
     if (cloud1->empty() || cloud2->empty()) {
@@ -728,7 +732,9 @@ void VtkWidget::onAlign()
         actor->GetProperty()->SetPointSize(6); // 设置点大小
         actor->GetProperty()->SetColor(0.5, 0.5, 0.5);
 
+        //renderer->Clear();
         renderer->AddActor(actor);
+        //renWin->Render();
 
         // 输出 RMSE
         double rmse = icp.getFitnessScore();

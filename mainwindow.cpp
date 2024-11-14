@@ -85,6 +85,9 @@ void MainWindow::setupUi(){
 
     QMenu *cloudOperation=bar->addMenu("点云操作");
     QAction* compareAction=cloudOperation->addAction("点云对比");
+    connect(compareAction,&QAction::triggered,this,[&](){
+        pWinVtkWidget->onCompare();
+    });
     QAction* alignAction=cloudOperation->addAction("点云对齐");
     connect(alignAction,&QAction::triggered,this,[&](){
         pWinVtkWidget->onAlign();
@@ -224,7 +227,7 @@ void MainWindow::openFile(){
             pWinFileManagerWidget->openModelFile(fileName, filePath);
         } else if (filePath.endsWith("pcd")) {
             pWinFileManagerWidget->openMeasuredFile(fileName, filePath);
-        }else if(filePath.endsWith("dat")){
+        }else if(filePath.endsWith("qins")){
             QFile file(filePath);
             if (!file.open(QIODevice::ReadOnly)) {
                 // 如果文件无法打开，输出错误信息
@@ -232,8 +235,12 @@ void MainWindow::openFile(){
                 return;
             }
             QDataStream in(&file);
-            in.setVersion(QDataStream::Qt_6_0);
-            in>>*(getObjectListMgr());
+            // in.setVersion(QDataStream::Qt_6_0);
+            in>>*m_EntityListMgr;
+            in>>*m_ObjectListMgr;
+            qDebug() << "加载成功,m_EntityListMgr的大小为:"<<m_EntityListMgr->getEntityList().size()<<"m_ObjectListMgr的大小为:"<<m_ObjectListMgr->getObjectList().size();
+            qDebug()<<"首个Object的类型为:"<<m_ObjectListMgr->GetAt(0)->GetUniqueType();
+            NotifySubscribe();
             file.close();
         }
     }
@@ -250,14 +257,17 @@ void MainWindow::openFile(){
 }
 void MainWindow::saveFile(){
     //保存ObjectList
-    QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("dat(*.dat )"));
+    // QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("dat(*.dat )"));
+    QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("qins(*.qins);;所有文件 (*)"));
 
     if (filePath.isEmpty()){
         return ;
     }
 
-    if (QFileInfo(filePath).suffix().isEmpty())
-        filePath.append(".dat");
+    if (QFileInfo(filePath).suffix().isEmpty()){
+        // filePath.append(".dat");
+        filePath.append(".qins");
+    }
 
     // 创建 QFile 对象
     QFile file(filePath);
@@ -269,10 +279,17 @@ void MainWindow::saveFile(){
     }
 
     QDataStream out(&file);
-    out.setVersion(QDataStream::Qt_6_0);
+    // out.setVersion(QDataStream::Qt_6_0);
 
     // 写入内容
-    out<<*(getObjectListMgr()); // 返回为指针，需要解引用
+    // out<<*(getObjectListMgr()); // 返回为指针，需要解引用
+    if(m_EntityListMgr){
+        out<<*m_EntityListMgr;
+        out<<*m_ObjectListMgr;
+    }else{
+        qWarning("Entity manager is null, nothing to save.");
+    }
+
 
     // 关闭文件
     file.close();
@@ -404,6 +421,7 @@ void MainWindow::NotifySubscribe()
     pWinElementListWidget->upadteelementlist();
     pWinFileManagerWidget->UpdateInfo();
     pWinVtkWidget->UpdateInfo(); // 更新vtkwidget信息
+
 }
 
 void MainWindow::OnPresetPoint(CPosition pt){
