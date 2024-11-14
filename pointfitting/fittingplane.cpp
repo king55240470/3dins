@@ -98,3 +98,6 @@ void FittingPlane::setRadious(double rad){
 void FittingPlane::setDistance(double dis){
     distance=dis;
 }
+pcl::PointCloud<pcl::PointXYZRGB>::Ptr  FittingPlane::getPlaneCloud(){
+    return planeCloud;
+}
