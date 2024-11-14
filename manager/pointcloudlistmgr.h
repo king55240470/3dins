@@ -18,7 +18,8 @@ public:
     QMap<QString, pcl::PointCloud<pcl::PointXYZRGB>> &getPointCloudList();
     QVector<pcl::PointCloud<pcl::PointXYZRGB>>& getProductCloudList();
     CPointCloud* CreateCloudFromFile(QString str);// 给打开的文件分配RGB点云，并生成cpointcloud对象
-    CPointCloud& CreateFittingCloud(pcl::PointCloud<pcl::PointXYZRGB> plane);// 创建不同的点云centity对象
+    CPointCloud CreateFittingCloud(pcl::PointCloud<pcl::PointXYZRGB> plane);// 创建不同的点云centity对象
+    CPointCloud* CreateComparsionCloud(pcl::PointCloud<pcl::PointXYZRGB> cloud);
 
     pcl::PointCloud<pcl::PointXYZRGB>& getTempCloud(){
         return tempCloud;

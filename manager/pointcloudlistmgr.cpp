@@ -22,22 +22,30 @@ CPointCloud* PointCloudListMgr::CreateCloudFromFile(QString str)
         pcl::io::loadPLYFile(str.toStdString(), tempCloud);
 
     // 创建新的点云实体
-    CPointCloud* pointCloud=new CPointCloud();
-    pointCloud->isFileCloud = true;
-    pointCloud->setPointCloud(tempCloud);
+    CPointCloud* CloudEntity=new CPointCloud();
+    CloudEntity->isFileCloud = true;
+    CloudEntity->setPointCloud(tempCloud);
 
     // 将新的点云加入map
     getPointCloudList().insert(str, tempCloud);
-    return pointCloud;
+    return CloudEntity;
 }
 
-CPointCloud &PointCloudListMgr::CreateFittingCloud(pcl::PointCloud<pcl::PointXYZRGB> plane)
+CPointCloud PointCloudListMgr::CreateFittingCloud(pcl::PointCloud<pcl::PointXYZRGB> plane)
 {
-    CPointCloud* pointCloud=new CPointCloud();
-    pointCloud->isFittingCloud = true; // 拟合出的点云
-    pointCloud->setPointCloud(plane);
+    CPointCloud* CloudEntity=new CPointCloud();
+    CloudEntity->isFittingCloud = true; // 拟合出的点云
+    CloudEntity->setPointCloud(plane);
 
-    return *pointCloud;
+    return *CloudEntity;
+}
+
+CPointCloud *PointCloudListMgr::CreateComparsionCloud(pcl::PointCloud<pcl::PointXYZRGB> cloud)
+{
+    CPointCloud* CloudEntity=new CPointCloud();
+    CloudEntity->isFittingCloud = true; // 拟合出的点云
+    CloudEntity->setPointCloud(cloud);
+    return CloudEntity;
 }
 
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr PointCloudListMgr::CloudToPtr(pcl::PointCloud<pcl::PointXYZRGB> cloud)
