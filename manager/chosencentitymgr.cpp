@@ -8,7 +8,7 @@ void ChosenCEntityMgr::CreatPosition(double pos[3])
     std::cout << "Picked point: " << pos[0] << ", " << pos[1] << ", " << pos[2] << std::endl;
 
     auto newpoint = CPosition(pos[0], pos[1], pos[2]);
-    // 将新创建的点存入ChosenCEntityList
+    // 将新创建的点存入ChosenActorAxes
     getChosenActorAxes().append(newpoint);
 }
 

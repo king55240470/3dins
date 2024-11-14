@@ -206,7 +206,6 @@ void VtkWidget::GetScreenCoordinates(vtkRenderer *renderer, double pt[3], double
     coordinate->SetValue(pt[0], pt[1], pt[2]);
 
     // 获取计算的显示坐标
-
     double* screenPos = coordinate->GetComputedDoubleDisplayValue(renderer);
 
     // 打印 debug 信息
@@ -271,20 +270,20 @@ void VtkWidget::reDrawCentity(){
                 QString key=constructEntityList[j]->GetObjectCName() + "  " + constructEntityList[j]->GetObjectAutoName();
                 if(entitylist[i] == constructEntityList[j]){//是构建的元素
                     flag=1;
-                    if(filemap[key]){
+                    if(filemap[key]){ // 如果不隐藏
                         vtkSmartPointer<vtkActor>actor = entitylist[i]->draw();
                         actorToEntity.insert(actor,entitylist[i]);
                         getRenderer()->AddActor(actor);
                         break;
                     }
                 }
-                ;
-            }
-
-            if(flag==0){//不是构建的元素
-                vtkSmartPointer<vtkActor>actor=entitylist[i]->draw();
-                actorToEntity.insert(actor,entitylist[i]);
-                getRenderer()->AddActor(actor);
+                if(flag==0){//不是构建的元素
+                    if(filemap[key]){ // 如果不隐藏
+                        vtkSmartPointer<vtkActor>actor=entitylist[i]->draw();
+                        actorToEntity.insert(actor,entitylist[i]);
+                        getRenderer()->AddActor(actor);
+                    }
+                }
             }
         }
 
