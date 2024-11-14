@@ -3,12 +3,15 @@
 #include "pointfitting/fittingplane.h"
 class VtkWidget;
 
+#include <QMessageBox>
+
 setDataWidget::setDataWidget(QWidget *parent)
     : QWidget{parent}
 {
     m_pMainWin=(MainWindow*)parent;
     p_cloudptr.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
     fittingPlane.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
+    plane=nullptr;
 }
 
 void setDataWidget::setPlaneData(pcl::PointXYZRGB searchPoint,pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudptr){
@@ -38,7 +41,15 @@ void setDataWidget::setPlaneData(pcl::PointXYZRGB searchPoint,pcl::PointCloud<pc
 
 void setDataWidget::PlaneBtnClick(){
     p_dialog->close();
-    FittingPlane *plane=new FittingPlane();
+    if(p_dis->text().toDouble()<=0||p_rad->text().toDouble()<=0){
+        QMessageBox *messagebox=new QMessageBox();
+        messagebox->setText("输入大于0的数");
+        messagebox->setIcon(QMessageBox::Warning);
+        messagebox->show();
+        messagebox->exec();
+        return;
+    }
+    plane=new FittingPlane();
     plane->setRadious(p_rad->text().toDouble());  // 设置半径
     plane->setDistance(p_dis->text().toDouble());  // 设置距离阈值
     auto planeCloud= plane->RANSAC(p_point,p_cloudptr);
@@ -47,5 +58,10 @@ void setDataWidget::PlaneBtnClick(){
     if(planeCloud==nullptr){
         qDebug()<<"出现了点云空指针";
     }
+
     // m_pMainWin->getPointCloudListMgr()->getProductCloudList().push_back(*plane->RANSAC(p_point, p_cloudptr).get());
+}
+
+FittingPlane *setDataWidget::getPlane(){
+    return plane;
 }

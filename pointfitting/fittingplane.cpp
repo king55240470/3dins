@@ -1,15 +1,17 @@
 #include "pointfitting/fittingplane.h"
+#include "pcl/common/distances.h"
 
-#include<pcl/io/pcd_io.h>// PCL 的 PCD 文件输入输出类
-#include<pcl/io/ply_io.h>
+#include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
-#include <pcl/search/kdtree.h>
-#include <pcl/sample_consensus/sac_model_plane.h>
-#include <pcl/kdtree/kdtree_flann.h>
+#include <pcl/filters/extract_indices.h>
 #include <pcl/segmentation/sac_segmentation.h>
-#include <boost/make_shared.hpp>
-#include <pcl/filters/statistical_outlier_removal.h>
-#include <pcl/sample_consensus/ransac.h>
+#include <pcl/filters/voxel_grid.h>
+#include <pcl/point_cloud.h>
+#include <pcl/kdtree/kdtree_flann.h>
+#include <pcl/common/centroid.h>
+#include <pcl/surface/convex_hull.h>
+#include <Eigen/Dense>
+#include <pcl/common/pca.h>
 
 #include <QMessageBox>
 
@@ -25,8 +27,6 @@ FittingPlane::FittingPlane()
 
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingPlane::RANSAC(pcl::PointXYZRGB searchPoint,pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudptr)
 {
-    planeCloud->points.clear();
-
     //创建KD树用于邻域搜索
     pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree;
     kdtree.setInputCloud(cloudptr);
@@ -51,6 +51,7 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingPlane::RANSAC(pcl::PointXYZRGB sea
         // 执行分割
         seg.segment(*inliers, *coefficients);
 
+        //获取平面上的所有点云
         for (int i=0;i<cloudptr->size();i++) {
             if(isPointInPlane(cloudptr->points[i])){
                 planeCloud->points.push_back(cloudptr->points[i]);
@@ -59,17 +60,89 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingPlane::RANSAC(pcl::PointXYZRGB sea
         planeCloud->width = planeCloud->points.size();
         planeCloud->height = 1;
         planeCloud->is_dense = true;
-
+        //将平面上的点云设置为红色
         for (auto& point : planeCloud->points){
             point.r = 255;
             point.g = 0;
             point.b = 0;
         }
 
+        //获取平面法向量
+        normal=Eigen::Vector3f(coefficients->values[0], coefficients->values[1], coefficients->values[2]);
+        normal.normalize();
+        std::cout << "Plane normal: " << normal.transpose() << std::endl;
+
+        //计算平面中心
+        pcl::CentroidPoint<pcl::PointXYZRGB> centroid;
+        for (int idx : pointIdxRadiusSearch)
+        {
+            centroid.add(cloudptr->points[idx]);
+        }
+        centroid.get(center);
+        std::cout << "Plane center: (" << center.x << ", " << center.y << ", " << center.z << ")" << std::endl;
+
+        //计算平面长宽
+        pcl::PCA<pcl::PointXYZRGB> pca;
+        pca.setInputCloud(planeCloud);
+        // 获取主成分方向
+        Eigen::Matrix3f eigen_vectors = pca.getEigenVectors();  // 特征向量
+        Eigen::Vector3f eigen_values = pca.getEigenValues();    // 特征值
+        std::cout << "Eigen Vectors (Principal directions): \n" << eigen_vectors << std::endl;
+        std::cout << "Eigen Values (Variance): \n" << eigen_values << std::endl;
+        // 投影到主成分方向
+        std::vector<float> proj1, proj2;
+        for (const auto& point : planeCloud->points) {
+            // 将点投影到主成分方向
+            float proj1_val = point.x * eigen_vectors(0, 0) + point.y * eigen_vectors(1, 0) + point.z * eigen_vectors(2, 0);
+            float proj2_val = point.x * eigen_vectors(0, 1) + point.y * eigen_vectors(1, 1) + point.z * eigen_vectors(2, 1);
+            proj1.push_back(proj1_val);
+            proj2.push_back(proj2_val);
+        }
+        // 计算投影的最大值和最小值
+        double min_proj1 = *std::min_element(proj1.begin(), proj1.end());
+        double max_proj1 = *std::max_element(proj1.begin(), proj1.end());
+        double min_proj2 = *std::min_element(proj2.begin(), proj2.end());
+        double max_proj2 = *std::max_element(proj2.begin(), proj2.end());
+        // 计算平面的长和宽
+        length = max_proj1 - min_proj1;  // 平面在第一个方向上的长度
+        width = max_proj2 - min_proj2;   // 平面在第二个方向上的宽度
+        std::cout << "Plane length: " << length << ", width: " << width << std::endl;
+
+        // //计算平面长宽：通过凸包计算平面边界
+        // pcl::ConvexHull<pcl::PointXYZRGB> chull;
+        // pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_hull(new pcl::PointCloud<pcl::PointXYZRGB>);
+        // chull.setInputCloud(cloud_subset);
+        // chull.reconstruct(*cloud_hull);
+        // if (cloud_hull->points.size() > 1)
+        // {
+        //     float min_dist = std::numeric_limits<float>::max();
+        //     float max_dist = -std::numeric_limits<float>::max();
+
+        //     for (size_t i = 0; i < cloud_hull->points.size(); ++i)
+        //     {
+        //         for (size_t j = i + 1; j < cloud_hull->points.size(); ++j)
+        //         {
+        //             float dist = pcl::euclideanDistance(cloud_hull->points[i], cloud_hull->points[j]);
+        //             min_dist = std::min(min_dist, dist);
+        //             max_dist = std::max(max_dist, dist);
+        //         }
+        //     }
+
+        //     std::cout << "Plane length: " << max_dist << ", width: " << min_dist << std::endl;
+        // }
+
+        // //获取平面的一条边的单位向量（假设选择边界上的两个点）
+        // Eigen::Vector3f edge_vector(cloud_hull->points[0].x - cloud_hull->points[1].x,
+        //                             cloud_hull->points[0].y - cloud_hull->points[1].y,
+        //                             cloud_hull->points[0].z - cloud_hull->points[1].z);
+        // edge_vector.normalize();
+        // std::cout << "Edge unit vector: " << edge_vector.transpose() << std::endl;
+
         // 打印平面方程的系数
-        std::cout << "Plane coefficients: " << coefficients->values[0] << " "
-                  << coefficients->values[1] << " " << coefficients->values[2] << " "
-                  << coefficients->values[3] << std::endl;
+        // std::cout << "Plane coefficients: " << coefficients->values[0] << " "
+        //           << coefficients->values[1] << " " << coefficients->values[2] << " "
+        //           << coefficients->values[3] << std::endl;
+
 
         return planeCloud;
     } else {
@@ -98,6 +171,23 @@ void FittingPlane::setRadious(double rad){
 void FittingPlane::setDistance(double dis){
     distance=dis;
 }
+
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr  FittingPlane::getPlaneCloud(){
     return planeCloud;
+}
+
+Eigen::Vector3f FittingPlane::getNormal(){
+    return normal;
+}
+
+pcl::PointXYZRGB FittingPlane::getCenter(){
+    return center;
+}
+
+double FittingPlane::getLength(){
+    return length;
+}
+
+double FittingPlane::getWidth(){
+    return width;
 }
