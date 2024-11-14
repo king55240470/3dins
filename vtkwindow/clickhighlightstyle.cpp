@@ -31,7 +31,6 @@ void MouseInteractorHighlightActor::OnLeftButtonDown()
     // picker->Pick(clickPos[0], clickPos[1], 0, renderer);
     // picker->SetTolerance(0.005); // 设置拾取容差
     // double* pos = picker->GetPickPosition(); // 用于存储拾取点的世界坐标
-
     // vtkIdType cellId = picker->GetCellId(); // 拾取到的单元格ID
     // int subId = picker->GetSubId(); // 用于存储拾取到的单元格的子ID（例如，多边形的一个顶点）。
     // double* pcoords = picker->GetPCoords(); // 用于存储拾取点在单元格参数坐标系中的位置
@@ -50,10 +49,11 @@ void MouseInteractorHighlightActor::OnLeftButtonDown()
         }
 
         // 如果选中的是文件点云，则给拟合用的cloudptr赋值
-        // if(entity->m_EntityType == enPointCloud && entity->isFileCloud){
-        // auto cloudEntity = (CPointCloud*) entity;
+        // if(entity->m_EntityType == enPointCloud){
+        //     auto cloudEntity = (CPointCloud*) entity;
+        //     auto cloud = new pcl::PointCloud<pcl::PointXYZRGB>(cloudEntity->m_pointCloud);
         //     m_pMainWin->getpWinFileMgr()->cloudptr =
-        //         pcl::PointCloud<pcl::PointXYZRGB>::Ptr (&cloudEntity->m_pointCloud);
+        //         pcl::PointCloud<pcl::PointXYZRGB>::Ptr (cloud);
         // }
 
         // 生成一个用于高亮的顶点，并存入pickedActors
