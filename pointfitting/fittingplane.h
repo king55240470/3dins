@@ -14,6 +14,10 @@ public:
     void setRadious(double);
     void setDistance(double);
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr getPlaneCloud();
+    Eigen::Vector3f getNormal();
+    pcl::PointXYZRGB getCenter();
+    double getLength();
+    double getWidth();
 private:
     // pcl::PointXYZRGB searchPoint;//实现拟合平面的点
     // pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudptr;//存储打开的点云
@@ -23,6 +27,10 @@ private:
     pcl::PointIndices::Ptr inliers;//存储内点
     double radious;
     double distance;
+    Eigen::Vector3f normal;//存储平面的法向量
+    pcl::PointXYZRGB center;//存储平面中心
+    double length;//平面的长
+    double width;//平面的宽
 };
 
 #endif // FITTINGPLANE_H

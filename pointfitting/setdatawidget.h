@@ -24,6 +24,7 @@ public:
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr getFittingPlane(){
         return fittingPlane;
     }
+    FittingPlane *getPlane();
 private:
     MainWindow *m_pMainWin;
 
@@ -38,6 +39,8 @@ private:
     QPushButton *p_btn;
     pcl::PointXYZRGB p_point;
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr p_cloudptr;
+
+    FittingPlane *plane;
 
 signals:
 };

@@ -43,6 +43,7 @@
 #include"geometry/centitytypes.h"
 #include"vtkwindow/vtkwidget.h"
 #include <vtkProperty.h>
+#include <Eigen/Dense>
 
 #include<QTreeWidgetItem>
 //constructor
@@ -1157,11 +1158,27 @@ void ToolWidget:: onFindPlane(){
     }
     m_pMainWin->getPWinSetDataWidget()->setPlaneData(point,cloudptr);
     // 生成点云对象并添加到entitylist
-    CPointCloud* pointCloud=new CPointCloud();
-    pointCloud->setPointCloud(*m_pMainWin->getPWinSetDataWidget()->getFittingPlane());
-    qDebug()<<"ok 1";
-    addToList(pointCloud);
-    qDebug()<<"ok 2";
+    // CPointCloud* pointCloud=new CPointCloud();
+    auto plane=m_pMainWin->getPWinSetDataWidget()->getPlane();
+    if(plane==nullptr){
+        qDebug()<<"拟合平面生成错误";
+        return ;
+    }
+    // pointCloud->setPointCloud(*m_pMainWin->getPWinSetDataWidget()->getFittingPlane());
+    PlaneConstructor constructor;
+    CPlane* newPlane;
+    CPosition center;
+    center.x=plane->getCenter().x;
+    center.y=plane->getCenter().y;
+    center.z=plane->getCenter().z;
+    QVector4D normal(plane->getNormal().x(),plane->getNormal().y(),plane->getNormal().z(),0);
+    newPlane=constructor.createPlane(center,normal,QVector4D(1,0,0,0),plane->getLength(),plane->getWidth());
+    if(newPlane==nullptr){
+        qDebug()<<"拟合平面生成错误";
+        return ;
+    }
+    addToList(newPlane);
+    //addToList(pointCloud);
     positions.clear();
 }
 
