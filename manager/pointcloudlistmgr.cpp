@@ -31,19 +31,19 @@ CPointCloud* PointCloudListMgr::CreateCloudFromFile(QString str)
     return CloudEntity;
 }
 
-CPointCloud PointCloudListMgr::CreateFittingCloud(pcl::PointCloud<pcl::PointXYZRGB> plane)
+CPointCloud* PointCloudListMgr::CreateFittingCloud(pcl::PointCloud<pcl::PointXYZRGB> plane)
 {
     CPointCloud* CloudEntity=new CPointCloud();
     CloudEntity->isFittingCloud = true; // 拟合出的点云
     CloudEntity->setPointCloud(plane);
 
-    return *CloudEntity;
+    return CloudEntity;
 }
 
 CPointCloud *PointCloudListMgr::CreateComparsionCloud(pcl::PointCloud<pcl::PointXYZRGB> cloud)
 {
     CPointCloud* CloudEntity=new CPointCloud();
-    CloudEntity->isFittingCloud = true; // 拟合出的点云
+    CloudEntity->isFittingCloud = true; // 对比生成的点云
     CloudEntity->setPointCloud(cloud);
     return CloudEntity;
 }

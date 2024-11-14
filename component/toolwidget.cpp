@@ -1160,7 +1160,7 @@ void ToolWidget:: onFindPlane(){
     // 生成拟合出的点云并添加到entitylist
     auto pointCloud = m_pMainWin->getPointCloudListMgr()->CreateFittingCloud(
         *m_pMainWin->getPWinSetDataWidget()->getFittingPlane());
-    addToList(&pointCloud);
+    addToList(pointCloud);
     qDebug()<<"ok 2";
     positions.clear();
 }
