@@ -52,7 +52,7 @@ void MouseInteractorHighlightActor::OnLeftButtonDown()
         // 如果选中的是文件点云，则给拟合用的cloudptr赋值
         // if(entity->m_EntityType == enPointCloud && entity->isFileCloud){
         // auto cloudEntity = (CPointCloud*) entity;
-        //     m_pMainWin->getpWinFileMgr()->getCloudPtr() =
+        //     m_pMainWin->getpWinFileMgr()->cloudptr =
         //         pcl::PointCloud<pcl::PointXYZRGB>::Ptr (&cloudEntity->m_pointCloud);
         // }
 
