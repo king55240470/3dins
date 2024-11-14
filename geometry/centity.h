@@ -7,6 +7,7 @@
 #include <QVector>
 #include <vtkSmartPointer.h>
 #include <vtkActor.h>
+#include <pcl/io/auto_io.h>
 
 class CEntity:public CObject
 {

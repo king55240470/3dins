@@ -85,9 +85,9 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingPlane::RANSAC(pcl::PointXYZRGB sea
 
 bool FittingPlane::isPointInPlane(const pcl::PointXYZRGB& point){
     double d = coefficients->values[0] * point.x +
-                      coefficients->values[1] * point.y +
-                      coefficients->values[2] * point.z +
-                      coefficients->values[3];
+               coefficients->values[1] * point.y +
+               coefficients->values[2] * point.z +
+               coefficients->values[3];
     return std::abs(d) <= 0.01;
 }
 

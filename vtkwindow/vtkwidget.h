@@ -92,7 +92,9 @@ public:
 
     void showConvertedCloud();// 将点云转为vtk的顶点图形并显示
     void onCompare();// 比较两个点云
-    void showProductCloud(pcl::PointCloud<pcl::PointXYZRGB> cloud_rgb_1);// 显示调用拟合对比等功能生成的点云
+    // 显示调用拟合对比等功能生成的点云
+    void showProductCloud(pcl::PointCloud<pcl::PointXYZRGB> cloud_rgb_1);
+    void onAlign();    // 配准的函数
 
     void OnMouseMove();
     void createText();
@@ -106,19 +108,15 @@ private:
     vtkSmartPointer<vtkRenderer> renderer;
     vtkSmartPointer<vtkGenericOpenGLRenderWindow> renWin;
 
-    vtkSmartPointer<vtkOrientationMarkerWidget> axeWidget; // 创建窗口部件来封装坐标器
-    vtkSmartPointer<vtkOrientationMarkerWidget> textWidget; // 浮动窗口，用于显示信息
-
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud1; // 基准点云1
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud2;
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr comparisonCloud;
     vtkSmartPointer<vtkTextActor> infoTextActor;// 浮动信息文本演员
     vtkSmartPointer<vtkActor2D> rectangleActor;
-    vtkSmartPointer<vtkActor> borderActor;
-    QLabel* infoLabel; // 用于显示点的信息
+    vtkSmartPointer<vtkOrientationMarkerWidget> axeWidget; // 创建窗口部件来封装坐标器
+    vtkSmartPointer<vtkOrientationMarkerWidget> textWidget; // 浮动窗口，用于显示信息
 public slots:
-    // 配准的函数
-    void onAlign();
+
 };
 
 #endif // VTKWIDGET_H
