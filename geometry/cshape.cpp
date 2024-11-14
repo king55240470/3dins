@@ -81,6 +81,7 @@ QDataStream& operator<<(QDataStream& out,const CShape& shape){
         <<shape.m_bGroup
         <<static_cast<quint64>(shape.m_dwAddress)//转换为64位整数以确保跨平台一致性
         <<shape.m_strInformation;
+    // qDebug()<<"address:"<<static_cast<quint64>(shape.m_dwAddress);
     return out;
 }
 //反序列化
@@ -93,6 +94,7 @@ QDataStream& operator>>(QDataStream& in,CShape& shape){
         >>shape.m_bGroup
         >>address//先读取为 64 位整数
         >>shape.m_strInformation;
+    // qDebug()<<"address:"<<address;
     shape.m_dwAddress=static_cast<uintptr_t>(address);//转换回uintptr_t类型
     return in;
 }

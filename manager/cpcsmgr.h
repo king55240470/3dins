@@ -10,7 +10,7 @@ class CPcsMgr
 public:
     CPcsMgr();
 
-    CPcs* m_pPcsCurrent; //当前坐标系
+    static inline CPcs* m_pPcsCurrent; //当前坐标系
     CPcsNode* m_pNodeTemporary; //临时坐标系节点
     bool m_bTempPcsNodeInUse; //临时坐标系节点是否使用
     CPcsNode* m_pHeadPcsNode; //头节点
