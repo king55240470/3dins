@@ -12,6 +12,7 @@
 #include <QPushButton>
 
 class MainWindow;
+class FittingPlane;
 class setDataWidget : public QWidget
 {
     Q_OBJECT
@@ -20,11 +21,14 @@ public:
 
     void setPlaneData(pcl::PointXYZRGB,pcl::PointCloud<pcl::PointXYZRGB>::Ptr);//设置拟合平面的领域和距离阈值的对话框
     void PlaneBtnClick();
-
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr getFittingPlane(){
+        return fittingPlane;
+    }
 private:
     MainWindow *m_pMainWin;
 
-    //拟合平面对话框  
+    //拟合平面对话框
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr fittingPlane;
     QDialog *p_dialog;
     QGridLayout *p_layout;
     QLabel *p_lab1;

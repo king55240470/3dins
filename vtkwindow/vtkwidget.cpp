@@ -7,10 +7,6 @@
 #include <QMessageBox>
 
 
-// 渲染窗口大小
-#define WIDTH 1000
-#define HEIGHT 800
-
 VtkWidget::VtkWidget(QWidget *parent)
     : QWidget(parent),
     cloud1(new pcl::PointCloud<pcl::PointXYZ>()),  // 初始化第一个点云对象
@@ -32,7 +28,6 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
     renderer = vtkSmartPointer<vtkRenderer>::New();
     renderer->SetBackground(1, 1, 1); // 设置渲染器颜色为白
     renWin = vtkSmartPointer<vtkGenericOpenGLRenderWindow>::New();
-    // renWin = vtkSmartPointer<vtkRenderWindow>::New();
     renWin->AddRenderer(renderer);  // 将渲染器添加到渲染窗口
 
     // 创建QVTKOpenGLNativeWidget作为渲染窗口
@@ -40,7 +35,7 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
     layout->addWidget(vtkWidget);
     vtkWidget->setRenderWindow(renWin);
 
-    // 添加交互器样式
+    // 添加高亮样式
     auto m_highlightstyle = vtkSmartPointer<MouseInteractorHighlightActor>::New();
     m_highlightstyle->SetRenderer(renderer);
     m_highlightstyle->SetUpMainWin(m_pMainWin);
@@ -50,9 +45,9 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
     // customstyle->SetRenderer(renderer);
     // renWin->GetInteractor()->SetInteractorStyle(customstyle);
 
-    // 创建坐标器
-    createAxes();
-
+    createAxes();// 创建左下角全局坐标系
+    createText();// 创建浮动窗口显示信息
+    //createTextBox();
 
     // 创建初始视角相机
     vtkCamera* camera = renderer->GetActiveCamera();
@@ -61,22 +56,16 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
         camera->SetPosition(0, 0, 1);
         camera->SetFocalPoint(0, 0, 0);
         camera->SetViewUp(0, 1, 0);
-
-        // 根据需要调整视野角度
-        // camera->SetViewAngle(60);
-
-        // 根据场景的具体大小和需要调整裁剪范围
-        // camera->SetClippingRange(0.1, 1000);
-
+        // camera->SetViewAngle(60); // 调整视野角度
+        // camera->SetClippingRange(0.1, 1000);// 根据场景的具体大小和需要调整裁剪范围
         camera->OrthogonalizeViewUp(); // 确保与SetViewUp方向正交
         // 根据需要调整视图的缩放
         camera->Zoom(0.5);
     }
 
     getRenderWindow()->Render();
-
-
 }
+
 void VtkWidget::OnMouseMove()
 {
     //qDebug()<<"执行了move";
@@ -88,13 +77,15 @@ void VtkWidget::OnMouseMove()
 
     // 遍历所有高亮点，检测鼠标是否靠近
     bool isMouseNearHighlightedPoint = false;
+    CPosition posi;
     for (CPosition actor : m_pMainWin->getChosenListMgr()->getChosenCEntityList()) {
         double* pos = picker->GetPickPosition();
         double distance = std::sqrt(std::pow(actor.x - pos[0], 2) +
                                     std::pow(actor.y - pos[1], 2) +
                                     std::pow(actor.z - pos[2], 2));
-        if (distance < 0.1) { // 如果鼠标在高亮点附近
+        if (distance < 0.002) { // 如果鼠标在高亮点附近
             isMouseNearHighlightedPoint = true;
+            posi=actor;
             break;
         }
     }
@@ -102,18 +93,36 @@ void VtkWidget::OnMouseMove()
     vtkActor* pickedActor = picker->GetActor();
     if (pickedActor) {
         if (isMouseNearHighlightedPoint){
-            double* pos = picker->GetPickPosition();
+            /*QString infoText = QString("Point: (") + QString::number(posi.x, 'f', 7) +
+                               QString(", ") + QString::number(posi.y, 'f', 7) +
+                               QString(", ") + QString::number(posi.z, 'f', 7) + QString(")");*/
+            /*infoLabel->setText(infoText);
+            QFontMetrics fm(infoLabel->font());
+            int width = fm.horizontalAdvance(infoText);
+            int height = fm.height();
+
+            // 调整标签的大小
+            infoLabel->setFixedSize(width+20, height+20);
+            double point[3]={posi.x,posi.y,posi.z};
+            double screenCoord[2];
+            GetScreenCoordinates(renderer, point, screenCoord);
+            qDebug()<<screenCoord[0]<<screenCoord[1];
+            infoLabel->move(screenCoord[0], screenCoord[1]);
+            infoLabel->setVisible(true);*/
             std::ostringstream oss;
-            oss << "Point: (" << pos[0] << ", " << pos[1] << ", " << pos[2] << ")";
-            infoTextActor->SetInput(oss.str().c_str()); // 确保传入 const char*
-            infoTextActor->SetPosition(clickPos[0], clickPos[1]);
+            std::ostringstream oss1;
+            std::ostringstream oss2;
+            oss << "X: " << posi.x << "\n";
+            oss1 << "Y: " << posi.y << "\n";
+            oss2 << "Z: " << posi.z;
+            std::string infoText = oss.str() + oss1.str() + oss2.str();
+            infoTextActor->SetInput(infoText.c_str());   // 设置文本输入
             infoTextActor->SetVisibility(true);
-            qDebug()<<"执行了move";
+
+        }else{
+            //infoTextActor->SetVisibility(false);
+            //infoLabel->setVisible(false);
         }
-        qDebug()<<infoTextActor->GetVisibility();
-    } else {
-        infoTextActor->SetVisibility(false);
-        qDebug()<<"没有执行了move";
     }
     getRenderWindow()->Render();
 }
@@ -121,26 +130,92 @@ void VtkWidget::createText()
 {
     // 创建浮动信息的文本演员
     infoTextActor = vtkSmartPointer<vtkTextActor>::New();
-    infoTextActor->GetPositionCoordinate()->SetCoordinateSystemToNormalizedDisplay();
-
-    //orientationWidget->SetOrientationMarker(infoTextActor);
-    infoTextActor->GetTextProperty()->SetFontSize(24);
-    infoTextActor->GetTextProperty()->SetColor(1,0, 0);
+    infoTextActor->GetTextProperty()->SetFontSize(16);
+    infoTextActor->GetTextProperty()->SetColor(0.9, 0.1, 0.1);
     infoTextActor->SetInput("浮动窗口");
 
-    // infoTextActor->SetVisibility(false); // 初始隐藏
-    renderer->AddActor(infoTextActor);
-    qDebug()<<"执行了hhhhhhhhhhhhhh";
+    vtkSmartPointer<vtkPolyData> rectangle = vtkSmartPointer<vtkPolyData>::New();
+    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+    // 定义矩形的四个顶点
+    double width = 200; // 矩形的宽度
+    double height = 100; // 矩形的高度
+    points->InsertNextPoint(0, 0, 0);
+    points->InsertNextPoint(width, 0, 0);
+    points->InsertNextPoint(width, height, 0);
+    points->InsertNextPoint(0, height, 0);
+
+    // 创建矩形的面
+    vtkSmartPointer<vtkCellArray> polygons = vtkSmartPointer<vtkCellArray>::New();
+    vtkIdType ids[4] = {0, 1, 2, 3};
+    polygons->InsertNextCell(4, ids);
+
+    rectangle->SetPoints(points);
+    rectangle->SetPolys(polygons);
+
+    // 为矩形创建一个映射器和演员
+    vtkSmartPointer<vtkPolyDataMapper> rectangleMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    rectangleMapper->SetInputData(rectangle);
+
+    vtkSmartPointer<vtkActor> rectangleActor = vtkSmartPointer<vtkActor>::New();
+    rectangleActor->SetMapper(rectangleMapper);
+
+    // 设置矩形的颜色（例如淡蓝色）
+    rectangleActor->GetProperty()->SetColor(0.3, 0.3, 0.3); // 填充颜色
+    rectangleActor->GetProperty()->SetOpacity(0.5); // 设置透明度
+    rectangleActor->SetScale(1.0, 1.0, 0.0);
+    textWidget = vtkSmartPointer<vtkOrientationMarkerWidget>::New();
+    // 将坐标轴演员添加到orientationWidget
+    textWidget->SetOrientationMarker(infoTextActor);
+    //textWidget->SetOrientationMarker(rectangleActor);
+    // 将orientationWidget与交互器关联
+    textWidget->SetInteractor(renWin->GetInteractor());
+    // 设置视口
+    textWidget->SetViewport(0.8, 0.8, 1, 1);// 调整信息窗口的位置
+    textWidget->SetEnabled(1);
+    textWidget->InteractiveOn();
     // 设置交互器的鼠标移动回调
+    renderer->AddActor(infoTextActor);
     renWin->GetInteractor()->AddObserver(vtkCommand::MouseMoveEvent, this, &VtkWidget::OnMouseMove);
 }
+
+void VtkWidget::createTextBox()
+{
+    qDebug()<<"执行了hhhhhhhhhhhhhh";
+    infoLabel = new QLabel(this);
+    infoLabel->setStyleSheet("background-color: rgba(255, 255, 255, 210); border: 1px solid black;");
+    infoLabel->setVisible(false);
+    renWin->GetInteractor()->AddObserver(vtkCommand::MouseMoveEvent, this, &VtkWidget::OnMouseMove);
+}
+
+void VtkWidget::GetScreenCoordinates(vtkRenderer *renderer, double pt[3], double screenCoord[2])
+{
+    vtkSmartPointer<vtkCoordinate> coordinate = vtkSmartPointer<vtkCoordinate>::New();
+
+    // 设置为世界坐标系统
+    coordinate->SetCoordinateSystemToNormalizedDisplay(); // 设置归一化显示坐标系统
+
+    // 将世界坐标设置为 vtkCoordinate
+    coordinate->SetValue(pt[0], pt[1], pt[2]);
+
+    // 获取计算的显示坐标
+
+    double* screenPos = coordinate->GetComputedDoubleDisplayValue(renderer);
+
+    // 打印 debug 信息
+    qDebug() << "Inside GetScreenCoordinates:" << screenPos[0] << screenPos[1];
+    int *viewportSize = renderer->GetSize();
+    // 将归一化坐标转换为屏幕坐标
+    screenCoord[0] = screenPos[0] * viewportSize[0]; // x 坐标
+    screenCoord[1] = screenPos[1] * viewportSize[1]; // y 坐标
+
+}
+
 
 vtkSmartPointer<vtkRenderWindow> VtkWidget::getRenderWindow(){
     return renWin;
 }
 
 vtkSmartPointer<vtkRenderer>& VtkWidget::getRenderer(){
-    // return m_renderer;
     return renderer;
 }
 
@@ -172,13 +247,16 @@ void VtkWidget::reDrawCentity(){
     QVector<bool> list = m_pMainWin->m_EntityListMgr->getMarkList();//获取标记是否隐藏元素的list
     QMap<QString, bool> filemap = m_pMainWin->getpWinFileMgr()->getContentItemMap();
     QVector<CEntity*> constructEntityList = m_pMainWin->getPWinToolWidget()->getConstructEntityList();//存储构建元素的列表
-
+    QMap<vtkSmartPointer<vtkActor>, CEntity*>& actorToEntity=m_pMainWin->getactorToEntityMap();
+    actorToEntity.clear();
     // 遍历entitylist绘制图形并加入渲染器
     for(auto i = 0;i < entitylist.size();i++){
         int flag=0;
         if(constructEntityList.isEmpty()){//没有构建的元素
 
-            getRenderer()->AddActor(entitylist[i]->draw());
+            vtkSmartPointer<vtkActor>actor=entitylist[i]->draw();
+            actorToEntity.insert(actor,entitylist[i]);
+            getRenderer()->AddActor(actor);
         }
         else{
             for(int j=0;j<constructEntityList.size();j++){
@@ -186,13 +264,17 @@ void VtkWidget::reDrawCentity(){
                 if(entitylist[i] == constructEntityList[j]){//是构建的元素
                     flag=1;
                     if(filemap[key]){
-                        getRenderer()->AddActor(entitylist[i]->draw());
+                        vtkSmartPointer<vtkActor>actor=entitylist[i]->draw();
+                        actorToEntity.insert(actor,entitylist[i]);
+                        getRenderer()->AddActor(actor);
                         break;
                     }
                 }
             }
             if(flag==0){//不是构建的元素
-                getRenderer()->AddActor(entitylist[i]->draw());
+                vtkSmartPointer<vtkActor>actor=entitylist[i]->draw();
+                actorToEntity.insert(actor,entitylist[i]);
+                getRenderer()->AddActor(actor);
             }
         }
     }
@@ -202,12 +284,20 @@ void VtkWidget::reDrawCentity(){
         if(object)
             getRenderer()->AddActor(object->draw());
     }
-    createText();
 }
 
 void VtkWidget::reDrawCloud()
 {
-    showConvertedCloud();
+    showConvertedCloud(); // 显示刚打开的点云文件
+    showProductCloud(m_pMainWin->fitcloud);
+
+    // 如果有生成的点云，即productedlist不为空则继续显示
+    // auto productedlist = m_pMainWin->getPointCloudListMgr()->getProductCloudList();
+    // if(!productedlist.empty()){
+    //     for(auto i = 0;i < productedlist.size();i++){
+    //         showProductCloud(productedlist[i]);
+    //     }
+    // }
 }
 
 // 创建全局坐标器
@@ -226,16 +316,16 @@ void VtkWidget::createAxes()
     axesActor->SetCylinderRadius(0.1); // 设置轴圆柱体的半径
     axesActor->SetSphereRadius(0.05); // 设置轴末端的球体半径
 
-    orientationWidget = vtkSmartPointer<vtkOrientationMarkerWidget>::New();
+    axeWidget = vtkSmartPointer<vtkOrientationMarkerWidget>::New();
     // 将坐标轴演员添加到orientationWidget
-    orientationWidget->SetOrientationMarker(axesActor);
+    axeWidget->SetOrientationMarker(axesActor);
     // 将orientationWidget与交互器关联
-    orientationWidget->SetInteractor(renWin->GetInteractor());
+    axeWidget->SetInteractor(renWin->GetInteractor());
     // 设置视口
-    orientationWidget->SetViewport(0.0, 0.0, 0.2, 0.2);
+    axeWidget->SetViewport(0.0, 0.0, 0.2, 0.2);
 
-    orientationWidget->SetEnabled(1);
-    orientationWidget->InteractiveOn();
+    axeWidget->SetEnabled(1);
+    axeWidget->InteractiveOn();
 }
 
 // 切换相机视角1
@@ -312,7 +402,9 @@ void VtkWidget::showConvertedCloud(){
 
     auto cloud_rgb_1(new pcl::PointCloud<pcl::PointXYZRGB>);
     // 分别用迭代器遍历两个map的所有文件
+
     for(auto item = measured_map.begin(); item != measured_map.end(); item++){
+
         // 如果文件不隐藏
         if(item.value()){
             pcl::io::loadPCDFile(item.key().toStdString(), *cloud_rgb_1);
@@ -405,7 +497,8 @@ void VtkWidget::showConvertedCloud(){
     getRenderWindow()->Render(); // 刷新渲染窗口
 }
 
-void VtkWidget::showConvertedCloud(pcl::PointCloud<pcl::PointXYZRGB> cloud_rgb_1){
+// 显示调用拟合对比等功能生成的点云
+void VtkWidget::showProductCloud(pcl::PointCloud<pcl::PointXYZRGB> cloud_rgb_1){
     // 将cloud转换为VTK的点集
     vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
     vtkSmartPointer<vtkUnsignedCharArray> colors = vtkSmartPointer<vtkUnsignedCharArray>::New();
@@ -563,143 +656,7 @@ void VtkWidget::onCompare()
     renWin->Render();
 }
 
-// //FPFH(粗配准)+ICP(精配准)
-// void VtkWidget::onAlign()
-// {
-//     // 获取打开的模型文件和实测文件
-//     auto file_model = m_pMainWin->getpWinFileMgr()->getModelFileMap().firstKey();
-//     auto file_measure = m_pMainWin->getpWinFileMgr()->getModelFileMap().lastKey();
-
-//     // 初始化两个点云
-//     pcl::io::loadPLYFile(file_model.toStdString(), *cloud1);
-//     pcl::io::loadPLYFile(file_measure.toStdString(), *cloud2);
-
-//     // 检查点云是否为空
-//     if (cloud1->empty() || cloud2->empty()) {
-//         QMessageBox::warning(this, "Warning", "One or both point clouds are empty!");
-//         return;
-//     }
-
-//     // 下采样：提高计算效率，对输入点云进行下采样
-//     pcl::PointCloud<pcl::PointXYZ>::Ptr downsampledCloud1(new pcl::PointCloud<pcl::PointXYZ>());
-//     pcl::PointCloud<pcl::PointXYZ>::Ptr downsampledCloud2(new pcl::PointCloud<pcl::PointXYZ>());
-//     pcl::VoxelGrid<pcl::PointXYZ> voxelGrid;
-//     voxelGrid.setLeafSize(0.05f, 0.05f, 0.05f);  // 设置叶子大小为 5cm
-//     voxelGrid.setInputCloud(cloud1);
-//     voxelGrid.filter(*downsampledCloud1);
-//     voxelGrid.setInputCloud(cloud2);
-//     voxelGrid.filter(*downsampledCloud2);
-
-//     // 计算法线
-//     pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> normalEstimation;
-//     pcl::PointCloud<pcl::Normal>::Ptr normals1(new pcl::PointCloud<pcl::Normal>());
-//     pcl::PointCloud<pcl::Normal>::Ptr normals2(new pcl::PointCloud<pcl::Normal>());
-//     pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>());
-//     normalEstimation.setSearchMethod(tree);
-//     normalEstimation.setRadiusSearch(0.05);  // 设置法线估计的半径
-
-//     normalEstimation.setInputCloud(downsampledCloud1);
-//     normalEstimation.compute(*normals1);
-//     normalEstimation.setInputCloud(downsampledCloud2);
-//     normalEstimation.compute(*normals2);
-
-//     // 计算 FPFH 特征
-//     pcl::FPFHEstimation<pcl::PointXYZ, pcl::Normal, pcl::FPFHSignature33> fpfhEstimation;
-//     pcl::PointCloud<pcl::FPFHSignature33>::Ptr fpfhs1(new pcl::PointCloud<pcl::FPFHSignature33>());
-//     pcl::PointCloud<pcl::FPFHSignature33>::Ptr fpfhs2(new pcl::PointCloud<pcl::FPFHSignature33>());
-
-//     fpfhEstimation.setSearchMethod(tree);
-//     fpfhEstimation.setRadiusSearch(0.1);  // 设置特征估计的半径
-
-//     fpfhEstimation.setInputCloud(downsampledCloud1);
-//     fpfhEstimation.setInputNormals(normals1);
-//     fpfhEstimation.compute(*fpfhs1);
-
-//     fpfhEstimation.setInputCloud(downsampledCloud2);
-//     fpfhEstimation.setInputNormals(normals2);
-//     fpfhEstimation.compute(*fpfhs2);
-
-//     // 使用 RANSAC 进行初步配准
-//     pcl::SampleConsensusPrerejective<pcl::PointXYZ, pcl::PointXYZ, pcl::FPFHSignature33> sac;
-//     sac.setInputSource(downsampledCloud1);
-//     sac.setSourceFeatures(fpfhs1);
-//     sac.setInputTarget(downsampledCloud2);
-//     sac.setTargetFeatures(fpfhs2);
-//     sac.setMaximumIterations(1000);  // 设置最大迭代次数
-//     sac.setNumberOfSamples(3);  // 使用 3 个点作为采样
-//     sac.setCorrespondenceRandomness(5);  // 设置随机对应点数量
-//     sac.setSimilarityThreshold(0.9f);  // 设置相似度阈值
-//     sac.setMaxCorrespondenceDistance(0.1);  // 设置最大对应点距离
-//     sac.setInlierFraction(0.25f);  // 最少内点比例
-
-//     pcl::PointCloud<pcl::PointXYZ> sacAlignedCloud;
-//     sac.align(sacAlignedCloud);
-
-//     // 检查 RANSAC 是否成功收敛
-//     if (!sac.hasConverged()) {
-//         QMessageBox::critical(this, "Error", "FPFH-based coarse alignment did not converge!");
-//         return;
-//     }
-
-//     // 获取初始变换矩阵
-//     Eigen::Matrix4f initialTransformation = sac.getFinalTransformation();
-
-//     // 使用 ICP 进行精细对齐
-//     pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
-//     icp.setInputSource(downsampledCloud1);
-//     icp.setInputTarget(downsampledCloud2);
-//     icp.setMaximumIterations(50);  // 设置最大迭代次数
-//     icp.setTransformationEpsilon(1e-8);  // 设置变换容差
-//     icp.setMaxCorrespondenceDistance(0.05);  // 设置最大对应点距离
-
-//     pcl::PointCloud<pcl::PointXYZ> icpFinalCloud;
-//     icp.align(icpFinalCloud, initialTransformation);  // 使用初始变换进行 ICP 对齐
-
-//     // 检查 ICP 是否成功收敛
-//     if (icp.hasConverged()) {
-//         // 计算最终的配准结果并应用于原始点云
-//         pcl::PointCloud<pcl::PointXYZ>::Ptr alignedCloud(new pcl::PointCloud<pcl::PointXYZ>());
-//         pcl::transformPointCloud(*cloud1, *alignedCloud, icp.getFinalTransformation());
-
-//         // 显示对齐后的点云
-//         // showConvertedCloud(alignedCloud, "Aligned Cloud");
-//         // 将cloud转换为VTK的点集
-//         vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-//         points->SetNumberOfPoints(alignedCloud->points.size());
-//         for (size_t i = 0; i < alignedCloud->points.size(); ++i)
-//         {
-//             points->SetPoint(i, alignedCloud->points[i].x, alignedCloud->points[i].y, alignedCloud->points[i].z);
-//         }
-
-//         vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
-//         polyData->SetPoints(points);
-
-//         // 创建一个顶点过滤器来生成顶点表示（可选，但通常用于点云）
-//         vtkSmartPointer<vtkVertexGlyphFilter> glyphFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
-//         glyphFilter->SetInputData(polyData);
-//         glyphFilter->Update();
-
-//         polyData = glyphFilter->GetOutput();
-
-//         // 创建映射器并将glyphFilter的几何数据输入
-//         vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-//         mapper->SetInputData(polyData);
-
-//         vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
-//         actor->SetMapper(mapper);
-//         actor->GetProperty()->SetPointSize(6); // 设置点大小
-//         actor->GetProperty()->SetColor(0.5, 0.5, 0.5);
-
-//         renderer->AddActor(actor);
-
-//         // 输出 RMSE
-//         double rmse = icp.getFitnessScore();
-//         QMessageBox::information(this, "Alignment Result", QString("Fine alignment RMSE: %1").arg(rmse));
-//     } else {
-//         QMessageBox::critical(this, "Error", "ICP fine alignment did not converge!");
-//     }
-// }
-
+//FPFH(粗配准)+ICP(精配准)
 void VtkWidget::onAlign()
 {
     // 获取打开的模型文件和实测文件

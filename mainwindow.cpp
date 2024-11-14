@@ -11,8 +11,7 @@
 #include "geometry/centitytypes.h"
 #include "component/presetelemwidget.h"
 #include "manager/filemgr.h"
-#include "pointfitting/fittingplane.h"
-#include "pointfitting/setDataWidget.h"
+#include "pointfitting/setdatawidget.h"
 
 #include <QSettings>
 #include <QLabel>
@@ -31,7 +30,7 @@ MainWindow::MainWindow(QWidget *parent)
     setupUi();
     RestoreWidgets();
     loadManager();
-    LoadPointFitting();
+    LoadSetDataWidget();
     m_nRelyOnWhichCs=csRef;
 }
 
@@ -165,7 +164,6 @@ void MainWindow::setupUi(){
 
     setCentralWidget(spMainWindow);
 
-
     ContralWidget * contralWidget=new ContralWidget(pWinToolWidget,this);
     connect(contralAction,&QAction::triggered,[=](){contralWidget->show();});
 
@@ -180,6 +178,7 @@ void MainWindow::LoadWidgets(){
     pWinVtkWidget=new VtkWidget(this);
     pWinReportWidget=new ReportWidget(this);
     pWinLogWidget=new LogWidget(this);
+
 }
 
 void MainWindow::RestoreWidgets() {
@@ -357,6 +356,7 @@ void MainWindow::loadManager()
     m_ChosenListMgr=new ChosenCEntityMgr();
 
     pWinFileMgr=new FileMgr();
+    m_CloudListMgr = new PointCloudListMgr();
 
     m_pcsListMgr->Initialize();
 }
@@ -948,18 +948,16 @@ ChosenCEntityMgr *MainWindow::getChosenListMgr()
 
 PointCloudListMgr *MainWindow::getPointCloudListMgr()
 {
-    return pWinPclMgr;
+    return m_CloudListMgr;
 }
 
-void MainWindow::LoadPointFitting(){
-    pWinFittingPlane=new FittingPlane();
+void MainWindow::LoadSetDataWidget(){
     pWinSetDataWidget=new setDataWidget();
-}
-
-FittingPlane *MainWindow::getPWinFittingPlane(){
-    return pWinFittingPlane;
 }
 
 setDataWidget *MainWindow::getPWinSetDataWidget(){
     return pWinSetDataWidget;
+}
+QMap<vtkSmartPointer<vtkActor>, CEntity*>& MainWindow::getactorToEntityMap(){
+    return  actorToEntityMap;
 }
