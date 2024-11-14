@@ -451,10 +451,10 @@ class CPointCloud : public CEntity
 {
 public:
     CPosition m_pt;
-    pcl::PointCloud<pcl::PointXYZRGB> m_pointCloud; // 存储的点云对象
+    pcl::PointCloud<pcl::PointXYZRGB> m_pointCloud; // 存储的点云对象（已经加载过的）
     static int pointCloudCount;
     int currentPointCloudId;
-    bool isFileCloud = true; // 是否是文件生成的点云
+    bool isFileCloud = false; // 是否是文件生成的点云
     bool isFittingCloud = false; // 是否是拟合出来的点云
     bool isComparsionCloud = false; //  是否是对比得到的点云
 public:

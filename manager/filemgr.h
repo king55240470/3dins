@@ -17,7 +17,7 @@ public:
     QMap<QString, bool>& getContentItemMap();
     QMap<QString, bool>& getIdentifyItemMap();
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr& getCloudPtr();
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr  cloudptr;
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr  cloudptr; // 临时智能指针，用于查看拟合功能
 private:
     QMap<QString, bool> modelFileLMap;
     QMap<QString, bool> measuredFileMap;
