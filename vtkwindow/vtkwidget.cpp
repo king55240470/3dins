@@ -167,7 +167,7 @@ void VtkWidget::reDrawCentity(){
     // 遍历entitylist绘制图形并加入渲染器
     for(auto i = 0;i < entitylist.size();i++){
         int flag=0;
-        if(constructEntityList.isEmpty()){//没有构建的元素
+        if(constructEntityList.isEmpty()){//没有构建的元素，即没有需要隐藏的图形
             vtkSmartPointer<vtkActor>actor = entitylist[i]->draw();
             actorToEntity.insert(actor,entitylist[i]);
             getRenderer()->AddActor(actor);
@@ -464,8 +464,8 @@ void VtkWidget::onCompare()
     // auto file_measure = m_pMainWin->getpWinFileMgr()->getModelFileMap().lastKey();
 
     // 初始化两个点云
-    pcl::io::loadPLYFile(file_model.toStdString(), *cloud1);
-    pcl::io::loadPCDFile(file_measure.toStdString(), *cloud2);
+    pcl::io::loadPLYFile(file_model.toStdString(), *cloud2);
+    pcl::io::loadPCDFile(file_measure.toStdString(), *cloud1);
 
     // 检查点云是否为空
     if (cloud1->empty() || cloud2->empty()) {

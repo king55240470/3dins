@@ -20,7 +20,7 @@ public:
     CPointCloud* CreateCloudFromFile(QString str);// 给打开的文件分配RGB点云，并生成cpointcloud对象
     CPointCloud& CreateFittingCloud(pcl::PointCloud<pcl::PointXYZRGB> plane);// 创建不同的点云centity对象
 
-    pcl::PointCloud<pcl::PointXYZRGB> getTempCloud(){
+    pcl::PointCloud<pcl::PointXYZRGB>& getTempCloud(){
         return tempCloud;
     };
     // 将点云对象转为智能指针
