@@ -215,7 +215,7 @@ class CPlane : public CEntity
 private:
     CPosition center;
     QVector4D normal;
-    QVector4D dir_long_edge;    // dir 表示方向direction
+    QVector4D dir_long_edge;   // dir 表示方向direction
     double length;
     double width;
 
@@ -411,6 +411,9 @@ public:
         m_strCName = QString("距离%1").arg(currentCdistacneId);
         currentCdistacneId++;
     }
+    int GetUniqueType() override{
+        return enDistance;
+    }
     double getUptolerance();
     double getUndertolerance();
     void setUptolerance(double on);
@@ -448,13 +451,12 @@ class CPointCloud : public CEntity
 {
 public:
     CPosition m_pt;
-    pcl::PointCloud<pcl::PointXYZRGB> m_pointCloud; // 存储的点云对象
+    pcl::PointCloud<pcl::PointXYZRGB> m_pointCloud; // 存储的点云对象（已经加载过的）
     static int pointCloudCount;
     int currentPointCloudId;
-    bool isFileCloud = true; // 是否是文件生成的点云
+    bool isFileCloud = false; // 是否是文件生成的点云
     bool isFittingCloud = false; // 是否是拟合出来的点云
     bool isComparsionCloud = false; //  是否是对比得到的点云
-
 public:
     CPointCloud()
     {
@@ -465,8 +467,6 @@ public:
         m_strAutoName = QString("点云%1").arg(currentPointCloudId);
         m_strCName = QString("点云%1").arg(currentPointCloudId);
     }
-
-
     // 点云类的draw
     vtkSmartPointer<vtkActor> draw() override;
     int GetUniqueType() override {

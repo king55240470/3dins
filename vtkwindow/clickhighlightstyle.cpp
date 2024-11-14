@@ -6,7 +6,10 @@ vtkStandardNewMacro(MouseInteractorHighlightActor);
 
 MouseInteractorHighlightActor::MouseInteractorHighlightActor(vtkInteractorStyleTrackballCamera* parent)
 {
-
+    lastRightClickTime.Modified();
+    vtkMenu = new QMenu(m_pMainWin); // 创建菜单
+    vtkMenu->addAction("Option 1");
+    vtkMenu->addAction("Option 2");
 }
 
 // 实现左键按下事件的处理方法
@@ -28,7 +31,6 @@ void MouseInteractorHighlightActor::OnLeftButtonDown()
     // picker->Pick(clickPos[0], clickPos[1], 0, renderer);
     // picker->SetTolerance(0.005); // 设置拾取容差
     // double* pos = picker->GetPickPosition(); // 用于存储拾取点的世界坐标
-
     // vtkIdType cellId = picker->GetCellId(); // 拾取到的单元格ID
     // int subId = picker->GetSubId(); // 用于存储拾取到的单元格的子ID（例如，多边形的一个顶点）。
     // double* pcoords = picker->GetPCoords(); // 用于存储拾取点在单元格参数坐标系中的位置
@@ -46,6 +48,14 @@ void MouseInteractorHighlightActor::OnLeftButtonDown()
             qDebug()<<entity->m_strAutoName;
         }
 
+        // 如果选中的是文件点云，则给拟合用的cloudptr赋值
+        // if(entity->m_EntityType == enPointCloud){
+        //     auto cloudEntity = (CPointCloud*) entity;
+        //     auto cloud = new pcl::PointCloud<pcl::PointXYZRGB>(cloudEntity->m_pointCloud);
+        //     m_pMainWin->getpWinFileMgr()->cloudptr =
+        //         pcl::PointCloud<pcl::PointXYZRGB>::Ptr (cloud);
+        // }
+
         // 生成一个用于高亮的顶点，并存入pickedActors
         auto actor = CreatHighLightPoint(pos);
 
@@ -53,13 +63,6 @@ void MouseInteractorHighlightActor::OnLeftButtonDown()
         originalProperty->DeepCopy(actor->GetProperty());
         pickedActors.emplace_back(actor, originalProperty);// emplace_back作用等于push_back
         HighlightActor(actor);
-
-        // 存储选中的actor的原始属性
-        // vtkSmartPointer<vtkProperty> originalProperty = vtkSmartPointer<vtkProperty>::New();
-        // originalProperty->DeepCopy(newPickedActor->GetProperty());
-
-        // pickedActors.emplace_back(newPickedActor, originalProperty);// emplace_back作用等于push_back
-        // HighlightActor(newPickedActor);
     }
 
     // 调用基类的左键按下事件
@@ -67,47 +70,66 @@ void MouseInteractorHighlightActor::OnLeftButtonDown()
 }
 
 
-// 重写右键按下事件，取消选中
+// 重写右键按下事件，取消选中；双击则弹出菜单栏
 void MouseInteractorHighlightActor::OnRightButtonDown()
 {
     // 获取鼠标点击的位置
     int* clickPos = this->GetInteractor()->GetEventPosition();
-    // 创建一个PropPicker对象，用于选择点击位置的actor
-    vtkSmartPointer<vtkPropPicker> picker = vtkSmartPointer<vtkPropPicker>::New();
-    picker->Pick(clickPos[0], clickPos[1], clickPos[2], renderer);
-    // 获取选中的actor并取消高亮
-    vtkActor* newpickedActor = picker->GetActor();
 
+    // 检查是否为双击
+    if ((lastRightClickPos == clickPos) && (this->GetInteractor()->GetMTime() - lastRightClickTime.GetMTime() < DOUBLE_CLICK_INTERVAL))
+    {
+        // 重置lastRightClickPos和时间戳
+        lastRightClickPos[0] = -1;
+        lastRightClickPos[1] = -1;
+        lastRightClickTime.Modified();
 
-    double* pos = picker->GetPickPosition(); // 用于存储拾取点的世界坐标
+        // 弹出菜单
+        vtkMenu->exec(QCursor::pos());
+        qDebug() << "Right button double clicked" <<  "\n";
 
-    // 如果选中了actor
-    if(newpickedActor){
-        // 如果拾取成功，输出拾取点的世界坐标
-        m_pMainWin->getChosenListMgr()->DeletePosition(pos);
-
-        // 遍历存储的PickedActors，寻找并恢复被选中的actor的属性
-        for (auto item = pickedActors.begin(); item != pickedActors.end();item++)
-        {
-            // 如果选中的是PickedActors中的actor
-            if (item->first == newpickedActor)
-            {
-                ResetActor(newpickedActor); // 恢复actor的属性
-                item = pickedActors.erase(item); // 从列表中移除该actor
-                break; // 找到并恢复后退出循环
-            }
-        }
-        DeleteHighLightPoint();
     }
-    // 如果选中的是空白，则取消全部高亮
-    else {
-        // 遍历PickedActors，恢复被选中的actor的属性
-        for (auto item = pickedActors.begin(); item != pickedActors.end();item++)
-        {
-            ResetActor(item->first); // 恢复actor的属性
+    else{
+        // 更新lastRightClickPos和时间戳
+        lastRightClickPos[0] = clickPos[0];
+        lastRightClickPos[1] = clickPos[1];
+        lastRightClickTime.Modified();
+
+        // 创建一个PropPicker对象，用于选择点击位置的actor
+        vtkSmartPointer<vtkPropPicker> picker = vtkSmartPointer<vtkPropPicker>::New();
+        picker->Pick(clickPos[0], clickPos[1], clickPos[2], renderer);
+        // 获取选中的actor并取消高亮
+        vtkActor* newpickedActor = picker->GetActor();
+        double* pos = picker->GetPickPosition(); // 用于存储拾取点的世界坐标
+
+        // 如果选中了actor
+        if(newpickedActor){
+            // 如果拾取成功，输出拾取点的世界坐标
+            m_pMainWin->getChosenListMgr()->DeletePosition(pos);
+
+            // 遍历存储的PickedActors，寻找并恢复被选中的actor的属性
+            for (auto item = pickedActors.begin(); item != pickedActors.end();item++)
+            {
+                // 如果选中的是PickedActors中的actor
+                if (item->first == newpickedActor)
+                {
+                    ResetActor(newpickedActor); // 恢复actor的属性
+                    item = pickedActors.erase(item); // 从列表中移除该actor
+                    break; // 找到并恢复后退出循环
+                }
+            }
+            DeleteHighLightPoint();
         }
-        DeleteHighLightPoint();
-        m_pMainWin->getChosenListMgr()->getChosenCEntityList().clear();
+        // 如果选中的是空白，则取消全部高亮
+        else {
+            // 遍历PickedActors，恢复被选中的actor的属性
+            for (auto item = pickedActors.begin(); item != pickedActors.end();item++)
+            {
+                ResetActor(item->first); // 恢复actor的属性
+            }
+            DeleteHighLightPoint();
+            m_pMainWin->getChosenListMgr()->getChosenCEntityList().clear();
+        }
     }
 
     // 调用基类的右键按下事件处理方法

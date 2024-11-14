@@ -189,7 +189,6 @@ ToolWidget::ToolWidget(QWidget *parent)
 
     }
 
-    qDebug()<<"4";
     for(int i=0;i<m_nViewAngleActionNum;i++){
 
         ToolAction* action=new ToolAction(this);
@@ -503,37 +502,6 @@ void ToolWidget::connectActionWithF(){
     });
 }
 
-// void ToolWidget::onSaveTxt(){
-//     QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("txt(*.txt )"));
-
-//     if (filePath.isEmpty()){
-//         return ;
-//     }
-
-//     if (QFileInfo(filePath).suffix().isEmpty())
-//         filePath.append(".txt");
-
-//     // 创建 QFile 对象
-//     QFile file(filePath);
-
-//     // 打开文件以进行写入
-//     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-//         qWarning() << "无法打开文件:" << file.errorString();
-//         return;
-//     }
-
-//     QDataStream out(&file);
-//     out.setVersion(QDataStream::Qt_6_0);
-
-//     // 写入内容
-//     out<<*(m_pMainWin->getObjectListMgr()); // 返回为指针，需要解引用
-
-//     // 关闭文件
-//     file.close();
-//     QMessageBox::information(nullptr, "提示", "保存成功");
-
-// }
-
 
 
 //Find
@@ -830,23 +798,99 @@ void ToolWidget::onSaveTxt(){
 }
 
 void   ToolWidget::onSaveWord(){
-    QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("word(*.doc *.docx)"));
+    QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "文件名", QString("word(*.doc *.docx)"));
     if (filePath.isEmpty()){
         return ;
     }
     QStringList headers;
-    headers << "表头1" << "表头2" << "表头3" << "表头4" << "表头5";
+    headers << "类型" << "名称" << "数据1" << "数据2" << "数据3"<<"数据4"<<"数据5";
+    auto& entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
     int col = headers.size();
-    int row = 6;
+    int row = entitylist.size();
     QList<QList<QString>> dataAll;
-    for (int i = 0; i < row; i++) {
-        QList<QString> inLst;
-        for (int j = 0; j < col; j++) {
-            inLst.append(QString::number(i) + QString::number(j));
-        }
-        dataAll.append(inLst);
-    }
+    for (int i = 0; i < entitylist.size(); i++) {
+        QList<QString> inList;
+        CEntity* entity=entitylist[i];
+        if(entity->GetUniqueType()==enPoint){
+            CPoint* point=(CPoint*)entity;
+            CPosition position=point->GetPt();
+            inList<<"点";
+            inList<<point->m_strCName;
+            inList<<"坐标:("+QString::number(position.x, 'f', 6)+","+QString::number(position.y, 'f', 6)+","+QString::number(position.z, 'f', 6)+")";
+        }else if(entity->GetUniqueType()==enCircle){
+            CCircle* circle=(CCircle*)entity;
+            CPosition position=circle->getCenter();
+            inList<<"圆 名称:"<<circle->m_strAutoName;
+            inList<<"中心:("+QString::number(position.x, 'f', 6)+","+QString::number(position.y, 'f', 6)+","+QString::number(position.z, 'f', 6)+")";
+            inList<<"直径D:"+QString::number(circle->getDiameter(),'f',6);
 
+        }else if(entity->GetUniqueType()==enSphere){
+            CSphere* sphere=(CSphere*)entity;
+            CPosition position=sphere->getCenter();
+            inList<<"球 名称:"<<sphere->m_strAutoName;
+            inList<<"中心:("+QString::number(position.x, 'f', 6)+","+QString::number(position.y, 'f', 6)+","+QString::number(position.z, 'f', 6)+")";
+            inList<<"直径D:"+QString::number(sphere->getDiameter(),'f',6);
+        }else if(entity->GetUniqueType()==enPlane){
+            CPlane* plane=(CPlane*)entity;
+            CPosition position=plane->getCenter();
+            QVector4D normal,dir_long_edge;
+            normal=plane->getNormal();
+            dir_long_edge=plane->getDir_long_edge();
+            inList<<"平面";
+            inList<<plane->m_strAutoName;
+            inList<<"中心:("+QString::number(position.x, 'f', 6)+","+QString::number(position.y, 'f', 6)+","+QString::number(position.z, 'f', 6)+")";
+            inList<<"法线:("+QString::number(normal.x(), 'f', 6)+","+QString::number(normal.y(), 'f', 6)+","+QString::number(normal.z(), 'f', 6)+")";
+            inList<<"边向量:("+QString::number(dir_long_edge.x(), 'f', 6)+","+QString::number(dir_long_edge.y(), 'f', 6)+","+QString::number(dir_long_edge.z(), 'f', 6)+")";
+            inList<<"长:"+QString::number(plane->getLength(), 'f', 6)<<" 宽:"+QString::number(plane->getWidth(), 'f', 6);
+
+        }else if(entity->GetUniqueType()==enCone){
+            CCone* cone=(CCone*)entity;
+
+            CPosition position=cone->getVertex();
+            QVector4D axis;
+            axis=cone->getAxis();
+            inList<<"圆锥";
+            inList<<cone->m_strAutoName;
+            inList<<"顶点:("+QString::number(position.x, 'f', 6)+","+QString::number(position.y, 'f', 6)+","+QString::number(position.z, 'f', 6)+")";
+            inList<<"轴线向量:("+QString::number(axis.x(), 'f', 6)+","+QString::number(axis.y(), 'f', 6)+","+QString::number(axis.z(), 'f', 6)+")";
+            inList<<"高:"+QString::number(cone->getHeight(), 'f', 6)<<" 弧度:"+QString::number(cone->getRadian(), 'f', 6)<<" 圆锥高:"+QString::number(cone->getCone_height(), 'f', 6);
+        }
+        else if(entity->GetUniqueType()==enCylinder){
+            CCylinder* cylinder=(CCylinder*)entity;
+            CPosition position=cylinder->getBtm_center();
+            QVector4D axis;
+            axis=cylinder->getAxis();
+            inList<<"圆柱";
+            inList<<cylinder->m_strAutoName;
+            inList<<"底面中心:("+QString::number(position.x, 'f', 6)+","+QString::number(position.y, 'f', 6)+","+QString::number(position.z, 'f', 6)+")";
+            inList<<"轴线向量:("+QString::number(axis.x(), 'f', 6)+","+QString::number(axis.y(), 'f', 6)+","+QString::number(axis.z(), 'f', 6)+")";
+            inList<<"高:"+QString::number(cylinder->getHeight(),'f',6)<<" 直径:"+QString::number(cylinder->getDiameter(),'f',6);
+
+        }else if(entity->GetUniqueType()==enLine){
+            CLine* line=(CLine*)entity;
+            CPosition position1,position2;
+            position1=line->getPosition1();
+            position2=line->getPosition2();
+            inList<<"线";
+            inList<<line->m_strCName;
+            inList<<"起点：("+QString::number(position1.x, 'f', 6)+","+QString::number(position1.y, 'f', 6)+","+QString::number(position1.z, 'f', 6)+")";
+            inList<<"终点：("+QString::number(position2.x, 'f', 6)+","+QString::number(position2.y, 'f', 6)+","+QString::number(position2.z, 'f', 6)+")";
+        }else if(entity->GetUniqueType()==enDistance){
+            CDistance* Distance=(CDistance*) entity;
+            inList<<"距离";
+            inList<<Distance->m_strCName;
+            inList<<QString::number(Distance->getdistance(),'f',6);
+            inList<<"上公差"+QString::number(Distance->getUptolerance(),'f',6);
+            inList<<"下公差"+QString::number(Distance->getUndertolerance(),'f',6);
+        }else if(entity->GetUniqueType()==enPointCloud){
+            CPointCloud* PointCloud=(CPointCloud*) entity;
+            inList<<"点云";
+            inList<<PointCloud->m_strCName;
+
+        }
+        dataAll.append(inList);
+    }
+    // 写入内容
     // 创建一个QTextDocument对象
     QTextDocument doc;
 
@@ -859,7 +903,7 @@ void   ToolWidget::onSaveWord(){
     // 标题和参数信息
     //cursor.insertHtml(QString("<a style='text-align：center; font-weight:bold; font-size:30px;'>%1</a>").arg(title));
     cursor.setCharFormat(formatTitle);
-    cursor.insertText("导出word示例");
+    cursor.insertText("entitylist列表输出");
     cursor.insertBlock(); // 换行
 
     QTextCharFormat format;
@@ -867,7 +911,7 @@ void   ToolWidget::onSaveWord(){
     format.setFontWeight(QFont::Bold);
 
     cursor.setCharFormat(format);
-    cursor.insertText("提示信息，表格之前的文字描述");
+    //cursor.insertText("");
 
     // 插入一个表格，行头占一行
     QTextTable *table = cursor.insertTable(row + 1, col);
@@ -875,7 +919,7 @@ void   ToolWidget::onSaveWord(){
     //获取表格的格式
     QTextTableFormat tableFormat = table->format();
     //表格格式设置宽度
-    tableFormat.setWidth(QTextLength(QTextLength::FixedLength, 500));
+    tableFormat.setWidth(QTextLength(QTextLength::FixedLength, 800));
 
     //设置表格的columnWidthConstraints约束
     QVector<QTextLength> colLength = tableFormat.columnWidthConstraints();
@@ -899,10 +943,9 @@ void   ToolWidget::onSaveWord(){
     //定义单元格格式
     QTextTableCellFormat cellFormat;
     cellFormat.setBottomPadding(2);
-
     // 遍历表格的每个单元格，将数据插入到表格中
     for (int i = 0; i < row; ++i) {
-        for (int j = 0; j < col; ++j) {
+        for (int j = 0; j < dataAll[i].size(); ++j) {
             // 将文本插入到表格中,第二行开始下标为2
             QTextTableCell cell = table->cellAt(i + 1, j);
             cell.firstCursorPosition().insertText(dataAll[i][j]);
@@ -977,13 +1020,11 @@ void ToolWidget::addToList(CEntity* newEntity){
     //加入contentItemMap
     m_pMainWin->getpWinFileMgr()->getContentItemMap().insert(newEntity->GetObjectCName()+"  "+newEntity->GetObjectAutoName(), true);
 
-    m_pMainWin->NotifySubscribe();
-
 
 }
 void ToolWidget::onConstructPoint(){
 
-    QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenCEntityList();;
+    QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenActorAxes();
     PointConstructor constructor;
     CPoint* newPoint;
     bool createPoint=false;
@@ -997,32 +1038,29 @@ void ToolWidget::onConstructPoint(){
                 addToList(newPoint);
             }
         }
+        positions.clear();
     }
-    positions.clear();
-
-    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
-    newPoint=(CPoint*)constructor.create(entityList);
-    positions=constructor.getPositions();
-    if(newPoint!=nullptr){
-        addToList(newPoint);
-        for(int i=0;i<positions.size();i++){
-            if(i!=0){
+    else{
+        auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+        newPoint=(CPoint*)constructor.create(entityList);
+        positions=constructor.getPositions();
+        if(newPoint!=nullptr){
+            addToList(newPoint);
+            for(int i=1;i<positions.size();i++){
                 newPoint=constructor.createPoint(positions[i]);
-                 addToList(newPoint);
+                addToList(newPoint);
             }
         }
     }
-
     if(!createPoint&&newPoint==nullptr){
         WrongWidget("构造点失败");
         return ;
     }
-
     m_pMainWin->NotifySubscribe();
 }
 
 void ToolWidget::onConstructLine(){
-    QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenCEntityList();;
+    QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenActorAxes();
     LineConstructor constructor;
     CLine* newLine;
     bool createLine=false;
@@ -1031,17 +1069,22 @@ void ToolWidget::onConstructLine(){
         newLine=constructor.createLine(positions[0],positions[1]);
         addToList(newLine);
         createLine=true;
+        positions.clear();
     }
-    positions.clear();
-    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
-     newLine=(CLine*)constructor.create(entityList);
-    if(newLine!=nullptr){
-         addToList(newLine);
+    else{
+        auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+        newLine=(CLine*)constructor.create(entityList);
+        if(newLine!=nullptr){
+            addToList(newLine);
+        }
+
     }
     if(!createLine&&newLine==nullptr){
         WrongWidget("构造线失败");
         return ;
     }
+    m_pMainWin->NotifySubscribe();
+
 }
 static void WrongWidget(QString message){
     QMessageBox msgBox;
@@ -1062,9 +1105,11 @@ void ToolWidget::onConstructCircle(){
         return ;
     }
     addToList(newCircle);
+    m_pMainWin->NotifySubscribe();
+
 }
 void ToolWidget::onConstructPlane(){
-    QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenCEntityList();;
+    QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenActorAxes();
     PlaneConstructor constructor;
     CPlane* newPlane;
     bool createPlane=false;
@@ -1073,19 +1118,21 @@ void ToolWidget::onConstructPlane(){
         newPlane=constructor.createPlane(positions[0],positions[1],positions[2]);
         addToList(newPlane);
         createPlane=true;
+        positions.clear();
     }
-    positions.clear();
-    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
-
-     newPlane=(CPlane*)constructor.create(entityList);
-    if(newPlane!=nullptr){
+    else{
+        auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+        newPlane=(CPlane*)constructor.create(entityList);
+        if(newPlane!=nullptr){
          addToList(newPlane);
+        }
     }
+
     if(!createPlane&&newPlane==nullptr){
         WrongWidget("构造平面失败");
         return ;
     }
-
+    m_pMainWin->NotifySubscribe();
 }
 void ToolWidget::onConstructRectangle(){
 
@@ -1097,6 +1144,8 @@ void ToolWidget::onConstructRectangle(){
         return ;
     }
     addToList(newRectangle);
+    m_pMainWin->NotifySubscribe();
+
 }
 
 void ToolWidget::onConstructSphere(){
@@ -1109,6 +1158,8 @@ void ToolWidget::onConstructSphere(){
         return ;
     }
     addToList(newSphere);
+    m_pMainWin->NotifySubscribe();
+
 }
 
 void ToolWidget::onConstructCone(){
@@ -1120,6 +1171,8 @@ void ToolWidget::onConstructCone(){
         return ;
     }
     addToList(newCone);
+    m_pMainWin->NotifySubscribe();
+
 }
 void ToolWidget::onConstructCylinder(){
     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
@@ -1130,6 +1183,8 @@ void ToolWidget::onConstructCylinder(){
         return ;
     }
     addToList(newCylinder);
+    m_pMainWin->NotifySubscribe();
+
 }
 void ToolWidget::onConstructDistance(){
     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
@@ -1140,41 +1195,48 @@ void ToolWidget::onConstructDistance(){
         return ;
     }
     addToList(newDistance);
+    m_pMainWin->NotifySubscribe();
+
 }
 
 void ToolWidget:: onFindPlane(){
-    QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenCEntityList();
+    QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenActorAxes();
     pcl::PointXYZRGB  point;
     if(positions.size()==0)return ;
     point.x=positions[0].x;
     point.y=positions[0].y;
     point.z=positions[0].z;
     auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
-    qDebug()<<cloudptr->size();
     if(cloudptr==nullptr){
-        qDebug()<<"点云指针为空";
+        WrongWidget("点云指针为空");
         return ;
     }
     m_pMainWin->getPWinSetDataWidget()->setPlaneData(point,cloudptr);
-    // 生成点云对象并添加到entitylist
-    CPointCloud* pointCloud=new CPointCloud();
-    pointCloud->setPointCloud(*m_pMainWin->getPWinSetDataWidget()->getFittingPlane());
-    qDebug()<<"ok 1";
+// <<<<<<< HEAD
+//     // 生成点云对象并添加到entitylist
+//     CPointCloud* pointCloud=new CPointCloud();
+//     pointCloud->setPointCloud(*m_pMainWin->getPWinSetDataWidget()->getFittingPlane());
+// =======
+
+    // 生成拟合出的点云并添加到entitylist
+    auto pointCloud = m_pMainWin->getPointCloudListMgr()->CreateFittingCloud(
+        *m_pMainWin->getPWinSetDataWidget()->getFittingPlane());
     addToList(pointCloud);
-    qDebug()<<"ok 2";
     positions.clear();
+    m_pMainWin->NotifySubscribe();
+
 }
 
 void ToolWidget::onFindPoint(){
-    QMap<vtkSmartPointer<vtkActor>, CEntity*>& actorToEntityMapRef = m_pMainWin->getactorToEntityMap();
-    for (auto it = actorToEntityMapRef.begin(); it != actorToEntityMapRef.end(); ++it) {
-        vtkSmartPointer<vtkActor> actor = it.key();
-        CEntity* entity = it.value();
-        std::string description = actor->GetMapper()->GetInput()->GetClassName();
-        qDebug() << "ActorDescription: " << description ;
-        qDebug()  << " Entity name: "<<entity->m_strAutoName;
+    // QMap<vtkSmartPointer<vtkActor>, CEntity*>& actorToEntityMapRef = m_pMainWin->getactorToEntityMap();
+    // for (auto it = actorToEntityMapRef.begin(); it != actorToEntityMapRef.end(); ++it) {
+    //     vtkSmartPointer<vtkActor> actor = it.key();
+    //     CEntity* entity = it.value();
+    //     std::string description = actor->GetMapper()->GetInput()->GetClassName();
+    //     qDebug() << "ActorDescription: " << description ;
+    //     qDebug()  << " Entity name: "<<entity->m_strAutoName;
 
-    }
+    // }
 }
 void ToolWidget::onFindLine(){}
 void ToolWidget::onFindCircle(){}
@@ -1183,61 +1245,8 @@ void ToolWidget::onFindCylinder(){}
 void ToolWidget::onFindCone(){}
 void ToolWidget::onFindSphere(){}
 void ToolWidget::updateele(){
-
-    ElementListWidget* p_elementListwidget= m_pMainWin->getPWinElementListWidget();
-
-    QList<QTreeWidgetItem*> selectedItems = p_elementListwidget->getSelectedItems();
-    QVector<CObject*> eleobjlist=p_elementListwidget->getEleobjlist();
-
-    if (!selectedItems.isEmpty()) {
-        m_point_index.clear();
-        m_selected_points.clear();
-        m_selected_plane.clear();
-        int *index=new int[selectedItems.size()];
-        int *entityindex=new int[selectedItems.size()];
-        int count_index=0;
-        int count_entityindex=0;
-        qDebug()<<"被选中的元素有："<<selectedItems.size();
-        for(QTreeWidgetItem *selectedItem:selectedItems)
-        {
-
-            CObject *obj = selectedItem->data(0, Qt::UserRole).value<CObject*>();
-            for(int i=0;i<m_pMainWin->getObjectListMgr()->getObjectList().size();i++){
-                if(m_pMainWin->getObjectListMgr()->getObjectList()[i]==obj){
-                    index[count_index]=i;
-                    count_index++;
-                }
-            }
-
-            for(int i=0;i<eleobjlist.size();i++){
-                if(eleobjlist[i]==obj){
-                    entityindex[count_entityindex]=i;
-                    count_entityindex++;
-                }
-            }
-
-        }
-        auto& objectList = m_pMainWin->m_ObjectListMgr->getObjectList();
-        auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
-
-        for(int i=0;i<count_entityindex;i++){
-            if(entityList[entityindex[i]]->GetUniqueType()==enPoint){
-                m_point_index.push_back(index[i]);
-                m_selected_points.push_back((CPoint*)entityList[entityindex[i]]);
-            }
-        }
-        for(int i=0;i<count_entityindex;i++){
-            if(entityList[entityindex[i]]->GetUniqueType()==enPlane){
-                m_plane_index.push_back(index[i]);
-                m_selected_plane.push_back((CPlane*)entityList[entityindex[i]]);
-            }
-        }
-        delete []index;
-        delete []entityindex;
-    }
 }
 void ToolWidget::NotifySubscribe(){
-    qDebug()<<"ToolWidget::NotifySubscribe()";
 }
 int getImagePaths(const QString& directory, QStringList &iconPaths, QStringList &iconNames) {
     QDir dir(directory);
@@ -1254,8 +1263,7 @@ int getImagePaths(const QString& directory, QStringList &iconPaths, QStringList 
             imageCount++;
         }
     }
-    // qDebug()<<iconPaths;
-    // qDebug()<<iconNames;
+
     return imageCount;
 }
 
