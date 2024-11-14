@@ -49,6 +49,13 @@ void MouseInteractorHighlightActor::OnLeftButtonDown()
             qDebug()<<entity->m_strAutoName;
         }
 
+        // 如果选中的是文件点云，则给拟合用的cloudptr赋值
+        // if(entity->m_EntityType == enPointCloud && entity->isFileCloud){
+        // auto cloudEntity = (CPointCloud*) entity;
+        //     m_pMainWin->getpWinFileMgr()->getCloudPtr() =
+        //         pcl::PointCloud<pcl::PointXYZRGB>::Ptr (&cloudEntity->m_pointCloud);
+        // }
+
         // 生成一个用于高亮的顶点，并存入pickedActors
         auto actor = CreatHighLightPoint(pos);
 
@@ -56,13 +63,6 @@ void MouseInteractorHighlightActor::OnLeftButtonDown()
         originalProperty->DeepCopy(actor->GetProperty());
         pickedActors.emplace_back(actor, originalProperty);// emplace_back作用等于push_back
         HighlightActor(actor);
-
-        // 存储选中的actor的原始属性
-        // vtkSmartPointer<vtkProperty> originalProperty = vtkSmartPointer<vtkProperty>::New();
-        // originalProperty->DeepCopy(newPickedActor->GetProperty());
-
-        // pickedActors.emplace_back(newPickedActor, originalProperty);// emplace_back作用等于push_back
-        // HighlightActor(newPickedActor);
     }
 
     // 调用基类的左键按下事件

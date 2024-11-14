@@ -13,6 +13,7 @@ public:
     bool isPointInPlane(const pcl::PointXYZRGB&);
     void setRadious(double);
     void setDistance(double);
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr getPlaneCloud();
 private:
     // pcl::PointXYZRGB searchPoint;//实现拟合平面的点
     // pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudptr;//存储打开的点云

@@ -309,7 +309,7 @@ vtkSmartPointer<vtkActor> CCone::draw(){
 
 int CPointCloud::pointCloudCount = 0;
 vtkSmartPointer<vtkActor> CPointCloud::draw(){
-
+    // 将cloud转换为VTK的点集
     vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
     vtkSmartPointer<vtkUnsignedCharArray> colors = vtkSmartPointer<vtkUnsignedCharArray>::New();
     colors->SetNumberOfComponents(3);
@@ -319,8 +319,6 @@ vtkSmartPointer<vtkActor> CPointCloud::draw(){
     for (size_t i = 0; i < m_pointCloud.points.size(); ++i)
     {
         points->SetPoint(i, m_pointCloud.points[i].x, m_pointCloud.points[i].y, m_pointCloud.points[i].z);
-        if(isFileCloud || isFittingCloud) // 若为生成的点云则带颜色
-            colors->SetTuple3(i, m_pointCloud.points[i].r, m_pointCloud.points[i].g, m_pointCloud.points[i].b);
     }
 
     vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
@@ -341,6 +339,13 @@ vtkSmartPointer<vtkActor> CPointCloud::draw(){
     vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
     actor->GetProperty()->SetPointSize(5); // 设置点大小
+    if(isFileCloud){
+        actor->GetProperty()->SetColor(0.5, 0.5, 0.5);
+    }
+    else{
+        actor->GetProperty()->SetColor(1, 0, 0);
+    }
+
 
     return actor;
 }

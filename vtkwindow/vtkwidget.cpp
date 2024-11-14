@@ -136,7 +136,7 @@ vtkSmartPointer<vtkRenderer>& VtkWidget::getRenderer(){
 // 刷新vtk窗口
 void VtkWidget::UpdateInfo(){
     reDrawCentity();
-    reDrawCloud();
+    // reDrawCloud();
 }
 
 void VtkWidget::reDrawCentity(){
@@ -173,7 +173,7 @@ void VtkWidget::reDrawCentity(){
             getRenderer()->AddActor(actor);
         }
         else{
-            for(int j = 0;j < constructEntityList.size();j++){
+            for(int j=0;j<constructEntityList.size();j++){
                 QString key=constructEntityList[j]->GetObjectCName() + "  " + constructEntityList[j]->GetObjectAutoName();
                 if(entitylist[i] == constructEntityList[j]){//是构建的元素
                     flag=1;
@@ -184,13 +184,16 @@ void VtkWidget::reDrawCentity(){
                         break;
                     }
                 }
+                ;
             }
+
             if(flag==0){//不是构建的元素
                 vtkSmartPointer<vtkActor>actor=entitylist[i]->draw();
                 actorToEntity.insert(actor,entitylist[i]);
                 getRenderer()->AddActor(actor);
             }
         }
+
     }
 
     // 遍历objectlist绘制坐标系并加入渲染器
@@ -316,7 +319,7 @@ void VtkWidget::showConvertedCloud(){
             // pcl::io::loadPCDFile(item.key().toStdString(), *cloud_rgb_1);
 
             // 将临时点云指针传给toolwidget，暂时查看拟合功能
-            m_pMainWin->getpWinFileMgr()->cloudptr=pcl::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>>(cloud_rgb_1);
+            m_pMainWin->getpWinFileMgr()->getCloudPtr()=pcl::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>>(cloud_rgb_1);
 
             // 将cloud转换为VTK的点集
             vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
