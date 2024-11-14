@@ -17,12 +17,14 @@ public:
     PointCloudListMgr();
     QMap<QString, pcl::PointCloud<pcl::PointXYZRGB>> &getPointCloudList();
     QVector<pcl::PointCloud<pcl::PointXYZRGB>>& getProductCloudList();
-    CPointCloud* CreateCloudFromFile(QString str);// 给打开的文件分配点云
-    CPointCloud* CreateFittingCloud(pcl::PointCloud<pcl::PointXYZRGB> plane);// 创建不同的点云centity对象
+    CPointCloud* CreateCloudFromFile(QString str);// 给打开的文件分配RGB点云，并生成cpointcloud对象
+    CPointCloud& CreateFittingCloud(pcl::PointCloud<pcl::PointXYZRGB> plane);// 创建不同的点云centity对象
 
     pcl::PointCloud<pcl::PointXYZRGB> getTempCloud(){
-        return cloud;
+        return tempCloud;
     };
+    // 将点云对象转为智能指针
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr CloudToPtr(pcl::PointCloud<pcl::PointXYZRGB> cloud);
 private:
     // 存储所有打开的点云和对应的文件路径
     QMap<QString, pcl::PointCloud<pcl::PointXYZRGB>> pointCloudList;
@@ -30,7 +32,7 @@ private:
     // 存储所有生成的点云，通过对比和拟合等
     QVector<pcl::PointCloud<pcl::PointXYZRGB>> productCloudList;
 
-    pcl::PointCloud<pcl::PointXYZRGB> cloud; // 临时点云对象
+    pcl::PointCloud<pcl::PointXYZRGB> tempCloud; // 临时点云对象
 };
 
 #endif // POINTCLOUDLISTMGR_H

@@ -28,6 +28,9 @@ public:
     void RemoveAll();
     QVector<CEntity*>& getEntityList();
     QVector<bool> &getMarkList();
+
+    friend QDataStream& operator<<(QDataStream& out, const CEntityMgr& mgr);
+    friend QDataStream& operator>>(QDataStream& in, CEntityMgr& mgr);
 };
 
 #endif // CENTITYMGR_H

@@ -90,6 +90,9 @@ void FileManagerWidget::openMeasuredFile(QString fileName,QString filePath){
     m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().insert(filePath, true);
     auto cloud = m_pMainWin->getPointCloudListMgr()->CreateCloudFromFile(filePath);
     m_pMainWin->getPWinToolWidget()->addToList(cloud);
+    // 给拟合的临时点云指针赋值
+    m_pMainWin->getpWinFileMgr()->cloudptr = pcl::PointCloud<pcl::PointXYZRGB>::Ptr
+        (&cloud->m_pointCloud);
     m_pMainWin->NotifySubscribe();
 }
 

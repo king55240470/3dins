@@ -4,6 +4,7 @@
 #include "mainwindow.h"
 #include "geometry/globes.h"
 #include "manager/chosencentitymgr.h"
+#include "manager/filemgr.h"
 
 #include <QVector>
 #include <vtkSmartPointer.h>
