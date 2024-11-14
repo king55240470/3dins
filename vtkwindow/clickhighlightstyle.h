@@ -37,6 +37,7 @@ public:
 
     virtual void OnLeftButtonDown() override; // 重写左键按下事件，点击高亮
     virtual void OnRightButtonDown() override; // 重写右键按下事件，取消高亮
+
     // virtual void KeyPressEvent(char key) override;
 
     void SetRenderer(vtkRenderer* renderer);     // 绑定渲染器

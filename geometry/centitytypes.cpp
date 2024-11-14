@@ -3,6 +3,8 @@
 #include <vtkPoints.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkPolyData.h>
+#include <vtkPointData.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkLineSource.h>
 #include <vtkLine.h>
 #include <vtkCellArray.h>
@@ -316,6 +318,42 @@ vtkSmartPointer<vtkActor> CDistance::draw(){
     else {
         actor = pointToCircle();
     }
+
+    return actor;
+}
+int CPointCloud::pointCloudCount = 0;
+vtkSmartPointer<vtkActor> CPointCloud::draw(){
+
+    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+    vtkSmartPointer<vtkUnsignedCharArray> colors = vtkSmartPointer<vtkUnsignedCharArray>::New();
+    colors->SetNumberOfComponents(3);
+    colors->SetName("Colors");
+
+    points->SetNumberOfPoints(m_pointCloud.points.size());
+    for (size_t i = 0; i < m_pointCloud.points.size(); ++i)
+    {
+        points->SetPoint(i, m_pointCloud.points[i].x, m_pointCloud.points[i].y, m_pointCloud.points[i].z);
+    }
+
+    vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
+    polyData->SetPoints(points);
+    polyData->GetPointData()->SetScalars(colors);
+
+    // 创建一个顶点过滤器来生成顶点表示
+    vtkSmartPointer<vtkVertexGlyphFilter> glyphFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
+    glyphFilter->SetInputData(polyData);
+    glyphFilter->Update();
+
+    polyData = glyphFilter->GetOutput();
+
+    // 创建映射器并将glyphFilter的几何数据输入
+    vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    mapper->SetInputData(polyData);
+
+    vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
+    actor->SetMapper(mapper);
+    actor->GetProperty()->SetPointSize(5); // 设置点大小
+    actor->GetProperty()->SetColor(1, 0, 0);
 
     return actor;
 }
