@@ -9,8 +9,11 @@ public:
     ChosenCEntityMgr();
 
     // 获取ChosenCEntityList
-    QVector<CPosition>& getChosenCEntityList(){
-        return ChosenCEntityList;
+    QVector<CPosition>& getChosenActorAxes(){
+        return chosenActorAxes;
+    }
+    QVector<CEntity*>& getChosenCEntityList(){
+        return chosenCEntityList;
     }
 
     // 根据选中的坐标创建一个CPosition，并存入ChosenCEntityList
@@ -20,7 +23,8 @@ public:
     void DeletePosition(double pos[3]);
 
 private:
-    QVector<CPosition> ChosenCEntityList; // 存储从窗口中选中的图形，目前只有点
+    QVector<CPosition> chosenActorAxes; // 存储从窗口中选中actor时的点击坐标
+    QVector<CEntity*> chosenCEntityList; // 存储从窗口中选中的图形
 };
 
 #endif // CHOSENCENTITYMGR_H
