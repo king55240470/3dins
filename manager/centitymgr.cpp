@@ -78,8 +78,8 @@ QDataStream& operator<<(QDataStream& out, const CEntityMgr& mgr) {
     // 序列化 m_entityList
     out << static_cast<int>(mgr.m_entityList.size());
     for (const auto& entity : mgr.m_entityList) {
-        // ENTITY_TYPE type = entity->GetUniqueType();  // 获取对象的类型标识符
-        int type = entity->GetUniqueType();  // 获取对象的类型标识符
+        int typeInt = entity->GetUniqueType();  // 获取对象的类型标识符
+        ENTITY_TYPE type=static_cast<ENTITY_TYPE>(typeInt);
         out << type;  // 序列化类型标识符
         entity->serialize(out);  // 调用对象的序列化方法（通过多态性处理具体类型）
     }
@@ -115,7 +115,7 @@ QDataStream& operator>>(QDataStream& in, CEntityMgr& mgr) {
             break;
         // 添加其他类型的处理逻辑
         case enLine:
-            // entity = new CLine();
+            entity = new CLine();
             break;
         // ...其他类型
         default:
@@ -126,6 +126,7 @@ QDataStream& operator>>(QDataStream& in, CEntityMgr& mgr) {
         if (entity) {
             entity->deserialize(in);  // 调用对象的反序列化方法
             mgr.m_entityList.append(entity);
+            // mgr.Add(entity);
         }
     }
 
