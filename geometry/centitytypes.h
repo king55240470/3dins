@@ -215,7 +215,7 @@ class CPlane : public CEntity
 private:
     CPosition center;
     QVector4D normal;
-    QVector4D dir_long_edge;    // dir 表示方向direction
+    QVector4D dir_long_edge;   // dir 表示方向direction
     double length;
     double width;
 
@@ -411,6 +411,9 @@ public:
         m_strCName = QString("距离%1").arg(currentCdistacneId);
         currentCdistacneId++;
     }
+    int GetUniqueType() override{
+        return enDistance;
+    }
     double getUptolerance();
     double getUndertolerance();
     void setUptolerance(double on);
@@ -464,8 +467,6 @@ public:
         m_strAutoName = QString("点云%1").arg(currentPointCloudId);
         m_strCName = QString("点云%1").arg(currentPointCloudId);
     }
-
-
     // 点云类的draw
     vtkSmartPointer<vtkActor> draw() override;
     int GetUniqueType() override {

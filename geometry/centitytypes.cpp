@@ -146,12 +146,11 @@ vtkSmartPointer<vtkActor> CCircle::draw(){
     return actor;
 }
 
-// 平面的draw()
 vtkSmartPointer<vtkActor> CPlane::draw(){
     // 获取图形在参考坐标系下的坐标(预置时输入的)，并计算得到他在机械坐标系下的位置(全局坐标)
     CPosition pos(getCenter().x, getCenter().y, getCenter().z);
-    QVector4D posVec = GetRefCoord()->m_mat * QVector4D(pos.x, pos.y, pos.z, 1);
-    CPosition globalPos(posVec.x(), posVec.y(), posVec.z());
+    //QVector4D posVec = GetRefCoord()->m_mat * QVector4D(pos.x, pos.y, pos.z, 1);
+    CPosition globalPos(pos.x, pos.y, pos.z);
 
     // 创建面——矩形法
     double halfL = getLength() / 2.0;
@@ -162,40 +161,33 @@ vtkSmartPointer<vtkActor> CPlane::draw(){
     double norm_length = sqrt(normalVec.x() * normalVec.x() + normalVec.y() * normalVec.y() + normalVec.z() * normalVec.z());
     QVector4D unitNormal = normalVec / norm_length;
 
-    // 找到两个垂直于normal的向量
-    // 1.选择一个不与normal共线的初始vector
-    QVector3D initialVec;
-    if(unitNormal.x() != 1)
-        initialVec = QVector3D(1, 0, 0);
-    else if(unitNormal.y() != 1)
-        initialVec = QVector3D(0, 1, 0);
-    else
-        initialVec = QVector3D(0, 0, 1);
+    //现在第一个向量是长边向量
+    QVector3D firstPerpVec = dir_long_edge.toVector3D();
 
-    // 2.计算第一个向量并单位化
-    QVector3D firstPerpVec = QVector3D::crossProduct(unitNormal.toVector3D(), initialVec);
     double norm_1 = sqrt(firstPerpVec.x() * firstPerpVec.x() + firstPerpVec.y() * firstPerpVec.y() + firstPerpVec.z() * firstPerpVec.z());
+    //这个才是单位化后的长边向量
     QVector3D unitNormal_1 = firstPerpVec / norm_1;
+
     // 3.计算第二个向量，用normal和firstPerpVec的叉积
-    QVector3D secondPerpVec = QVector3D::crossProduct(unitNormal.toVector3D(), unitNormal_1);
 
-    // 计算四个顶点的全局坐标
-    double p1x = globalPos.x + halfL * secondPerpVec.x() - halfW * firstPerpVec.x();
-    double p1y = globalPos.y + halfL * secondPerpVec.y() - halfW * firstPerpVec.y();
-    double p1z = globalPos.z + halfL * secondPerpVec.z() - halfW * firstPerpVec.z();
+    QVector3D secondPerpVec = QVector3D::crossProduct(unitNormal_1,unitNormal.toVector3D());
 
-    double p2x = globalPos.x + halfL * secondPerpVec.x() + halfW * firstPerpVec.x();
-    double p2y = globalPos.y + halfL * secondPerpVec.y() + halfW * firstPerpVec.y();
-    double p2z = globalPos.z + halfL * secondPerpVec.z() + halfW * firstPerpVec.z();
+    //计算四个顶点的全局坐标
+    double p1x = globalPos.x + halfW * secondPerpVec.x() - halfL * unitNormal_1.x();
+    double p1y = globalPos.y + halfW * secondPerpVec.y() - halfL * unitNormal_1.y();
+    double p1z = globalPos.z + halfW * secondPerpVec.z() - halfL * unitNormal_1.z();
 
-    double p3x = globalPos.x - halfL * secondPerpVec.x() + halfW * firstPerpVec.x();
-    double p3y = globalPos.y - halfL * secondPerpVec.y() + halfW * firstPerpVec.y();
-    double p3z = globalPos.z - halfL * secondPerpVec.z() + halfW * firstPerpVec.z();
+    double p2x = globalPos.x + halfW * secondPerpVec.x() + halfL * unitNormal_1.x();
+    double p2y = globalPos.y + halfW * secondPerpVec.y() + halfL * unitNormal_1.y();
+    double p2z = globalPos.z + halfW * secondPerpVec.z() + halfL * unitNormal_1.z();
 
-    double p4x = globalPos.x - halfL * secondPerpVec.x() - halfW * firstPerpVec.x();
-    double p4y = globalPos.y - halfL * secondPerpVec.y() - halfW * firstPerpVec.y();
-    double p4z = globalPos.z - halfL * secondPerpVec.z() - halfW * firstPerpVec.z();
+    double p3x = globalPos.x - halfW * secondPerpVec.x() + halfL * unitNormal_1.x();
+    double p3y = globalPos.y - halfW * secondPerpVec.y() + halfL * unitNormal_1.y();
+    double p3z = globalPos.z - halfW * secondPerpVec.z() + halfL * unitNormal_1.z();
 
+    double p4x = globalPos.x - halfW * secondPerpVec.x() - halfL * unitNormal_1.x();
+    double p4y = globalPos.y - halfW * secondPerpVec.y() - halfL * unitNormal_1.y();
+    double p4z = globalPos.z - halfW * secondPerpVec.z() - halfL * unitNormal_1.z();
     // 向点集插入四个点
     auto points = vtkSmartPointer<vtkPoints>::New();
     points->InsertNextPoint(p1x, p1y, p1z);
