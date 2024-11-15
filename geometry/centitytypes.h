@@ -417,6 +417,7 @@ public:
         m_strCName = QString("距离%1").arg(currentCdistacneId);
         currentCdistacneId++;
     }
+    QString getCEntityInfo() override; // 获取图形的信息，在浮动窗口显示
     int GetUniqueType() override{
         return enDistance;
     }

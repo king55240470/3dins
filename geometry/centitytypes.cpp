@@ -735,6 +735,25 @@ void CCone::setAxis(const QVector4D &newAxis)
     axis = newAxis;
 }
 
+QString CDistance::getCEntityInfo()
+{
+    QString type_str;
+    QString upTol_str;
+    QString underTol_str;
+
+    // 判断是哪种距离
+    if(isHavePlane)
+    type_str = QString("点到平面的距离:%1\n").arg(getdistanceplane());
+    else if(isHaveLine)
+    type_str = QString("点到线的距离%1:\n").arg(getdistanceline());
+    else {
+       type_str = QString("点到圆的距离%1:\n").arg(getdistancecircle());
+    }
+    upTol_str = QString("上公差%1\n:").arg(getUptolerance());
+    underTol_str = QString("下公差%1\n:").arg(getUndertolerance());
+    return type_str + upTol_str + underTol_str;
+}
+
 double CDistance::getUptolerance()
 {
     return uptolerance;
