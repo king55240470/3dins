@@ -274,6 +274,13 @@ vtkSmartPointer<vtkActor> CCylinder::draw(){
 }
 
 // 圆锥的draw()
+QString CCone::getCEntityInfo()
+{
+    auto info = QString("底面圆心: (%1 %2 %3)\n底面半径:%4\n顶点: (%5 %6 %7)")
+    .arg(getVertex().x).arg(getVertex().y).arg(getVertex().z)
+
+}
+
 vtkSmartPointer<vtkActor> CCone::draw(){
     // 获取图形在参考坐标系下的坐标(预置时输入的)，并计算得到他在机械坐标系下的位置(全局坐标)
     CPosition pos(getVertex().x, getVertex().y, getVertex().z);
