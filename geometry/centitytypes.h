@@ -90,6 +90,7 @@ public:
     void setBegin(const CPosition &newBegin);
     CPosition getEnd() const;
     void setEnd(const CPosition &newEnd);
+    QString setentityinfo();
 };
 
 class CPoint : public CEntity
@@ -138,6 +139,7 @@ public:
     {
         return GetWorldPcsPos(m_pt);
     }
+    QString setentityinfo();
 };
 
 class CCircle  : public CEntity
@@ -206,6 +208,8 @@ public:
         return GetWorldPcsPos(m_pt);
     }
 
+    QString setentityinfo();
+
     // 圆类的draw()
     vtkSmartPointer<vtkActor> draw() override;
 };
@@ -254,6 +258,8 @@ public:
     {
         return GetWorldPcsPos(center);
     }
+
+    QString setentityinfo();
 
     // 平面的draw()
     vtkSmartPointer<vtkActor> draw() override;

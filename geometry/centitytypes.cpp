@@ -52,6 +52,12 @@ vtkSmartPointer<vtkActor> CPoint::draw(){
     return actor;
 }
 
+QString CPoint::setentityinfo()
+{
+    QString infoText = QString("X:%1\nY:%2\nZ:%3").arg(m_pt.x).arg(m_pt.y).arg(m_pt.z);
+    return infoText;
+}
+
 // 线类的draw
 vtkSmartPointer<vtkActor> CLine::draw(){
     // 获取首尾两个点在参考坐标系下的坐标(预置时输入的)，
@@ -529,6 +535,12 @@ int CCircle::getId()
 {
     return currentCircleId;
 }
+
+QString CCircle::setentityinfo()
+{
+    QString infoText = QString("CenterX:%1\nCenterY:%2\nCenterZ:%3\n直径:%4").arg(m_pt.x).arg(m_pt.y).arg(m_pt.z).arg(m_d);
+    return infoText;
+}
 CPosition CLine::getEnd() const
 {
     return end;
@@ -537,6 +549,13 @@ CPosition CLine::getEnd() const
 void CLine::setEnd(const CPosition &newEnd)
 {
     end = newEnd;
+}
+
+QString CLine::setentityinfo()
+{
+    QString infoText = QString("beginX:%1,beginY:%2,beginZ:%3\n endX:%4,endY:%5,endZ:%6").arg(begin.x).arg(begin.y).arg(begin.z)
+                           .arg(end.x).arg(end.y).arg(end.z);
+    return infoText;
 }
 
 CPosition CLine::getBegin() const
@@ -587,6 +606,13 @@ double CPlane::getWidth() const
 void CPlane::setWidth(double newWidth)
 {
     width = newWidth;
+}
+
+QString CPlane::setentityinfo()
+{
+    QString infoText = QString("CenterX:%1\nCenterY:%2\nCenterZ:%3\n法向量:(%4,%5,%6)").arg(center.x).arg(center.y).arg(center.z).
+                       arg(normal.x()).arg(normal.y()).arg(normal.z());
+    return infoText;
 }
 
 CPosition CPlane::getCenter() const
