@@ -7,6 +7,7 @@
 #include <QVector>
 #include <vtkSmartPointer.h>
 #include <vtkActor.h>
+#include <pcl/io/auto_io.h>
 
 class CEntity:public CObject
 {
@@ -37,6 +38,8 @@ public:
     void SetRefCoord(CPcs *)override;
     void SetCurCoord(CPcs *)override;
     void SetExtCoord(CPcs *)override;
+
+    virtual QString getCEntityInfo(){return nullptr;}; // 获取图形的信息，在浮动窗口显示
 
     QVector<CEntity*>GetConstructList();
     //void SetImageToolList(QVector<CImageTool *>);
