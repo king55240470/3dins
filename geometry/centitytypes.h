@@ -90,6 +90,7 @@ public:
     void setBegin(const CPosition &newBegin);
     CPosition getEnd() const;
     void setEnd(const CPosition &newEnd);
+    QString getCEntityInfo() override;
 };
 
 class CPoint : public CEntity
@@ -138,6 +139,7 @@ public:
     {
         return GetWorldPcsPos(m_pt);
     }
+    QString getCEntityInfo() override;
 };
 
 class CCircle  : public CEntity
@@ -206,6 +208,8 @@ public:
         return GetWorldPcsPos(m_pt);
     }
 
+    QString getCEntityInfo() override;
+
     // 圆类的draw()
     vtkSmartPointer<vtkActor> draw() override;
 };
@@ -215,7 +219,7 @@ class CPlane : public CEntity
 private:
     CPosition center;
     QVector4D normal;
-    QVector4D dir_long_edge;    // dir 表示方向direction
+    QVector4D dir_long_edge;   // dir 表示方向direction
     double length;
     double width;
 
@@ -254,6 +258,8 @@ public:
     {
         return GetWorldPcsPos(center);
     }
+
+    QString getCEntityInfo() override;
 
     // 平面的draw()
     vtkSmartPointer<vtkActor> draw() override;
@@ -294,6 +300,7 @@ public:
         return GetWorldPcsPos(center);
     }
 
+    QString getCEntityInfo() override;
     // 球类的draw()
     vtkSmartPointer<vtkActor> draw() override;
 };
@@ -339,6 +346,7 @@ public:
         return GetWorldPcsPos(btm_center);
     }
 
+    QString getCEntityInfo() override;
     // 圆柱体的draw()
     vtkSmartPointer<vtkActor> draw() override;
 };
@@ -374,7 +382,7 @@ public:
     {
         return GetWorldPcsPos(vertex);
     }
-
+    QString getCEntityInfo() override;
     // 圆锥的draw()
     vtkSmartPointer<vtkActor> draw() override;
 
@@ -410,6 +418,10 @@ public:
         m_strAutoName = QString("距离%1").arg(currentCdistacneId);
         m_strCName = QString("距离%1").arg(currentCdistacneId);
         currentCdistacneId++;
+    }
+    QString getCEntityInfo() override; // 获取图形的信息，在浮动窗口显示
+    int GetUniqueType() override{
+        return enDistance;
     }
     double getUptolerance();
     double getUndertolerance();
@@ -448,13 +460,12 @@ class CPointCloud : public CEntity
 {
 public:
     CPosition m_pt;
-    pcl::PointCloud<pcl::PointXYZRGB> m_pointCloud; // 存储的点云对象
+    pcl::PointCloud<pcl::PointXYZRGB> m_pointCloud; // 存储的点云对象（已经加载过的）
     static int pointCloudCount;
     int currentPointCloudId;
-    bool isFileCloud = true; // 是否是文件生成的点云
+    bool isFileCloud = false; // 是否是文件生成的点云
     bool isFittingCloud = false; // 是否是拟合出来的点云
     bool isComparsionCloud = false; //  是否是对比得到的点云
-
 public:
     CPointCloud()
     {
@@ -465,9 +476,8 @@ public:
         m_strAutoName = QString("点云%1").arg(currentPointCloudId);
         m_strCName = QString("点云%1").arg(currentPointCloudId);
     }
-
-
     // 点云类的draw
+    QString getCEntityInfo() override; // 获取图形的信息，在浮动窗口显示
     vtkSmartPointer<vtkActor> draw() override;
     int GetUniqueType() override {
         return enPointCloud;
