@@ -52,7 +52,7 @@ vtkSmartPointer<vtkActor> CPoint::draw(){
     return actor;
 }
 
-QString CPoint::setentityinfo()
+QString CPoint::getCEntityInfo()
 {
     QString infoText = QString("X:%1\nY:%2\nZ:%3").arg(m_pt.x).arg(m_pt.y).arg(m_pt.z);
     return infoText;
@@ -280,6 +280,13 @@ vtkSmartPointer<vtkActor> CCylinder::draw(){
 }
 
 // 圆锥的draw()
+QString CCone::getCEntityInfo()
+{
+    QString infoText = QString("X:%1\nY:%2\nZ:%3\nhalf-angle:%4\nheight:%5\naxial:(%6,%7,%8)").arg(vertex.x).arg(vertex.y).arg(vertex.z).
+                       arg(radian).arg(height).arg(axis.x()).arg(axis.y()).arg(axis.z());
+    return infoText;
+}
+
 vtkSmartPointer<vtkActor> CCone::draw(){
     // 获取图形在参考坐标系下的坐标(预置时输入的)，并计算得到他在机械坐标系下的位置(全局坐标)
     CPosition pos(getVertex().x, getVertex().y, getVertex().z);
@@ -306,6 +313,12 @@ vtkSmartPointer<vtkActor> CCone::draw(){
 }
 
 int CPointCloud::pointCloudCount = 0;
+QString CPointCloud::getCEntityInfo()
+{
+    QString infoText="点云";
+    return infoText;
+}
+
 vtkSmartPointer<vtkActor> CPointCloud::draw(){
     // 将cloud转换为VTK的点集
     vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
@@ -536,11 +549,12 @@ int CCircle::getId()
     return currentCircleId;
 }
 
-QString CCircle::setentityinfo()
+QString CCircle::getCEntityInfo()
 {
-    QString infoText = QString("CenterX:%1\nCenterY:%2\nCenterZ:%3\n直径:%4").arg(m_pt.x).arg(m_pt.y).arg(m_pt.z).arg(m_d);
+    QString infoText = QString("CenterX:%1\nCenterY:%2\nCenterZ:%3\ndiameter:%4").arg(m_pt.x).arg(m_pt.y).arg(m_pt.z).arg(m_d);
     return infoText;
 }
+
 CPosition CLine::getEnd() const
 {
     return end;
@@ -551,10 +565,10 @@ void CLine::setEnd(const CPosition &newEnd)
     end = newEnd;
 }
 
-QString CLine::setentityinfo()
+QString CLine::getCEntityInfo()
 {
     QString infoText = QString("beginX:%1,beginY:%2,beginZ:%3\n endX:%4,endY:%5,endZ:%6").arg(begin.x).arg(begin.y).arg(begin.z)
-                           .arg(end.x).arg(end.y).arg(end.z);
+    .arg(end.x).arg(end.y).arg(end.z);
     return infoText;
 }
 
@@ -608,12 +622,13 @@ void CPlane::setWidth(double newWidth)
     width = newWidth;
 }
 
-QString CPlane::setentityinfo()
+QString CPlane::getCEntityInfo()
 {
-    QString infoText = QString("CenterX:%1\nCenterY:%2\nCenterZ:%3\n法向量:(%4,%5,%6)").arg(center.x).arg(center.y).arg(center.z).
-                       arg(normal.x()).arg(normal.y()).arg(normal.z());
+    QString infoText = QString("CenterX:%1\nCenterY:%2\nCenterZ:%3\nnormal:(%4,%5,%6)\nedge:(%7,%8,%9)\nlength,width:(%10,%11)").arg(center.x).arg(center.y).arg(center.z).
+                       arg(normal.x()).arg(normal.y()).arg(normal.z()).arg(dir_long_edge.x()).arg(dir_long_edge.y()).arg(dir_long_edge.z()).arg(length).arg(width);
     return infoText;
 }
+
 
 CPosition CPlane::getCenter() const
 {
@@ -633,6 +648,13 @@ double CSphere::getDiameter() const
 void CSphere::setDiameter(double newDiameter)
 {
     diameter = newDiameter;
+}
+
+QString CSphere::getCEntityInfo()
+{
+    QString infoText = QString("CenterX:%1\nCenterY:%2\nCenterZ:%3\ndiameter:%4").arg(center.x).arg(center.y).arg(center.z).
+                       arg(diameter);
+    return infoText;
 }
 
 CPosition CSphere::getCenter() const
@@ -673,6 +695,13 @@ CPosition CCylinder::getBtm_center() const
 void CCylinder::setBtm_center(const CPosition &newBtm_center)
 {
     btm_center = newBtm_center;
+}
+
+QString CCylinder::getCEntityInfo()
+{
+    QString infoText = QString("X:%1\nY:%2\nZ:%3\ndiameter:%4\nheight:%5\naxial:(%6,%7,%8)").arg(btm_center.x).arg(btm_center.y).arg(btm_center.z).
+                       arg(diameter).arg(height).arg(axis.x()).arg(axis.y()).arg(axis.z());
+    return infoText;
 }
 
 QVector4D CCylinder::getAxis() const
@@ -743,11 +772,11 @@ QString CDistance::getCEntityInfo()
 
     // 判断是哪种距离
     if(isHavePlane)
-    type_str = QString("点到平面的距离:%1\n").arg(getdistanceplane());
+    type_str = QString("point to plane:%1\n").arg(getdistanceplane());
     else if(isHaveLine)
-    type_str = QString("点到线的距离%1:\n").arg(getdistanceline());
+    type_str = QString("point to line%1:\n").arg(getdistanceline());
     else {
-       type_str = QString("点到圆的距离%1:\n").arg(getdistancecircle());
+       type_str = QString("point to circle%1:\n").arg(getdistancecircle());
     }
     upTol_str = QString("上公差%1\n:").arg(getUptolerance());
     underTol_str = QString("下公差%1\n:").arg(getUndertolerance());

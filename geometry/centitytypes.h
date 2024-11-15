@@ -90,7 +90,7 @@ public:
     void setBegin(const CPosition &newBegin);
     CPosition getEnd() const;
     void setEnd(const CPosition &newEnd);
-    QString setentityinfo();
+    QString getCEntityInfo() override;
 };
 
 class CPoint : public CEntity
@@ -139,7 +139,7 @@ public:
     {
         return GetWorldPcsPos(m_pt);
     }
-    QString setentityinfo();
+    QString getCEntityInfo() override;
 };
 
 class CCircle  : public CEntity
@@ -208,7 +208,7 @@ public:
         return GetWorldPcsPos(m_pt);
     }
 
-    QString setentityinfo();
+    QString getCEntityInfo() override;
 
     // 圆类的draw()
     vtkSmartPointer<vtkActor> draw() override;
@@ -259,7 +259,7 @@ public:
         return GetWorldPcsPos(center);
     }
 
-    QString setentityinfo();
+    QString getCEntityInfo() override;
 
     // 平面的draw()
     vtkSmartPointer<vtkActor> draw() override;
@@ -300,6 +300,7 @@ public:
         return GetWorldPcsPos(center);
     }
 
+    QString getCEntityInfo() override;
     // 球类的draw()
     vtkSmartPointer<vtkActor> draw() override;
 };
@@ -345,6 +346,7 @@ public:
         return GetWorldPcsPos(btm_center);
     }
 
+    QString getCEntityInfo() override;
     // 圆柱体的draw()
     vtkSmartPointer<vtkActor> draw() override;
 };
@@ -380,7 +382,7 @@ public:
     {
         return GetWorldPcsPos(vertex);
     }
-
+    QString getCEntityInfo() override;
     // 圆锥的draw()
     vtkSmartPointer<vtkActor> draw() override;
 
@@ -475,6 +477,7 @@ public:
         m_strCName = QString("点云%1").arg(currentPointCloudId);
     }
     // 点云类的draw
+    QString getCEntityInfo() override; // 获取图形的信息，在浮动窗口显示
     vtkSmartPointer<vtkActor> draw() override;
     int GetUniqueType() override {
         return enPointCloud;
