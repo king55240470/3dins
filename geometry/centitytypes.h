@@ -46,6 +46,7 @@ public:
 
     // 线类的draw()
     vtkSmartPointer<vtkActor> draw() override;
+    QString getCEntityInfo() override; // 获取图形的信息，在浮动窗口显示
 
     int GetUniqueType() override {
         return enLine;
@@ -112,6 +113,8 @@ public:
 
     // 点类的draw
     vtkSmartPointer<vtkActor> draw() override;
+    QString getCEntityInfo() override; // 获取图形的信息，在浮动窗口显示
+
     int GetUniqueType() override {
         return enPoint;
     }
@@ -208,6 +211,8 @@ public:
 
     // 圆类的draw()
     vtkSmartPointer<vtkActor> draw() override;
+    QString getCEntityInfo() override; // 获取图形的信息，在浮动窗口显示
+
 };
 
 class CPlane : public CEntity
@@ -257,6 +262,8 @@ public:
 
     // 平面的draw()
     vtkSmartPointer<vtkActor> draw() override;
+    QString getCEntityInfo() override; // 获取图形的信息，在浮动窗口显示
+
 };
 
 class CSphere : public CEntity{
@@ -296,6 +303,8 @@ public:
 
     // 球类的draw()
     vtkSmartPointer<vtkActor> draw() override;
+    QString getCEntityInfo() override; // 获取图形的信息，在浮动窗口显示
+
 };
 
 
@@ -341,6 +350,8 @@ public:
 
     // 圆柱体的draw()
     vtkSmartPointer<vtkActor> draw() override;
+    QString getCEntityInfo() override; // 获取图形的信息，在浮动窗口显示
+
 };
 
 class CCone : public CEntity{
@@ -363,6 +374,7 @@ public:
         m_strAutoName = QString("圆锥%1").arg(currentConeId);
         m_strCName = QString("圆锥%1").arg(currentConeId);
     }
+    QString getCEntityInfo() override; // 获取图形的信息，在浮动窗口显示
     int GetUniqueType() override{
         return enCone;
     }
