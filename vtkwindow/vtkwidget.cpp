@@ -74,39 +74,22 @@ void VtkWidget::OnMouseMove()
     vtkSmartPointer<vtkPropPicker> picker = vtkSmartPointer<vtkPropPicker>::New();
     picker->Pick(clickPos[0], clickPos[1], 0, renderer);
 
-    // 遍历所有高亮点，检测鼠标是否靠近
-    bool isMouseNearHighlightedPoint = false;
-    CPosition posi;
-    for (CPosition actor : m_pMainWin->getChosenListMgr()->getChosenActorAxes()) {
-        double* pos = picker->GetPickPosition();
-        double distance = std::sqrt(std::pow(actor.x - pos[0], 2) +
-                                    std::pow(actor.y - pos[1], 2) +
-                                    std::pow(actor.z - pos[2], 2));
-        if (distance < 0.002) { // 如果鼠标在高亮点附近
-            isMouseNearHighlightedPoint = true;
-            posi=actor;
-            break;
-        }
-    }
-
     vtkActor* pickedActor = picker->GetActor();
     if (pickedActor) {
-        if (isMouseNearHighlightedPoint){
-            std::ostringstream oss;
-            std::ostringstream oss1;
-            std::ostringstream oss2;
-            oss << "X: " << posi.x << "\n";
-            oss1 << "Y: " << posi.y << "\n";
-            oss2 << "Z: " << posi.z;
-            std::string infoText = oss.str() + oss1.str() + oss2.str();
-            infoTextActor->SetInput(infoText.c_str());   // 设置文本输入
-            infoTextActor->SetPosition(clickPos[0]+20, clickPos[1]+20);
-            infoTextActor->SetVisibility(true);
-            rectangleActor->SetPosition(clickPos[0]+20, clickPos[1]);
-            rectangleActor->SetVisibility(true);
-        }else{
-            infoTextActor->SetVisibility(false);
-            rectangleActor->SetVisibility(false);
+        for(vtkSmartPointer<vtkActor> actor:m_pMainWin->getactorToEntityMap().keys()){
+            if(pickedActor==actor){
+                    m_pMainWin->getactorToEntityMap()[actor];
+                    QString qstr="hhh";
+                    QByteArray byteArray = qstr.toUtf8(); // 转换 QString 到 QByteArray
+                    infoTextActor->SetInput(byteArray.constData());
+                    infoTextActor->SetPosition(clickPos[0]+20, clickPos[1]+20);
+                    infoTextActor->SetVisibility(true);
+                    rectangleActor->SetPosition(clickPos[0]+20, clickPos[1]);
+                    rectangleActor->SetVisibility(true);
+                }else{
+                    infoTextActor->SetVisibility(false);
+                    rectangleActor->SetVisibility(false);
+            }
         }
     }
     getRenderWindow()->Render();
