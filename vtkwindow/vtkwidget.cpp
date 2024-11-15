@@ -69,6 +69,7 @@ void VtkWidget::OnMouseMove()
 {
     //qDebug()<<"执行了move";
     int clickPos[2];
+    bool actorFound = false;
     renWin->GetInteractor()->GetEventPosition(clickPos);
 
     vtkSmartPointer<vtkPropPicker> picker = vtkSmartPointer<vtkPropPicker>::New();
@@ -78,19 +79,22 @@ void VtkWidget::OnMouseMove()
     if (pickedActor) {
         for(vtkSmartPointer<vtkActor> actor:m_pMainWin->getactorToEntityMap().keys()){
             if(pickedActor==actor){
-                    m_pMainWin->getactorToEntityMap()[actor];
-                    QString qstr="hhh";
-                    QByteArray byteArray = qstr.toUtf8(); // 转换 QString 到 QByteArray
-                    infoTextActor->SetInput(byteArray.constData());
-                    infoTextActor->SetPosition(clickPos[0]+20, clickPos[1]+20);
-                    infoTextActor->SetVisibility(true);
-                    rectangleActor->SetPosition(clickPos[0]+20, clickPos[1]);
-                    rectangleActor->SetVisibility(true);
-                }else{
-                    infoTextActor->SetVisibility(false);
-                    rectangleActor->SetVisibility(false);
+                QString qstr;
+                qstr=m_pMainWin->getactorToEntityMap()[actor]->getCEntityInfo();
+                QByteArray byteArray = qstr.toUtf8(); // 转换 QString 到 QByteArray
+                infoTextActor->SetInput(byteArray.constData());
+                infoTextActor->SetPosition(clickPos[0]+20, clickPos[1]+20);
+                infoTextActor->SetVisibility(true);
+                rectangleActor->SetPosition(clickPos[0]+20, clickPos[1]);
+                rectangleActor->SetVisibility(true);
+                actorFound = true;
+                break;
             }
         }
+    }
+    if (!actorFound) {
+        infoTextActor->SetVisibility(false);
+        rectangleActor->SetVisibility(false);
     }
     getRenderWindow()->Render();
 }
@@ -116,7 +120,7 @@ void VtkWidget::createText()
     vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
     // 定义矩形的四个顶点
     double width = 200; // 矩形的宽度
-    double height = 100; // 矩形的高度
+    double height = 150; // 矩形的高度
     points->InsertNextPoint(0, 0, 0);
     points->InsertNextPoint(width, 0, 0);
     points->InsertNextPoint(width, height, 0);
