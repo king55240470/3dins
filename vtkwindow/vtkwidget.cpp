@@ -69,54 +69,60 @@ void VtkWidget::OnMouseMove()
 {
     //qDebug()<<"执行了move";
     int clickPos[2];
+    bool actorFound = false;
     renWin->GetInteractor()->GetEventPosition(clickPos);
 
     vtkSmartPointer<vtkPropPicker> picker = vtkSmartPointer<vtkPropPicker>::New();
     picker->Pick(clickPos[0], clickPos[1], 0, renderer);
 
-    // 遍历所有高亮点，检测鼠标是否靠近
-    bool isMouseNearHighlightedPoint = false;
-    CPosition posi;
-    for (CPosition actor : m_pMainWin->getChosenListMgr()->getChosenActorAxes()) {
-        double* pos = picker->GetPickPosition();
-        double distance = std::sqrt(std::pow(actor.x - pos[0], 2) +
-                                    std::pow(actor.y - pos[1], 2) +
-                                    std::pow(actor.z - pos[2], 2));
-        if (distance < 0.002) { // 如果鼠标在高亮点附近
-            isMouseNearHighlightedPoint = true;
-            posi=actor;
-            break;
-        }
-    }
-
     vtkActor* pickedActor = picker->GetActor();
     if (pickedActor) {
-        if (isMouseNearHighlightedPoint){
-            std::ostringstream oss;
-            std::ostringstream oss1;
-            std::ostringstream oss2;
-            oss << "X: " << posi.x << "\n";
-            oss1 << "Y: " << posi.y << "\n";
-            oss2 << "Z: " << posi.z;
-            std::string infoText = oss.str() + oss1.str() + oss2.str();
-            infoTextActor->SetInput(infoText.c_str());   // 设置文本输入
-            infoTextActor->SetPosition(clickPos[0]+20, clickPos[1]+20);
-            infoTextActor->SetVisibility(true);
-            rectangleActor->SetPosition(clickPos[0]+20, clickPos[1]);
-            rectangleActor->SetVisibility(true);
-        }else{
-            infoTextActor->SetVisibility(false);
-            rectangleActor->SetVisibility(false);
+        for(vtkSmartPointer<vtkActor> actor:m_pMainWin->getactorToEntityMap().keys()){
+            if(pickedActor==actor){
+                // 得到图形的各种属性
+                QString qstr=m_pMainWin->getactorToEntityMap()[actor]->getCEntityInfo();
+                QByteArray byteArray = qstr.toUtf8(); // 转换 QString 到 QByteArray
+                infoTextActor->SetInput(byteArray.constData());
+                infoTextActor->SetPosition(clickPos[0]+20, clickPos[1]+20);
+                infoTextActor->SetVisibility(true);
+
+                // 获取文本的边界框尺寸
+                // auto text_size = infoTextActor->GetTextProperty()->GetFrameWidth();
+                // 计算文本框的宽度和高度
+                // int bounds[4];
+                // double textWidth = bounds[1] - bounds[0];
+                // double textHeight = bounds[3] - bounds[2];
+                // // 调整矩形的尺寸
+                // double width = textWidth + 40; // 加上一些边距
+                // double height = textHeight + 20; // 加上一些边距
+                // // 更新矩形的顶点
+                // vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+                // points->InsertNextPoint(0, 0, 0);
+                // points->InsertNextPoint(width, 0, 0);
+                // points->InsertNextPoint(width, height, 0);
+                // points->InsertNextPoint(0, height, 0);
+                // // 更新矩形的位置
+                // rectangleActor->SetPosition(clickPos[0]+20, clickPos[1]+20);
+                // rectangleActor->SetVisibility(true);
+
+                actorFound = true;
+                break;
+            }
         }
+    }
+    if (!actorFound) {
+        infoTextActor->SetVisibility(false);
+        rectangleActor->SetVisibility(false);
     }
     getRenderWindow()->Render();
 }
+
 void VtkWidget::createText()
 {
     // 创建浮动信息的文本演员
     infoTextActor = vtkSmartPointer<vtkTextActor>::New();
     infoTextActor->GetTextProperty()->SetFontSize(16);
-    infoTextActor->GetTextProperty()->SetColor(0.9, 0.1, 0.1);
+    infoTextActor->GetTextProperty()->SetColor(1, 0, 0);
     infoTextActor->SetInput("浮动窗口");
 
     textWidget = vtkSmartPointer<vtkOrientationMarkerWidget>::New();
@@ -133,7 +139,7 @@ void VtkWidget::createText()
     vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
     // 定义矩形的四个顶点
     double width = 200; // 矩形的宽度
-    double height = 100; // 矩形的高度
+    double height = 150; // 矩形的高度
     points->InsertNextPoint(0, 0, 0);
     points->InsertNextPoint(width, 0, 0);
     points->InsertNextPoint(width, height, 0);
@@ -155,10 +161,11 @@ void VtkWidget::createText()
     rectangleActor = vtkSmartPointer<vtkActor2D>::New();
     rectangleActor->SetMapper(rectangleMapper);
     // 设置矩形的颜色
-    rectangleActor->GetProperty()->SetColor(0.3, 0.3, 0.3); // 填充颜色
-    rectangleActor->GetProperty()->SetOpacity(0.5); // 设置透明度
+    rectangleActor->GetProperty()->SetColor(0.5, 0.5, 0.5); // 填充颜色
+    rectangleActor->GetProperty()->SetOpacity(0.7); // 设置透明度
     rectangleActor->SetPosition(1,1);
     rectangleActor->SetVisibility(false);
+
     textWidget = vtkSmartPointer<vtkOrientationMarkerWidget>::New();
     // 将orientationWidget与交互器关联
     textWidget->SetInteractor(renWin->GetInteractor());
@@ -168,7 +175,7 @@ void VtkWidget::createText()
     textWidget->InteractiveOn();
     // 设置交互器的鼠标移动回调
     renderer->AddActor(infoTextActor);
-    renderer->AddActor(rectangleActor);
+    // renderer->AddActor(rectangleActor);
     renWin->GetInteractor()->AddObserver(vtkCommand::MouseMoveEvent, this, &VtkWidget::OnMouseMove);
 }
 
@@ -240,7 +247,6 @@ void VtkWidget::reDrawCentity(){
                 }
             }
         }
-
     }
 
     // 遍历objectlist绘制坐标系并加入渲染器
