@@ -13,6 +13,7 @@
 #include <vtkCylinderSource.h>
 #include <vtkConeSource.h>
 #include <vtkProperty.h>
+#include <vtkTransform.h>
 #include <vtkVertexGlyphFilter.h>
 #include <vtkPolygon.h>
 #include <vtkMath.h>
@@ -267,6 +268,13 @@ vtkSmartPointer<vtkActor> CCylinder::draw(){
     cylinder->SetResolution(100);
     cylinder->SetHeight(getHeight());
 
+    // 创建变换对象，用于旋转圆柱方向
+    vtkSmartPointer<vtkTransform> transform = vtkSmartPointer<vtkTransform>::New();
+
+    // 归一化axis并应用到变换
+    double axisData[3] = {getAxis().x(), getAxis().y(), getAxis().z()};
+    transform->RotateWXYZ(180.0, axisData);
+
     // 创建映射器
     auto mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     mapper->SetInputConnection(cylinder->GetOutputPort());
@@ -275,6 +283,7 @@ vtkSmartPointer<vtkActor> CCylinder::draw(){
     auto actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
     actor->GetProperty()->SetColor(0.5, 0.5, 0.5);
+    actor->SetUserTransform(transform); // 应用变换
 
     return actor;
 }
@@ -284,7 +293,7 @@ QString CCone::getCEntityInfo()
 {
     auto infoText = QString("center: (%1,%2,%3)\nradian:%4\nheight:%5\naxis:(%6,%7,%8)")
     .arg(getVertex().x).arg(getVertex().y).arg(getVertex().z)
-    .arg(radian).arg(height).arg(axis.x()).arg(axis.y()).arg(axis.z());
+        .arg(radian).arg(height).arg(axis.x()).arg(axis.y()).arg(axis.z());
 
     return infoText;
 }
@@ -303,6 +312,13 @@ vtkSmartPointer<vtkActor> CCone::draw(){
     cone->SetHeight(getCone_height());
     cone->SetResolution(100);
 
+    // 创建变换对象，用于旋转圆柱方向
+    vtkSmartPointer<vtkTransform> transform = vtkSmartPointer<vtkTransform>::New();
+
+    // 归一化axis并应用到变换
+    double axisData[3] = {getAxis().x(), getAxis().y(), getAxis().z()};
+    transform->RotateWXYZ(180.0, axisData);
+
     // 创建映射器
     auto mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     mapper->SetInputConnection(cone->GetOutputPort());
@@ -311,6 +327,7 @@ vtkSmartPointer<vtkActor> CCone::draw(){
     auto actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
     actor->GetProperty()->SetColor(0.5, 0.5, 0.5);
+    actor->SetUserTransform(transform); // 应用变换
 
     return actor;
 }
@@ -775,14 +792,14 @@ QString CDistance::getCEntityInfo()
 
     // 判断是哪种距离
     if(isHavePlane)
-    type_str = QString("point to plane:%1\n").arg(getdistanceplane());
+        type_str = QString("pointToPlane distance:%1\n").arg(getdistanceplane());
     else if(isHaveLine)
-    type_str = QString("point to line%1:\n").arg(getdistanceline());
+        type_str = QString("pointToLine distance%1:\n").arg(getdistanceline());
     else {
-       type_str = QString("point to circle%1:\n").arg(getdistancecircle());
+        type_str = QString("pointToCircle distance%1:\n").arg(getdistancecircle());
     }
-    upTol_str = QString("上公差%1\n:").arg(getUptolerance());
-    underTol_str = QString("下公差%1\n:").arg(getUndertolerance());
+    upTol_str = QString("upTolerance%1\n:").arg(getUptolerance());
+    underTol_str = QString("underTolerance%1\n:").arg(getUndertolerance());
     return type_str + upTol_str + underTol_str;
 }
 
