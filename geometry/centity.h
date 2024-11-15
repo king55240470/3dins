@@ -39,6 +39,8 @@ public:
     void SetCurCoord(CPcs *)override;
     void SetExtCoord(CPcs *)override;
 
+    virtual QString getCEntityInfo(); // 获取图形的信息，在浮动窗口显示
+
     QVector<CEntity*>GetConstructList();
     //void SetImageToolList(QVector<CImageTool *>);
     //QVector<CImageTool *> GetImageToolList();
