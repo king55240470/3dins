@@ -53,12 +53,12 @@ void setDataWidget::PlaneBtnClick(){
     plane->setRadious(p_rad->text().toDouble());  // 设置半径
     plane->setDistance(p_dis->text().toDouble());  // 设置距离阈值
     auto planeCloud= plane->RANSAC(p_point,p_cloudptr);
-    qDebug()<<planeCloud->size();
-    pcl::copyPointCloud(*planeCloud, *fittingPlane);
     if(planeCloud==nullptr){
         qDebug()<<"出现了点云空指针";
+        return;
     }
-
+    qDebug()<<planeCloud->size();
+    pcl::copyPointCloud(*planeCloud, *fittingPlane);
 }
 
 FittingPlane *setDataWidget::getPlane(){

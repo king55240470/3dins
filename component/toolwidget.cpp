@@ -1170,6 +1170,27 @@ void ToolWidget::addToList(CEntity* newEntity){
 
 
 }
+
+void ToolWidget::addToFindList(CEntity* newEntity){
+    newEntity->m_CreateForm = ePreset;
+    newEntity->m_pRefCoord = m_pMainWin->m_pcsListMgr->m_pPcsCurrent;
+    newEntity->m_pCurCoord = m_pMainWin->m_pcsListMgr->m_pPcsCurrent;
+    newEntity->m_pExtCoord = m_pMainWin->m_pcsListMgr->m_pPcsCurrent;
+    // newEntity->SetNominal();
+    // 加入Entitylist 和 ObjectList
+
+    m_pMainWin->m_EntityListMgr->Add(newEntity);
+    m_pMainWin->m_ObjectListMgr->Add(newEntity);
+
+    //加入constructEntityList
+    identifyEntityList.push_back(newEntity);
+
+    //加入identifyItemMap
+    m_pMainWin->getpWinFileMgr()->getIdentifyItemMap().insert(newEntity->GetObjectCName()+"  "+newEntity->GetObjectAutoName(), true);
+
+
+}
+
 void ToolWidget::onConstructPoint(){
 
     QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenActorAxes();
@@ -1371,16 +1392,17 @@ void ToolWidget:: onFindPlane(){
     PlaneConstructor constructor;
     CPlane* newPlane;
     CPosition center;
-    center.x=plane->getCenter().x;
-    center.y=plane->getCenter().y;
-    center.z=plane->getCenter().z;
+    center.x=plane->getCenter()[0];
+    center.y=plane->getCenter()[1];
+    center.z=plane->getCenter()[2];
     QVector4D normal(plane->getNormal().x(),plane->getNormal().y(),plane->getNormal().z(),0);
-    newPlane=constructor.createPlane(center,normal,QVector4D(1,0,0,0),plane->getLength(),plane->getWidth());
+    QVector4D direction(plane->getLength_Direction().x(),plane->getLength_Direction().y(),plane->getLength_Direction().z(),0);
+    newPlane=constructor.createPlane(center,normal,direction,plane->getLength(),plane->getWidth());
     if(newPlane==nullptr){
         qDebug()<<"拟合平面生成错误";
         return ;
     }
-    addToList(newPlane);
+    addToFindList(newPlane);
 
     // 生成拟合出的点云并添加到entitylist
     // auto pointCloud = m_pMainWin->getPointCloudListMgr()->CreateFittingCloud(
@@ -1433,4 +1455,8 @@ int getImagePaths(const QString& directory, QStringList &iconPaths, QStringList 
 
 QVector<CEntity*>& ToolWidget::getConstructEntityList(){
     return constructEntityList;
+}
+
+QVector<CEntity*>& ToolWidget::getIdentifyEntityList(){
+    return identifyEntityList;
 }
