@@ -151,8 +151,9 @@ void FileManagerWidget::showContextMenu(const QPoint &pos){
         // qDebug()<<selectedItem;
         contextMenu = new QMenu(this);
         deleteAction = new QAction("删除文件", this);
-        createAction = new QAction("重新生成", this); // 通过文件重新生成点云
+        createAction = new QAction("重新生成", this);
         connect(deleteAction,&QAction::triggered,this,&FileManagerWidget::deleteFile);
+        connect(createAction,&QAction::triggered,this,&FileManagerWidget::redrawCloudEntity);
         contextMenu->addAction(deleteAction);
         contextMenu->addAction(createAction);
         contextMenu->exec(filetree->mapToGlobal(pos));  // 显示右键菜单
@@ -165,6 +166,9 @@ void FileManagerWidget::deleteFile(){
 
     if(isChildOf(selectedItem, modelFile)){
         m_pMainWin->getpWinFileMgr()->getModelFileMap().remove(filePath);
+        // 删除文件在点云map中的记录
+        m_pMainWin->getPointCloudListMgr()->DeleteFileCloud(filePath);
+
         bool removed=model->removeRow(selectedIndex.row(),selectedIndex.parent());
         if(removed){
             qDebug()<<"文件被删除";
@@ -211,6 +215,16 @@ void FileManagerWidget::deleteFile(){
     // }else{
     //     qDebug()<<"选择的不是文件";
     // }
+}
+
+// 重新加载点云
+void FileManagerWidget::redrawCloudEntity()
+{
+    QString filePath = selectedItem->data(Qt::UserRole).toString();//从子节点中获取文件路径
+    // 由选中的文件重新加载点云，并存入entitylist
+    m_pMainWin->getPWinToolWidget()->addToList(
+        m_pMainWin->getPointCloudListMgr()->CreateCloudFromFile(filePath));
+    m_pMainWin->NotifySubscribe();
 }
 
 //点击文件名获得文件路径&按钮状态

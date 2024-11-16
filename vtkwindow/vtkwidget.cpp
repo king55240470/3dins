@@ -221,7 +221,7 @@ void VtkWidget::reDrawCentity(){
     // 遍历entitylist绘制图形并加入渲染器
     for(auto i = 0;i < entitylist.size();i++){
         int flag=0;
-        if(constructEntityList.isEmpty()){//没有构建的元素，即没有需要隐藏的图形
+        if(constructEntityList.isEmpty()){//没有构建的元素
             vtkSmartPointer<vtkActor>actor = entitylist[i]->draw();
             actorToEntity.insert(actor,entitylist[i]);
             getRenderer()->AddActor(actor);
