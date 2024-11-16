@@ -315,7 +315,7 @@ vtkSmartPointer<vtkActor> CCone::draw(){
     // 创建变换对象，用于旋转圆柱方向
     vtkSmartPointer<vtkTransform> transform = vtkSmartPointer<vtkTransform>::New();
 
-    // 归一化axis并应用到变换
+    // 归一化axis作为旋转矩阵，并应用到变换
     double axisData[3] = {getAxis().x(), getAxis().y(), getAxis().z()};
     transform->RotateWXYZ(180.0, axisData);
 
