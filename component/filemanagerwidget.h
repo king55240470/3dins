@@ -39,6 +39,7 @@ private:
     ButtonDelegate *delegate;
     QMenu *contextMenu;//右键菜单
     QAction *deleteAction;
+    QAction *createAction; // 重新生成点云
     MainWindow *m_pMainWin;
 
     QModelIndex selectedIndex;//保存右键删除时选中的索引
@@ -61,6 +62,7 @@ private slots:
     void changeContentItem(const QModelIndex &);
     void changeIdentifyItem(const QModelIndex &);
     void deleteFile();
+    void redrawCloudEntity(); // 由文件重新生成点云
 signals:
 };
 

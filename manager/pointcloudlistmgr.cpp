@@ -2,14 +2,9 @@
 
 PointCloudListMgr::PointCloudListMgr() {}
 
-QVector<pcl::PointCloud<pcl::PointXYZRGB>> &PointCloudListMgr::getProductCloudList()
+QMap<QString, CPointCloud*> &PointCloudListMgr::getFileCloudMap()
 {
-    return productCloudList;
-}
-
-QMap<QString, pcl::PointCloud<pcl::PointXYZRGB>> &PointCloudListMgr::getPointCloudList()
-{
-    return pointCloudList;
+    return fileCloudMap;
 }
 CPointCloud* PointCloudListMgr::CreateCloudFromFile(QString str)
 {
@@ -18,7 +13,7 @@ CPointCloud* PointCloudListMgr::CreateCloudFromFile(QString str)
     // 创建并加载RGB点云
     if(suffix == "pcd")
         pcl::io::loadPCDFile(str.toStdString(), tempCloud);
-    else
+    else if(suffix == "ply")
         pcl::io::loadPLYFile(str.toStdString(), tempCloud);
 
     // 创建新的点云实体
@@ -26,9 +21,18 @@ CPointCloud* PointCloudListMgr::CreateCloudFromFile(QString str)
     CloudEntity->isFileCloud = true;
     CloudEntity->setPointCloud(tempCloud);
 
-    // 将新的点云加入map
-    getPointCloudList().insert(str, tempCloud);
+    // 将新的点云实体加入map
+    getFileCloudMap().insert(str, CloudEntity);
     return CloudEntity;
+}
+
+void PointCloudListMgr::DeleteFileCloud(QString filepath)
+{
+    for(auto item = getFileCloudMap().begin();item != getFileCloudMap().end();item++){
+        if(filepath == item.key()){
+            getFileCloudMap().erase(item); // 当文件窗口删除文件时，这里对应删除
+        }
+    }
 }
 
 CPointCloud* PointCloudListMgr::CreateFittingCloud(pcl::PointCloud<pcl::PointXYZRGB> plane)
