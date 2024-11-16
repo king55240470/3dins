@@ -151,8 +151,10 @@ void FileManagerWidget::showContextMenu(const QPoint &pos){
         // qDebug()<<selectedItem;
         contextMenu = new QMenu(this);
         deleteAction = new QAction("删除文件", this);
+        createAction = new QAction("重新生成", this); // 通过文件重新生成点云
         connect(deleteAction,&QAction::triggered,this,&FileManagerWidget::deleteFile);
         contextMenu->addAction(deleteAction);
+        contextMenu->addAction(createAction);
         contextMenu->exec(filetree->mapToGlobal(pos));  // 显示右键菜单
     }
 }
