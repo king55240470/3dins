@@ -43,6 +43,7 @@
 #include"geometry/centitytypes.h"
 #include"vtkwindow/vtkwidget.h"
 #include <vtkProperty.h>
+#include <Eigen/Dense>
 
 #include<QTreeWidgetItem>
 //constructor
@@ -516,20 +517,113 @@ void   onSpinCoord(){qDebug()<<"点击了旋转坐标系";}
 void   onSaveCoord(){qDebug()<<"点击了保存坐标系";}
 }
 //Save
+//从列表中提取数据转换为 QList<QList<QString>> 类型的二维列表
+void   ExtractData(QVector<CEntity *>& entitylist,QList<QList<QString>>& dataAll){
+    for (int i = 0; i < entitylist.size(); i++) {
+        QList<QString> inList;
+        CEntity* entity=entitylist[i];
+        if(entity->GetUniqueType()==enPoint){
+            CPoint* point=(CPoint*)entity;
+            CPosition position=point->GetPt();
+            inList<<"点";
+            inList<<point->m_strCName;
+            inList<<"坐标:("+QString::number(position.x, 'f', 6)+","+QString::number(position.y, 'f', 6)+","+QString::number(position.z, 'f', 6)+")";
+        }else if(entity->GetUniqueType()==enCircle){
+            CCircle* circle=(CCircle*)entity;
+            CPosition position=circle->getCenter();
+            inList<<"圆"<<circle->m_strAutoName;
+            inList<<"中心:("+QString::number(position.x, 'f', 6)+","+QString::number(position.y, 'f', 6)+","+QString::number(position.z, 'f', 6)+")";
+            inList<<"直径D:"+QString::number(circle->getDiameter(),'f',6);
+
+        }else if(entity->GetUniqueType()==enSphere){
+            CSphere* sphere=(CSphere*)entity;
+            CPosition position=sphere->getCenter();
+            inList<<"球"<<sphere->m_strAutoName;
+            inList<<"中心:("+QString::number(position.x, 'f', 6)+","+QString::number(position.y, 'f', 6)+","+QString::number(position.z, 'f', 6)+")";
+            inList<<"直径D:"+QString::number(sphere->getDiameter(),'f',6);
+        }else if(entity->GetUniqueType()==enPlane){
+            CPlane* plane=(CPlane*)entity;
+            CPosition position=plane->getCenter();
+            QVector4D normal,dir_long_edge;
+            normal=plane->getNormal();
+            dir_long_edge=plane->getDir_long_edge();
+            inList<<"平面";
+            inList<<plane->m_strAutoName;
+            inList<<"中心:("+QString::number(position.x, 'f', 6)+","+QString::number(position.y, 'f', 6)+","+QString::number(position.z, 'f', 6)+")";
+            inList<<"法线:("+QString::number(normal.x(), 'f', 6)+","+QString::number(normal.y(), 'f', 6)+","+QString::number(normal.z(), 'f', 6)+")";
+            inList<<"边向量:("+QString::number(dir_long_edge.x(), 'f', 6)+","+QString::number(dir_long_edge.y(), 'f', 6)+","+QString::number(dir_long_edge.z(), 'f', 6)+")";
+            inList<<"长:"+QString::number(plane->getLength(), 'f', 6)<<" 宽:"+QString::number(plane->getWidth(), 'f', 6);
+
+        }else if(entity->GetUniqueType()==enCone){
+            CCone* cone=(CCone*)entity;
+
+            CPosition position=cone->getVertex();
+            QVector4D axis;
+            axis=cone->getAxis();
+            inList<<"圆锥";
+            inList<<cone->m_strAutoName;
+            inList<<"顶点:("+QString::number(position.x, 'f', 6)+","+QString::number(position.y, 'f', 6)+","+QString::number(position.z, 'f', 6)+")";
+            inList<<"轴线向量:("+QString::number(axis.x(), 'f', 6)+","+QString::number(axis.y(), 'f', 6)+","+QString::number(axis.z(), 'f', 6)+")";
+            inList<<"高:"+QString::number(cone->getHeight(), 'f', 6)<<" 弧度:"+QString::number(cone->getRadian(), 'f', 6)<<" 圆锥高:"+QString::number(cone->getCone_height(), 'f', 6);
+        }
+        else if(entity->GetUniqueType()==enCylinder){
+            CCylinder* cylinder=(CCylinder*)entity;
+            CPosition position=cylinder->getBtm_center();
+            QVector4D axis;
+            axis=cylinder->getAxis();
+            inList<<"圆柱";
+            inList<<cylinder->m_strAutoName;
+            inList<<"底面中心:("+QString::number(position.x, 'f', 6)+","+QString::number(position.y, 'f', 6)+","+QString::number(position.z, 'f', 6)+")";
+            inList<<"轴线向量:("+QString::number(axis.x(), 'f', 6)+","+QString::number(axis.y(), 'f', 6)+","+QString::number(axis.z(), 'f', 6)+")";
+            inList<<"高:"+QString::number(cylinder->getHeight(),'f',6)<<" 直径:"+QString::number(cylinder->getDiameter(),'f',6);
+
+        }else if(entity->GetUniqueType()==enLine){
+            CLine* line=(CLine*)entity;
+            CPosition position1,position2;
+            position1=line->getPosition1();
+            position2=line->getPosition2();
+            inList<<"线";
+            inList<<line->m_strCName;
+            inList<<"起点：("+QString::number(position1.x, 'f', 6)+","+QString::number(position1.y, 'f', 6)+","+QString::number(position1.z, 'f', 6)+")";
+            inList<<"终点：("+QString::number(position2.x, 'f', 6)+","+QString::number(position2.y, 'f', 6)+","+QString::number(position2.z, 'f', 6)+")";
+        }else if(entity->GetUniqueType()==enDistance){
+            CDistance* Distance=(CDistance*) entity;
+            inList<<"距离";
+            inList<<Distance->m_strCName;
+            inList<<QString::number(Distance->getdistance(),'f',6);
+            inList<<"上公差"+QString::number(Distance->getUptolerance(),'f',6);
+            inList<<"下公差"+QString::number(Distance->getUndertolerance(),'f',6);
+        }else if(entity->GetUniqueType()==enPointCloud){
+            CPointCloud* PointCloud=(CPointCloud*) entity;
+            inList<<"点云";
+            inList<<PointCloud->m_strCName;
+
+        }
+        dataAll.append(inList);
+    }
+}
 void   ToolWidget::onSavePdf(){
+
     QString path = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("Pdf(*.pdf)"));
     if (path.isEmpty()){
         return ;
     }
-    int row = 5, col = 3;
-    QList<QList<QString>> values;
-    for (int i = 0; i < row; i++) {
-        QList<QString> inLst;
-        for (int j = 0; j < col; j++) {
-            inLst.append(QString::number(i) + QString::number(j));
-        }
-        values.append(inLst);
-    }
+    auto& entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
+    QList<QList<QString>> dataAll;
+    QList<QString> header;
+    header<<"类型"<<"名称"<<"数据1"<<"数据2"<<"数据3"<<"数据4"<<"数据5";
+    dataAll.append(header);
+    ExtractData(entitylist,dataAll);
+
+    // int row = 5, col = 3;
+    // QList<QList<QString>> values;
+    // for (int i = 0; i < row; i++) {
+    //     QList<QString> inLst;
+    //     for (int j = 0; j < col; j++) {
+    //         inLst.append(QString::number(i) + QString::number(j));
+    //     }
+    //     values.append(inLst);
+    // }
 
     if (QFileInfo(path).suffix().isEmpty())
         path.append(".pdf");
@@ -547,13 +641,13 @@ void   ToolWidget::onSavePdf(){
     //添加标题
     //添加标题
     QString html;
-    html.append("<h1 style='text-align:center;'>导出为pdf</h1><br />");
+    html.append("<h1 style='text-align:center;'>3dins</h1><br />");
     // QString html = addHtmlTable("T1主标题", "T1主标题", row, col, values);
     //m_html.append(html);
     // 表格主标题T1
     html.append("<table border='0.5' cellspacing='0' cellpadding='3' width:100%>");
-    html.append(QString("<tr><td align='center' style='vertical-align:middle;font-weight:bold;' colspan='%1'>").arg(col));
-    html.append("T1主标题");
+    html.append(QString("<tr><td align='center' style='vertical-align:middle;font-weight:bold;' colspan='%1'>").arg(7));
+    html.append("entitylist数据输出");
     html.append("</td></tr>");
 
     // 表格主标题T2
@@ -563,16 +657,15 @@ void   ToolWidget::onSavePdf(){
 
     // 添加表格数值 字段/字段值
     // 遍历表格的每个单元格，将数据插入到表格中
-    for (int i = 0; i < row; ++i) {
+    for (int i = 0; i < entitylist.size()+1; ++i) {
         html.append("<tr>");
-        for (int j = 0; j < col; ++j) {
+        for (int j = 0; j < dataAll[i].size(); ++j) {
             // 表头用<th></th>,有加粗效果
             //html.append(QString("<th valign='center' style='vertical-align:middle;font-size:100px;'>"));
 
-            int index = col + 1;
             // 设置单元格的文本
             html.append(QString("<td valign='center' style='vertical-align:middle;font-size:100px;'>"));
-            html.append(values[i][j] + "</td>");
+            html.append(dataAll[i][j] + "</td>");
         }
         html.append("</tr>");
     }
@@ -728,6 +821,7 @@ void ToolWidget::onSaveTxt(){
             out<<"中心:("<<position.x<<","<<position.y<<","<<position.z<<",)"<<Qt::endl;
             out<<"直径D:"<<circle->getDiameter();
             out<<Qt::endl;
+            out<<Qt::endl;
 
         }else if(entity->GetUniqueType()==enSphere){
             CSphere* sphere=(CSphere*)entity;
@@ -736,6 +830,7 @@ void ToolWidget::onSaveTxt(){
             out<<"中心:("<<position.x<<","<<position.y<<","<<position.z<<",)"<<Qt::endl;
             out<<"直径D:"<<sphere->getDiameter();
             out<<Qt::endl;
+             out<<Qt::endl;
 
         }else if(entity->GetUniqueType()==enPlane){
             CPlane* plane=(CPlane*)entity;
@@ -748,6 +843,7 @@ void ToolWidget::onSaveTxt(){
              out<<"法线:("<<normal.x()<<","<<normal.y()<<","<<normal.z()<<",)"<<Qt::endl;
              out<<"边向量:("<<dir_long_edge.x()<<","<<dir_long_edge.y()<<","<<dir_long_edge.z()<<",)"<<Qt::endl;
              out<<"长:"<<plane->getLength()<<" 宽:"<<plane->getWidth()<<Qt::endl;
+              out<<Qt::endl;
 
         }else if(entity->GetUniqueType()==enCone){
             CCone* cone=(CCone*)entity;
@@ -759,7 +855,7 @@ void ToolWidget::onSaveTxt(){
             out<<"顶点:("<<position.x<<","<<position.y<<","<<position.z<<",)"<<Qt::endl;
             out<<"轴线向量:("<<axis.x()<<","<<axis.y()<<","<<axis.z()<<",)"<<Qt::endl;
             out<<"高:"<<cone->getHeight()<<" 弧度:"<<cone->getRadian()<<" 圆锥高:"<<cone->getCone_height()<<Qt::endl;
-
+          out<<Qt::endl;
 
         }else if(entity->GetUniqueType()==enCylinder){
             CCylinder* cylinder=(CCylinder*)entity;
@@ -770,6 +866,7 @@ void ToolWidget::onSaveTxt(){
             out<<"底面中心:("<<position.x<<","<<position.y<<","<<position.z<<",)"<<Qt::endl;
             out<<"轴线向量:("<<axis.x()<<","<<axis.y()<<","<<axis.z()<<",)"<<Qt::endl;
             out<<"高:"<<cylinder->getHeight()<<" 直径:"<<cylinder->getDiameter()<<Qt::endl;
+             out<<Qt::endl;
 
         }else if(entity->GetUniqueType()==enLine){
             CLine* line=(CLine*)entity;
@@ -779,15 +876,18 @@ void ToolWidget::onSaveTxt(){
             out<<"类型：线 名称:"<<line->m_strAutoName<<Qt::endl;
              out<<"起点:("<<position1.x<<","<<position1.y<<","<<position1.z<<",)"<<Qt::endl;
              out<<"终点:("<<position2.x<<","<<position2.y<<","<<position2.z<<",)"<<Qt::endl;
+              out<<Qt::endl;
 
         }else if(entity->GetUniqueType()==enDistance){
             CDistance* Distance=(CDistance*) entity;
             out<<"类型：距离 名称:"<<Distance->m_strCName<<Qt::endl;
             out<<"大小:"<<Distance->getdistance()<<" 上公差："<<Distance->getUptolerance()<<" 下公差:"<<Distance->getUndertolerance();
             out<<Qt::endl;
+             out<<Qt::endl;
         }else if(entity->GetUniqueType()==enPointCloud){
             CPointCloud* PointCloud=(CPointCloud*) entity;
             out<<"类型：距离 名称:"<<PointCloud->m_strCName<<Qt::endl;
+             out<<Qt::endl;
         }
         ;
     }
@@ -808,88 +908,8 @@ void   ToolWidget::onSaveWord(){
     int col = headers.size();
     int row = entitylist.size();
     QList<QList<QString>> dataAll;
-    for (int i = 0; i < entitylist.size(); i++) {
-        QList<QString> inList;
-        CEntity* entity=entitylist[i];
-        if(entity->GetUniqueType()==enPoint){
-            CPoint* point=(CPoint*)entity;
-            CPosition position=point->GetPt();
-            inList<<"点";
-            inList<<point->m_strCName;
-            inList<<"坐标:("+QString::number(position.x, 'f', 6)+","+QString::number(position.y, 'f', 6)+","+QString::number(position.z, 'f', 6)+")";
-        }else if(entity->GetUniqueType()==enCircle){
-            CCircle* circle=(CCircle*)entity;
-            CPosition position=circle->getCenter();
-            inList<<"圆 名称:"<<circle->m_strAutoName;
-            inList<<"中心:("+QString::number(position.x, 'f', 6)+","+QString::number(position.y, 'f', 6)+","+QString::number(position.z, 'f', 6)+")";
-            inList<<"直径D:"+QString::number(circle->getDiameter(),'f',6);
+    ExtractData(entitylist,dataAll);
 
-        }else if(entity->GetUniqueType()==enSphere){
-            CSphere* sphere=(CSphere*)entity;
-            CPosition position=sphere->getCenter();
-            inList<<"球 名称:"<<sphere->m_strAutoName;
-            inList<<"中心:("+QString::number(position.x, 'f', 6)+","+QString::number(position.y, 'f', 6)+","+QString::number(position.z, 'f', 6)+")";
-            inList<<"直径D:"+QString::number(sphere->getDiameter(),'f',6);
-        }else if(entity->GetUniqueType()==enPlane){
-            CPlane* plane=(CPlane*)entity;
-            CPosition position=plane->getCenter();
-            QVector4D normal,dir_long_edge;
-            normal=plane->getNormal();
-            dir_long_edge=plane->getDir_long_edge();
-            inList<<"平面";
-            inList<<plane->m_strAutoName;
-            inList<<"中心:("+QString::number(position.x, 'f', 6)+","+QString::number(position.y, 'f', 6)+","+QString::number(position.z, 'f', 6)+")";
-            inList<<"法线:("+QString::number(normal.x(), 'f', 6)+","+QString::number(normal.y(), 'f', 6)+","+QString::number(normal.z(), 'f', 6)+")";
-            inList<<"边向量:("+QString::number(dir_long_edge.x(), 'f', 6)+","+QString::number(dir_long_edge.y(), 'f', 6)+","+QString::number(dir_long_edge.z(), 'f', 6)+")";
-            inList<<"长:"+QString::number(plane->getLength(), 'f', 6)<<" 宽:"+QString::number(plane->getWidth(), 'f', 6);
-
-        }else if(entity->GetUniqueType()==enCone){
-            CCone* cone=(CCone*)entity;
-
-            CPosition position=cone->getVertex();
-            QVector4D axis;
-            axis=cone->getAxis();
-            inList<<"圆锥";
-            inList<<cone->m_strAutoName;
-            inList<<"顶点:("+QString::number(position.x, 'f', 6)+","+QString::number(position.y, 'f', 6)+","+QString::number(position.z, 'f', 6)+")";
-            inList<<"轴线向量:("+QString::number(axis.x(), 'f', 6)+","+QString::number(axis.y(), 'f', 6)+","+QString::number(axis.z(), 'f', 6)+")";
-            inList<<"高:"+QString::number(cone->getHeight(), 'f', 6)<<" 弧度:"+QString::number(cone->getRadian(), 'f', 6)<<" 圆锥高:"+QString::number(cone->getCone_height(), 'f', 6);
-        }
-        else if(entity->GetUniqueType()==enCylinder){
-            CCylinder* cylinder=(CCylinder*)entity;
-            CPosition position=cylinder->getBtm_center();
-            QVector4D axis;
-            axis=cylinder->getAxis();
-            inList<<"圆柱";
-            inList<<cylinder->m_strAutoName;
-            inList<<"底面中心:("+QString::number(position.x, 'f', 6)+","+QString::number(position.y, 'f', 6)+","+QString::number(position.z, 'f', 6)+")";
-            inList<<"轴线向量:("+QString::number(axis.x(), 'f', 6)+","+QString::number(axis.y(), 'f', 6)+","+QString::number(axis.z(), 'f', 6)+")";
-            inList<<"高:"+QString::number(cylinder->getHeight(),'f',6)<<" 直径:"+QString::number(cylinder->getDiameter(),'f',6);
-
-        }else if(entity->GetUniqueType()==enLine){
-            CLine* line=(CLine*)entity;
-            CPosition position1,position2;
-            position1=line->getPosition1();
-            position2=line->getPosition2();
-            inList<<"线";
-            inList<<line->m_strCName;
-            inList<<"起点：("+QString::number(position1.x, 'f', 6)+","+QString::number(position1.y, 'f', 6)+","+QString::number(position1.z, 'f', 6)+")";
-            inList<<"终点：("+QString::number(position2.x, 'f', 6)+","+QString::number(position2.y, 'f', 6)+","+QString::number(position2.z, 'f', 6)+")";
-        }else if(entity->GetUniqueType()==enDistance){
-            CDistance* Distance=(CDistance*) entity;
-            inList<<"距离";
-            inList<<Distance->m_strCName;
-            inList<<QString::number(Distance->getdistance(),'f',6);
-            inList<<"上公差"+QString::number(Distance->getUptolerance(),'f',6);
-            inList<<"下公差"+QString::number(Distance->getUndertolerance(),'f',6);
-        }else if(entity->GetUniqueType()==enPointCloud){
-            CPointCloud* PointCloud=(CPointCloud*) entity;
-            inList<<"点云";
-            inList<<PointCloud->m_strCName;
-
-        }
-        dataAll.append(inList);
-    }
     // 写入内容
     // 创建一个QTextDocument对象
     QTextDocument doc;
@@ -1212,16 +1232,32 @@ void ToolWidget:: onFindPlane(){
         return ;
     }
     m_pMainWin->getPWinSetDataWidget()->setPlaneData(point,cloudptr);
-// <<<<<<< HEAD
-//     // 生成点云对象并添加到entitylist
-//     CPointCloud* pointCloud=new CPointCloud();
-//     pointCloud->setPointCloud(*m_pMainWin->getPWinSetDataWidget()->getFittingPlane());
-// =======
+    // 生成点云对象并添加到entitylist
+    // CPointCloud* pointCloud=new CPointCloud();
+    auto plane=m_pMainWin->getPWinSetDataWidget()->getPlane();
+    if(plane==nullptr){
+        qDebug()<<"拟合平面生成错误";
+        return ;
+    }
+    // pointCloud->setPointCloud(*m_pMainWin->getPWinSetDataWidget()->getFittingPlane());
+    PlaneConstructor constructor;
+    CPlane* newPlane;
+    CPosition center;
+    center.x=plane->getCenter().x;
+    center.y=plane->getCenter().y;
+    center.z=plane->getCenter().z;
+    QVector4D normal(plane->getNormal().x(),plane->getNormal().y(),plane->getNormal().z(),0);
+    newPlane=constructor.createPlane(center,normal,QVector4D(1,0,0,0),plane->getLength(),plane->getWidth());
+    if(newPlane==nullptr){
+        qDebug()<<"拟合平面生成错误";
+        return ;
+    }
+    addToList(newPlane);
 
     // 生成拟合出的点云并添加到entitylist
-    auto pointCloud = m_pMainWin->getPointCloudListMgr()->CreateFittingCloud(
-        *m_pMainWin->getPWinSetDataWidget()->getFittingPlane());
-    addToList(pointCloud);
+    // auto pointCloud = m_pMainWin->getPointCloudListMgr()->CreateFittingCloud(
+    //     *m_pMainWin->getPWinSetDataWidget()->getFittingPlane());
+    // addToList(pointCloud);
     positions.clear();
     m_pMainWin->NotifySubscribe();
 
