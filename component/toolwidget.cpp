@@ -67,6 +67,17 @@
 #include "pointfitting/fittingplane.h"//拟合平面算法
 #include "pointfitting/setdatawidget.h"
 
+
+#include <QFileDialog>
+#include <QString>
+#include <QStringList>
+#include <QTableWidget>
+#include <QHeaderView>
+#include <QTableWidgetItem>
+#include <QPixmap>
+#include <QPainter>
+#include <QApplication>
+
 int getImagePaths(const QString& directory, QStringList &iconPaths, QStringList &iconNames);
 
 ToolWidget::ToolWidget(QWidget *parent)
@@ -74,6 +85,7 @@ ToolWidget::ToolWidget(QWidget *parent)
     QVBoxLayout *layout = new QVBoxLayout(this);
 
     m_pMainWin =(MainWindow*)parent;
+
 
 
     resize(400,250);
@@ -683,26 +695,114 @@ void   ToolWidget::onSavePdf(){
     textDocument.setHtml(html);
     textDocument.print(m_pdfWriter);
     textDocument.end();
+     QMessageBox::information(nullptr, "提示", "保存成功");
 
     pdfFile.close();
 }
 void   ToolWidget::onSaveExcel(){
+    // QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("Excel(*.xlsx *.xls)"));
+    // if (filePath.isEmpty()){
+    //     return ;
+    // }
+    // QStringList headers;
+    // headers << "类型" << "名称" << "数据1" << "数据2" << "数据3"<<"数据4"<<"数据5" ;
+    // int col = headers.size();
+    // QList<QList<QString>> dataAll;
+    // auto& entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
+    // //dataAll.append(headers);
+    // ExtractData(entitylist,dataAll);
+
+    // QAxObject excel("Excel.Application");						  //加载Excel驱动
+    // excel.dynamicCall("SetVisible (bool Visible)", "false");	  //不显示窗体
+    // excel.setProperty("DisplayAlerts", true);					  //不显示任何警告信息。如果为true那么在关闭是会出现类似“文件已修改，是否保存”的提示
+
+    // QAxObject *workBooks = excel.querySubObject("WorkBooks");	  //获取工作簿集合
+    // workBooks->dynamicCall("Add");								  //新建一个工作簿
+    // QAxObject *workBook = excel.querySubObject("ActiveWorkBook"); //获取当前工作簿
+    //     //QAxObject *workBook = excel.querySubObject("Open(QString&)", filePath); //获取当前工作簿
+    // QAxObject *workSheet = workBook->querySubObject("Sheets(int)", 1); //设置为 获取第一页 数据
+
+    // // 大标题行
+    // QAxObject *cell;
+    // cell = workSheet->querySubObject("Cells(int,int)", 1, 1);
+    // cell->dynamicCall("SetValue(const QString&)", "entitylist 数据输出");
+    // cell->querySubObject("Font")->setProperty("Size", 11);
+    // // 合并标题行
+    // QString cellTitle;
+    // cellTitle.append("A1:");
+    // cellTitle.append(QChar(col - 1 + 'A'));
+    // cellTitle.append(QString::number(1));
+    // QAxObject *range = workSheet->querySubObject("Range(const QString&)", cellTitle);
+    // range->setProperty("WrapText", true);
+    // range->setProperty("MergeCells", true);
+    // range->setProperty("HorizontalAlignment", -4108);
+    // range->setProperty("VertivcalAlignment", -4108);
+
+    // // 行高
+    // workSheet->querySubObject("Range(const QString&)", "1:1")->setProperty("RowHeight", 30);
+
+    // //列标题
+    // QString lastCars = QChar('A');
+    // for (int i = 0; i < col; i++)
+    // {
+    //     // excel表格 A:A第一列到第一列,B:B第二列到第二列
+    //     // A B C D...X Y Z AA AB AC...AX AY AZ BA BB BC...
+    //     QString columnName;
+    //     QString cars;
+    //     if (i < 26) {
+    //         // 列数少于26个字母A B C D...X Y Z
+    //         cars = QChar(i + 'A');
+    //     } else {
+    //         // 列数大于26个字母 AA AB AC...AX AY AZ BA BB BC...
+    //         cars = QChar(i / 26 - 1 + 'A');
+    //         cars.append(QChar(i % 26 + 'A'));
+    //     }
+    //     columnName = cars + ":" + cars;
+    //     lastCars = cars;
+    //     // 有大标题，列标题从第二行开始("Cells(int, int)", 2, i+1)
+    //     // 无大标题，列标题从第一行开始("Cells(int, int)", 1, i+1)
+    //     QAxObject *col = workSheet->querySubObject("Columns(const QString&)", columnName);
+    //     QAxObject *cell = workSheet->querySubObject("Cells(int, int)", 2, i+1);
+    //     cell->dynamicCall("SetValue(const QString&)", headers[i]);
+    //     cell->querySubObject("Font")->setProperty("Bold", true);
+    //     cell->querySubObject("Interior")->setProperty("Color", QColor(191, 191, 191));
+    //     cell->setProperty("WrapText", true);						//内容过多，自动换行
+    //     cell->setProperty("HorizontalAlignment", -4108);
+    //     cell->setProperty("VertivcalAlignment", -4108);
+    // }
+
+    // //处理数据
+    // int curRow = 3;
+    // foreach(QList<QString> inLst, dataAll) {
+    //     for (int j = 0; j < inLst.size(); j++) {
+    //         // ("Cells(int, int)", row, col)单元格的行和列从开始
+    //         QAxObject *cell = workSheet->querySubObject("Cells(int, int)", curRow, j+1);
+    //         cell->dynamicCall("SetValue(const QString&)", inLst[j]);
+    //         QAxObject* border = cell->querySubObject("Borders");
+    //         border->setProperty("Color", QColor(0, 0, 0));		 //设置单元格边框色（黑色）
+    //     }
+    //     curRow++;
+    // }
+
+    // //保存至filepath，注意一定要用QDir::toNativeSeparators将路径中的"/"转换为"\"，不然一定保存不了。
+    // workBook->dynamicCall("SaveAs(const QString&)", QDir::toNativeSeparators(filePath));
+    // workBook->dynamicCall("Close()");	//关闭工作簿
+    // excel.dynamicCall("Quit()");		//关闭excel
+    // QMessageBox::information(nullptr, "提示", "保存成功");
+
+
     QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("Excel(*.xlsx *.xls)"));
     if (filePath.isEmpty()){
         return ;
     }
+
     QStringList headers;
-    headers << "表头1" << "表头2" << "表头3" << "表头4" << "表头5" ;
+    headers << "类型" << "名称" << "数据1" << "数据2" << "数据3"<<"数据4"<<"数据5" ;
     int col = headers.size();
-    int row = 6;
     QList<QList<QString>> dataAll;
-    for (int i = 0; i < row; i++) {
-        QList<QString> inLst;
-        for (int j = 0; j < col; j++) {
-            inLst.append(QString::number(i) + QString::number(j));
-        }
-        dataAll.append(inLst);
-    }
+    auto& entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
+    //dataAll.append(headers);
+    ExtractData(entitylist,dataAll);
 
     QAxObject excel("Excel.Application");						  //加载Excel驱动
     excel.dynamicCall("SetVisible (bool Visible)", "false");	  //不显示窗体
@@ -711,13 +811,13 @@ void   ToolWidget::onSaveExcel(){
     QAxObject *workBooks = excel.querySubObject("WorkBooks");	  //获取工作簿集合
     workBooks->dynamicCall("Add");								  //新建一个工作簿
     QAxObject *workBook = excel.querySubObject("ActiveWorkBook"); //获取当前工作簿
-        //QAxObject *workBook = excel.querySubObject("Open(QString&)", filePath); //获取当前工作簿
+    //QAxObject *workBook = excel.querySubObject("Open(QString&)", filePath); //获取当前工作簿
     QAxObject *workSheet = workBook->querySubObject("Sheets(int)", 1); //设置为 获取第一页 数据
 
     // 大标题行
     QAxObject *cell;
     cell = workSheet->querySubObject("Cells(int,int)", 1, 1);
-    cell->dynamicCall("SetValue(const QString&)", "excel导出示例");
+    cell->dynamicCall("SetValue(const QString&)", "entitylist 数据输出");
     cell->querySubObject("Font")->setProperty("Size", 11);
     // 合并标题行
     QString cellTitle;
@@ -766,7 +866,7 @@ void   ToolWidget::onSaveExcel(){
     //处理数据
     int curRow = 3;
     foreach(QList<QString> inLst, dataAll) {
-        for (int j = 0; j < col; j++) {
+        for (int j = 0; j < inLst.size(); j++) {
             // ("Cells(int, int)", row, col)单元格的行和列从开始
             QAxObject *cell = workSheet->querySubObject("Cells(int, int)", curRow, j+1);
             cell->dynamicCall("SetValue(const QString&)", inLst[j]);
@@ -774,6 +874,21 @@ void   ToolWidget::onSaveExcel(){
             border->setProperty("Color", QColor(0, 0, 0));		 //设置单元格边框色（黑色）
         }
         curRow++;
+    }
+
+    // 自动调整列宽
+    for (int i = 0; i < col; i++) {
+        QString columnName;
+        QString cars;
+        if (i < 26) {
+            cars = QChar(i + 'A');
+        } else {
+            cars = QChar(i / 26 - 1 + 'A');
+            cars.append(QChar(i % 26 + 'A'));
+        }
+        columnName = cars + ":" + cars;
+        QAxObject *column = workSheet->querySubObject("Columns(const QString&)", columnName);
+        column->dynamicCall("AutoFit()");
     }
 
     //保存至filepath，注意一定要用QDir::toNativeSeparators将路径中的"/"转换为"\"，不然一定保存不了。
@@ -987,39 +1102,52 @@ void   ToolWidget::onSaveImage(){
     if (imagePath.isEmpty()){
         return ;
     }
+    QStringList headers;
+    headers << "类型" << "名称" << "数据1" << "数据2" << "数据3" << "数据4" << "数据5";
+    auto& entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
+    QList<QList<QString>> dataAll;
+    ExtractData(entitylist, dataAll);
 
-    QTableWidget TableWidget(4, 3); // 4 行 3 列
-    TableWidget.setHorizontalHeaderLabels({"Column 1", "Column 2", "Column 3"});
-    for (int row = 0; row < 4; ++row) {
-        for (int col = 0; col < 3; ++col) {
-            TableWidget.setItem(row, col, new QTableWidgetItem(QString("Item %1-%2").arg(row).arg(col)));
+    QTableWidget tableWidget(dataAll.size(), headers.size());
+    tableWidget.setHorizontalHeaderLabels({"类型", "名称", "数据1", "数据2", "数据3", "数据4", "数据5"});
+
+    // 设置水平表头自动调整大小
+    tableWidget.horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+
+    for (int i = 0; i < dataAll.size(); ++i) {
+        QStringList& inlist = dataAll[i];
+        for (int j = 0; j < inlist.size(); ++j) {
+            tableWidget.setItem(i, j, new QTableWidgetItem(inlist[j]));
         }
     }
-    QTableWidget * tableWidget=&TableWidget;
+
     // 调整表格大小以适应内容
     int totalWidth = 0;
     int totalHeight = 0;
 
     // 计算总宽度
-    for (int i = 0; i < tableWidget->columnCount(); ++i) {
-        totalWidth += tableWidget->columnWidth(i)+10;
+    for (int i = 0; i < tableWidget.columnCount(); ++i) {
+        totalWidth += tableWidget.columnWidth(i) + 10;
     }
 
     // 计算总高度
-    for (int i = 0; i < tableWidget->rowCount(); ++i) {
-        totalHeight += tableWidget->rowHeight(i)+10;
+    for (int i = 0; i < tableWidget.rowCount(); ++i) {
+        totalHeight += tableWidget.rowHeight(i) + 10;
     }
-    tableWidget->setFixedSize(totalWidth,totalHeight);
+
+    tableWidget.setFixedSize(totalWidth, totalHeight);
+
     // 创建一个 QPixmap 对象以适应整个表格
     QPixmap pixmap(totalWidth, totalHeight);
     pixmap.fill(Qt::white);  // 设置背景为白色
     QPainter painter(&pixmap);
 
     // 将表格内容绘制到 QPixmap 上
-    tableWidget->render(&painter);
+    tableWidget.render(&painter);
 
     // 保存为图片
     pixmap.save(imagePath);
+    QMessageBox::information(nullptr, "提示", "保存成功");
 }
 
 static void WrongWidget(QString message);

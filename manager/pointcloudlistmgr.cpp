@@ -18,7 +18,7 @@ CPointCloud* PointCloudListMgr::CreateCloudFromFile(QString str)
     // 创建并加载RGB点云
     if(suffix == "pcd")
         pcl::io::loadPCDFile(str.toStdString(), tempCloud);
-    else
+    else if(suffix == "ply")
         pcl::io::loadPLYFile(str.toStdString(), tempCloud);
 
     // 创建新的点云实体
