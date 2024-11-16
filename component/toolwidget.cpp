@@ -1245,12 +1245,9 @@ void ToolWidget:: onFindPlane(){
     PlaneConstructor constructor;
     CPlane* newPlane;
     CPosition center;
-    // center.x=plane->getCenter().x;
-    // center.y=plane->getCenter().y;
-    // center.z=plane->getCenter().z;
-    center.x=plane->getCentroid()[0];
-    center.y=plane->getCentroid()[1];
-    center.z=plane->getCentroid()[2];
+    center.x=plane->getCenter()[0];
+    center.y=plane->getCenter()[1];
+    center.z=plane->getCenter()[2];
     QVector4D normal(plane->getNormal().x(),plane->getNormal().y(),plane->getNormal().z(),0);
     QVector4D direction(plane->getLength_Direction().x(),plane->getLength_Direction().y(),plane->getLength_Direction().z(),0);
     newPlane=constructor.createPlane(center,normal,direction,plane->getLength(),plane->getWidth());
