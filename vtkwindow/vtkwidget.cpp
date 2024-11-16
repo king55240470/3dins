@@ -196,9 +196,10 @@ void VtkWidget::UpdateInfo(){
 void VtkWidget::reDrawCentity(){
     auto entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
     auto objectlist = m_pMainWin->m_ObjectListMgr->getObjectList();
-    QVector<bool> list = m_pMainWin->m_EntityListMgr->getMarkList();//获取标记是否隐藏元素的list
-    QMap<QString, bool> filemap = m_pMainWin->getpWinFileMgr()->getContentItemMap();
+    QMap<QString, bool> contentItemmap = m_pMainWin->getpWinFileMgr()->getContentItemMap();
+    QMap<QString, bool> identifyItemmap = m_pMainWin->getpWinFileMgr()->getIdentifyItemMap();
     QVector<CEntity*> constructEntityList = m_pMainWin->getPWinToolWidget()->getConstructEntityList();//存储构建元素的列表
+    QVector<CEntity*> identifyEntityList = m_pMainWin->getPWinToolWidget()->getIdentifyEntityList();//存储识别元素的列表
     QMap<vtkSmartPointer<vtkActor>, CEntity*>& actorToEntity = m_pMainWin->getactorToEntityMap();
 
     // 获取渲染器中的所有 actor
@@ -220,32 +221,44 @@ void VtkWidget::reDrawCentity(){
     actorToEntity.clear();
     // 遍历entitylist绘制图形并加入渲染器
     for(auto i = 0;i < entitylist.size();i++){
-        int flag=0;
-        if(constructEntityList.isEmpty()){//没有构建的元素，即没有需要隐藏的图形
-            vtkSmartPointer<vtkActor>actor = entitylist[i]->draw();
-            actorToEntity.insert(actor,entitylist[i]);
-            getRenderer()->AddActor(actor);
+        int constructFlag=0;
+        int identifyFlag=0;
+
+        //检查是否为构建的元素
+        for(int j=0;j<constructEntityList.size();j++){
+            QString key=constructEntityList[j]->GetObjectCName() + "  " + constructEntityList[j]->GetObjectAutoName();
+            if(entitylist[i] == constructEntityList[j]){//是构建的元素
+                constructFlag=1;
+                if(contentItemmap[key]){ // 如果不隐藏
+                    vtkSmartPointer<vtkActor>actor = entitylist[i]->draw();
+                    actorToEntity.insert(actor,entitylist[i]);
+                    getRenderer()->AddActor(actor);
+                    break;
+                }
+            }
         }
-        else{
-            for(int j=0;j<constructEntityList.size();j++){
-                QString key=constructEntityList[j]->GetObjectCName() + "  " + constructEntityList[j]->GetObjectAutoName();
-                if(entitylist[i] == constructEntityList[j]){//是构建的元素
-                    flag=1;
-                    if(filemap[key]){ // 如果不隐藏
+
+        //检查是否为识别的元素
+        if(constructFlag==0){//不是构建的元素
+            for(int j=0;j<identifyEntityList.size();j++){
+                QString key=identifyEntityList[j]->GetObjectCName() + "  " + constructEntityList[j]->GetObjectAutoName();
+                if(entitylist[i] == identifyEntityList[j]){//是构建的元素
+                    identifyFlag=1;
+                    if(identifyItemmap[key]){ // 如果不隐藏
                         vtkSmartPointer<vtkActor>actor = entitylist[i]->draw();
                         actorToEntity.insert(actor,entitylist[i]);
                         getRenderer()->AddActor(actor);
                         break;
                     }
                 }
-                if(flag==0){//不是构建的元素
-                    if(filemap[key]){ // 如果不隐藏
-                        vtkSmartPointer<vtkActor>actor=entitylist[i]->draw();
-                        actorToEntity.insert(actor,entitylist[i]);
-                        getRenderer()->AddActor(actor);
-                    }
-                }
             }
+        }
+
+        //既不是构建的元素也不是识别的元素
+        if(constructFlag==0&&identifyFlag==0){
+            vtkSmartPointer<vtkActor>actor=entitylist[i]->draw();
+            actorToEntity.insert(actor,entitylist[i]);
+            getRenderer()->AddActor(actor);
         }
     }
 

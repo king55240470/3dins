@@ -125,6 +125,27 @@ void FileManagerWidget::createContentItem(){
     }
 }
 
+void FileManagerWidget::createIdentifyItem(){
+    //删除identifyItemMap中的所有子项
+    int childCount = identifyItem->rowCount(); // 获取子项数量
+    for (int i=childCount-1;i>=0;i--) {
+        identifyItem->removeRow(i); // 删除子项
+    }
+
+    //添加子项
+    //获取所有键值
+    QList<QString> keys = m_pMainWin->getpWinFileMgr()->getIdentifyItemMap().keys();
+    // 遍历所有的键
+    for (const QString &key : keys) {
+        QStandardItem *newIentifyItem = new QStandardItem(key);
+        newIentifyItem->setData(key, Qt::UserRole);
+        newIentifyItem->setData(m_pMainWin->getpWinFileMgr()->getIdentifyItemMap()[key], Qt::UserRole+1);
+        identifyItem->appendRow(newIentifyItem);
+
+        qDebug() << "Key:" << key << ", Value:" << m_pMainWin->getpWinFileMgr()->getIdentifyItemMap()[key];
+    }
+}
+
 // void FileManagerWidget::createPresetOpen(CEntity *obj){
 //     // QString str=obj->m_strCName+"  "+obj->m_strAutoName;
 //     // QStandardItem *newObjItem = new QStandardItem(str);
@@ -236,6 +257,8 @@ void FileManagerWidget::changePlay(const QModelIndex &index){
         changeMeasuredFile(index);
     }else if(isChildOf(childItem, contentItem)){
         changeContentItem(index);
+    }else if(isChildOf(childItem, identifyItem)){
+        changeIdentifyItem(index);
     }
 }
 
@@ -293,6 +316,19 @@ void FileManagerWidget::changeContentItem(const QModelIndex &index){
     m_pMainWin->getPWinVtkWidget()->UpdateInfo();
 }
 
+void FileManagerWidget::changeIdentifyItem(const QModelIndex &index){
+    QStandardItem *item = model->itemFromIndex(index);
+    QString key = item->data(Qt::UserRole).toString();
+    m_pMainWin->getpWinFileMgr()->getIdentifyItemMap()[key]=!m_pMainWin->getpWinFileMgr()->getIdentifyItemMap()[key];
+    QMap<QString, bool>& contentList = m_pMainWin->getpWinFileMgr()->getIdentifyItemMap();  // 获取 QMap 的引用
+    QMap<QString, bool>::const_iterator it;
+    for (it = contentList.cbegin(); it != contentList.cend(); ++it) {
+        qDebug() << "Key:" << it.key() << ", Value:" << it.value();
+    }
+
+    m_pMainWin->getPWinVtkWidget()->UpdateInfo();
+}
+
 bool FileManagerWidget::isChildOf(QStandardItem* childItem, QStandardItem* parentItem) {
     if (!childItem || !parentItem){
         return false; // 检查指针有效性
@@ -331,6 +367,7 @@ void FileManagerWidget::UpdateInfo(){
     //     }
     // }
     createContentItem();
+    createIdentifyItem();
 }
 
 
