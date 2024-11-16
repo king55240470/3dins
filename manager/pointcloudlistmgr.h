@@ -15,10 +15,11 @@ class PointCloudListMgr
 {
 public:
     PointCloudListMgr();
-    QMap<QString, pcl::PointCloud<pcl::PointXYZRGB>> &getPointCloudList();
-    QVector<pcl::PointCloud<pcl::PointXYZRGB>>& getProductCloudList();
-    CPointCloud* CreateCloudFromFile(QString str);// 给打开的文件分配RGB点云，并生成cpointcloud对象
-    CPointCloud* CreateFittingCloud(pcl::PointCloud<pcl::PointXYZRGB> plane);// 创建不同的点云centity对象
+    QMap<QString, CPointCloud*> &getFileCloudMap();
+
+    CPointCloud* CreateCloudFromFile(QString str); // 给打开的文件分配RGB点云，并生成点云对象
+    void DeleteFileCloud(QString filepath); // 删除文件对应的点云
+    CPointCloud* CreateFittingCloud(pcl::PointCloud<pcl::PointXYZRGB> plane);
     CPointCloud* CreateComparsionCloud(pcl::PointCloud<pcl::PointXYZRGB> cloud);
 
     pcl::PointCloud<pcl::PointXYZRGB>& getTempCloud(){
@@ -27,11 +28,7 @@ public:
     // 将点云对象转为智能指针
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr CloudToPtr(pcl::PointCloud<pcl::PointXYZRGB> cloud);
 private:
-    // 存储所有打开的点云和对应的文件路径
-    QMap<QString, pcl::PointCloud<pcl::PointXYZRGB>> pointCloudList;
-
-    // 存储所有生成的点云，通过对比和拟合等
-    QVector<pcl::PointCloud<pcl::PointXYZRGB>> productCloudList;
+    QMap<QString, CPointCloud*> fileCloudMap; // 将打开的文件和点云实体绑定
 
     pcl::PointCloud<pcl::PointXYZRGB> tempCloud; // 临时点云对象
 };
