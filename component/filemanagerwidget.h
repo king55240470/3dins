@@ -47,6 +47,7 @@ public:
     void openModelFile(QString,QString);
     void openMeasuredFile(QString,QString);
     void createContentItem();
+    void createIdentifyItem();
     // void createPresetOpen(CEntity*);
     // void createPresetClose(CEntity*);
     void showContextMenu(const QPoint &);
@@ -58,6 +59,7 @@ private slots:
     void changeModelFile(const QModelIndex &);
     void changeMeasuredFile(const QModelIndex &);
     void changeContentItem(const QModelIndex &);
+    void changeIdentifyItem(const QModelIndex &);
     void deleteFile();
 signals:
 };
