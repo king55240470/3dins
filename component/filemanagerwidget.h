@@ -60,6 +60,7 @@ private slots:
     void changeMeasuredFile(const QModelIndex &);
     void changeContentItem(const QModelIndex &);
     void deleteFile();
+    void redrawCloudEntity(); // 由文件重新生成点云
 signals:
 };
 
