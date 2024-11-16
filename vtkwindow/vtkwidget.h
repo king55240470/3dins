@@ -41,7 +41,6 @@
 #include <vtkSmartPointer.h>
 #include <vtkSphereSource.h>
 #include <vtkPolyDataMapper.h>
-#include <vtkActor.h>
 #include <vtkProp3D.h>
 #include <vtkProperty.h>
 #include <vtkCamera.h>
@@ -59,6 +58,7 @@
 #include <vtkCommand.h>
 #include <vtkPlaneSource.h>
 #include <vtkActor2D.h>
+#include <vtkPolyDataMapper2D.h>
 #include <vtkNamedColors.h>
 #include <qlabel.h>
 VTK_MODULE_INIT(vtkRenderingOpenGL2);
@@ -112,11 +112,9 @@ private:
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud2;
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr comparisonCloud;
     vtkSmartPointer<vtkTextActor> infoTextActor;// 浮动信息文本演员
-
+    vtkSmartPointer<vtkActor2D> rectangleActor;
     vtkSmartPointer<vtkOrientationMarkerWidget> axeWidget; // 创建窗口部件来封装坐标器
     vtkSmartPointer<vtkOrientationMarkerWidget> textWidget; // 浮动窗口，用于显示信息
-    vtkSmartPointer<vtkActor> borderActor;
-    QLabel* infoLabel; // 用于显示点的信息
 public slots:
 
 };
