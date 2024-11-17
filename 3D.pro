@@ -788,5 +788,5 @@ CONFIG(debug, debug|release){
 }
 
 
-INCLUDEPATH += $$PWD/../MyDll
-LIBS += -L$$PWD/../build/Desktop_Qt_6_6_0_MSVC2019_64bit-Debug/MyDll/debug -lMyDll
+# INCLUDEPATH += $$PWD/../MyDll
+# LIBS += -L$$PWD/../build/Desktop_Qt_6_6_0_MSVC2019_64bit-Debug/MyDll/debug -lMyDll
