@@ -410,6 +410,16 @@ vtkSmartPointer<vtkActor> CDistance::pointToPlane()
     CPosition glbPos_point(posVec_point.x(), posVec_point.y(), posVec_point.z());
     // 取平面法向量
     QVector4D plane_nomal = plane.getNormal();
+    float length = std::sqrt(plane_nomal.x() * plane_nomal.x() +
+                             plane_nomal.y() * plane_nomal.y() +
+                             plane_nomal.z() * plane_nomal.z() +
+                             plane_nomal.w() * plane_nomal.w());
+
+    // 计算单位向量
+    QVector4D unit_vector(plane_nomal.x() / length,
+                          plane_nomal.y() / length,
+                          plane_nomal.z() / length,
+                          plane_nomal.w() / length);
 
     // 计算点到平面的距离
     // 点到平面的距离公式: d = |(P - P0) · N| / ||N||
@@ -417,9 +427,9 @@ vtkSmartPointer<vtkActor> CDistance::pointToPlane()
 
     // 计算glbPos_begin在平面上的落点
     CPosition projection;
-    projection.x = glbPos_begin.x - distance * plane_nomal.x();
-    projection.y = glbPos_begin.y - distance * plane_nomal.y();
-    projection.z = glbPos_begin.z - distance * plane_nomal.z();
+    projection.x = glbPos_begin.x - distance * unit_vector.x();
+    projection.y = glbPos_begin.y - distance * unit_vector.y();
+    projection.z = glbPos_begin.z - distance * unit_vector.z();
     QVector4D posVec_pro = GetRefCoord()->m_mat * QVector4D(projection.x, projection.y, projection.z, 1);
     CPosition glb_pro(posVec_pro.x(), posVec_pro.y(), posVec_pro.z());
 
