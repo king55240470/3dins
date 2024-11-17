@@ -1236,12 +1236,13 @@ void ToolWidget:: onFindPlane(){
     m_pMainWin->getPWinSetDataWidget()->setPlaneData(point,cloudptr);
     // 生成点云对象并添加到entitylist
     // CPointCloud* pointCloud=new CPointCloud();
-    auto plane=m_pMainWin->getPWinSetDataWidget()->getPlane();
-    if(plane==nullptr){
+    auto planeCloud=m_pMainWin->getPWinSetDataWidget()->getPlaneCloud();
+    if(planeCloud==nullptr){
         qDebug()<<"拟合平面生成错误";
         return ;
     }
     // pointCloud->setPointCloud(*m_pMainWin->getPWinSetDataWidget()->getFittingPlane());
+    auto plane=m_pMainWin->getPWinSetDataWidget()->getPlane();
     PlaneConstructor constructor;
     CPlane* newPlane;
     CPosition center;
