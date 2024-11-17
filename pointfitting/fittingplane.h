@@ -11,7 +11,7 @@ public:
     FittingPlane();
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr RANSAC(pcl::PointXYZRGB,pcl::PointCloud<pcl::PointXYZRGB>::Ptr);
     bool isPointInPlane(const pcl::PointXYZRGB&);
-    void setRadious(double);
+    void setRadius(double);
     void setDistance(double);
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr getPlaneCloud();
     Eigen::Vector3f getNormal();
@@ -26,13 +26,15 @@ private:
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr planeCloud;//存储拟合平面上的点
     pcl::ModelCoefficients::Ptr coefficients;//存储拟合平面方程的4个系数
     pcl::PointIndices::Ptr inliers;//存储内点
-    double radious;
+    double radius;
     double distance;
     Eigen::Vector3f normal;//存储平面的法向量
     Eigen::Vector4f center;//存储平面中心
     double length;//平面的长
     double width;//平面的宽
     Eigen::Vector3f length_direction;//长边的方向向量
+
+    Eigen::Matrix3f previousEigenVectors;  // selectBestPCACloud函数中保存前一个点云的主成分向量
 };
 
 #endif // FITTINGPLANE_H
