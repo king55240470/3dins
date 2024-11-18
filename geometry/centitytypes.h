@@ -28,6 +28,20 @@ public:
     CPosition begin;
     CPosition end;
 
+    QDataStream& serialize(QDataStream& out) const override {
+        CEntity::serialize(out);  // 先序列化基类部分
+        out << m_k << m_b << lineCount << currentLineId<<k<<b;
+        out <<begin<<end;
+        return out;
+    }
+
+    QDataStream& deserialize(QDataStream& in) override {
+        CEntity::deserialize(in);  // 先反序列化基类部分
+        in >> m_k >> m_b >> lineCount >> currentLineId>>k>>b;
+        in>>begin>>end;
+        return in;
+    }
+
 public:
     CLine()
     {
