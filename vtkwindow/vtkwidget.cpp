@@ -82,10 +82,44 @@ void VtkWidget::OnMouseMove()
                 QByteArray byteArray = qstr.toUtf8(); // 转换 QString 到 QByteArray
                 infoTextActor->SetInput(byteArray.constData());
                 infoTextActor->SetPosition(clickPos[0]+20, clickPos[1]+20);
-                rectangleActor->SetPosition(clickPos[0]+20, clickPos[1]+20);
-
                 infoTextActor->SetVisibility(true);
+                // 获取文本的边界框尺寸
+                double bbox[4];
+                infoTextActor->GetBoundingBox(renderer, bbox);
+
+                // 计算文本的宽度和高度
+                double textWidth = bbox[1] - bbox[0];
+                double textHeight = bbox[3] - bbox[2];
+
+                // 调整矩形的尺寸
+                double width = textWidth+40; // 加上一些边距
+                double height = textHeight+30; // 加上一些边距
+
+                vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+                // 更新矩形的顶点
+                points->InsertNextPoint(0, 0, 0);
+                points->InsertNextPoint(width, 0, 0);
+                points->InsertNextPoint(width, height, 0);
+                points->InsertNextPoint(0, height, 0);
+
+                vtkSmartPointer<vtkCellArray> polygons = vtkSmartPointer<vtkCellArray>::New();
+                vtkIdType ids[4] = {0, 1, 2, 3};
+                polygons->InsertNextCell(4, ids);
+                vtkSmartPointer<vtkPolyData> rectangle = vtkSmartPointer<vtkPolyData>::New();
+                rectangle->SetPoints(points);
+                rectangle->SetPolys(polygons);
+
+                // 创建 PolyData 映射器
+                vtkSmartPointer<vtkPolyDataMapper2D> rectangleMapper = vtkSmartPointer<vtkPolyDataMapper2D>::New();
+                rectangleMapper->SetInputData(rectangle);
+                rectangleActor->SetMapper(rectangleMapper);
+                // 更新矩形的位置
+                infoTextActor->SetPosition(clickPos[0]+20, clickPos[1]+20);
+                rectangleActor->SetPosition(clickPos[0]+20, clickPos[1]+20);
                 rectangleActor->SetVisibility(true);
+                if(m_pMainWin->getactorToEntityMap()[actor]->GetObjectCName().left(2)=="点云"){
+                    rectangleActor->SetVisibility(false);
+                }
                 actorFound = true;
                 break;
             }
@@ -116,13 +150,6 @@ void VtkWidget::createText()
     textWidget->SetEnabled(1);
     textWidget->InteractiveOn();
 
-    textWidget = vtkSmartPointer<vtkOrientationMarkerWidget>::New();
-    // 将orientationWidget与交互器关联
-    textWidget->SetInteractor(renWin->GetInteractor());
-    // 设置视口
-    textWidget->SetViewport(0.8, 0.8, 1, 1);// 调整信息窗口的位置
-    textWidget->SetEnabled(1);
-    textWidget->InteractiveOn();
     // 设置交互器的鼠标移动回调
     renderer->AddActor(infoTextActor);
     renWin->GetInteractor()->AddObserver(vtkCommand::MouseMoveEvent, this, &VtkWidget::OnMouseMove);

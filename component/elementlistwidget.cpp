@@ -329,6 +329,19 @@ void ElementListWidget::ShowParent(CObject*obj)
         infoItem->setText(1,obj1->Form);
     }
 }
+
+void ElementListWidget::mousePressEvent(QMouseEvent *event)
+{
+    qDebug()<<"鼠标";
+    ElementListWidget::mousePressEvent(event);
+
+    // 判断点击的区域是否为空白区域
+    if (treeWidgetNames->itemAt(event->pos()) == nullptr) {
+        // 点击的是空白区域，取消选择
+        treeWidgetNames->clearSelection();
+    }
+}
+
 QList<QTreeWidgetItem*> ElementListWidget:: getSelectedItems(){
     return treeWidgetNames->selectedItems();
 }
