@@ -45,7 +45,7 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
     // renWin->GetInteractor()->SetInteractorStyle(customstyle);
 
     createAxes();// 创建左下角全局坐标系
-    createText();// 创建浮动窗口显示信息
+    //createText();// 创建浮动窗口显示信息
     //createTextBox();
 
     // 创建初始视角相机
@@ -116,7 +116,6 @@ void VtkWidget::OnMouseMove()
                 rectangleMapper->SetInputData(rectangle);
                 rectangleActor->SetMapper(rectangleMapper);
                 // 更新矩形的位置
-                infoTextActor->SetPosition(clickPos[0]+20, clickPos[1]+20);
                 rectangleActor->SetPosition(clickPos[0]+20, clickPos[1]+20);
                 rectangleActor->SetVisibility(true);
                 if(m_pMainWin->getactorToEntityMap()[actor]->GetObjectCName().left(2)=="点云"){
@@ -133,14 +132,24 @@ void VtkWidget::OnMouseMove()
     }
     getRenderWindow()->Render();
 }
-
+void VtkWidget::setCentity(CEntity *entity)
+{
+    qDebug()<<"setCentity";
+    elementEntity=entity;
+    createText();
+}
 void VtkWidget::createText()
 {
+    qDebug()<<"createText";
     // 创建浮动信息的文本演员
     infoTextActor = vtkSmartPointer<vtkTextActor>::New();
     infoTextActor->GetTextProperty()->SetFontSize(16);
     infoTextActor->GetTextProperty()->SetColor(1, 0, 0);
-    infoTextActor->SetInput("浮动窗口");
+    QString qstr=elementEntity->getCEntityInfo();
+    QByteArray byteArray = qstr.toUtf8(); // 转换 QString 到 QByteArray
+    infoTextActor->SetInput(byteArray.constData());
+    //infoTextActor->SetPosition(renderer->GetSize()[0] - 150, renderer->GetSize()[1] - 50);
+    //infoTextActor->SetInput("浮动窗口");
 
     textWidget = vtkSmartPointer<vtkOrientationMarkerWidget>::New();
     // 将坐标轴演员添加到orientationWidget
@@ -182,18 +191,11 @@ void VtkWidget::createText()
     rectangleActor->GetProperty()->SetOpacity(0.3); // 设置透明度
     rectangleActor->SetPosition(1,1);
     rectangleActor->SetVisibility(false);
-
-    textWidget = vtkSmartPointer<vtkOrientationMarkerWidget>::New();
-    // 将orientationWidget与交互器关联
-    textWidget->SetInteractor(renWin->GetInteractor());
-    // 设置视口
-    textWidget->SetViewport(0.8, 0.8, 1, 1);// 调整信息窗口的位置
-    textWidget->SetEnabled(1);
-    textWidget->InteractiveOn();
     // 设置交互器的鼠标移动回调
     renderer->AddActor(infoTextActor);
     renderer->AddActor(rectangleActor);
-    renWin->GetInteractor()->AddObserver(vtkCommand::MouseMoveEvent, this, &VtkWidget::OnMouseMove);
+    //renWin->GetInteractor()->AddObserver(vtkCommand::MouseMoveEvent, this, &VtkWidget::OnMouseMove);
+    getRenderWindow()->Render();
 }
 
 vtkSmartPointer<vtkRenderWindow> VtkWidget::getRenderWindow(){
@@ -283,7 +285,7 @@ void VtkWidget::reDrawCentity(){
             if(object)
                 getRenderer()->AddActor(object->draw());
         }
-        createText();
+        //createText();
     }
 }
 
