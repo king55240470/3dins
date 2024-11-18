@@ -42,6 +42,7 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
 
     createAxes();// 创建左下角全局坐标系
     createText();// 创建浮动窗口显示信息
+    createTextBox(); // 创建文本边框
 
     // 创建初始视角相机
     vtkCamera* camera = renderer->GetActiveCamera();
@@ -103,7 +104,6 @@ void VtkWidget::createText()
     infoTextActor = vtkSmartPointer<vtkTextActor>::New();
     infoTextActor->GetTextProperty()->SetFontSize(16);
     infoTextActor->GetTextProperty()->SetColor(1, 0, 0);
-
     infoTextActor->SetInput("浮动窗口");
 
     textWidget = vtkSmartPointer<vtkOrientationMarkerWidget>::New();
@@ -116,7 +116,21 @@ void VtkWidget::createText()
     textWidget->SetEnabled(1);
     textWidget->InteractiveOn();
 
+    textWidget = vtkSmartPointer<vtkOrientationMarkerWidget>::New();
+    // 将orientationWidget与交互器关联
+    textWidget->SetInteractor(renWin->GetInteractor());
+    // 设置视口
+    textWidget->SetViewport(0.8, 0.8, 1, 1);// 调整信息窗口的位置
+    textWidget->SetEnabled(1);
+    textWidget->InteractiveOn();
+    // 设置交互器的鼠标移动回调
+    renderer->AddActor(infoTextActor);
+    renWin->GetInteractor()->AddObserver(vtkCommand::MouseMoveEvent, this, &VtkWidget::OnMouseMove);
+}
 
+// 创建文本框
+void VtkWidget::createTextBox()
+{
     vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
     // 定义矩形的四个顶点
     double width = 200; // 矩形的宽度
@@ -161,27 +175,11 @@ void VtkWidget::createText()
     // 设置矩形的属性
     rectangleActor->GetProperty()->SetColor(0.5, 0.5, 0.5); // 填充颜色
     rectangleActor->GetProperty()->SetOpacity(0.7); // 设置透明度
+    rectangleActor->GetProperty()->SetLineWidth(3); // 线条宽度
+
     rectangleActor->SetPosition(1,1);
     rectangleActor->SetVisibility(false);
-
-
-    textWidget = vtkSmartPointer<vtkOrientationMarkerWidget>::New();
-    // 将orientationWidget与交互器关联
-    textWidget->SetInteractor(renWin->GetInteractor());
-    // 设置视口
-    textWidget->SetViewport(0.8, 0.8, 1, 1);// 调整信息窗口的位置
-    textWidget->SetEnabled(1);
-    textWidget->InteractiveOn();
-    // 设置交互器的鼠标移动回调
-    renderer->AddActor(infoTextActor);
-    // renderer->AddActor(rectangleActor);
-    renWin->GetInteractor()->AddObserver(vtkCommand::MouseMoveEvent, this, &VtkWidget::OnMouseMove);
-}
-
-// 创建矩形框
-void VtkWidget::createTextBox()
-{
-
+    renderer->AddActor(rectangleActor);
 }
 
 vtkSmartPointer<vtkRenderWindow> VtkWidget::getRenderWindow(){
@@ -271,14 +269,14 @@ void VtkWidget::reDrawCentity(){
             if(object)
                 getRenderer()->AddActor(object->draw());
         }
-        createText();
+        // createText();
+        // createTextBox(); // 创建文本边框
     }
 }
 
 void VtkWidget::reDrawCloud()
 {
     showConvertedCloud(); // 显示刚打开的点云文件
-
 }
 
 // 创建全局坐标器
