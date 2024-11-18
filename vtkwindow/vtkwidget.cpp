@@ -81,9 +81,6 @@ void VtkWidget::OnMouseMove()
             if(pickedActor==actor){
                 // 得到图形的各种属性
                 QString qstr=m_pMainWin->getactorToEntityMap()[actor]->getCEntityInfo();
-                if(qstr==nullptr){
-                    break;
-                }
                 QByteArray byteArray = qstr.toUtf8(); // 转换 QString 到 QByteArray
                 infoTextActor->SetInput(byteArray.constData());
                 infoTextActor->SetPosition(clickPos[0]+20, clickPos[1]+20);
@@ -97,8 +94,8 @@ void VtkWidget::OnMouseMove()
                 double textHeight = bbox[3] - bbox[2];
 
                 // 调整矩形的尺寸
-                double width = textWidth + 40; // 加上一些边距
-                double height = textHeight + 20; // 加上一些边距
+                double width = textWidth+40; // 加上一些边距
+                double height = textHeight+30; // 加上一些边距
 
                 vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
                 // 更新矩形的顶点
@@ -122,6 +119,9 @@ void VtkWidget::OnMouseMove()
                 infoTextActor->SetPosition(clickPos[0]+20, clickPos[1]+20);
                 rectangleActor->SetPosition(clickPos[0]+20, clickPos[1]+20);
                 rectangleActor->SetVisibility(true);
+                if(m_pMainWin->getactorToEntityMap()[actor]->GetObjectCName().left(2)=="点云"){
+                    rectangleActor->SetVisibility(false);
+                }
                 actorFound = true;
                 break;
             }
@@ -178,8 +178,8 @@ void VtkWidget::createText()
     rectangleActor = vtkSmartPointer<vtkActor2D>::New();
     rectangleActor->SetMapper(rectangleMapper);
     // 设置矩形的颜色
-    rectangleActor->GetProperty()->SetColor(0.5, 0.5, 0.5); // 填充颜色
-    rectangleActor->GetProperty()->SetOpacity(0.7); // 设置透明度
+    rectangleActor->GetProperty()->SetColor(0.3, 0.3, 0.3); // 填充颜色
+    rectangleActor->GetProperty()->SetOpacity(0.3); // 设置透明度
     rectangleActor->SetPosition(1,1);
     rectangleActor->SetVisibility(false);
 
