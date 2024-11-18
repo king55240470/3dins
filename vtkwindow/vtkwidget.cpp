@@ -253,29 +253,29 @@ void VtkWidget::reDrawCentity(){
                     break;
                 }
             }
+        }
 
-            //检查是否为识别的元素
-            if(constructFlag==0){//不是构建的元素
-                for(int j=0;j<identifyEntityList.size();j++){
-                    QString key=identifyEntityList[j]->GetObjectCName() + "  " + identifyEntityList[j]->GetObjectAutoName();
-                    if(entitylist[i] == identifyEntityList[j]){//是构建的元素
-                        identifyFlag=1;
-                        if(identifyItemmap[key]){ // 如果不隐藏
-                            vtkSmartPointer<vtkActor>actor = entitylist[i]->draw();
-                            actorToEntity.insert(actor,entitylist[i]);
-                            getRenderer()->AddActor(actor);
-                            break;
-                        }
+        //检查是否为识别的元素
+        if(constructFlag==0){//不是构建的元素
+            for(int j=0;j<identifyEntityList.size();j++){
+                QString key=identifyEntityList[j]->GetObjectCName() + "  " + identifyEntityList[j]->GetObjectAutoName();
+                if(entitylist[i] == identifyEntityList[j]){//是构建的元素
+                    identifyFlag=1;
+                    if(identifyItemmap[key]){ // 如果不隐藏
+                        vtkSmartPointer<vtkActor>actor = entitylist[i]->draw();
+                        actorToEntity.insert(actor,entitylist[i]);
+                        getRenderer()->AddActor(actor);
+                        break;
                     }
                 }
             }
+        }
 
-            //既不是构建的元素也不是识别的元素
-            if(constructFlag==0&&identifyFlag==0){
-                vtkSmartPointer<vtkActor>actor=entitylist[i]->draw();
-                actorToEntity.insert(actor,entitylist[i]);
-                getRenderer()->AddActor(actor);
-            }
+        //既不是构建的元素也不是识别的元素
+        if(constructFlag==0&&identifyFlag==0){
+            vtkSmartPointer<vtkActor>actor=entitylist[i]->draw();
+            actorToEntity.insert(actor,entitylist[i]);
+            getRenderer()->AddActor(actor);
         }
 
         // 遍历objectlist绘制坐标系并加入渲染器
