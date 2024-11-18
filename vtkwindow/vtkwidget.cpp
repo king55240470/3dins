@@ -86,25 +86,6 @@ void VtkWidget::OnMouseMove()
                 infoTextActor->SetPosition(clickPos[0]+20, clickPos[1]+20);
                 infoTextActor->SetVisibility(true);
 
-                // 获取文本的边界框尺寸
-                // auto text_size = infoTextActor->GetTextProperty()->GetFrameWidth();
-                // 计算文本框的宽度和高度
-                // int bounds[4];
-                // double textWidth = bounds[1] - bounds[0];
-                // double textHeight = bounds[3] - bounds[2];
-                // // 调整矩形的尺寸
-                // double width = textWidth + 40; // 加上一些边距
-                // double height = textHeight + 20; // 加上一些边距
-                // // 更新矩形的顶点
-                // vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-                // points->InsertNextPoint(0, 0, 0);
-                // points->InsertNextPoint(width, 0, 0);
-                // points->InsertNextPoint(width, height, 0);
-                // points->InsertNextPoint(0, height, 0);
-                // // 更新矩形的位置
-                // rectangleActor->SetPosition(clickPos[0]+20, clickPos[1]+20);
-                // rectangleActor->SetVisibility(true);
-
                 actorFound = true;
                 break;
             }

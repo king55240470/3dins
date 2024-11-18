@@ -798,8 +798,8 @@ QString CDistance::getCEntityInfo()
     else {
         type_str = QString("pointToCircle distance%1:\n").arg(getdistancecircle());
     }
-    upTol_str = QString("upTolerance%1\n:").arg(getUptolerance());
-    underTol_str = QString("underTolerance%1\n:").arg(getUndertolerance());
+    upTol_str = QString("upTolerance:%1\n").arg(getUptolerance());
+    underTol_str = QString("underTolerance:%1\n").arg(getUndertolerance());
     return type_str + upTol_str + underTol_str;
 }
 
