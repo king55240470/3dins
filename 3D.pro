@@ -45,7 +45,6 @@ SOURCES += \
     manager/pointcloudlistmgr.cpp \
     pointfitting/fittingplane.cpp \
     pointfitting/setdatawidget.cpp \
-    vtkwindow/actormaps.cpp \
     vtkwindow/clickhighlightstyle.cpp \
     vtkwindow/custominteractorstyle.cpp \
     vtkwindow/vtkpresetwidget.cpp \
@@ -88,7 +87,6 @@ HEADERS += \
     manager/pointcloudlistmgr.h \
     pointfitting/fittingplane.h \
     pointfitting/setdatawidget.h \
-    vtkwindow/actormaps.h \
     vtkwindow/clickhighlightstyle.h \
     vtkwindow/custominteractorstyle.h \
     vtkwindow/vtkpresetwidget.h \
@@ -788,5 +786,5 @@ CONFIG(debug, debug|release){
 }
 
 
-# INCLUDEPATH += $$PWD/include
-# LIBS += -L$$PWD/lib -lmyDll
+# INCLUDEPATH += $$PWD/../MyDll
+# LIBS += -L$$PWD/../build/Desktop_Qt_6_6_0_MSVC2019_64bit-Debug/MyDll/debug -lMyDll

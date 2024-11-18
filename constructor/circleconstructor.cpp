@@ -100,20 +100,26 @@ CEntity* CircleConstructor::create(QVector<CEntity*>& entitylist){
         }
     }
     QVector<CPosition>&positions=Constructor::getPositions();//存储有效点
-    if(positions.size()==3){
+    if(points.size()==3&&positions.size()==3){
         CCircle*circle=createCircle(positions[0],positions[1],positions[2]);
         circle->parent.push_back(points[0]);
         circle->parent.push_back(points[1]);
         circle->parent.push_back(points[2]);
         return  circle;
+    }else if(points.size()>3){
+        setWrongInformation(PointTooMuch);
+    }else if(points.size()<3){
+        setWrongInformation(PointTooLess);
     }
     return nullptr;
 }
 
 CCircle* CircleConstructor::createCircle(CPosition p1,CPosition p2,CPosition p3){
     CircleInfor Circle=calculateCircle(p1,p2,p3);
-    if(Circle.radius<1e-5)
+    if(Circle.radius<1e-5){
+        setWrongInformation(PointTooClose);
         return nullptr;
+    }
     return createCircle(toCPosition(Circle.center),Circle.radius*2);
 }
 CCircle* CircleConstructor::createCircle(CPoint *p1,CPoint *p2,CPoint *p3){

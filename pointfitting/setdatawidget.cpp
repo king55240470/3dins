@@ -11,6 +11,7 @@ setDataWidget::setDataWidget(QWidget *parent)
     m_pMainWin=(MainWindow*)parent;
     p_cloudptr.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
     fittingPlane.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
+    planeCloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
     plane=nullptr;
 }
 
@@ -50,9 +51,9 @@ void setDataWidget::PlaneBtnClick(){
         return;
     }
     plane=new FittingPlane();
-    plane->setRadious(p_rad->text().toDouble());  // 设置半径
+    plane->setRadius(p_rad->text().toDouble());  // 设置半径
     plane->setDistance(p_dis->text().toDouble());  // 设置距离阈值
-    auto planeCloud= plane->RANSAC(p_point,p_cloudptr);
+    planeCloud= plane->RANSAC(p_point,p_cloudptr);
     if(planeCloud==nullptr){
         qDebug()<<"出现了点云空指针";
         return;
@@ -63,4 +64,12 @@ void setDataWidget::PlaneBtnClick(){
 
 FittingPlane *setDataWidget::getPlane(){
     return plane;
+}
+
+pcl::PointCloud<pcl::PointXYZRGB>::Ptr setDataWidget::getFittingPlane(){
+    return fittingPlane;
+}
+
+pcl::PointCloud<pcl::PointXYZRGB>::Ptr setDataWidget::getPlaneCloud(){
+    return planeCloud;
 }

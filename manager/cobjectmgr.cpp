@@ -130,9 +130,12 @@ QDataStream& operator>>(QDataStream& in, CObjectMgr& mgr){
         case enCircle:
             object = new CCircle();
             break;
-        // case enLine:
-        //     object=new CLine();
-        //     break;
+        case enLine:
+            object=new CLine();
+            break;
+        case enPoint:
+            object=new CPoint();
+            break;
         // 其他类型处理逻辑...
         default:
             object = new CObject();

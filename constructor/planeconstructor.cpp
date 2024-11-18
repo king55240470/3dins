@@ -60,14 +60,14 @@ void InformationWidget(QString message){
     QMessageBox msgBox;
     msgBox.setWindowTitle("错误");
     msgBox.setText(message);
-    msgBox.setIcon(QMessageBox::Critical); // 设置对话框图标为错误
+    msgBox.setIcon(QMessageBox::Information); // 设置对话框图标为错误
     msgBox.setStandardButtons(QMessageBox::Ok); // 只显示“确定”按钮
     msgBox.exec(); // 显示对话框
 }
 
 PlaneConstructor::PlaneConstructor() {}
 CEntity* PlaneConstructor::create(QVector<CEntity*>& entitylist){
-    Constructor::create(entitylist);
+    //Constructor::create(entitylist);
     QVector<CPoint*>points;
     for(int i=0;i<entitylist.size();i++){
         CEntity* entity=entitylist[i];
@@ -77,13 +77,18 @@ CEntity* PlaneConstructor::create(QVector<CEntity*>& entitylist){
             points.push_back(point);
         }
     }
-    QVector<CPosition>&positions=Constructor::getPositions();//存储有效点
+    //QVector<CPosition>&positions=Constructor::getPositions();//存储有效点
     if(points.size()==3){
         CPlane*plane=createPlane(*points[0],*points[1],*points[2]);
         plane->parent.push_back(points[0]);
         plane->parent.push_back(points[1]);
         plane->parent.push_back(points[2]);
         return plane;
+    }
+    if(points.size()<3){
+        setWrongInformation(PointTooLess);
+    }else if(points.size()>3){
+        setWrongInformation(PointTooMuch);
     }
     return nullptr;
 }
@@ -158,6 +163,7 @@ CPlane* PlaneConstructor::createPlane(CPosition p1,CPosition p2,CPosition p3){
         normal = crossProduct(AB,AC); // 计算法向量并归一化
         // 如果法向量的长度为零，说明三点共线
         if (normal.length() == 0) {
+            setWrongInformation(PointTooClose);
             return  nullptr;
         }
 
