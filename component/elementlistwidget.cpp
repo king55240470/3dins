@@ -332,6 +332,7 @@ void ElementListWidget::ShowParent(CObject*obj)
 
 void ElementListWidget::mousePressEvent(QMouseEvent *event)
 {
+    qDebug()<<"鼠标";
     ElementListWidget::mousePressEvent(event);
 
     // 判断点击的区域是否为空白区域
