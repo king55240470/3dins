@@ -40,13 +40,8 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
     m_highlightstyle->SetUpMainWin(m_pMainWin);
     renWin->GetInteractor()->SetInteractorStyle(m_highlightstyle);
 
-    // auto customstyle = vtkSmartPointer<CustomInteractorStyle>::New();
-    // customstyle->SetRenderer(renderer);
-    // renWin->GetInteractor()->SetInteractorStyle(customstyle);
-
     createAxes();// 创建左下角全局坐标系
     createText();// 创建浮动窗口显示信息
-    //createTextBox();
 
     // 创建初始视角相机
     vtkCamera* camera = renderer->GetActiveCamera();
@@ -58,8 +53,10 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
         // camera->SetViewAngle(60); // 调整视野角度
         // camera->SetClippingRange(0.1, 1000);// 根据场景的具体大小和需要调整裁剪范围
         camera->OrthogonalizeViewUp(); // 确保与SetViewUp方向正交
-        // 根据需要调整视图的缩放
-        camera->Zoom(0.5);
+        // camera->Zoom(0.5); // 根据需要调整视图的缩放
+
+        renderer->ResetCamera();
+        renWin->Render();
     }
 
     getRenderWindow()->Render();
@@ -84,8 +81,10 @@ void VtkWidget::OnMouseMove()
                 QByteArray byteArray = qstr.toUtf8(); // 转换 QString 到 QByteArray
                 infoTextActor->SetInput(byteArray.constData());
                 infoTextActor->SetPosition(clickPos[0]+20, clickPos[1]+20);
-                infoTextActor->SetVisibility(true);
+                rectangleActor->SetPosition(clickPos[0]+20, clickPos[1]+20);
 
+                infoTextActor->SetVisibility(true);
+                rectangleActor->SetVisibility(true);
                 actorFound = true;
                 break;
             }
@@ -104,6 +103,7 @@ void VtkWidget::createText()
     infoTextActor = vtkSmartPointer<vtkTextActor>::New();
     infoTextActor->GetTextProperty()->SetFontSize(16);
     infoTextActor->GetTextProperty()->SetColor(1, 0, 0);
+
     infoTextActor->SetInput("浮动窗口");
 
     textWidget = vtkSmartPointer<vtkOrientationMarkerWidget>::New();
@@ -116,7 +116,7 @@ void VtkWidget::createText()
     textWidget->SetEnabled(1);
     textWidget->InteractiveOn();
 
-    vtkSmartPointer<vtkPolyData> rectangle = vtkSmartPointer<vtkPolyData>::New();
+
     vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
     // 定义矩形的四个顶点
     double width = 200; // 矩形的宽度
@@ -126,26 +126,44 @@ void VtkWidget::createText()
     points->InsertNextPoint(width, height, 0);
     points->InsertNextPoint(0, height, 0);
 
+    // 创建定义矩形边框的线条（四个边）
+    vtkSmartPointer<vtkCellArray> lines = vtkSmartPointer<vtkCellArray>::New();
+    vtkIdType lineIds[2];
+    // 左下角到右下角
+    lineIds[0] = 0; lineIds[1] = 1;
+    lines->InsertNextCell(2, lineIds);
+    // 右下角到右上角
+    lineIds[0] = 1; lineIds[1] = 2;
+    lines->InsertNextCell(2, lineIds);
+    // 右上角到左上角
+    lineIds[0] = 2; lineIds[1] = 3;
+    lines->InsertNextCell(2, lineIds);
+    // 左上角到左下角
+    lineIds[0] = 3; lineIds[1] = 0;
+    lines->InsertNextCell(2, lineIds);
+
     // 创建矩形的面
     vtkSmartPointer<vtkCellArray> polygons = vtkSmartPointer<vtkCellArray>::New();
     vtkIdType ids[4] = {0, 1, 2, 3};
     polygons->InsertNextCell(4, ids);
 
+    vtkSmartPointer<vtkPolyData> rectangle = vtkSmartPointer<vtkPolyData>::New();
     rectangle->SetPoints(points);
+    rectangle->SetLines(lines);
     rectangle->SetPolys(polygons);
 
     // 创建 PolyData 映射器
     vtkSmartPointer<vtkPolyDataMapper2D> rectangleMapper = vtkSmartPointer<vtkPolyDataMapper2D>::New();
     rectangleMapper->SetInputData(rectangle);
-
     // 创建 vtkActor2D
     rectangleActor = vtkSmartPointer<vtkActor2D>::New();
     rectangleActor->SetMapper(rectangleMapper);
-    // 设置矩形的颜色
+    // 设置矩形的属性
     rectangleActor->GetProperty()->SetColor(0.5, 0.5, 0.5); // 填充颜色
     rectangleActor->GetProperty()->SetOpacity(0.7); // 设置透明度
     rectangleActor->SetPosition(1,1);
     rectangleActor->SetVisibility(false);
+
 
     textWidget = vtkSmartPointer<vtkOrientationMarkerWidget>::New();
     // 将orientationWidget与交互器关联
@@ -158,6 +176,12 @@ void VtkWidget::createText()
     renderer->AddActor(infoTextActor);
     // renderer->AddActor(rectangleActor);
     renWin->GetInteractor()->AddObserver(vtkCommand::MouseMoveEvent, this, &VtkWidget::OnMouseMove);
+}
+
+// 创建矩形框
+void VtkWidget::createTextBox()
+{
+
 }
 
 vtkSmartPointer<vtkRenderWindow> VtkWidget::getRenderWindow(){
@@ -340,8 +364,8 @@ void VtkWidget::onIsometricView(){
         camera->SetPosition(0, 0, 0); // 重置相机位置
         camera->SetViewUp(0, 1, 0);    // 重置视角向上方向
 
-        camera->Azimuth(30);
-        camera->Elevation(30);
+        camera->Azimuth(60);
+        camera->Elevation(60);
         camera->OrthogonalizeViewUp();
 
         // 重新设置相机并渲染
