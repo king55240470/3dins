@@ -62,8 +62,10 @@ public:
     void updateele();
 
     void addToList(CEntity*);
+    void addToFindList(CEntity*);
 
     QVector<CEntity*>& getConstructEntityList();
+    QVector<CEntity*>& getIdentifyEntityList();
 
 public slots:
               //构造
@@ -131,5 +133,6 @@ private:
 
     //存储构建的元素
     QVector<CEntity*> constructEntityList;
+    QVector<CEntity*> identifyEntityList;
 };
 #endif // TOOLWIDGET_H
