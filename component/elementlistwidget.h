@@ -47,6 +47,7 @@ public:
     void setTolerance();
     void BtnClicked();
     void ShowParent(CObject*obj);
+    void mousePressEvent(QMouseEvent *event) override;
 protected:
     void keyPressEvent(QKeyEvent *event) override;
     void keyReleaseEvent(QKeyEvent *event) override;
