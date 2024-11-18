@@ -1,6 +1,8 @@
 #include "constructor.h"
 
-Constructor::Constructor() {}
+Constructor::Constructor() {
+    m_wrongInfo=Null;
+}
 CEntity* Constructor::create(QVector<CEntity*>& entitylist){
     positions.clear();
     //基类的create负责读取所有有效点

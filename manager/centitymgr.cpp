@@ -118,9 +118,11 @@ QDataStream& operator>>(QDataStream& in, CEntityMgr& mgr) {
         case enCircle:
             entity = new CCircle();
             break;
-        // 添加其他类型的处理逻辑
         case enLine:
             entity = new CLine();
+            break;
+        case enPoint:
+            entity=new CPoint();
             break;
         // ...其他类型
         default:

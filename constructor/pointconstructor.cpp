@@ -8,6 +8,9 @@ CEntity* PointConstructor::create(QVector<CEntity*>& entitylist){
         CPoint*point=createPoint(positions[0]);
         return point;
     }
+    if(positions.size()<1){
+        setWrongInformation(PointTooLess);
+    }
     return nullptr;
 }
 
@@ -32,6 +35,8 @@ CEntity* PointConstructor::create(QVector<CPosition>& chosenlist){
     positions=chosenlist;
     if(positions.size()>=1){
         return createPoint(positions[0]);
+    }else {
+        setWrongInformation(PointTooLess);
     }
     return nullptr;
 }

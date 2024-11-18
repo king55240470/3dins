@@ -12,6 +12,10 @@
 #include <pcl/surface/convex_hull.h>
 #include <Eigen/Dense>
 #include <pcl/common/pca.h>
+#include <pcl/filters/statistical_outlier_removal.h>
+#include <pcl/common/random.h>
+#include <pcl/features/normal_3d.h>
+#include <pcl/common/common.h>
 
 #include <QMessageBox>
 
@@ -28,15 +32,15 @@ FittingPlane::FittingPlane()
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingPlane::RANSAC(pcl::PointXYZRGB searchPoint,pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudptr)
 {
     //创建KD树用于邻域搜索
-    pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree;
+    pcl::search::KdTree<pcl::PointXYZRGB> kdtree;
+    //pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree;
     kdtree.setInputCloud(cloudptr);
 
     std::vector<int> pointIdxRadiusSearch;//存储邻域点的索引
     std::vector<float> pointRadiusSquaredDistance; // 用于存储找到的点到查询点的平方距离
 
     // 搜索给定半径内的点
-    if (kdtree.radiusSearch(searchPoint, radious, pointIdxRadiusSearch, pointRadiusSquaredDistance) > 3) {
-
+    if (kdtree.radiusSearch(searchPoint, radius, pointIdxRadiusSearch, pointRadiusSquaredDistance) > 3) {
         //动态设置距离阈值（可选）
         // float average_distance = 0.0f;
         // for (size_t i = 0; i < pointIdxRadiusSearch.size(); ++i) {
@@ -84,11 +88,9 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingPlane::RANSAC(pcl::PointXYZRGB sea
         pca.setInputCloud(planeCloud);
         //获取主成分方向
         Eigen::Matrix3f eigen_vectors = pca.getEigenVectors();  // 特征向量
-        //Eigen::Vector3f eigen_values = pca.getEigenValues();    // 特征值
-        std::cout << "Eigen Vectors (Principal directions): \n" << eigen_vectors << std::endl;
-        //std::cout << "Eigen Values (Variance): \n" << eigen_values << std::endl;
-        // 投影到主成分方向
+        // // 投影到主成分方向
         std::vector<double> proj1, proj2;
+
         for (const auto& point : planeCloud->points) {
             // 将点投影到主成分方向
             double proj1_val = point.x * eigen_vectors(0, 0) + point.y * eigen_vectors(1, 0) + point.z * eigen_vectors(2, 0);
@@ -96,11 +98,13 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingPlane::RANSAC(pcl::PointXYZRGB sea
             proj1.push_back(proj1_val);
             proj2.push_back(proj2_val);
         }
+
         //计算投影的最大值和最小值
         double min_proj1 = *std::min_element(proj1.begin(), proj1.end());
         double max_proj1 = *std::max_element(proj1.begin(), proj1.end());
         double min_proj2 = *std::min_element(proj2.begin(), proj2.end());
         double max_proj2 = *std::max_element(proj2.begin(), proj2.end());
+
         //计算平面的长宽
         length = max_proj1 - min_proj1;  // 平面在第一个方向上的长度
         width = max_proj2 - min_proj2;   // 平面在第二个方向上的宽度
@@ -130,11 +134,11 @@ bool FittingPlane::isPointInPlane(const pcl::PointXYZRGB& point){
                coefficients->values[1] * point.y +
                coefficients->values[2] * point.z +
                coefficients->values[3];
-    return std::abs(d) <= 0.001;
+    return std::abs(d) <= radius*0.1;
 }
 
-void FittingPlane::setRadious(double rad){
-    radious=rad;
+void FittingPlane::setRadius(double rad){
+    radius=rad;
 }
 
 void FittingPlane::setDistance(double dis){

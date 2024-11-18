@@ -55,7 +55,7 @@ vtkSmartPointer<vtkActor> CPoint::draw(){
 
 QString CPoint::getCEntityInfo()
 {
-    QString infoText = QString("X:%1\nY:%2\nZ:%3").arg(m_pt.x).arg(m_pt.y).arg(m_pt.z);
+    QString infoText = QString("X:%1\nY:%2\nZ:%3").arg(QString::number(m_pt.x, 'f', 6)).arg(QString::number(m_pt.y, 'f', 6)).arg(QString::number(m_pt.z, 'f', 6));
     return infoText;
 }
 
@@ -292,8 +292,8 @@ vtkSmartPointer<vtkActor> CCylinder::draw(){
 QString CCone::getCEntityInfo()
 {
     auto infoText = QString("center: (%1,%2,%3)\nradian:%4\nheight:%5\naxis:(%6,%7,%8)")
-    .arg(getVertex().x).arg(getVertex().y).arg(getVertex().z)
-        .arg(radian).arg(height).arg(axis.x()).arg(axis.y()).arg(axis.z());
+    .arg(QString::number(getVertex().x, 'f', 6)).arg(QString::number(getVertex().y, 'f', 6)).arg(QString::number(getVertex().z, 'f', 6))
+        .arg(QString::number(radian, 'f', 6)).arg(QString::number(height, 'f', 6)).arg(QString::number(axis.x(), 'f', 6)).arg(QString::number(axis.y(), 'f', 6)).arg(QString::number(axis.z(), 'f', 6));
 
     return infoText;
 }
@@ -581,7 +581,7 @@ int CCircle::getId()
 
 QString CCircle::getCEntityInfo()
 {
-    QString infoText = QString("CenterX:%1\nCenterY:%2\nCenterZ:%3\ndiameter:%4").arg(m_pt.x).arg(m_pt.y).arg(m_pt.z).arg(m_d);
+    QString infoText = QString("CenterX:%1\nCenterY:%2\nCenterZ:%3\ndiameter:%4").arg(QString::number(m_pt.x, 'f', 6)).arg(QString::number(m_pt.y, 'f', 6)).arg(QString::number(m_pt.z, 'f', 6)).arg(QString::number(m_d, 'f', 6));
     return infoText;
 }
 
@@ -597,8 +597,8 @@ void CLine::setEnd(const CPosition &newEnd)
 
 QString CLine::getCEntityInfo()
 {
-    QString infoText = QString("beginX:%1,beginY:%2,beginZ:%3\n endX:%4,endY:%5,endZ:%6").arg(begin.x).arg(begin.y).arg(begin.z)
-    .arg(end.x).arg(end.y).arg(end.z);
+    QString infoText = QString("beginX:%1,beginY:%2,beginZ:%3\n endX:%4,endY:%5,endZ:%6").arg(QString::number(begin.x, 'f', 6)).arg(QString::number(begin.y, 'f', 6)).arg(QString::number(begin.z, 'f', 6))
+    .arg(QString::number(end.x, 'f', 6)).arg(QString::number(end.y, 'f', 6)).arg(QString::number(end.z, 'f', 6));
     return infoText;
 }
 
@@ -654,8 +654,8 @@ void CPlane::setWidth(double newWidth)
 
 QString CPlane::getCEntityInfo()
 {
-    QString infoText = QString("CenterX:%1\nCenterY:%2\nCenterZ:%3\nnormal:(%4,%5,%6)\nedge:(%7,%8,%9)\nlength,width:(%10,%11)").arg(center.x).arg(center.y).arg(center.z).
-                       arg(normal.x()).arg(normal.y()).arg(normal.z()).arg(dir_long_edge.x()).arg(dir_long_edge.y()).arg(dir_long_edge.z()).arg(length).arg(width);
+    QString infoText = QString("CenterX:%1\nCenterY:%2\nCenterZ:%3\nnormal:(%4,%5,%6)\nedge:(%7,%8,%9)\nlength,width:(%10,%11)").arg(QString::number(center.x, 'f', 6)).arg(QString::number(center.y, 'f', 6)).arg(QString::number(center.z, 'f', 6)).
+                       arg(QString::number(normal.x(), 'f', 6)).arg(QString::number(normal.y(), 'f', 6)).arg(QString::number(normal.z(), 'f', 6)).arg(QString::number(dir_long_edge.x(), 'f', 6)).arg(QString::number(dir_long_edge.y(), 'f', 6)).arg(QString::number(dir_long_edge.z(), 'f', 6)).arg(QString::number(length, 'f', 6)).arg(QString::number(width, 'f', 6));
     return infoText;
 }
 
@@ -682,8 +682,8 @@ void CSphere::setDiameter(double newDiameter)
 
 QString CSphere::getCEntityInfo()
 {
-    QString infoText = QString("CenterX:%1\nCenterY:%2\nCenterZ:%3\ndiameter:%4").arg(center.x).arg(center.y).arg(center.z).
-                       arg(diameter);
+    QString infoText = QString("CenterX:%1\nCenterY:%2\nCenterZ:%3\ndiameter:%4").arg(QString::number(center.x, 'f', 6)).arg(QString::number(center.y, 'f', 6)).arg(QString::number(center.z, 'f', 6)).
+                       arg(QString::number(diameter, 'f', 6));
     return infoText;
 }
 
@@ -729,8 +729,8 @@ void CCylinder::setBtm_center(const CPosition &newBtm_center)
 
 QString CCylinder::getCEntityInfo()
 {
-    QString infoText = QString("X:%1\nY:%2\nZ:%3\ndiameter:%4\nheight:%5\naxial:(%6,%7,%8)").arg(btm_center.x).arg(btm_center.y).arg(btm_center.z).
-                       arg(diameter).arg(height).arg(axis.x()).arg(axis.y()).arg(axis.z());
+    QString infoText = QString("X:%1\nY:%2\nZ:%3\ndiameter:%4\nheight:%5\naxial:(%6,%7,%8)").arg(QString::number(btm_center.x, 'f', 6)).arg(QString::number(btm_center.y, 'f', 6)).arg(QString::number(btm_center.z, 'f', 6)).
+                       arg(QString::number(diameter, 'f', 6)).arg(QString::number(height, 'f', 6)).arg(QString::number(axis.x(), 'f', 6)).arg(QString::number(axis.y(), 'f', 6)).arg(QString::number(axis.z(), 'f', 6));
     return infoText;
 }
 
@@ -802,14 +802,14 @@ QString CDistance::getCEntityInfo()
 
     // 判断是哪种距离
     if(isHavePlane)
-        type_str = QString("pointToPlane distance:%1\n").arg(getdistanceplane());
+        type_str = QString("pointToPlane distance:%1\n").arg(QString::number(getdistanceplane(), 'f', 6));
     else if(isHaveLine)
-        type_str = QString("pointToLine distance%1:\n").arg(getdistanceline());
+        type_str = QString("pointToLine distance%1:\n").arg(QString::number(getdistanceline(), 'f', 6));
     else {
-        type_str = QString("pointToCircle distance%1:\n").arg(getdistancecircle());
+        type_str = QString("pointToCircle distance%1:\n").arg(QString::number(getdistancecircle(), 'f', 6));
     }
-    upTol_str = QString("upTolerance%1\n:").arg(getUptolerance());
-    underTol_str = QString("underTolerance%1\n:").arg(getUndertolerance());
+    upTol_str = QString("upTolerance%1\n:").arg(QString::number(getUptolerance(), 'f', 6));
+    underTol_str = QString("underTolerance%1\n:").arg(QString::number(getUndertolerance(), 'f', 6));
     return type_str + upTol_str + underTol_str;
 }
 
