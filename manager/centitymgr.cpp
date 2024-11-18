@@ -72,6 +72,11 @@ QVector<bool> &CEntityMgr::getMarkList()
     return marklist;
 }
 
+QString CEntityMgr::getCEntityInfo()
+{
+    return 0;
+}
+
 QDataStream& operator<<(QDataStream& out, const CEntityMgr& mgr) {
     out << mgr.m_nSize << mgr.m_nCount << mgr.m_bRedraw << mgr.m_nRedrawIndex;
 

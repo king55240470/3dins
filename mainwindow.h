@@ -128,6 +128,6 @@ public:
     void on2dCoordSetRightX(); // 摆正X坐标系-+
     void on2dCoordSetRightY(); // 摆正Y坐标系
 public:
-    QMap<vtkSmartPointer<vtkActor>, CEntity*>& getactorToEntityMap();
+    QMap<vtkSmartPointer<vtkActor>, CEntity*>& getactorToEntityMap(); // 管理所有centity对象生成的actor
 };
 #endif // MAINWINDOW_H

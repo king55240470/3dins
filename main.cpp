@@ -1,6 +1,6 @@
 #include "mainwindow.h"
 
-// #include "myDll.h"
+//#include "mydll.h"
 
 #include <QApplication>
 
