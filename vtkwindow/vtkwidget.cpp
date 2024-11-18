@@ -205,7 +205,7 @@ void VtkWidget::reDrawCentity(){
         int constructFlag=0;
         int identifyFlag=0;
 
-        //检查是否为构建的元素
+        // 循环判断是哪种元素
         for(int j=0;j<constructEntityList.size();j++){
             QString key=constructEntityList[j]->GetObjectCName() + "  " + constructEntityList[j]->GetObjectAutoName();
             if(entitylist[i] == constructEntityList[j]){//是构建的元素
