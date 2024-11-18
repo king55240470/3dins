@@ -124,10 +124,11 @@ void ElementListWidget::onDeleteEllipse()
             auto& objectList = m_pMainWin->m_ObjectListMgr->getObjectList();
             auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
             QVector<CEntity*> constructEntityList = m_pMainWin->getPWinToolWidget()->getConstructEntityList();//存储构建元素的列表
+            QVector<CEntity*> identifyEntityList = m_pMainWin->getPWinToolWidget()->getIdentifyEntityList();//存储识别元素的列表
             if(objectList[index]->GetObjectCName().left(5)=="临时坐标系"||objectList[index]->GetObjectCName().left(5)=="工件坐标系"){
                 objectList.removeAt(index);
                 //pcscount--;
-            }else{
+            }else{              
                 //删除constructEntityList和contentItemMap中的元素
                 for(int i=0;i<constructEntityList.size();i++){
                     if(constructEntityList[i]==entityList[entityindex]){
@@ -137,8 +138,15 @@ void ElementListWidget::onDeleteEllipse()
                         break;
                     }
                 }
-                for(auto& l:constructEntityList){
-                    qDebug()<<"剩余"<<l;
+
+                //删除identifyEntityList和identifyItemMap中的元素
+                for(int i=0;i<identifyEntityList.size();i++){
+                    if(identifyEntityList[i]==entityList[entityindex]){
+                        QString key=identifyEntityList[i]->GetObjectCName()+"  "+identifyEntityList[i]->GetObjectAutoName();
+                        m_pMainWin->getpWinFileMgr()->getIdentifyItemMap().remove(key);
+                        identifyEntityList.removeAt(i);
+                        break;
+                    }
                 }
 
                 objectList.removeAt(index);
