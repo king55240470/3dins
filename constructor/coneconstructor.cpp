@@ -20,6 +20,11 @@ CEntity* ConeConstructor::create(QVector<CEntity*>& entitylist){
         cone->parent.push_back(points[2]);
         return cone;
     }
+    if(points.size()<3){
+        setWrongInformation(PointTooLess);
+    }else if(points.size()>3){
+        setWrongInformation(PointTooMuch);
+    }
     return nullptr;
 }
 CCone* ConeConstructor::createCone(CPosition p1,CPosition p2,CPosition p3){
@@ -42,15 +47,12 @@ CCone* ConeConstructor::createCone(CPosition p1,CPosition p2,CPosition p3){
 
     // 计算完整高度
     double fullH = axis.length();  // 结果是 8
-    qDebug()<<fullH;
     // 计算部分高度（可自定义，假设为完整高度的一半）
     double partH = fullH; // 结果是 4
 
     // 计算角度
     double radius = (bottomPoint - QVector4D(posCenter.x, posCenter.y, posCenter.z,0)).length(); // 结果是 5
     double angle = qRadiansToDegrees(atan(radius / fullH)); // 计算夹角
-    qDebug()<<radius<<"    "<<angle;
-    qDebug()<<toQVector4D(posCenter);qDebug()<<bottomPoint<<topVertex;
     // 调用函数
     return createCone(posCenter,axisVector,partH,fullH,angle);
 }

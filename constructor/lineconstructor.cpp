@@ -28,13 +28,21 @@ CEntity* LineConstructor::create(QVector<CEntity*>& entitylist){
         line->parent.push_back(points[0]);
         line->parent.push_back(points[1]);
         return line;
+    }else{
+        if(points.size()>2){
+            setWrongInformation(PointTooMuch);
+        }
+        if(points.size()<2){
+            setWrongInformation(PointTooLess);
+        }
     }
     QVector<CPosition>&positions=Constructor::getPositions();//存储有效点
     if(positions.size()==2){
         CLine*line=createLine(positions[0],positions[1]);
-        //line->parent.push_back(points[0]);
-        //line->parent.push_back(points[1]);
+        setWrongInformation(Null);
         return line;
+    }else{
+        setWrongInformation(PointTooLess);
     }
     return nullptr;
 }
@@ -43,7 +51,10 @@ CLine* LineConstructor::createLine(CPosition begin,CPosition end){
     if(begin.x==end.x
         &&begin.y==end.y
         &&begin.z==end.z)
+    {
+        setWrongInformation(PointTooClose);
         return nullptr;
+    }
     m_line.SetPosition(begin,end);
     CLine * newLine=new CLine();
     newLine->setBegin(begin);
@@ -57,7 +68,10 @@ CLine* LineConstructor::createLine(CPoint *begin,CPoint *end){
     if(pt1.x==pt2.x
         &&pt1.y==pt2.y
         &&pt1.z==pt2.z)
+    {
+        setWrongInformation(PointTooClose);
         return nullptr;
+    }
     CLine * newLine=new CLine();
     newLine->setBegin(pt1);
     newLine->setEnd(pt2);
