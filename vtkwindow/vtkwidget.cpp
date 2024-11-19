@@ -40,11 +40,8 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
     m_highlightstyle->SetUpMainWin(m_pMainWin);
     renWin->GetInteractor()->SetInteractorStyle(m_highlightstyle);
 
-    // auto customstyle = vtkSmartPointer<CustomInteractorStyle>::New();
-    // customstyle->SetRenderer(renderer);
-    // renWin->GetInteractor()->SetInteractorStyle(customstyle);
-
     createAxes();// 创建左下角全局坐标系
+
     //createText();// 创建浮动窗口显示信息
     //createTextBox();
 
@@ -58,8 +55,10 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
         // camera->SetViewAngle(60); // 调整视野角度
         // camera->SetClippingRange(0.1, 1000);// 根据场景的具体大小和需要调整裁剪范围
         camera->OrthogonalizeViewUp(); // 确保与SetViewUp方向正交
-        // 根据需要调整视图的缩放
-        camera->Zoom(0.5);
+        // camera->Zoom(0.5); // 根据需要调整视图的缩放
+
+        renderer->ResetCamera();
+        renWin->Render();
     }
 
     getRenderWindow()->Render();
@@ -67,7 +66,7 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
 
 void VtkWidget::OnMouseMove()
 {
-    //qDebug()<<"执行了move";
+    /*//qDebug()<<"执行了move";
     int clickPos[2];
     bool actorFound = false;
     renWin->GetInteractor()->GetEventPosition(clickPos);
@@ -129,8 +128,39 @@ void VtkWidget::OnMouseMove()
     if (!actorFound) {
         infoTextActor->SetVisibility(false);
         rectangleActor->SetVisibility(false);
+    }*/
+    if (isDragging){
+        qDebug()<<"鼠标移动";
+        int clickPos[2];
+        renWin->GetInteractor()->GetEventPosition(clickPos);
+        infoTextActor->SetPosition(clickPos[0]-30, clickPos[1]-20);
+        double *a;
+        a=infoTextActor->GetPosition();
+        rectangleActor->SetPosition(a[0],a[1]);
+        getRenderWindow()->Render();
     }
-    getRenderWindow()->Render();
+}
+
+void VtkWidget::OnLeftButtonPress()
+{
+    qDebug()<<"左键按下";
+    int* clickPos = renWin->GetInteractor()->GetEventPosition();
+
+    // 检查点击是否在信息文本区域内
+    double* position = infoTextActor->GetPosition();
+    if (clickPos[0] >= position[0] && clickPos[0] <= position[0] + infoTextActor->GetWidth() &&
+        clickPos[1] >= position[1] &&
+        clickPos[1] <= position[1]+infoTextActor->GetHeight())
+    {
+        isDragging = true; // 开启拖动状态
+    }
+    isDragging = true;
+}
+
+void VtkWidget::OnLeftButtonRelease()
+{
+    qDebug()<<"左键释放";
+    isDragging = false; // 关闭拖动状态
 }
 void VtkWidget::setCentity(CEntity *entity)
 {
@@ -148,20 +178,32 @@ void VtkWidget::createText()
     QString qstr=elementEntity->getCEntityInfo();
     QByteArray byteArray = qstr.toUtf8(); // 转换 QString 到 QByteArray
     infoTextActor->SetInput(byteArray.constData());
-    //infoTextActor->SetPosition(renderer->GetSize()[0] - 150, renderer->GetSize()[1] - 50);
+    infoTextActor->SetPosition(renWin->GetSize()[0] - 200, renWin->GetSize()[1] - 100);
     //infoTextActor->SetInput("浮动窗口");
 
     textWidget = vtkSmartPointer<vtkOrientationMarkerWidget>::New();
     // 将坐标轴演员添加到orientationWidget
-    textWidget->SetOrientationMarker(infoTextActor);
+    //textWidget->SetOrientationMarker(infoTextActor);
+
     // 将orientationWidget与交互器关联
     textWidget->SetInteractor(renWin->GetInteractor());
     // 设置视口
     textWidget->SetViewport(0.8, 0.8, 1, 1);// 调整信息窗口的位置
     textWidget->SetEnabled(1);
     textWidget->InteractiveOn();
+    // 设置交互器的鼠标移动回调
+    renderer->AddActor(infoTextActor);
+    createTextBox();
+    //renWin->GetInteractor()->AddObserver(vtkCommand::MouseMoveEvent, this, &VtkWidget::OnMouseMove);
+    renWin->GetInteractor()->AddObserver(vtkCommand::LeftButtonPressEvent, this, &VtkWidget::OnLeftButtonPress);
+    renWin->GetInteractor()->AddObserver(vtkCommand::MouseMoveEvent, this, &VtkWidget::OnMouseMove);
+    renWin->GetInteractor()->AddObserver(vtkCommand::LeftButtonReleaseEvent, this, &VtkWidget::OnLeftButtonRelease);
+}
 
-    vtkSmartPointer<vtkPolyData> rectangle = vtkSmartPointer<vtkPolyData>::New();
+// 创建文本框
+void VtkWidget::createTextBox()
+{
+    qDebug()<<"createTextBox";
     vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
     // 定义矩形的四个顶点
     double width = 200; // 矩形的宽度
@@ -171,31 +213,55 @@ void VtkWidget::createText()
     points->InsertNextPoint(width, height, 0);
     points->InsertNextPoint(0, height, 0);
 
+    // 创建定义矩形边框的线条（四个边）
+    vtkSmartPointer<vtkCellArray> lines = vtkSmartPointer<vtkCellArray>::New();
+    vtkIdType lineIds[2];
+    // 左下角到右下角
+    lineIds[0] = 0; lineIds[1] = 1;
+    lines->InsertNextCell(2, lineIds);
+    // 右下角到右上角
+    lineIds[0] = 1; lineIds[1] = 2;
+    lines->InsertNextCell(2, lineIds);
+    // 右上角到左上角
+    lineIds[0] = 2; lineIds[1] = 3;
+    lines->InsertNextCell(2, lineIds);
+    // 左上角到左下角
+    lineIds[0] = 3; lineIds[1] = 0;
+    lines->InsertNextCell(2, lineIds);
+
     // 创建矩形的面
     vtkSmartPointer<vtkCellArray> polygons = vtkSmartPointer<vtkCellArray>::New();
     vtkIdType ids[4] = {0, 1, 2, 3};
     polygons->InsertNextCell(4, ids);
 
+    vtkSmartPointer<vtkPolyData> rectangle = vtkSmartPointer<vtkPolyData>::New();
     rectangle->SetPoints(points);
+    rectangle->SetLines(lines);
     rectangle->SetPolys(polygons);
 
     // 创建 PolyData 映射器
     vtkSmartPointer<vtkPolyDataMapper2D> rectangleMapper = vtkSmartPointer<vtkPolyDataMapper2D>::New();
     rectangleMapper->SetInputData(rectangle);
-
     // 创建 vtkActor2D
     rectangleActor = vtkSmartPointer<vtkActor2D>::New();
     rectangleActor->SetMapper(rectangleMapper);
-    // 设置矩形的颜色
-    rectangleActor->GetProperty()->SetColor(0.3, 0.3, 0.3); // 填充颜色
-    rectangleActor->GetProperty()->SetOpacity(0.3); // 设置透明度
-    rectangleActor->SetPosition(1,1);
-    rectangleActor->SetVisibility(false);
-    // 设置交互器的鼠标移动回调
-    renderer->AddActor(infoTextActor);
+    // 设置矩形的属性
+    rectangleActor->GetProperty()->SetColor(0.5, 0.5, 0.5); // 填充颜色
+    rectangleActor->GetProperty()->SetOpacity(0.7); // 设置透明度
+    rectangleActor->GetProperty()->SetLineWidth(3); // 线条宽度
+
+    //rectangleActor->SetPosition(1,1);
+    int b[2];
+    double *a;
+    a=infoTextActor->GetPosition();
+    rectangleActor->SetPosition(a[0],a[1]);
+    qDebug()<<a[0]<<a[1];
+    //rectangleActor->SetVisibility(false);
+
     renderer->AddActor(rectangleActor);
     //renWin->GetInteractor()->AddObserver(vtkCommand::MouseMoveEvent, this, &VtkWidget::OnMouseMove);
     getRenderWindow()->Render();
+
 }
 
 vtkSmartPointer<vtkRenderWindow> VtkWidget::getRenderWindow(){
@@ -243,7 +309,7 @@ void VtkWidget::reDrawCentity(){
         int constructFlag=0;
         int identifyFlag=0;
 
-        //检查是否为构建的元素
+        // 循环判断是哪种元素
         for(int j=0;j<constructEntityList.size();j++){
             QString key=constructEntityList[j]->GetObjectCName() + "  " + constructEntityList[j]->GetObjectAutoName();
             if(entitylist[i] == constructEntityList[j]){//是构建的元素
@@ -285,14 +351,12 @@ void VtkWidget::reDrawCentity(){
             if(object)
                 getRenderer()->AddActor(object->draw());
         }
-        //createText();
     }
 }
 
 void VtkWidget::reDrawCloud()
 {
     showConvertedCloud(); // 显示刚打开的点云文件
-
 }
 
 // 创建全局坐标器
@@ -378,8 +442,8 @@ void VtkWidget::onIsometricView(){
         camera->SetPosition(0, 0, 0); // 重置相机位置
         camera->SetViewUp(0, 1, 0);    // 重置视角向上方向
 
-        camera->Azimuth(30);
-        camera->Elevation(30);
+        camera->Azimuth(60);
+        camera->Elevation(60);
         camera->OrthogonalizeViewUp();
 
         // 重新设置相机并渲染

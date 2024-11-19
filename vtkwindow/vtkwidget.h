@@ -97,6 +97,8 @@ public:
     void onAlign();    // 配准的函数
     void setCentity(CEntity*entity);  //传入centity对象
     void OnMouseMove();
+    void OnLeftButtonPress();
+    void OnLeftButtonRelease();
     void createText();
     void createTextBox();
     void GetScreenCoordinates(vtkRenderer* renderer, double pt[3], double screenCoord[2]);
@@ -116,6 +118,7 @@ private:
     vtkSmartPointer<vtkOrientationMarkerWidget> axeWidget; // 创建窗口部件来封装坐标器
     vtkSmartPointer<vtkOrientationMarkerWidget> textWidget; // 浮动窗口，用于显示信息
     CEntity*elementEntity;//储存传入的entity
+    bool isDragging=false;  //判断注释是否能移动
 public slots:
 
 };
