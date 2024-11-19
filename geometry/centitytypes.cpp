@@ -399,27 +399,19 @@ vtkSmartPointer<vtkActor> CDistance::draw(){
 // 绘制点到面的垂线
 vtkSmartPointer<vtkActor> CDistance::pointToPlane()
 {
+    // 取平面法向量并单位化
+    QVector4D plane_nomal = plane.getNormal();
+    plane_nomal.normalize();
+
     // 将begin转为全局坐标
     CPosition pos_begin(begin.x, begin.y, begin.z);
-    QVector4D posVec_begin = GetRefCoord()->m_mat * QVector4D(pos_begin.x, pos_begin.y, pos_begin.z, 1);
+    QVector4D posVec_begin = GetRefCoord()->m_mat * QVector4D(pos_begin.x, pos_begin.y, pos_begin.z, plane_nomal.w());
     CPosition glbPos_begin(posVec_begin.x(), posVec_begin.y(), posVec_begin.z());
 
     // 取平面上一点
     CPosition plane_point = plane.getCenter();
-    QVector4D posVec_point = GetRefCoord()->m_mat * QVector4D(plane_point.x, plane_point.y, plane_point.z, 1);
+    QVector4D posVec_point = GetRefCoord()->m_mat * QVector4D(plane_point.x, plane_point.y, plane_point.z, plane_nomal.w());
     CPosition glbPos_point(posVec_point.x(), posVec_point.y(), posVec_point.z());
-    // 取平面法向量
-    QVector4D plane_nomal = plane.getNormal();
-    float length = std::sqrt(plane_nomal.x() * plane_nomal.x() +
-                             plane_nomal.y() * plane_nomal.y() +
-                             plane_nomal.z() * plane_nomal.z() +
-                             plane_nomal.w() * plane_nomal.w());
-
-    // 计算单位向量
-    QVector4D unit_vector(plane_nomal.x() / length,
-                          plane_nomal.y() / length,
-                          plane_nomal.z() / length,
-                          plane_nomal.w() / length);
 
     // 计算点到平面的距离
     // 点到平面的距离公式: d = |(P - P0) · N| / ||N||
@@ -427,17 +419,15 @@ vtkSmartPointer<vtkActor> CDistance::pointToPlane()
 
     // 计算glbPos_begin在平面上的落点
     CPosition projection;
-    projection.x = glbPos_begin.x - distance * unit_vector.x();
-    projection.y = glbPos_begin.y - distance * unit_vector.y();
-    projection.z = glbPos_begin.z - distance * unit_vector.z();
-    QVector4D posVec_pro = GetRefCoord()->m_mat * QVector4D(projection.x, projection.y, projection.z, 1);
-    CPosition glb_pro(posVec_pro.x(), posVec_pro.y(), posVec_pro.z());
+    projection.x = glbPos_begin.x - distance * plane_nomal.x();
+    projection.y = glbPos_begin.y - distance * plane_nomal.y();
+    projection.z = glbPos_begin.z - distance * plane_nomal.z();
 
 
     // 创建点集，并插入定义线的两个点
     auto points = vtkSmartPointer<vtkPoints>::New();
     points->InsertNextPoint(glbPos_begin.x, glbPos_begin.y, glbPos_begin.z);
-    points->InsertNextPoint(glb_pro.x, glb_pro.y, glb_pro.z);
+    points->InsertNextPoint(projection.x, projection.y, projection.z);
 
     // 创建线源
     auto lines = vtkSmartPointer<vtkCellArray>::New();
@@ -471,7 +461,7 @@ vtkSmartPointer<vtkActor> CDistance::pointToLine()
     CPosition glbPos_begin(posVec_begin.x(), posVec_begin.y(), posVec_begin.z());
 
     // 取直线首尾两点做方向向量
-    CPosition line_begin = line.begin;
+    CPosition line_begin = line.getBegin();
     CPosition line_end = line.getEnd();
     QVector4D lineVec_begin = GetRefCoord()->m_mat * QVector4D(line_begin.x, line_begin.y, line_begin.z, 1);
     QVector4D lineVec_end = GetRefCoord()->m_mat * QVector4D(line_end.x, line_end.y, line_end.z, 1);

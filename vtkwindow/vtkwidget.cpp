@@ -152,7 +152,7 @@ void VtkWidget::createText()
 
     // 设置交互器的鼠标移动回调
     renderer->AddActor(infoTextActor);
-    renWin->GetInteractor()->AddObserver(vtkCommand::MouseMoveEvent, this, &VtkWidget::OnMouseMove);
+    // renWin->GetInteractor()->AddObserver(vtkCommand::MouseMoveEvent, this, &VtkWidget::OnMouseMove);
 }
 
 // 创建文本框
@@ -296,8 +296,8 @@ void VtkWidget::reDrawCentity(){
             if(object)
                 getRenderer()->AddActor(object->draw());
         }
-        // createText();
-        // createTextBox(); // 创建文本边框
+        createText();
+        createTextBox(); // 创建文本边框
     }
 }
 
@@ -551,13 +551,12 @@ void VtkWidget::onCompare()
         return;
     }
 
-    // // 获取打开的模型文件和实测文件
+    // 获取打开的模型文件和实测文件
+    auto fileCloudMap = m_pMainWin->getPointCloudListMgr()->getFileCloudMap();
+    if(fileCloudMap.size() < 2) return;
+
     auto file_model = m_pMainWin->getpWinFileMgr()->getModelFileMap().lastKey();
     auto file_measure = m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().lastKey();
-
-    // 获取打开的模型文件和实测文件
-    // auto file_model = m_pMainWin->getpWinFileMgr()->getModelFileMap().lastKey();
-    // auto file_measure = m_pMainWin->getpWinFileMgr()->getModelFileMap().lastKey();
 
     // 初始化两个点云
     pcl::io::loadPLYFile(file_model.toStdString(), *cloud2);
