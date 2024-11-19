@@ -27,6 +27,11 @@ CEntity* CylinderConstructor::create(QVector<CEntity*>& entitylist){
         cylinder->parent.push_back(points[3]);
         return cylinder;
     }
+    if(points.size()>4){
+        setWrongInformation(PointTooMuch);
+    }else if(points.size()<4){
+        setWrongInformation(PointTooLess);
+    }
     return nullptr;
 
 }
@@ -38,6 +43,7 @@ CCylinder* CylinderConstructor::createCylinder(CPosition p1,CPosition p2,CPositi
 
     CircleInfor Circle=calculateCircle(A,B,C);
     if(Circle.radius<1e-6){
+        setWrongInformation(PointTooClose);
         return nullptr;
     }
     double radius=Circle.radius;
@@ -54,6 +60,7 @@ CCylinder* CylinderConstructor::createCylinder(CPosition p1,CPosition p2,CPositi
     if(isPointInCircle(toCPosition(topCircleCenter),radius,D)){
         return createCylinder(toCPosition(middleCenter),normal,fabs(distanceToD),2*radius);
     }else{
+         setWrongInformation(PointDontMatch);
         return nullptr;
     }
 
