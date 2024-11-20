@@ -81,11 +81,18 @@ void VtkWidget::OnLeftButtonPress()
 
     // 检查点击是否在信息文本区域内
     double* position = infoTextActor->GetPosition();
-    qDebug() << infoTextActor->GetWidth() << infoTextActor->GetHeight();
-    qDebug() << position[0] << position[1];
-    if (clickPos[0] >= position[0] && clickPos[0] <= position[0] + infoTextActor->GetWidth() &&
+    double bbox[4];
+    infoTextActor->GetBoundingBox(renderer, bbox);
+    // 计算文本的宽度和高度
+    double textWidth = bbox[1] - bbox[0];
+    double textHeight = bbox[3] - bbox[2];
+
+    // 调整矩形的尺寸
+    double width = textWidth+40; // 加上一些边距
+    double height = textHeight+30; // 加上一些边距
+    if (clickPos[0] >= position[0] && clickPos[0] <= position[0] + width &&
         clickPos[1] >= position[1] &&
-        clickPos[1] <= position[1]+infoTextActor->GetHeight())
+        clickPos[1] <= position[1]+height)
     {
         isDragging = true; // 开启拖动状态
     }
@@ -104,6 +111,10 @@ void VtkWidget::setCentity(CEntity *entity)
 void VtkWidget::createText()
 {
     // 创建浮动信息的文本演员
+    if (infoTextActor)
+    {
+        renderer->RemoveActor(infoTextActor); // 从渲染器中移除旧的演员
+    }
     infoTextActor = vtkSmartPointer<vtkTextActor>::New();
     infoTextActor->GetTextProperty()->SetFontSize(16);
     infoTextActor->GetTextProperty()->SetFontFamilyToArial();
@@ -139,26 +150,25 @@ void VtkWidget::createText()
 // 创建文本框
 void VtkWidget::createTextBox()
 {
-    QString qstr = elementEntity->getCEntityInfo();
-    QByteArray byteArray = qstr.toUtf8();
-
-    // 估计文本的宽度和高度
-    int fontHeight = infoTextActor->GetTextProperty()->GetFontSize() * 1.7; // 根据字体大小调整
-    int fontWidth = 16;
-    int numLines = qstr.split('\n').count(); // 计算行数
-    int textWidth = fontWidth * qstr.toStdString().length() / numLines; // 这是一个非常粗略的估计
-    int textHeight = fontHeight * numLines;
-
-    // 调整矩形框的尺寸以适应文本
-    double rectangleWidth = textWidth + 20; // 加一些额外的边距
-    double rectangleHeight = textHeight + 20; // 加一些额外的边距
-
+    if (rectangleActor)
+    {
+        renderer->RemoveActor(rectangleActor); // 从渲染器中移除旧的演员
+    }
+    qDebug()<<"createTextBox";
     vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
     // 定义矩形的四个顶点
+    /*double width = 200; // 矩形的宽度
+    double height = 150; // 矩形的高度*/
+    double bbox[4];
+    infoTextActor->GetBoundingBox(renderer, bbox);
+    double textWidth = bbox[1] - bbox[0];
+    double textHeight = bbox[3] - bbox[2];
+    double width = textWidth+40; // 加上一些边距
+    double height = textHeight+30; // 加上一些边距
     points->InsertNextPoint(0, 0, 0);
-    points->InsertNextPoint(rectangleWidth, 0, 0);
-    points->InsertNextPoint(rectangleWidth, rectangleHeight, 0);
-    points->InsertNextPoint(0, rectangleHeight, 0);
+    points->InsertNextPoint(width, 0, 0);
+    points->InsertNextPoint(width, height, 0);
+    points->InsertNextPoint(0, height, 0);
 
     // 创建定义矩形边框的线条（四个边）
     vtkSmartPointer<vtkCellArray> lines = vtkSmartPointer<vtkCellArray>::New();
@@ -196,7 +206,6 @@ void VtkWidget::createTextBox()
     rectangleActor->GetProperty()->SetColor(0.8, 0.8, 0.8); // 填充颜色
     rectangleActor->GetProperty()->SetOpacity(0.5); // 设置不透明度
     rectangleActor->GetProperty()->SetLineWidth(5); // 线条宽度
-
     double *a;
     a=infoTextActor->GetPosition();
     rectangleActor->SetPosition(a[0],a[1]);
