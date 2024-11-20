@@ -221,6 +221,7 @@ void MainWindow::openFile(){
     for (const QString &filePath : filePaths) {
         QFileInfo fileInfo(filePath);
         QString fileName = fileInfo.fileName();
+        qDebug()<<"ok 1";
 
         // 根据文件扩展名进行判断
         if (filePath.endsWith("ply")) {
