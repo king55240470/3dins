@@ -104,19 +104,23 @@ CEntity* RectangleConstructor::create(QVector<CEntity*>& entitylist){
         }
     }
     QVector<CPosition>&positions=Constructor::getPositions();//存储有效点
-    if(positions.size()==3){
+    if(point.size()==3&&positions.size()==3){
         CPlane*rectangle=createRectangle(positions[0],positions[1],positions[2]);
         rectangle->parent.push_back(point[0]);
         rectangle->parent.push_back(point[1]);
         rectangle->parent.push_back(point[2]);
         return rectangle;
-    }else if(positions.size()==4){
+    }else if(point.size()==4&&positions.size()==4){
         CPlane*rectangle=createRectangle(positions[0],positions[1],positions[2],positions[3]);
         rectangle->parent.push_back(point[0]);
         rectangle->parent.push_back(point[1]);
         rectangle->parent.push_back(point[2]);
         rectangle->parent.push_back(point[3]);
         return rectangle;
+    }else if(positions.size()>4){
+        setWrongInformation(PointTooMuch);
+    }else if(positions.size()<3){
+        setWrongInformation(PointTooLess);
     }
     return nullptr;
 }
@@ -138,15 +142,17 @@ CPlane* RectangleConstructor::createRectangle(CPosition pt1,CPosition pt2,CPosit
     RectangleInfo ans;
     if( checkAllCombinations(points,ans)){
         CPosition center(ans.center.x(),ans.center.y(),ans.center.z());
-        qDebug()<<'1';
         return createRectangle(center,ans.normal,ans.direction,ans.length,ans.width);
     }else{
-        qDebug()<<'2';
+        setWrongInformation(PointDontMatch);
         return nullptr;
     }
 
 }
 CPlane* RectangleConstructor::createRectangle(CPosition posCenter, QVector4D normal, QVector4D direction, double length, double width){
     PlaneConstructor constructor;
-    return constructor.createPlane(posCenter,normal,direction,length,width);
+    CPlane* newplane=nullptr;
+    newplane= constructor.createPlane(posCenter,normal,direction,length,width);
+    setWrongInformation(constructor.getWrongInformation());
+    return newplane;
 }

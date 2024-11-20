@@ -20,7 +20,7 @@ public:
     CPointCloud* CreateCloudFromFile(QString str); // 给打开的文件分配RGB点云，并生成点云对象
     void DeleteFileCloud(QString filepath); // 删除文件对应的点云
     CPointCloud* CreateFittingCloud(pcl::PointCloud<pcl::PointXYZRGB> plane);
-    CPointCloud* CreateComparsionCloud(pcl::PointCloud<pcl::PointXYZRGB> cloud);
+    CPointCloud* CreateCompareCloud(pcl::PointCloud<pcl::PointXYZRGB> cloud);
 
     pcl::PointCloud<pcl::PointXYZRGB>& getTempCloud(){
         return tempCloud;

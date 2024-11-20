@@ -344,12 +344,16 @@ vtkSmartPointer<vtkActor> CPointCloud::draw(){
     vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
     vtkSmartPointer<vtkUnsignedCharArray> colors = vtkSmartPointer<vtkUnsignedCharArray>::New();
     colors->SetNumberOfComponents(3);
+    colors->SetNumberOfTuples(m_pointCloud.points.size());
     colors->SetName("Colors");
 
     points->SetNumberOfPoints(m_pointCloud.points.size());
     for (size_t i = 0; i < m_pointCloud.points.size(); ++i)
     {
         points->SetPoint(i, m_pointCloud.points[i].x, m_pointCloud.points[i].y, m_pointCloud.points[i].z);
+        // 如果是对比生成的点云则设置颜色
+        if(isComparsionCloud)
+            colors->SetTuple3(i, m_pointCloud.points[i].r, m_pointCloud.points[i].g, m_pointCloud.points[i].b);
     }
 
     vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
@@ -370,15 +374,16 @@ vtkSmartPointer<vtkActor> CPointCloud::draw(){
     vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
     actor->GetProperty()->SetPointSize(5); // 设置点大小
-    if(isFileCloud){
+    if(isFileCloud){ // 如果是文件点云则统一设置成灰色
         actor->GetProperty()->SetColor(0.5, 0.5, 0.5);
     }
-    else{
-        actor->GetProperty()->SetColor(1, 0, 0);
-    }
-
 
     return actor;
+}
+
+vtkSmartPointer<vtkActor> CPointCloud::drawComparedCloud()
+{
+    return nullptr;
 }
 
 // 各种距离的draw
