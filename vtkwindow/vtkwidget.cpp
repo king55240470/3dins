@@ -148,13 +148,22 @@ void VtkWidget::OnLeftButtonPress()
 
     // 检查点击是否在信息文本区域内
     double* position = infoTextActor->GetPosition();
-    if (clickPos[0] >= position[0] && clickPos[0] <= position[0] + infoTextActor->GetWidth() &&
+    double bbox[4];
+    infoTextActor->GetBoundingBox(renderer, bbox);
+
+    // 计算文本的宽度和高度
+    double textWidth = bbox[1] - bbox[0];
+    double textHeight = bbox[3] - bbox[2];
+
+    // 调整矩形的尺寸
+    double width = textWidth+40; // 加上一些边距
+    double height = textHeight+30; // 加上一些边距
+    if (clickPos[0] >= position[0] && clickPos[0] <= position[0] + width &&
         clickPos[1] >= position[1] &&
-        clickPos[1] <= position[1]+infoTextActor->GetHeight())
+        clickPos[1] <= position[1]+height)
     {
         isDragging = true; // 开启拖动状态
     }
-    isDragging = true;
 }
 
 void VtkWidget::OnLeftButtonRelease()
@@ -172,6 +181,10 @@ void VtkWidget::createText()
 {
     qDebug()<<"createText";
     // 创建浮动信息的文本演员
+    if (infoTextActor)
+    {
+        renderer->RemoveActor(infoTextActor); // 从渲染器中移除旧的演员
+    }
     infoTextActor = vtkSmartPointer<vtkTextActor>::New();
     infoTextActor->GetTextProperty()->SetFontSize(16);
     infoTextActor->GetTextProperty()->SetColor(1, 0, 0);
@@ -203,12 +216,22 @@ void VtkWidget::createText()
 // 创建文本框
 void VtkWidget::createTextBox()
 {
+    if (rectangleActor)
+    {
+        renderer->RemoveActor(rectangleActor); // 从渲染器中移除旧的演员
+    }
     qDebug()<<"createTextBox";
     vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
     // 定义矩形的四个顶点
-    double width = 200; // 矩形的宽度
-    double height = 150; // 矩形的高度
+    /*double width = 200; // 矩形的宽度
+    double height = 150; // 矩形的高度*/
+    double bbox[4];
+    infoTextActor->GetBoundingBox(renderer, bbox);
+    double textWidth = bbox[1] - bbox[0];
+    double textHeight = bbox[3] - bbox[2];
     points->InsertNextPoint(0, 0, 0);
+    double width = textWidth+40; // 加上一些边距
+    double height = textHeight+30; // 加上一些边距
     points->InsertNextPoint(width, 0, 0);
     points->InsertNextPoint(width, height, 0);
     points->InsertNextPoint(0, height, 0);
@@ -251,7 +274,6 @@ void VtkWidget::createTextBox()
     rectangleActor->GetProperty()->SetLineWidth(3); // 线条宽度
 
     //rectangleActor->SetPosition(1,1);
-    int b[2];
     double *a;
     a=infoTextActor->GetPosition();
     rectangleActor->SetPosition(a[0],a[1]);
