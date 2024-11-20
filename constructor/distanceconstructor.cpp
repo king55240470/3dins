@@ -51,9 +51,30 @@ CEntity* DistanceConstructor::create(QVector<CEntity*>& entitylist){
         dis->parent.push_back(lines[0]);
         return dis;
     }
+    if(planes.size()==2){
+        CDistance*dis=createDistance(planes[0],planes[1]);
+        dis->parent.push_back(planes[0]);
+        dis->parent.push_back(planes[1]);
+        return dis;
+    }
     return nullptr;
 }
-
+CDistance* DistanceConstructor::createDistance(CPlane* plane1, CPlane* plane2){
+    CPosition pt1=plane1->getCenter();
+    CPosition pt2=plane2->getCenter();
+    m_distance.setbegin(pt1);
+    m_distance.setplane(*plane2);
+    CDistance *newdistance =new CDistance();
+    newdistance->setbegin(pt1);
+    newdistance->setplane(*plane2);
+    double distance=newdistance->getdistanceplane();//从第一个平面中心到第二个平面
+    newdistance->setbegin(pt2);
+    newdistance->setplane(*plane1);
+    distance+=newdistance->getdistanceplane();//从第二个平面中心到第一个平面
+    distance/=2;//取平均值
+    newdistance->setdistance(distance);
+    return newdistance;
+}
 CDistance *DistanceConstructor::createDistance(CPoint* p1, CPlane* plane)
 {
     CPosition pt1=p1->GetPt();
