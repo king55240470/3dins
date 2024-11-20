@@ -24,6 +24,7 @@
 #include "mainwindow.h"
 #include "DataWidget.h"
 #include "toolwidget.h"
+#include"vtkwindow/vtkwidget.h"
 class ElementListWidget : public QWidget
 {
     Q_OBJECT
@@ -49,6 +50,7 @@ public:
     void ShowParent(CObject*obj);
     void mousePressEvent(QMouseEvent *event) override;
 protected:
+    void mouseDoubleClickEvent(QMouseEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
     void keyReleaseEvent(QKeyEvent *event) override;
 private:
