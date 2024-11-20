@@ -79,7 +79,7 @@ void MouseInteractorHighlightActor::OnRightButtonDown()
         // qDebug() << "Right button double clicked" <<  "\n";
 
         // 清除选中的点
-        m_pMainWin->getChosenListMgr()->DeletePosition(pos);
+        m_pMainWin->getChosenListMgr()->getChosenActorAxes().clear(); // 清除所有选中的点的记录
 
         // 遍历存储的PickedActors，寻找并恢复被选中的actor的属性
         for (auto item = pickedActors.begin(); item != pickedActors.end();item++)

@@ -84,6 +84,7 @@ void FileManagerWidget::openModelFile(QString fileName,QString filePath){
     if(!m_pMainWin->getpWinFileMgr()->cloudptr){
         qDebug() << "拟合用的点云指针为空!";
     }
+    m_pMainWin->getPWinVtkWidget()->onTopView(); // 重置相机
     m_pMainWin->NotifySubscribe();
 }
 
@@ -101,6 +102,7 @@ void FileManagerWidget::openMeasuredFile(QString fileName,QString filePath){
     // 给拟合的临时点云指针赋值
     auto newcloud = new pcl::PointCloud<pcl::PointXYZRGB>(cloud->m_pointCloud);
     m_pMainWin->getpWinFileMgr()->cloudptr = pcl::PointCloud<pcl::PointXYZRGB>::Ptr(newcloud);
+    m_pMainWin->getPWinVtkWidget()->onTopView(); // 重置相机
     m_pMainWin->NotifySubscribe();
 }
 
