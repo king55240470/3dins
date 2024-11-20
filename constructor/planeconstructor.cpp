@@ -130,10 +130,13 @@ CPlane* PlaneConstructor::createPlane(CPosition p1,CPosition p2,CPosition p3){
        // std::cout << "点C的角度近似为90度\n";
     } else {
         isSquare=false;
-        InformationWidget("三点不构成直角");
+        SquarePoint=vecC;
+        AcutePoint1=vecB;
+        AcutePoint2=vecA;
+        //InformationWidget("三点不构成直角");
         //std::cout << "没有点的角度近似为90度\n";
     }
-    if(isSquare==true){
+
         SquareEdge1=-SquarePoint+AcutePoint1;
         SquareEdge2=-SquarePoint+AcutePoint2;
         BevelEdge=AcutePoint1-AcutePoint2;
@@ -159,46 +162,46 @@ CPlane* PlaneConstructor::createPlane(CPosition p1,CPosition p2,CPosition p3){
         newplane->setLength(length);
         newplane->setWidth(width);
         return newplane;
-    }else{
-        normal = crossProduct(AB,AC); // 计算法向量并归一化
-        // 如果法向量的长度为零，说明三点共线
-        if (normal.length() == 0) {
-            setWrongInformation(PointTooClose);
-            return  nullptr;
-        }
+    // else{
+    //     normal = crossProduct(AB,AC); // 计算法向量并归一化
+    //     // 如果法向量的长度为零，说明三点共线
+    //     if (normal.length() == 0) {
+    //         setWrongInformation(PointTooClose);
+    //         return  nullptr;
+    //     }
 
-        // 计算平面的中心
-        center = CPosition((A.x + B.x + C.x) / 3, (A.y + B.y + C.y) / 3, (A.z + B.z + C.z) / 3);
+    //     // 计算平面的中心
+    //     center = CPosition((A.x + B.x + C.x) / 3, (A.y + B.y + C.y) / 3, (A.z + B.z + C.z) / 3);
 
-        // 最长边向量
-        long_edge_dir = QVector4D();// 方向向量可以根据具体应用调整
+    //     // 最长边向量
+    //     long_edge_dir = QVector4D();// 方向向量可以根据具体应用调整
 
-        double lenAB = distance(A, B);
-        double lenAC = distance(A, C);
-        double lenBC = distance(B, C);
+    //     double lenAB = distance(A, B);
+    //     double lenAC = distance(A, C);
+    //     double lenBC = distance(B, C);
 
-        double width=qMin(lenAB,lenAC);
-        width=qMin(width,lenBC);
+    //     double width=qMin(lenAB,lenAC);
+    //     width=qMin(width,lenBC);
 
-        double length=qMax(lenAB,lenAC);
-        length=qMax(length,lenBC);
+    //     double length=qMax(lenAB,lenAC);
+    //     length=qMax(length,lenBC);
 
-        if(length==lenAB){
-            long_edge_dir=AB;
-        }else if(length==lenAC){
-            long_edge_dir=AC;
-        }else{
-            long_edge_dir=BC;
-        }
+    //     if(length==lenAB){
+    //         long_edge_dir=AB;
+    //     }else if(length==lenAC){
+    //         long_edge_dir=AC;
+    //     }else{
+    //         long_edge_dir=BC;
+    //     }
 
-        CPlane* newplane=new CPlane();
-        newplane->setCenter(center);
-        newplane->setNormal(normal);
-        newplane->setDir_long_edge(long_edge_dir);
-        newplane->setLength(length);
-        newplane->setWidth(width);
-        return newplane;
-    }
+    //     CPlane* newplane=new CPlane();
+    //     newplane->setCenter(center);
+    //     newplane->setNormal(normal);
+    //     newplane->setDir_long_edge(long_edge_dir);
+    //     newplane->setLength(length);
+    //     newplane->setWidth(width);
+    //     return newplane;
+    // }
 
 
 

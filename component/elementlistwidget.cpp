@@ -206,6 +206,7 @@ void ElementListWidget::onItemClicked()
         for(int i=0;i<m_pMainWin->getObjectListMgr()->getObjectList().size();i++){
             m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(false);
         }
+
     }
     for(QTreeWidgetItem*item:selectedItems){
         CObject *obj = item->data(0, Qt::UserRole).value<CObject*>();
@@ -224,6 +225,8 @@ void ElementListWidget::onItemClicked()
     if(selectedItems.size()==1){
         for(QTreeWidgetItem*item:selectedItems){
             CObject *obj1 = item->data(0, Qt::UserRole).value<CObject*>();
+            CEntity* ent = static_cast<CEntity*>(obj1);
+            m_pMainWin->getPWinVtkWidget()->setCentity(ent);
             ShowParent(obj1);
         }
     }
@@ -333,12 +336,23 @@ void ElementListWidget::ShowParent(CObject*obj)
 void ElementListWidget::mousePressEvent(QMouseEvent *event)
 {
     qDebug()<<"鼠标";
-    ElementListWidget::mousePressEvent(event);
-
     // 判断点击的区域是否为空白区域
     if (treeWidgetNames->itemAt(event->pos()) == nullptr) {
         // 点击的是空白区域，取消选择
         treeWidgetNames->clearSelection();
+    }
+}
+
+void ElementListWidget::mouseDoubleClickEvent(QMouseEvent *event)
+{
+    qDebug()<<"鼠标1";
+    if (event->button() == Qt::LeftButton) {
+        // 获取鼠标点击位置的项
+        QTreeWidgetItem *item = treeWidgetNames->itemAt(event->pos());
+
+        if (!item) { // 如果没有项被点击，取消所有选中
+            treeWidgetNames->clearSelection();
+        }
     }
 }
 
