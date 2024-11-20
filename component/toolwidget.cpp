@@ -1222,7 +1222,7 @@ void ToolWidget::onConstructPoint(){
         }
     }
     if(!createPoint&&newPoint==nullptr){
-        WrongWidget("构造点失败");
+        WrongWidget("没有选中或者识别的点");
         return ;
     }
     m_pMainWin->NotifySubscribe();
@@ -1249,7 +1249,20 @@ void ToolWidget::onConstructLine(){
 
     }
     if(!createLine&&newLine==nullptr){
-        WrongWidget("构造线失败");
+        if(positions.size()==1){
+            WrongWidget("识别点的数目不足两个");
+        }
+        else if(positions.size()>=3){
+            WrongWidget("识别点的数目超过两个");
+        }else if(newLine==nullptr){
+            if(constructor.getWrongInformation()==PointTooMuch){
+                 WrongWidget("列表选中的点过多");
+            }else if(constructor.getWrongInformation()==PointTooLess){
+                WrongWidget("列表选中的点过少");
+            }else if(constructor.getWrongInformation()==PointTooClose){
+                WrongWidget("列表选中的点过近");
+            }
+        }
         return ;
     }
     m_pMainWin->NotifySubscribe();
@@ -1264,13 +1277,18 @@ static void WrongWidget(QString message){
     msgBox.exec(); // 显示对话框
 }
 
-
 void ToolWidget::onConstructCircle(){
     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
     CircleConstructor constructor;
     CCircle* newCircle=(CCircle*)constructor.create(entityList);
     if(newCircle==nullptr){
-        WrongWidget("构造圆失败");
+        if(constructor.getWrongInformation()==PointTooMuch){
+            WrongWidget("列表选中的点过多");
+        }else if(constructor.getWrongInformation()==PointTooLess){
+            WrongWidget("列表选中的点过少");
+        }else if(constructor.getWrongInformation()==PointTooClose){
+            WrongWidget("列表选中的点过近");
+        }
         return ;
     }
     addToList(newCircle);
@@ -1298,7 +1316,20 @@ void ToolWidget::onConstructPlane(){
     }
 
     if(!createPlane&&newPlane==nullptr){
-        WrongWidget("构造平面失败");
+        if(positions.size()<3){
+            WrongWidget("识别点的数目不足三个");
+        }else if(positions.size()>3){
+            WrongWidget("识别点的数目多余三个");
+        }else{
+            if(constructor.getWrongInformation()==PointTooMuch){
+                WrongWidget("列表选中的点过多");
+            }else if(constructor.getWrongInformation()==PointTooLess){
+                WrongWidget("列表选中的点过少");
+            }else if(constructor.getWrongInformation()==PointTooClose){
+                WrongWidget("列表选中的点过近");
+            }
+        }
+
         return ;
     }
     m_pMainWin->NotifySubscribe();
@@ -1309,7 +1340,15 @@ void ToolWidget::onConstructRectangle(){
     RectangleConstructor constructor;
     CPlane* newRectangle=(CPlane*)constructor.create(entityList);
     if(newRectangle==nullptr){
-        WrongWidget("构造矩形失败");
+        if(constructor.getWrongInformation()==PointTooMuch){
+            WrongWidget("列表选中的点过多");
+        }else if(constructor.getWrongInformation()==PointTooLess){
+            WrongWidget("列表选中的点过少");
+        }else if(constructor.getWrongInformation()==PointTooClose){
+            WrongWidget("列表选中的点过近");
+        }else if(constructor.getWrongInformation()==PointDontMatch){
+            WrongWidget("四点无法构成矩形");
+        }
         return ;
     }
     addToList(newRectangle);
@@ -1323,8 +1362,15 @@ void ToolWidget::onConstructSphere(){
     SphereConstructor constructor;
     CSphere* newSphere=(CSphere*)constructor.create(entityList);
     if(newSphere==nullptr){
-        WrongWidget("构造球失败");
-        return ;
+        if(constructor.getWrongInformation()==PointTooMuch){
+            WrongWidget("列表选中的点过多");
+        }else if(constructor.getWrongInformation()==PointTooLess){
+            WrongWidget("列表选中的点过少");
+        }else if(constructor.getWrongInformation()==PointTooClose){
+            WrongWidget("列表选中的点过近");
+        }else if(constructor.getWrongInformation()==PointDontMatch){
+            WrongWidget("四点无法构成球形");
+        }
     }
     addToList(newSphere);
     m_pMainWin->NotifySubscribe();
@@ -1336,7 +1382,11 @@ void ToolWidget::onConstructCone(){
     ConeConstructor constructor;
     CCone* newCone=(CCone*)constructor.create(entityList);
     if(newCone==nullptr){
-        WrongWidget("构造球失败");
+        if(constructor.getWrongInformation()==PointTooMuch){
+            WrongWidget("列表选中的点过多");
+        }else if(constructor.getWrongInformation()==PointTooLess){
+            WrongWidget("列表选中的点过少");
+        }
         return ;
     }
     addToList(newCone);
@@ -1348,7 +1398,15 @@ void ToolWidget::onConstructCylinder(){
     CylinderConstructor constructor;
     CCylinder* newCylinder=(CCylinder*)constructor.create(entityList);
     if(newCylinder==nullptr){
-        WrongWidget("构造圆柱失败");
+        if(constructor.getWrongInformation()==PointTooMuch){
+            WrongWidget("列表选中的点过多");
+        }else if(constructor.getWrongInformation()==PointTooLess){
+            WrongWidget("列表选中的点过少");
+        }else if(constructor.getWrongInformation()==PointTooClose){
+            WrongWidget("列表选中的点过近");
+        }else if(constructor.getWrongInformation()==PointDontMatch){
+            WrongWidget("四点无法构成圆柱");
+        }
         return ;
     }
     addToList(newCylinder);
@@ -1382,13 +1440,11 @@ void ToolWidget:: onFindPlane(){
     }
     m_pMainWin->getPWinSetDataWidget()->setPlaneData(point,cloudptr);
     // 生成点云对象并添加到entitylist
-    // CPointCloud* pointCloud=new CPointCloud();
     auto planeCloud=m_pMainWin->getPWinSetDataWidget()->getPlaneCloud();
     if(planeCloud==nullptr){
         qDebug()<<"拟合平面生成错误";
         return ;
     }
-    // pointCloud->setPointCloud(*m_pMainWin->getPWinSetDataWidget()->getFittingPlane());
     auto plane=m_pMainWin->getPWinSetDataWidget()->getPlane();
     PlaneConstructor constructor;
     CPlane* newPlane;
@@ -1405,25 +1461,12 @@ void ToolWidget:: onFindPlane(){
     }
     addToFindList(newPlane);
 
-    // 生成拟合出的点云并添加到entitylist
-    // auto pointCloud = m_pMainWin->getPointCloudListMgr()->CreateFittingCloud(
-    //     *m_pMainWin->getPWinSetDataWidget()->getFittingPlane());
-    // addToList(pointCloud);
     positions.clear();
     m_pMainWin->NotifySubscribe();
 
 }
 
 void ToolWidget::onFindPoint(){
-    // QMap<vtkSmartPointer<vtkActor>, CEntity*>& actorToEntityMapRef = m_pMainWin->getactorToEntityMap();
-    // for (auto it = actorToEntityMapRef.begin(); it != actorToEntityMapRef.end(); ++it) {
-    //     vtkSmartPointer<vtkActor> actor = it.key();
-    //     CEntity* entity = it.value();
-    //     std::string description = actor->GetMapper()->GetInput()->GetClassName();
-    //     qDebug() << "ActorDescription: " << description ;
-    //     qDebug()  << " Entity name: "<<entity->m_strAutoName;
-
-    // }
 }
 void ToolWidget::onFindLine(){}
 void ToolWidget::onFindCircle(){}

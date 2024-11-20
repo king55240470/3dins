@@ -483,7 +483,6 @@ public:
     static int pointCloudCount;
     int currentPointCloudId;
     bool isFileCloud = false; // 是否是文件生成的点云
-    bool isFittingCloud = false; // 是否是拟合出来的点云
     bool isComparsionCloud = false; //  是否是对比得到的点云
 public:
     CPointCloud()
@@ -498,6 +497,7 @@ public:
     // 点云类的draw
     QString getCEntityInfo() override; // 获取图形的信息，在浮动窗口显示
     vtkSmartPointer<vtkActor> draw() override;
+    vtkSmartPointer<vtkActor> drawComparedCloud(); // 绘制对比生成的点云
     int GetUniqueType() override {
         return enPointCloud;
     }
