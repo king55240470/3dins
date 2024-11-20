@@ -64,7 +64,6 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
 void VtkWidget::OnMouseMove()
 {
     if (isDragging){
-        qDebug()<<"鼠标移动";
         int clickPos[2];
         renWin->GetInteractor()->GetEventPosition(clickPos);
         infoTextActor->SetPosition(clickPos[0]-30, clickPos[1]-20);
