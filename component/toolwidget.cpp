@@ -82,6 +82,48 @@ int getImagePaths(const QString& directory, QStringList &iconPaths, QStringList 
 
 ToolWidget::ToolWidget(QWidget *parent)
     : QWidget(parent) {
+
+
+    // m_save.m_pathList<<":/component/save/excel.png"<< ":/component/save/pdf.jpg"<< ":/component/save/txt.jpg"<< ":/component/save/word.jpg"<<":/component/save/image.jpg";
+    // m_construct.m_pathList<<":/component/construct/point.jpg"<<":/component/construct/line.jpg"<<":/component/construct/circle.jpg"<<   ":/component/construct/plan.jpg"<<  ":/component/construct/rectangle.jpg"<<":/component/construct/cylinder.jpg"<< ":/component/construct/cone.jpg"<< ":/component/construct/sphere.jpg"<<":/component/construct/distance.png";
+    // m_find.m_pathList<<":/component/construct/point.jpg"<<":/component/construct/line.jpg"<<":/component/construct/circle.jpg"<<   ":/component/construct/plan.jpg"<<  ":/component/construct/rectangle.jpg"<<":/component/construct/cylinder.jpg"<< ":/component/construct/cone.jpg"<< ":/component/construct/sphere.jpg";
+    // m_coord.m_pathList<<":/component/coord/create.png"<<  ":/component/coord/spin.jpg"<<":/component/coord/save.png";
+    // m_viewAngle.m_pathList<<":/component/viewangle/front.png"<<":/component/viewangle/up.png"<<":/component/viewangle/right.png"<<":/component/viewangle/isometric.png";
+
+
+    // m_save.m_nameList<<"excel"<< "pdf"<< "txt"<< "word"<<"image";
+    // m_construct.m_nameList<<"点"<<"线"<<"圆"<<"平面"<<"矩形"<<"圆柱"<<"圆锥"<<"球形"<<"距离";
+    // m_find.m_nameList<<"点"<<"线"<<"圆"<<"平面"<<"矩形"<<"圆柱"<<"圆锥"<<"球形";;
+    // m_coord.m_nameList<<"创建坐标系"<<"旋转坐标系"<<"保存坐标系";
+    // m_viewAngle.m_nameList<<"主视角"<<"俯视角"<<"侧视角"<<"立体视角";
+    // // 在Unique 的类中实现QAction的创建和初始化
+    // //m_save.loadAction();
+
+    // m_save.setName("保存");
+    // m_construct.setName("构造");
+    // m_find.setName("识别");
+    // m_coord.setName("坐标系");
+    // m_viewAngle.setName("视角");
+    // //将每个工具栏加入汇总
+    // m_toolBarGather.addUniqueToolBar(&m_find);
+    // m_toolBarGather.addUniqueToolBar(&m_construct);
+    // m_toolBarGather.addUniqueToolBar(&m_coord);
+    // m_toolBarGather.addUniqueToolBar(&m_save);
+    // m_toolBarGather.addUniqueToolBar(&m_viewAngle);
+    // //向列表中添加工具栏的所有内容
+    // //每行工具栏的图标数目
+    // m_toolBarGather.setSingalToolBarActionNum(9);
+
+    // m_construct.loadAction();
+    // m_find.loadAction();
+    // m_coord.loadAction();
+    // m_viewAngle.loadAction();
+    // m_save.loadAction();
+
+    // m_toolBarGather.addToWidget(this);
+
+
+
     QVBoxLayout *layout = new QVBoxLayout(this);
 
     m_pMainWin =(MainWindow*)parent;
@@ -97,11 +139,18 @@ ToolWidget::ToolWidget(QWidget *parent)
     m_nViewAngleActionNum=4;
 
     //静态保存图片路径和名称
+
+
+
     save_action_iconpath_list_<<":/component/save/excel.png"<< ":/component/save/pdf.jpg"<< ":/component/save/txt.jpg"<< ":/component/save/word.jpg"<<":/component/save/image.jpg";
     construct_action_iconpath_list_<<":/component/construct/point.jpg"<<":/component/construct/line.jpg"<<":/component/construct/circle.jpg"<<   ":/component/construct/plan.jpg"<<  ":/component/construct/rectangle.jpg"<<":/component/construct/cylinder.jpg"<< ":/component/construct/cone.jpg"<< ":/component/construct/sphere.jpg"<<":/component/construct/distance.png";
     find_action_iconpath_list_<<":/component/construct/point.jpg"<<":/component/construct/line.jpg"<<":/component/construct/circle.jpg"<<   ":/component/construct/plan.jpg"<<  ":/component/construct/rectangle.jpg"<<":/component/construct/cylinder.jpg"<< ":/component/construct/cone.jpg"<< ":/component/construct/sphere.jpg";
     coord_action_iconpath_list_<<":/component/coord/create.png"<<  ":/component/coord/spin.jpg"<<":/component/coord/save.png";
     view_angle_action_iconpath_list_<<":/component/viewangle/front.png"<<":/component/viewangle/up.png"<<":/component/viewangle/right.png"<<":/component/viewangle/isometric.png";
+
+
+
+
 
     save_action_name_list_<<"excel"<< "pdf"<< "txt"<< "word"<<"image";
     construct_action_name_list_<<"点"<<"线"<<"圆"<<"平面"<<"矩形"<<"圆柱"<<"圆锥"<<"球形"<<"距离";
@@ -109,11 +158,13 @@ ToolWidget::ToolWidget(QWidget *parent)
     coord_action_name_list_<<"创建坐标系"<<"旋转坐标系"<<"保存坐标系";
     view_angle_action_name_list_<<"主视角"<<"俯视角"<<"侧视角"<<"立体视角";
 
+
     m_nSaveActionNum=save_action_name_list_.count();
     m_nConstructActionNum=construct_action_name_list_.count();
     m_nFindActionNum=find_action_name_list_.count();
     m_nCoordActionNum=coord_action_name_list_.count();
     m_nViewAngleActionNum=view_angle_action_name_list_.count();
+
 
     save_actions_      =new ToolAction * [m_nSaveActionNum];
     construct_actions_ =new ToolAction * [m_nConstructActionNum];
@@ -223,7 +274,6 @@ ToolWidget::ToolWidget(QWidget *parent)
 
     //设置QAction信号槽
     connectActionWithF();
-
 
 }
 
@@ -452,6 +502,68 @@ int ToolWidget::getViewAngleActionNum(){
 }
 
 void ToolWidget::connectActionWithF(){
+/*
+    connect(m_find.m_actionList[m_find.m_nameList.indexOf("点")],&QAction::triggered,this,&   ToolWidget::onFindPoint);
+    connect(m_find.m_actionList[m_find.m_nameList.indexOf("线")],&QAction::triggered,this,&   ToolWidget::onFindLine);
+    connect(m_find.m_actionList[m_find.m_nameList.indexOf("圆")],&QAction::triggered,this,&   ToolWidget::onFindCircle);
+    connect(m_find.m_actionList[m_find.m_nameList.indexOf("平面")],&QAction::triggered,this,&  ToolWidget:: onFindPlane);
+    connect(m_find.m_actionList[m_find.m_nameList.indexOf("矩形")],&QAction::triggered,this,&   ToolWidget::onFindRectangle);
+    connect(m_find.m_actionList[m_find.m_nameList.indexOf("圆柱")],&QAction::triggered,this,&   ToolWidget::onFindCylinder);
+    connect(m_find.m_actionList[m_find.m_nameList.indexOf("圆锥")],&QAction::triggered,this,&   ToolWidget::onFindCone);
+    connect(m_find.m_actionList[m_find.m_nameList.indexOf("球形")],&QAction::triggered,this,&   ToolWidget::onFindSphere);
+
+    //构造
+    connect(m_construct.m_actionList[m_construct.m_nameList.indexOf("点")],&QAction::triggered,this,& ToolWidget::onConstructPoint);
+    connect(m_construct.m_actionList[m_construct.m_nameList.indexOf("线")],&QAction::triggered,this,&ToolWidget::onConstructLine);
+    connect(m_construct.m_actionList[m_construct.m_nameList.indexOf("圆")],&QAction::triggered,this,&ToolWidget::onConstructCircle);
+    connect(m_construct.m_actionList[m_construct.m_nameList.indexOf("平面")],&QAction::triggered,this,& ToolWidget::onConstructPlane);
+    connect(m_construct.m_actionList[m_construct.m_nameList.indexOf("矩形")],&QAction::triggered,this,& ToolWidget::onConstructRectangle);
+    connect(m_construct.m_actionList[m_construct.m_nameList.indexOf("圆柱")],&QAction::triggered,this,&  ToolWidget::onConstructCylinder);
+    connect(m_construct.m_actionList[m_construct.m_nameList.indexOf("圆锥")],&QAction::triggered,this,&  ToolWidget::onConstructCone);
+    connect(m_construct.m_actionList[m_construct.m_nameList.indexOf("球形")],&QAction::triggered,this,&  ToolWidget::onConstructSphere);
+    connect(m_construct.m_actionList[m_construct.m_nameList.indexOf("距离")],&QAction::triggered,this,&  ToolWidget::onConstructDistance);
+
+    //保存
+    connect(m_save.m_actionList[m_save.m_nameList.indexOf("excel")],&QAction::triggered,this,&  ToolWidget::onSaveExcel);
+    connect(m_save.m_actionList[m_save.m_nameList.indexOf("word")],&QAction::triggered,this,&  ToolWidget::onSaveWord);
+    connect(m_save.m_actionList[m_save.m_nameList.indexOf("txt")],&QAction::triggered,this,&  ToolWidget::onSaveTxt);
+    connect(m_save.m_actionList[m_save.m_nameList.indexOf("pdf")],&QAction::triggered,this,&  ToolWidget::onSavePdf);
+    connect(m_save.m_actionList[m_save.m_nameList.indexOf("image")],&QAction::triggered,this,&  ToolWidget::onSaveImage);
+
+    // connect(save_actions_[save_action_name_list_.indexOf("txt")],&QAction::triggered,this,&  ToolWidget::onSaveTxt);
+
+
+    //坐标系
+    connect(m_coord.m_actionList[m_coord.m_nameList.indexOf("创建坐标系")],&QAction::triggered,this,[&](){
+        m_pMainWin->on2dCoordOriginAuto(); //创建临时坐标系
+    });
+    connect(m_coord.m_actionList[m_coord.m_nameList.indexOf("旋转坐标系")],&QAction::triggered,this,[&](){
+        //tool_widget::onSpinCoord();
+        m_pMainWin->on2dCoordSetRightX(); // x轴摆正
+    });
+    connect(m_coord.m_actionList[m_coord.m_nameList.indexOf("保存坐标系")],&QAction::triggered,this,[&](bool){
+        //tool_widget::onSaveCoord();
+        m_pMainWin->on2dCoordSave();
+    });
+    //视角
+    connect(m_viewAngle.m_actionList[m_viewAngle.m_nameList.indexOf("主视角")],&QAction::triggered,this,[&](){
+        //tool_widget::onFrontViewAngle();
+        m_pMainWin->onFrontViewClicked();
+    });
+    connect(m_viewAngle.m_actionList[m_viewAngle.m_nameList.indexOf("俯视角")],&QAction::triggered,this, [&](){
+        //tool_widget::onUpViewAngle();
+        m_pMainWin->onTopViewClicked();
+    });
+    connect(m_viewAngle.m_actionList[m_viewAngle.m_nameList.indexOf("侧视角")],&QAction::triggered,[&](){
+        //tool_widget::onRightViewAngle();
+        m_pMainWin->onRightViewClicked();
+    });
+    connect(m_viewAngle.m_actionList[m_viewAngle.m_nameList.indexOf("立体视角")],&QAction::triggered,[&](){
+        //tool_widget::onIsometricViewAngle();
+        m_pMainWin->onIsometricViewClicked();
+    });
+*/
+
     //识别
     connect(find_actions_[find_action_name_list_.indexOf("点")],&QAction::triggered,this,&   ToolWidget::onFindPoint);
     connect(find_actions_[find_action_name_list_.indexOf("线")],&QAction::triggered,this,&   ToolWidget::onFindLine);
@@ -513,6 +625,7 @@ void ToolWidget::connectActionWithF(){
         tool_widget::onIsometricViewAngle();
         m_pMainWin->onIsometricViewClicked();
     });
+
 }
 
 
@@ -700,96 +813,6 @@ void   ToolWidget::onSavePdf(){
     pdfFile.close();
 }
 void   ToolWidget::onSaveExcel(){
-    // QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("Excel(*.xlsx *.xls)"));
-    // if (filePath.isEmpty()){
-    //     return ;
-    // }
-    // QStringList headers;
-    // headers << "类型" << "名称" << "数据1" << "数据2" << "数据3"<<"数据4"<<"数据5" ;
-    // int col = headers.size();
-    // QList<QList<QString>> dataAll;
-    // auto& entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
-    // //dataAll.append(headers);
-    // ExtractData(entitylist,dataAll);
-
-    // QAxObject excel("Excel.Application");						  //加载Excel驱动
-    // excel.dynamicCall("SetVisible (bool Visible)", "false");	  //不显示窗体
-    // excel.setProperty("DisplayAlerts", true);					  //不显示任何警告信息。如果为true那么在关闭是会出现类似“文件已修改，是否保存”的提示
-
-    // QAxObject *workBooks = excel.querySubObject("WorkBooks");	  //获取工作簿集合
-    // workBooks->dynamicCall("Add");								  //新建一个工作簿
-    // QAxObject *workBook = excel.querySubObject("ActiveWorkBook"); //获取当前工作簿
-    //     //QAxObject *workBook = excel.querySubObject("Open(QString&)", filePath); //获取当前工作簿
-    // QAxObject *workSheet = workBook->querySubObject("Sheets(int)", 1); //设置为 获取第一页 数据
-
-    // // 大标题行
-    // QAxObject *cell;
-    // cell = workSheet->querySubObject("Cells(int,int)", 1, 1);
-    // cell->dynamicCall("SetValue(const QString&)", "entitylist 数据输出");
-    // cell->querySubObject("Font")->setProperty("Size", 11);
-    // // 合并标题行
-    // QString cellTitle;
-    // cellTitle.append("A1:");
-    // cellTitle.append(QChar(col - 1 + 'A'));
-    // cellTitle.append(QString::number(1));
-    // QAxObject *range = workSheet->querySubObject("Range(const QString&)", cellTitle);
-    // range->setProperty("WrapText", true);
-    // range->setProperty("MergeCells", true);
-    // range->setProperty("HorizontalAlignment", -4108);
-    // range->setProperty("VertivcalAlignment", -4108);
-
-    // // 行高
-    // workSheet->querySubObject("Range(const QString&)", "1:1")->setProperty("RowHeight", 30);
-
-    // //列标题
-    // QString lastCars = QChar('A');
-    // for (int i = 0; i < col; i++)
-    // {
-    //     // excel表格 A:A第一列到第一列,B:B第二列到第二列
-    //     // A B C D...X Y Z AA AB AC...AX AY AZ BA BB BC...
-    //     QString columnName;
-    //     QString cars;
-    //     if (i < 26) {
-    //         // 列数少于26个字母A B C D...X Y Z
-    //         cars = QChar(i + 'A');
-    //     } else {
-    //         // 列数大于26个字母 AA AB AC...AX AY AZ BA BB BC...
-    //         cars = QChar(i / 26 - 1 + 'A');
-    //         cars.append(QChar(i % 26 + 'A'));
-    //     }
-    //     columnName = cars + ":" + cars;
-    //     lastCars = cars;
-    //     // 有大标题，列标题从第二行开始("Cells(int, int)", 2, i+1)
-    //     // 无大标题，列标题从第一行开始("Cells(int, int)", 1, i+1)
-    //     QAxObject *col = workSheet->querySubObject("Columns(const QString&)", columnName);
-    //     QAxObject *cell = workSheet->querySubObject("Cells(int, int)", 2, i+1);
-    //     cell->dynamicCall("SetValue(const QString&)", headers[i]);
-    //     cell->querySubObject("Font")->setProperty("Bold", true);
-    //     cell->querySubObject("Interior")->setProperty("Color", QColor(191, 191, 191));
-    //     cell->setProperty("WrapText", true);						//内容过多，自动换行
-    //     cell->setProperty("HorizontalAlignment", -4108);
-    //     cell->setProperty("VertivcalAlignment", -4108);
-    // }
-
-    // //处理数据
-    // int curRow = 3;
-    // foreach(QList<QString> inLst, dataAll) {
-    //     for (int j = 0; j < inLst.size(); j++) {
-    //         // ("Cells(int, int)", row, col)单元格的行和列从开始
-    //         QAxObject *cell = workSheet->querySubObject("Cells(int, int)", curRow, j+1);
-    //         cell->dynamicCall("SetValue(const QString&)", inLst[j]);
-    //         QAxObject* border = cell->querySubObject("Borders");
-    //         border->setProperty("Color", QColor(0, 0, 0));		 //设置单元格边框色（黑色）
-    //     }
-    //     curRow++;
-    // }
-
-    // //保存至filepath，注意一定要用QDir::toNativeSeparators将路径中的"/"转换为"\"，不然一定保存不了。
-    // workBook->dynamicCall("SaveAs(const QString&)", QDir::toNativeSeparators(filePath));
-    // workBook->dynamicCall("Close()");	//关闭工作簿
-    // excel.dynamicCall("Quit()");		//关闭excel
-    // QMessageBox::information(nullptr, "提示", "保存成功");
-
 
     QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("Excel(*.xlsx *.xls)"));
     if (filePath.isEmpty()){
@@ -1229,11 +1252,13 @@ void ToolWidget::onConstructPoint(){
 }
 
 void ToolWidget::onConstructLine(){
+    qDebug()<<"ok here 1";
     QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenActorAxes();
+    qDebug()<<"ok here 1.5";
     LineConstructor constructor;
     CLine* newLine;
     bool createLine=false;
-
+    qDebug()<<"ok here 2";
     if(positions.size()==2){
         newLine=constructor.createLine(positions[0],positions[1]);
         addToList(newLine);
@@ -1248,6 +1273,7 @@ void ToolWidget::onConstructLine(){
         }
 
     }
+    qDebug()<<"ok here 3";
     if(!createLine&&newLine==nullptr){
         if(positions.size()==1){
             WrongWidget("识别点的数目不足两个");
@@ -1256,7 +1282,7 @@ void ToolWidget::onConstructLine(){
             WrongWidget("识别点的数目超过两个");
         }else if(newLine==nullptr){
             if(constructor.getWrongInformation()==PointTooMuch){
-                 WrongWidget("列表选中的点过多");
+                WrongWidget("列表选中的点过多");
             }else if(constructor.getWrongInformation()==PointTooLess){
                 WrongWidget("列表选中的点过少");
             }else if(constructor.getWrongInformation()==PointTooClose){
@@ -1265,7 +1291,9 @@ void ToolWidget::onConstructLine(){
         }
         return ;
     }
+    qDebug()<<"ok here 4";
     m_pMainWin->NotifySubscribe();
+     qDebug()<<"ok here 5";
 
 }
 static void WrongWidget(QString message){
@@ -1440,13 +1468,11 @@ void ToolWidget:: onFindPlane(){
     }
     m_pMainWin->getPWinSetDataWidget()->setPlaneData(point,cloudptr);
     // 生成点云对象并添加到entitylist
-    // CPointCloud* pointCloud=new CPointCloud();
     auto planeCloud=m_pMainWin->getPWinSetDataWidget()->getPlaneCloud();
     if(planeCloud==nullptr){
         qDebug()<<"拟合平面生成错误";
         return ;
     }
-    // pointCloud->setPointCloud(*m_pMainWin->getPWinSetDataWidget()->getFittingPlane());
     auto plane=m_pMainWin->getPWinSetDataWidget()->getPlane();
     PlaneConstructor constructor;
     CPlane* newPlane;

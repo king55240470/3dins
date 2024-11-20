@@ -42,9 +42,6 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
 
     createAxes();// 创建左下角全局坐标系
 
-    //createText();// 创建浮动窗口显示信息
-    //createTextBox();
-
     // 创建初始视角相机
     vtkCamera* camera = renderer->GetActiveCamera();
     if (camera) {
@@ -66,69 +63,6 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
 
 void VtkWidget::OnMouseMove()
 {
-    /*//qDebug()<<"执行了move";
-    int clickPos[2];
-    bool actorFound = false;
-    renWin->GetInteractor()->GetEventPosition(clickPos);
-
-    vtkSmartPointer<vtkPropPicker> picker = vtkSmartPointer<vtkPropPicker>::New();
-    picker->Pick(clickPos[0], clickPos[1], 0, renderer);
-
-    vtkActor* pickedActor = picker->GetActor();
-    if (pickedActor) {
-        for(vtkSmartPointer<vtkActor> actor:m_pMainWin->getactorToEntityMap().keys()){
-            if(pickedActor==actor){
-                // 得到图形的各种属性
-                QString qstr=m_pMainWin->getactorToEntityMap()[actor]->getCEntityInfo();
-                QByteArray byteArray = qstr.toUtf8(); // 转换 QString 到 QByteArray
-                infoTextActor->SetInput(byteArray.constData());
-                infoTextActor->SetPosition(clickPos[0]+20, clickPos[1]+20);
-                infoTextActor->SetVisibility(true);
-                // 获取文本的边界框尺寸
-                double bbox[4];
-                infoTextActor->GetBoundingBox(renderer, bbox);
-
-                // 计算文本的宽度和高度
-                double textWidth = bbox[1] - bbox[0];
-                double textHeight = bbox[3] - bbox[2];
-
-                // 调整矩形的尺寸
-                double width = textWidth+40; // 加上一些边距
-                double height = textHeight+30; // 加上一些边距
-
-                vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-                // 更新矩形的顶点
-                points->InsertNextPoint(0, 0, 0);
-                points->InsertNextPoint(width, 0, 0);
-                points->InsertNextPoint(width, height, 0);
-                points->InsertNextPoint(0, height, 0);
-
-                vtkSmartPointer<vtkCellArray> polygons = vtkSmartPointer<vtkCellArray>::New();
-                vtkIdType ids[4] = {0, 1, 2, 3};
-                polygons->InsertNextCell(4, ids);
-                vtkSmartPointer<vtkPolyData> rectangle = vtkSmartPointer<vtkPolyData>::New();
-                rectangle->SetPoints(points);
-                rectangle->SetPolys(polygons);
-
-                // 创建 PolyData 映射器
-                vtkSmartPointer<vtkPolyDataMapper2D> rectangleMapper = vtkSmartPointer<vtkPolyDataMapper2D>::New();
-                rectangleMapper->SetInputData(rectangle);
-                rectangleActor->SetMapper(rectangleMapper);
-                // 更新矩形的位置
-                rectangleActor->SetPosition(clickPos[0]+20, clickPos[1]+20);
-                rectangleActor->SetVisibility(true);
-                if(m_pMainWin->getactorToEntityMap()[actor]->GetObjectCName().left(2)=="点云"){
-                    rectangleActor->SetVisibility(false);
-                }
-                actorFound = true;
-                break;
-            }
-        }
-    }
-    if (!actorFound) {
-        infoTextActor->SetVisibility(false);
-        rectangleActor->SetVisibility(false);
-    }*/
     if (isDragging){
         qDebug()<<"鼠标移动";
         int clickPos[2];
@@ -143,14 +77,12 @@ void VtkWidget::OnMouseMove()
 
 void VtkWidget::OnLeftButtonPress()
 {
-    qDebug()<<"左键按下";
     int* clickPos = renWin->GetInteractor()->GetEventPosition();
 
     // 检查点击是否在信息文本区域内
     double* position = infoTextActor->GetPosition();
     double bbox[4];
     infoTextActor->GetBoundingBox(renderer, bbox);
-
     // 计算文本的宽度和高度
     double textWidth = bbox[1] - bbox[0];
     double textHeight = bbox[3] - bbox[2];
@@ -173,13 +105,11 @@ void VtkWidget::OnLeftButtonRelease()
 }
 void VtkWidget::setCentity(CEntity *entity)
 {
-    qDebug()<<"setCentity";
     elementEntity=entity;
     createText();
 }
 void VtkWidget::createText()
 {
-    qDebug()<<"createText";
     // 创建浮动信息的文本演员
     if (infoTextActor)
     {
@@ -187,8 +117,12 @@ void VtkWidget::createText()
     }
     infoTextActor = vtkSmartPointer<vtkTextActor>::New();
     infoTextActor->GetTextProperty()->SetFontSize(16);
+    infoTextActor->GetTextProperty()->SetFontFamilyToArial();
     infoTextActor->GetTextProperty()->SetColor(1, 0, 0);
-    QString qstr=elementEntity->getCEntityInfo();
+    infoTextActor->GetTextProperty()->SetJustificationToLeft(); // 设置文本对齐
+    infoTextActor->GetTextProperty()->SetBold(1); // 设置粗体
+
+    QString qstr = elementEntity->getCEntityInfo();
     QByteArray byteArray = qstr.toUtf8(); // 转换 QString 到 QByteArray
     infoTextActor->SetInput(byteArray.constData());
     infoTextActor->SetPosition(renWin->GetSize()[0] - 200, renWin->GetSize()[1] - 100);
@@ -206,8 +140,8 @@ void VtkWidget::createText()
     textWidget->InteractiveOn();
     // 设置交互器的鼠标移动回调
     renderer->AddActor(infoTextActor);
+
     createTextBox();
-    //renWin->GetInteractor()->AddObserver(vtkCommand::MouseMoveEvent, this, &VtkWidget::OnMouseMove);
     renWin->GetInteractor()->AddObserver(vtkCommand::LeftButtonPressEvent, this, &VtkWidget::OnLeftButtonPress);
     renWin->GetInteractor()->AddObserver(vtkCommand::MouseMoveEvent, this, &VtkWidget::OnMouseMove);
     renWin->GetInteractor()->AddObserver(vtkCommand::LeftButtonReleaseEvent, this, &VtkWidget::OnLeftButtonRelease);
@@ -229,9 +163,9 @@ void VtkWidget::createTextBox()
     infoTextActor->GetBoundingBox(renderer, bbox);
     double textWidth = bbox[1] - bbox[0];
     double textHeight = bbox[3] - bbox[2];
-    points->InsertNextPoint(0, 0, 0);
     double width = textWidth+40; // 加上一些边距
     double height = textHeight+30; // 加上一些边距
+    points->InsertNextPoint(0, 0, 0);
     points->InsertNextPoint(width, 0, 0);
     points->InsertNextPoint(width, height, 0);
     points->InsertNextPoint(0, height, 0);
@@ -269,11 +203,9 @@ void VtkWidget::createTextBox()
     rectangleActor = vtkSmartPointer<vtkActor2D>::New();
     rectangleActor->SetMapper(rectangleMapper);
     // 设置矩形的属性
-    rectangleActor->GetProperty()->SetColor(0.5, 0.5, 0.5); // 填充颜色
-    rectangleActor->GetProperty()->SetOpacity(0.7); // 设置透明度
-    rectangleActor->GetProperty()->SetLineWidth(3); // 线条宽度
-
-    //rectangleActor->SetPosition(1,1);
+    rectangleActor->GetProperty()->SetColor(0.8, 0.8, 0.8); // 填充颜色
+    rectangleActor->GetProperty()->SetOpacity(0.5); // 设置不透明度
+    rectangleActor->GetProperty()->SetLineWidth(5); // 线条宽度
     double *a;
     a=infoTextActor->GetPosition();
     rectangleActor->SetPosition(a[0],a[1]);
@@ -281,9 +213,7 @@ void VtkWidget::createTextBox()
     //rectangleActor->SetVisibility(false);
 
     renderer->AddActor(rectangleActor);
-    //renWin->GetInteractor()->AddObserver(vtkCommand::MouseMoveEvent, this, &VtkWidget::OnMouseMove);
-    getRenderWindow()->Render();
-
+    renWin->Render();
 }
 
 vtkSmartPointer<vtkRenderWindow> VtkWidget::getRenderWindow(){
@@ -576,47 +506,6 @@ void VtkWidget::showConvertedCloud(){
     getRenderWindow()->Render(); // 刷新渲染窗口
 }
 
-// 显示调用拟合对比等功能生成的点云
-void VtkWidget::showProductCloud(pcl::PointCloud<pcl::PointXYZRGB> cloud_rgb_1){
-    // 将cloud转换为VTK的点集
-    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-    vtkSmartPointer<vtkUnsignedCharArray> colors = vtkSmartPointer<vtkUnsignedCharArray>::New();
-    colors->SetNumberOfComponents(3);
-    colors->SetName("Colors");
-
-    points->SetNumberOfPoints(cloud_rgb_1.points.size());
-    for (size_t i = 0; i < cloud_rgb_1.points.size(); ++i)
-    {
-        points->SetPoint(i, cloud_rgb_1.points[i].x, cloud_rgb_1.points[i].y, cloud_rgb_1.points[i].z);
-        unsigned char r = static_cast<unsigned char>(cloud_rgb_1.points[i].r);
-        unsigned char g = static_cast<unsigned char>(cloud_rgb_1.points[i].g);
-        unsigned char b = static_cast<unsigned char>(cloud_rgb_1.points[i].b);
-        colors->InsertNextTuple3(r, g, b);
-    }
-
-    vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
-    polyData->SetPoints(points);
-    polyData->GetPointData()->SetScalars(colors);
-
-    // 创建一个顶点过滤器来生成顶点表示（可选，但通常用于点云）
-    vtkSmartPointer<vtkVertexGlyphFilter> glyphFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
-    glyphFilter->SetInputData(polyData);
-    glyphFilter->Update();
-
-    polyData = glyphFilter->GetOutput();
-
-    // 创建映射器并将glyphFilter的几何数据输入
-    vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-    mapper->SetInputData(polyData);
-
-    vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
-    actor->SetMapper(mapper);
-    actor->GetProperty()->SetPointSize(6); // 设置点大小
-
-    renderer->AddActor(actor);
-    getRenderWindow()->Render(); // 刷新渲染窗口
-}
-
 // 比较两个点云的处理函数
 void VtkWidget::onCompare()
 {
@@ -626,13 +515,15 @@ void VtkWidget::onCompare()
         return;
     }
 
-    // // 获取打开的模型文件和实测文件
+    // 遍历filecloudmap获取打开的模型文件和实测文件
+    auto fileCloudMap = m_pMainWin->getPointCloudListMgr()->getFileCloudMap();
+    if(fileCloudMap.size() < 2) return;
+    // for(auto item = fileCloudMap.begin();item != fileCloudMap.end();item++){
+
+    // }
+
     auto file_model = m_pMainWin->getpWinFileMgr()->getModelFileMap().lastKey();
     auto file_measure = m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().lastKey();
-
-    // 获取打开的模型文件和实测文件
-    // auto file_model = m_pMainWin->getpWinFileMgr()->getModelFileMap().lastKey();
-    // auto file_measure = m_pMainWin->getpWinFileMgr()->getModelFileMap().lastKey();
 
     // 初始化两个点云
     pcl::io::loadPLYFile(file_model.toStdString(), *cloud2);
@@ -695,7 +586,6 @@ void VtkWidget::onCompare()
     points->SetNumberOfPoints(comparisonCloud->points.size());
 
     // 创建一个新的VTK无符号字符数组对象，用于存储颜色信息
-    // 设置颜色数组的组件数（RGB）和元组数（点的数量）
     vtkSmartPointer<vtkUnsignedCharArray> colors = vtkSmartPointer<vtkUnsignedCharArray>::New();
     colors->SetNumberOfComponents(3);
     colors->SetNumberOfTuples(comparisonCloud->points.size());
@@ -711,31 +601,11 @@ void VtkWidget::onCompare()
         colors->SetTuple3(i, comparisonCloud->points[i].r, comparisonCloud->points[i].g, comparisonCloud->points[i].b);
     }
 
-    // 创建一个新的VTK多边形数据对象
-    vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
-    polyData->SetPoints(points);
-
-    // 创建一个顶点过滤器来生成顶点表示（可选，但通常用于点云）
-    vtkSmartPointer<vtkVertexGlyphFilter> glyphFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
-    glyphFilter->SetInputData(polyData);
-    glyphFilter->Update();
-
-    polyData = glyphFilter->GetOutput();
-
-    // 将点集、颜色数组和顶点单元格数组设置到多边形数据对象中
-    polyData->SetPoints(points);
-    polyData->GetPointData()->SetScalars(colors); // 设置颜色为点数据中的标量
-
-    // Create a mapper and actor
-    vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-    mapper->SetInputData(polyData);
-
-    vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
-    actor->SetMapper(mapper);
-    actor->GetProperty()->SetPointSize(5);
-
-    renderer->AddActor(actor);
-    renWin->Render();
+    // 由RGB点云生成cpointcloud对象，并存入entitylist
+    auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateCompareCloud(*comparisonCloud);
+    cloudEntity->isComparsionCloud = true;
+    m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
+    m_pMainWin->NotifySubscribe();
 }
 
 //FPFH(粗配准)+ICP(精配准)
