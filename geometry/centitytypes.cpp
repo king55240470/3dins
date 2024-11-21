@@ -405,28 +405,27 @@ vtkSmartPointer<vtkActor> CDistance::draw(){
 vtkSmartPointer<vtkActor> CDistance::pointToPlane()
 {
     // 取平面法向量并单位化
-    QVector4D plane_nomal = plane.getNormal();
-    plane_nomal.normalize();
+    QVector4D plane_normal = plane.getNormal();
+    plane_normal.normalize();
 
     // 将begin转为全局坐标
     CPosition pos_begin(begin.x, begin.y, begin.z);
-    QVector4D posVec_begin = GetRefCoord()->m_mat * QVector4D(pos_begin.x, pos_begin.y, pos_begin.z, plane_nomal.w());
+    QVector4D posVec_begin = GetRefCoord()->m_mat * QVector4D(pos_begin.x, pos_begin.y, pos_begin.z, 1);
     CPosition glbPos_begin(posVec_begin.x(), posVec_begin.y(), posVec_begin.z());
 
-    // 取平面上一点
+    // 取平面中心并转为全局坐标
     CPosition plane_point = plane.getCenter();
-    QVector4D posVec_point = GetRefCoord()->m_mat * QVector4D(plane_point.x, plane_point.y, plane_point.z, plane_nomal.w());
+    QVector4D posVec_point = GetRefCoord()->m_mat * QVector4D(plane_point.x, plane_point.y, plane_point.z,1);
     CPosition glbPos_point(posVec_point.x(), posVec_point.y(), posVec_point.z());
 
     // 计算点到平面的距离
-    // 点到平面的距离公式: d = |(P - P0) · N| / ||N||
     double distance = getdistanceplane();
 
     // 计算glbPos_begin在平面上的落点
     CPosition projection;
-    projection.x = glbPos_begin.x - distance * plane_nomal.x();
-    projection.y = glbPos_begin.y - distance * plane_nomal.y();
-    projection.z = glbPos_begin.z - distance * plane_nomal.z();
+    projection.x = glbPos_begin.x - distance * plane_normal.x();
+    projection.y = glbPos_begin.y - distance * plane_normal.y();
+    projection.z = glbPos_begin.z - distance * plane_normal.z();
 
 
     // 创建点集，并插入定义线的两个点
@@ -576,7 +575,7 @@ int CCircle::getId()
 
 QString CCircle::getCEntityInfo()
 {
-    QString infoText = QString("Information:\nCenterX:%1\nCenterY:%2\nCenterZ:%3\ndiameter:%4").arg(QString::number(m_pt.x, 'f', 2)).arg(QString::number(m_pt.y, 'f', 2)).arg(QString::number(m_pt.z, 'f', 2)).arg(QString::number(m_d, 'f', 2));
+    QString infoText = QString("Information:\nCenterX: %1\nCenterY: %2\nCenterZ: %3\ndiameter: %4").arg(QString::number(m_pt.x, 'f', 2)).arg(QString::number(m_pt.y, 'f', 2)).arg(QString::number(m_pt.z, 'f', 2)).arg(QString::number(m_d, 'f', 2));
     return infoText;
 }
 
@@ -592,8 +591,9 @@ void CLine::setEnd(const CPosition &newEnd)
 
 QString CLine::getCEntityInfo()
 {
-    QString infoText = QString("Information:\nbeginX:%1,beginY:%2,beginZ:%3\n endX:%4,endY:%5,endZ:%6").arg(QString::number(begin.x, 'f', 2)).arg(QString::number(begin.y, 'f', 2)).arg(QString::number(begin.z, 'f', 2))
-    .arg(QString::number(end.x, 'f', 2)).arg(QString::number(end.y, 'f', 2)).arg(QString::number(end.z, 'f', 2));
+    QString infoText = QString("Information:\nbeginX: %1,beginY: %2,beginZ: %3\n endX: %4,endY: %5,endZ: %6").arg(QString::number(begin.x, 'f', 3))
+    .arg(QString::number(begin.y, 'f', 3)).arg(QString::number(begin.z, 'f', 3))
+        .arg(QString::number(end.x, 'f', 3)).arg(QString::number(end.y, 'f', 3)).arg(QString::number(end.z, 'f', 3));
     return infoText;
 }
 
@@ -649,8 +649,11 @@ void CPlane::setWidth(double newWidth)
 
 QString CPlane::getCEntityInfo()
 {
-    QString infoText = QString("Information:\nCenterX:%1\nCenterY:%2\nCenterZ:%3\nnormal:(%4,%5,%6)\nedge:(%7,%8,%9)\nlength,width:(%10,%11)").arg(QString::number(center.x, 'f', 2)).arg(QString::number(center.y, 'f', 2)).arg(QString::number(center.z, 'f', 2)).
-                       arg(QString::number(normal.x(), 'f', 2)).arg(GetObjectCName()).arg(QString::number(normal.y(), 'f', 2)).arg(QString::number(normal.z(), 'f', 2)).arg(QString::number(dir_long_edge.x(), 'f', 2)).arg(QString::number(dir_long_edge.y(), 'f', 2)).arg(QString::number(dir_long_edge.z(), 'f', 2)).arg(QString::number(length, 'f', 2)).arg(QString::number(width, 'f', 2));
+    QString infoText = QString("Information:\nCenterX: %1\nCenterY: %2\nCenterZ: %3\nnormal:(%4,%5,%6)\nedge:(%7,%8,%9)\nlength,width:(%10,%11)").arg(QString::number(center.x, 'f', 2)).arg(QString::number(center.y, 'f', 2)).arg(QString::number(center.z, 'f', 2)).
+                       arg(QString::number(normal.x(), 'f', 3)).arg(GetObjectCName())
+                           .arg(QString::number(normal.y(), 'f', 3)).arg(QString::number(normal.z(), 'f', 3))
+                           .arg(QString::number(dir_long_edge.x(), 'f', 3)).arg(QString::number(dir_long_edge.y(), 'f', 3))
+                           .arg(QString::number(dir_long_edge.z(), 'f', 3)).arg(QString::number(length, 'f', 3)).arg(QString::number(width, 'f', 3));
     return infoText;
 }
 
@@ -677,8 +680,9 @@ void CSphere::setDiameter(double newDiameter)
 
 QString CSphere::getCEntityInfo()
 {
-    QString infoText = QString("Information:\nCenterX:%1\nCenterY:%2\nCenterZ:%3\ndiameter:%4").arg(QString::number(center.x, 'f', 2)).arg(QString::number(center.y, 'f', 2)).arg(QString::number(center.z, 'f', 2)).
-                       arg(QString::number(diameter, 'f', 2));
+    QString infoText = QString("Information:\nCenterX: %1\nCenterY: %2\nCenterZ: %3\ndiameter: %4")
+    .arg(QString::number(center.x, 'f', 3)).arg(QString::number(center.y, 'f', 3))
+        .arg(QString::number(center.z, 'f', 3)).arg(QString::number(diameter, 'f', 3));
     return infoText;
 }
 
@@ -724,8 +728,11 @@ void CCylinder::setBtm_center(const CPosition &newBtm_center)
 
 QString CCylinder::getCEntityInfo()
 {
-    QString infoText = QString("Information:\nX:%1\nY:%2\nZ:%3\ndiameter:%4\nheight:%5\naxial:(%6,%7,%8)").arg(QString::number(btm_center.x, 'f', 6)).arg(QString::number(btm_center.y, 'f', 2)).arg(QString::number(btm_center.z, 'f', 2)).
-                       arg(QString::number(diameter, 'f', 2)).arg(QString::number(height, 'f', 2)).arg(QString::number(axis.x(), 'f', 2)).arg(QString::number(axis.y(), 'f', 2)).arg(QString::number(axis.z(), 'f', 2));
+    QString infoText = QString("Information:\nX: %1\nY: %2\nZ: %3\ndiameter: %4\nheight: %5\naxial:(%6,%7,%8)")
+    .arg(QString::number(btm_center.x, 'f', 3)).arg(QString::number(btm_center.y, 'f', 3))
+        .arg(QString::number(btm_center.z, 'f', 3)).arg(QString::number(diameter, 'f', 3))
+        .arg(QString::number(height, 'f', 3)).arg(QString::number(axis.x(), 'f', 3))
+        .arg(QString::number(axis.y(), 'f', 3)).arg(QString::number(axis.z(), 'f', 3));
     return infoText;
 }
 
@@ -797,14 +804,14 @@ QString CDistance::getCEntityInfo()
     QString q;
     // 判断是哪种距离
     if(isHavePlane)
-        type_str = QString("pointToPlane distance: %1\n").arg(QString::number(getdistanceplane(), 'f', 6));
+        type_str = QString("pointToPlane distance: %1\n").arg(QString::number(getdistanceplane(), 'f', 3));
     else if(isHaveLine)
-        type_str = QString("pointToLine distance: %1\n").arg(QString::number(getdistanceline(), 'f', 6));
+        type_str = QString("pointToLine distance: %1\n").arg(QString::number(getdistanceline(), 'f', 3));
     else {
-        type_str = QString("pointToCircle distance: %1\n").arg(QString::number(getdistancecircle(), 'f', 6));
+        type_str = QString("pointToCircle distance: %1\n").arg(QString::number(getdistancecircle(), 'f', 3));
     }
-    upTol_str = QString("upTolerance: %1\n").arg(QString::number(getUptolerance(), 'f', 6));
-    underTol_str = QString("underTolerance: %1\n").arg(QString::number(getUndertolerance(), 'f', 6));
+    upTol_str = QString("upTolerance: %1\n").arg(QString::number(getUptolerance(), 'f', 3));
+    underTol_str = QString("underTolerance: %1\n").arg(QString::number(getUndertolerance(), 'f', 3));
     q=QString("quality: %1、n").arg(judge());
     return type_str + upTol_str + underTol_str+q;
 }
@@ -864,19 +871,28 @@ double CDistance::getdistancepoint()
 
 double CDistance::getdistanceplane()
 {
-    QVector4D normal = plane.getNormal();
-    CPosition center = plane.getCenter();
+    // 将begin转为全局坐标
+    CPosition pos_begin(begin.x, begin.y, begin.z);
+    QVector4D posVec_begin = GetRefCoord()->m_mat * QVector4D(pos_begin.x, pos_begin.y, pos_begin.z, 1);
+    CPosition glbPos_begin(posVec_begin.x(), posVec_begin.y(), posVec_begin.z());
+
+    // 取平面中心并转为全局坐标
+    CPosition plane_point = plane.getCenter();
+    QVector4D posVec_center = GetRefCoord()->m_mat * QVector4D(plane_point.x, plane_point.y, plane_point.z,1);
+    CPosition glbPos_center(posVec_center.x(), posVec_center.y(), posVec_center.z());
 
     // 将法线单位化
+    QVector4D normal = plane.getNormal();
     double norm_length = sqrt(normal.x() * normal.x() + normal.y() * normal.y() + normal.z() * normal.z());
     QVector4D unitNormal = normal / norm_length;
 
     // 计算点到平面的距离
     // 点到平面的距离公式: d = |(P - P0) · N| / ||N||
-    double distance = fabs((begin.x - center.x) * unitNormal.x() +
-                           (begin.y - center.y) * unitNormal.y() +
-                           (begin.z - center.z) * unitNormal.z());
-
+    QVector3D direction = QVector3D(glbPos_begin.x - glbPos_center.x,
+                                    glbPos_begin.y - glbPos_center.y,
+                                    glbPos_begin.z - glbPos_center.z);
+    // 使用点积自动判定begin与法向量正向还是反向
+    double distance = QVector3D::dotProduct(direction, unitNormal.toVector3D()) / unitNormal.length();
     return distance;
 }
 
