@@ -87,8 +87,8 @@ void VtkWidget::OnLeftButtonPress()
     double textHeight = bbox[3] - bbox[2];
 
     // 调整矩形的尺寸
-    double width = textWidth+40; // 加上一些边距
-    double height = textHeight+30; // 加上一些边距
+    double width = textWidth + 20; // 加上一些边距
+    double height = textHeight + 10; // 加上一些边距
     if (clickPos[0] >= position[0] && clickPos[0] <= position[0] + width &&
         clickPos[1] >= position[1] &&
         clickPos[1] <= position[1]+height)
@@ -115,11 +115,14 @@ void VtkWidget::createText()
         renderer->RemoveActor(infoTextActor); // 从渲染器中移除旧的演员
     }
     infoTextActor = vtkSmartPointer<vtkTextActor>::New();
+
     infoTextActor->GetTextProperty()->SetFontSize(16);
-    infoTextActor->GetTextProperty()->SetFontFamilyToArial();
+    infoTextActor->GetTextProperty()->SetFontFamilyToTimes();
     infoTextActor->GetTextProperty()->SetColor(1, 0, 0);
-    infoTextActor->GetTextProperty()->SetJustificationToLeft(); // 设置文本对齐
+    infoTextActor->GetTextProperty()->SetJustificationToLeft(); // 左对齐
     infoTextActor->GetTextProperty()->SetBold(1); // 设置粗体
+    infoTextActor->GetTextProperty()->SetShadow(true);
+    infoTextActor->GetTextProperty()->SetShadowOffset(2, 2); // 设置阴影偏移量
 
     QString qstr = elementEntity->getCEntityInfo();
     QByteArray byteArray = qstr.toUtf8(); // 转换 QString 到 QByteArray
@@ -127,19 +130,8 @@ void VtkWidget::createText()
     infoTextActor->SetPosition(renWin->GetSize()[0] - 200, renWin->GetSize()[1] - 100);
     //infoTextActor->SetInput("浮动窗口");
 
-    textWidget = vtkSmartPointer<vtkOrientationMarkerWidget>::New();
-    // 将坐标轴演员添加到orientationWidget
-    //textWidget->SetOrientationMarker(infoTextActor);
-
-    // 将orientationWidget与交互器关联
-    textWidget->SetInteractor(renWin->GetInteractor());
-    // 设置视口
-    textWidget->SetViewport(0.8, 0.8, 1, 1);// 调整信息窗口的位置
-    textWidget->SetEnabled(1);
-    textWidget->InteractiveOn();
     // 设置交互器的鼠标移动回调
     renderer->AddActor(infoTextActor);
-
     createTextBox();
     renWin->GetInteractor()->AddObserver(vtkCommand::LeftButtonPressEvent, this, &VtkWidget::OnLeftButtonPress);
     renWin->GetInteractor()->AddObserver(vtkCommand::MouseMoveEvent, this, &VtkWidget::OnMouseMove);
@@ -153,11 +145,8 @@ void VtkWidget::createTextBox()
     {
         renderer->RemoveActor(rectangleActor); // 从渲染器中移除旧的演员
     }
-    qDebug()<<"createTextBox";
     vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-    // 定义矩形的四个顶点
-    /*double width = 200; // 矩形的宽度
-    double height = 150; // 矩形的高度*/
+
     double bbox[4];
     infoTextActor->GetBoundingBox(renderer, bbox);
     double textWidth = bbox[1] - bbox[0];
@@ -202,8 +191,8 @@ void VtkWidget::createTextBox()
     rectangleActor = vtkSmartPointer<vtkActor2D>::New();
     rectangleActor->SetMapper(rectangleMapper);
     // 设置矩形的属性
-    rectangleActor->GetProperty()->SetColor(0.8, 0.8, 0.8); // 填充颜色
-    rectangleActor->GetProperty()->SetOpacity(0.5); // 设置不透明度
+    rectangleActor->GetProperty()->SetColor(0.1, 0.2, 0.3); // 填充颜色
+    rectangleActor->GetProperty()->SetOpacity(0.3); // 设置不透明度
     rectangleActor->GetProperty()->SetLineWidth(5); // 线条宽度
     double *a;
     a=infoTextActor->GetPosition();
