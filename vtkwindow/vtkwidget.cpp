@@ -52,7 +52,6 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
         // camera->SetViewAngle(60); // 调整视野角度
         // camera->SetClippingRange(0.1, 1000);// 根据场景的具体大小和需要调整裁剪范围
         camera->OrthogonalizeViewUp(); // 确保与SetViewUp方向正交
-        // camera->Zoom(0.5); // 根据需要调整视图的缩放
 
         renderer->ResetCamera();
         renWin->Render();
@@ -215,7 +214,7 @@ vtkSmartPointer<vtkRenderer>& VtkWidget::getRenderer(){
 // 刷新vtk窗口
 void VtkWidget::UpdateInfo(){
     reDrawCentity();
-    // reDrawCloud();
+    onTopView(); // 重置相机视角
 }
 
 void VtkWidget::reDrawCentity(){
@@ -567,28 +566,6 @@ void VtkWidget::onCompare()
         }
     }
 
-
-    // 转为vtk带颜色的点集，并直接显示
-    // 创建一个新的VTK点集对象，并设置点的数量
-    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-    points->SetNumberOfPoints(comparisonCloud->points.size());
-
-    // 创建一个新的VTK无符号字符数组对象，用于存储颜色信息
-    vtkSmartPointer<vtkUnsignedCharArray> colors = vtkSmartPointer<vtkUnsignedCharArray>::New();
-    colors->SetNumberOfComponents(3);
-    colors->SetNumberOfTuples(comparisonCloud->points.size());
-    // 创建一个新的VTK单元格数组对象，用于存储顶点信息
-    vtkSmartPointer<vtkCellArray> vertexCells = vtkSmartPointer<vtkCellArray>::New();
-
-    // 遍历PCL点云中的每个点
-    for (size_t i = 0; i < comparisonCloud->points.size(); ++i)
-    {
-        // 设置VTK点集中的点的位置
-        points->SetPoint(i, comparisonCloud->points[i].x, comparisonCloud->points[i].y, comparisonCloud->points[i].z);
-        // 设置颜色数组中的颜色值（RGB）
-        colors->SetTuple3(i, comparisonCloud->points[i].r, comparisonCloud->points[i].g, comparisonCloud->points[i].b);
-    }
-
     // 由RGB点云生成cpointcloud对象，并存入entitylist
     auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateCompareCloud(*comparisonCloud);
     cloudEntity->isComparsionCloud = true;
@@ -599,13 +576,20 @@ void VtkWidget::onCompare()
 //FPFH(粗配准)+ICP(精配准)
 void VtkWidget::onAlign()
 {
+    // 检测两个文件列表是否有空的
+    if(m_pMainWin->getpWinFileMgr()->getModelFileMap().empty() ||
+        m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().empty()){
+        QMessageBox::warning(this, "Warning", "打开的文件不足");
+        return;
+    }
+
     // 获取打开的模型文件和实测文件
     auto file_model = m_pMainWin->getpWinFileMgr()->getModelFileMap().lastKey();
     auto file_measure = m_pMainWin->getpWinFileMgr()->getModelFileMap().lastKey();
 
     // 初始化两个点云
     pcl::io::loadPLYFile(file_model.toStdString(), *cloud1);
-    pcl::io::loadPLYFile(file_measure.toStdString(), *cloud2);
+    pcl::io::loadPCDFile(file_measure.toStdString(), *cloud2);
 
     // 检查点云是否为空
     if (cloud1->empty() || cloud2->empty()) {
