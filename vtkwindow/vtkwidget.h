@@ -101,6 +101,8 @@ public:
     void OnLeftButtonRelease();
     void createText();
     void createTextBox();
+    void createLine();
+    void closeText();
     void GetScreenCoordinates(vtkRenderer* renderer, double pt[3], double screenCoord[2]);
 private:
     QVTKOpenGLNativeWidget* vtkWidget; // vtk窗口
@@ -116,6 +118,7 @@ private:
 
     vtkSmartPointer<vtkTextActor> infoTextActor;// 浮动信息文本演员
     vtkSmartPointer<vtkActor2D> rectangleActor; // 背景和边框
+    vtkSmartPointer<vtkActor2D> lineActor;//指向线条
     vtkSmartPointer<vtkOrientationMarkerWidget> axeWidget; // 创建窗口部件来封装坐标器
     vtkSmartPointer<vtkOrientationMarkerWidget> textWidget; // 浮动窗口，用于显示信息
     CEntity* elementEntity;//储存传入的entity

@@ -451,11 +451,13 @@ public:
     void setplane(const CPlane & Plane);
     void setcircle(const CCircle & Circle);
     void setline(const CLine & Line);
+    CPosition getbegin();
     double getdistancepoint();
     double getdistanceplane();
     double getdistancecircle();
     double getdistanceline();
     double getdistance();
+
     void setdistance(double d);
     bool judge();
     void setProjection(CPosition pos);
