@@ -864,6 +864,11 @@ void CDistance::setline(const CLine &Line)
     isHaveLine = true;
 }
 
+CPosition CDistance::getbegin()
+{
+    return begin;
+}
+
 double CDistance::getdistancepoint()
 {
     return sqrt(pow(begin.x - end.x, 2) + pow(begin.y - end.y, 2) + pow(begin.z - end.z, 2));
