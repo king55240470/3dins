@@ -70,6 +70,7 @@ void VtkWidget::OnMouseMove()
         double *a;
         a=infoTextActor->GetPosition();
         rectangleActor->SetPosition(a[0],a[1]);
+        createLine();
         getRenderWindow()->Render();
     }
 }
@@ -141,6 +142,8 @@ void VtkWidget::createText()
     renderer->AddActor(infoTextActor);
 
     createTextBox();
+    createLine();
+    renWin->Render();
     renWin->GetInteractor()->AddObserver(vtkCommand::LeftButtonPressEvent, this, &VtkWidget::OnLeftButtonPress);
     renWin->GetInteractor()->AddObserver(vtkCommand::MouseMoveEvent, this, &VtkWidget::OnMouseMove);
     renWin->GetInteractor()->AddObserver(vtkCommand::LeftButtonReleaseEvent, this, &VtkWidget::OnLeftButtonRelease);
@@ -212,6 +215,96 @@ void VtkWidget::createTextBox()
     //rectangleActor->SetVisibility(false);
 
     renderer->AddActor(rectangleActor);
+}
+
+void VtkWidget::createLine()
+{
+    if (lineActor)
+    {
+        renderer->RemoveActor(lineActor); // 从渲染器中移除旧的演员
+    }
+    double *a=rectangleActor->GetPosition();
+    CPosition b;
+    if(elementEntity->GetObjectCName().left(2)=="距离"){
+        CDistance * dis=static_cast<CDistance*>(elementEntity);
+        b=dis->getbegin();
+    }
+    if(elementEntity->getEntityType()==enPoint){
+        CPoint*point=static_cast<CPoint*>(elementEntity);
+        b=point->GetPt();
+    }
+    if(elementEntity->getEntityType()==enLine){
+        CLine*line=static_cast<CLine*>(elementEntity);
+        b=line->GetObjectCenterLocalPoint();
+    }
+    if(elementEntity->getEntityType()==enCircle){
+        CCircle*circle=static_cast<CCircle*>(elementEntity);
+        b=circle->getCenter();
+    }
+    if(elementEntity->getEntityType()==enSphere){
+        CSphere*s=static_cast<CSphere*>(elementEntity);
+        b=s->getCenter();
+    }
+    if(elementEntity->getEntityType()==enPlane){
+        CPlane*s=static_cast<CPlane*>(elementEntity);
+        b=s->getCenter();
+    }
+    if(elementEntity->getEntityType()==enCylinder){
+        CCylinder*s=static_cast<CCylinder*>(elementEntity);
+        b=s->getBtm_center();
+    }
+    if(elementEntity->getEntityType()==enCone){
+        CCone*s=static_cast<CCone*>(elementEntity);
+        b=s->getVertex();
+    }
+
+    vtkSmartPointer<vtkCoordinate> coordinate = vtkSmartPointer<vtkCoordinate>::New();
+    //coordinate->SetValue(glbPos_begin.x,glbPos_begin.y,glbPos_begin.z);
+    coordinate->SetValue(b.x,b.y,b.z);
+    coordinate->SetCoordinateSystemToWorld();
+    int* viewportMidPoint;
+    viewportMidPoint=coordinate->GetComputedViewportValue(renderer);
+    vtkSmartPointer<vtkPolyData> linePolyData = vtkSmartPointer<vtkPolyData>::New();
+    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+    linePolyData->SetPoints(points);
+
+    // 添加起点和终点
+    points->InsertNextPoint(a[0], a[1], 0.0); // 矩形左下角
+    points->InsertNextPoint(viewportMidPoint[0],viewportMidPoint[1],viewportMidPoint[2]); // 3D直线中点
+    vtkSmartPointer<vtkCellArray> lines = vtkSmartPointer<vtkCellArray>::New();
+    lines->InsertNextCell(2);
+    lines->InsertCellPoint(0);
+    lines->InsertCellPoint(1);
+
+    linePolyData->SetLines(lines);
+
+    // 创建mapper
+    vtkSmartPointer<vtkPolyDataMapper2D> lineMapper = vtkSmartPointer<vtkPolyDataMapper2D>::New();
+    lineMapper->SetInputData(linePolyData);
+
+    // 创建2D线actor
+    lineActor=vtkSmartPointer<vtkActor2D>::New();
+    lineActor->SetMapper(lineMapper);
+    lineActor->GetProperty()->SetColor(1, 0, 0); // 设置线的颜色为红色
+    lineActor->GetProperty()->SetLineWidth(2);
+    renderer->AddActor(lineActor);
+
+}
+
+void VtkWidget::closeText()
+{
+    if (infoTextActor)
+    {
+        renderer->RemoveActor(infoTextActor); // 从渲染器中移除旧的演员
+    }
+    if (rectangleActor)
+    {
+        renderer->RemoveActor(rectangleActor); // 从渲染器中移除旧的演员
+    }
+    if (lineActor)
+    {
+        renderer->RemoveActor(lineActor); // 从渲染器中移除旧的演员
+    }
     renWin->Render();
 }
 
