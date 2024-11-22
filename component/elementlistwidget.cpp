@@ -168,11 +168,13 @@ void ElementListWidget::onCustomContextMenuRequested(const QPoint &pos)
     QAction *action3 = menu.addAction("选中所有相同项");
     QAction *action4 = menu.addAction("设置公差");
     QAction *action5 = menu.addAction("显示元素信息");
+    QAction *action6 = menu.addAction("关闭元素信息");
     connect(action1, &QAction::triggered, this, &ElementListWidget::onDeleteEllipse);
     connect(action2, &QAction::triggered, this, &ElementListWidget::selectall);
     connect(action3, &QAction::triggered, this, &ElementListWidget::selectall);
     connect(action4, &QAction::triggered, this, &ElementListWidget::setTolerance);
     connect(action5, &QAction::triggered, this, &ElementListWidget::showInfotext);
+    connect(action6, &QAction::triggered, this, &ElementListWidget::closeInfotext);
     menu.exec(mapToGlobal(pos));
 }
 
@@ -345,6 +347,11 @@ void ElementListWidget::showInfotext()
             m_pMainWin->getPWinVtkWidget()->setCentity(ent);
         }
     }
+}
+
+void ElementListWidget::closeInfotext()
+{
+    m_pMainWin->getPWinVtkWidget()->closeText();
 }
 
 void ElementListWidget::mousePressEvent(QMouseEvent *event)
