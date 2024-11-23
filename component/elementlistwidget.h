@@ -48,6 +48,8 @@ public:
     void setTolerance();
     void BtnClicked();
     void ShowParent(CObject*obj);
+    void showInfotext();
+    void closeInfotext();
     void mousePressEvent(QMouseEvent *event) override;
 protected:
     void mouseDoubleClickEvent(QMouseEvent *event) override;
