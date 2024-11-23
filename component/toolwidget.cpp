@@ -1505,8 +1505,6 @@ void ToolWidget::onFindCircle(){}
 void ToolWidget::onFindRectangle(){
 }
 void ToolWidget::onFindCylinder(){
-
-
     QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenActorAxes();
     pcl::PointXYZRGB  point;
     if(positions.size()==0)return ;
@@ -1521,41 +1519,31 @@ void ToolWidget::onFindCylinder(){
     m_pMainWin->getPWinSetDataWidget()->setCylinderData(point,cloudptr);
     // 生成点云对象并添加到entitylist
     // CPointCloud* pointCloud=new CPointCloud();
-    qDebug()<<"ok2";
     auto cylinderCloud=m_pMainWin->getPWinSetDataWidget()->getCylinderCloud();
     if(cylinderCloud==nullptr){
         qDebug()<<"拟合平面生成错误";
         return ;
     }
-    // pointCloud->setPointCloud(*m_pMainWin->getPWinSetDataWidget()->getFittingPlane());
-    qDebug()<<"ok3";
     auto cylinder=m_pMainWin->getPWinSetDataWidget()->getCylinder();
-    qDebug()<<"ok4";
     if(cylinder==nullptr){
         return;
     }
     CylinderConstructor constructor;
     CCylinder* newCylinder;
     CPosition center;
-    center.x=cylinder->getCenter().x();
-    center.y=cylinder->getCenter().y();
-    center.z=cylinder->getCenter().z();
-    qDebug()<<"22"<<center.x<<center.y<<center.z;
+    center.x=cylinder->getBottomCenter().x();
+    center.y=cylinder->getBottomCenter().y();
+    center.z=cylinder->getBottomCenter().z();
     QVector4D normal(cylinder->getNormal().x(),cylinder->getNormal().y(),cylinder->getNormal().z(),0);
-    //QVector4D direction(cylinder->getLength_Direction().x(),cylinder->getLength_Direction().y(),cylinder->getLength_Direction().z(),0);
     newCylinder=constructor.createCylinder(center,normal,cylinder->getHeight(),cylinder->getDiameter());
     if(newCylinder==nullptr){
         qDebug()<<"拟合平面生成错误";
         return ;
     }
-    qDebug()<<"ok5";
     addToFindList(newCylinder);
 
     positions.clear();
     m_pMainWin->NotifySubscribe();
-
-
-
 }
 void ToolWidget::onFindCone(){}
 void ToolWidget::onFindSphere(){}

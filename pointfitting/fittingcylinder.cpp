@@ -10,7 +10,8 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/common/common.h>
 #include <pcl/common/distances.h>
-#include<QDebug>
+#include <QDebug>
+#include <QMessageBox>
 
 FittingCylinder::FittingCylinder() {
     cylinderCloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
@@ -29,7 +30,7 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingCylinder::RANSAC(pcl::PointXYZRGB 
     std::vector<float> pointRadiusSquaredDistance; // 用于存储找到的点到查询点的平方距离
 
     // 搜索给定半径内的点
-    if (kdtree.radiusSearch(searchPoint, radius, pointIdxRadiusSearch, pointRadiusSquaredDistance) > 3) {
+    if (kdtree.radiusSearch(searchPoint, radius, pointIdxRadiusSearch, pointRadiusSquaredDistance) > 4) {
 
         pcl::copyPointCloud(*cloudptr, pointIdxRadiusSearch, *cloud_subset);//在邻域点中实现RANSAC算法
 
@@ -47,7 +48,7 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingCylinder::RANSAC(pcl::PointXYZRGB 
         seg.setOptimizeCoefficients(true);
         seg.setModelType(pcl::SACMODEL_CYLINDER);
         seg.setMethodType(pcl::SAC_RANSAC);
-        seg.setNormalDistanceWeight (0.1);//设置法向量权重
+        seg.setNormalDistanceWeight(0.01);//设置法向量权重
         seg.setMaxIterations(5000);//设置最大迭代次数
         seg.setDistanceThreshold(distance);//设置阈值
         seg.setInputNormals(normals);
@@ -71,96 +72,71 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingCylinder::RANSAC(pcl::PointXYZRGB 
             point.g = 0;
             point.b = 0;
         }
+
+        // 计算圆柱中心
+        center=Eigen::Vector3f(coefficients->values[0], coefficients->values[1], coefficients->values[2]);
+
+        // 计算圆柱法向量（圆柱轴的方向）
+        normal=Eigen::Vector3f(coefficients->values[3], coefficients->values[4], coefficients->values[5]);
+        normal.normalize(); // 确保法向量是单位向量
+        qDebug()<<"normal:"<<normal.x()<<normal.y()<<normal.z();
+
+        // 计算圆柱直径
+        diameter = 2 * coefficients->values[6];
+        qDebug()<<"diameter:"<<diameter;
+
+        // 计算圆柱的高度：通过点云中的投影来获得
+        double min_proj = std::numeric_limits<float>::max();
+        double max_proj = std::numeric_limits<float>::lowest();
+
+        // 对所有点进行法向量投影，得到最小和最大投影值
+        for (int i = 0; i < cylinderCloud->size(); i++) {
+            Eigen::Vector3f point(cylinderCloud->points[i].x, cylinderCloud->points[i].y, cylinderCloud->points[i].z);
+            double proj = point.dot(normal); // 计算点到圆柱轴的投影
+            min_proj = std::min(min_proj, proj);
+            max_proj = std::max(max_proj, proj);
+        }
+
+        height = max_proj - min_proj; // 高度是投影值的差
+        qDebug()<<"height:"<<height;
+
+        //计算圆柱底面圆心
+        bottomCenter=center-center.dot(normal)*normal;
+        qDebug()<<"bottomCenter:"<<bottomCenter.x()<<bottomCenter.y()<<bottomCenter.z();
+
+        // bottomCenter.x()=0.172948;
+        // bottomCenter.y()=0.015130;
+        // bottomCenter.z()=0.169908;
+
+        // double x=0,y=0,z=0,i=0;
+        // for(auto point : cloudptr->points){
+        //     x+=point.x;
+        //     y=y+point.y;
+        //     z=z+point.z;
+        //     i++;
+        // }
+        // qDebug()<<x<<y<<z;
+        // center.x()=x*1.0/i;
+        // center.y()=y*1.0/i;
+        // center.z()=z*1.0/i;
+        // qDebug()<<center.x()<<center.y()<<center.z();
+        // center=center+0.5*height*normal;
+        // qDebug()<<center.x()<<center.y()<<center.z();
+
+        return cylinderCloud;
+
+    } else {
+        QMessageBox *messagebox=new QMessageBox();
+        messagebox->setText("输入的邻域或距离阈值太小，\n请重新输入！");
+        messagebox->setIcon(QMessageBox::Warning);
+        messagebox->show();
+        messagebox->exec();
+        PCL_ERROR("Couldn't find more points within radius\n");
+        return nullptr;
     }
-
-    // // 获取圆柱点云的最小和最大边界
-    // pcl::PointXYZRGB min_pt, max_pt;
-    // pcl::getMinMax3D(*cylinderCloud, min_pt, max_pt);
-    // qDebug()<<"222:"<<min_pt.x<<min_pt.y<<min_pt.z;
-    // qDebug()<<max_pt.x<<max_pt.y<<max_pt.z;
-
-    // // 计算圆柱的中心点（两个端点的中点）
-    // pcl::PointXYZRGB cylinder_center;
-    // cylinder_center.x = (min_pt.x + max_pt.x) / 2.0f;
-    // cylinder_center.y = (min_pt.y + max_pt.y) / 2.0f;
-    // cylinder_center.z = (min_pt.z + max_pt.z) / 2.0f;
-
-    // // 计算圆柱点云的几何中心
-    // float cx = 0, cy = 0, cz = 0;
-    // int num_points = cloudptr->size();
-
-    // for (const auto& point : cloudptr->points) {
-    //     cx += point.x;
-    //     cy += point.y;
-    //     cz += point.z;
-    // }
-
-    // // 计算平均位置（几何中心）
-    // cx /= num_points;
-    // cy /= num_points;
-    // cz /= num_points;
-
-    // 计算圆柱中心：通过起点和终点来计算
-    // Eigen::Vector3f cylinder_start(coefficients->values[0] - coefficients->values[3] * radius,
-    //                                coefficients->values[1] - coefficients->values[4] * radius,
-    //                                coefficients->values[2] - coefficients->values[5] * radius);
-    // Eigen::Vector3f cylinder_end(coefficients->values[0] + coefficients->values[3] * radius,
-    //                              coefficients->values[1] + coefficients->values[4] * radius,
-    //                              coefficients->values[2] + coefficients->values[5] * radius);
-
-    // center = (cylinder_start + cylinder_end) / 2.0f;  // 计算中心点
-    // qDebug()<<"11"<<center.x()<<center.y()<<center.z();
-    // qDebug()<<coefficients->values[0]<<coefficients->values[1]<<coefficients->values[2];
-
-    // 计算圆柱中心
-    //center=Eigen::Vector3f(cx,cy,cz);
-    center=Eigen::Vector3f(coefficients->values[0], coefficients->values[1], coefficients->values[2]);
-
-    // 计算圆柱法向量（圆柱轴的方向）
-    normal=Eigen::Vector3f(coefficients->values[3], coefficients->values[4], coefficients->values[5]);
-    normal.normalize(); // 确保法向量是单位向量
-
-    // 计算圆柱直径
-    diameter = 2 * coefficients->values[6];
-
-    // // 计算点云的边界框，以估算高度
-    // pcl::PointXYZRGB min_pt, max_pt;
-    // pcl::getMinMax3D(*cylinderCloud, min_pt, max_pt);
-    // height = pcl::euclideanDistance(min_pt, max_pt);
-
-    // 计算圆柱的高度：通过点云中的投影来获得
-    double min_proj = std::numeric_limits<float>::max();
-    double max_proj = std::numeric_limits<float>::lowest();
-
-    // 对所有点进行法向量投影，得到最小和最大投影值
-    for (size_t i = 0; i < cloud_subset->size(); i++) {
-        Eigen::Vector3f point(cloud_subset->points[i].x, cloud_subset->points[i].y, cloud_subset->points[i].z);
-        double proj = point.dot(normal); // 计算点到圆柱轴的投影
-        min_proj = std::min(min_proj, proj);
-        max_proj = std::max(max_proj, proj);
-    }
-
-    height = max_proj - min_proj; // 高度是投影值的差
-
-    // // 获取圆柱的起点和终点 (用于计算高度)
-    // pcl::PointXYZ p1, p2;
-    // p1.x = coefficients->values[0] + 0.5f * radius * normal.x();  // 根据法向量偏移一点，得到圆柱的起点
-    // p1.y = coefficients->values[1] + 0.5f * radius * normal.y();
-    // p1.z = coefficients->values[2] + 0.5f * radius * normal.z();
-    // p2.x = coefficients->values[0] - 0.5f * radius * normal.x();  // 终点
-    // p2.y = coefficients->values[1] - 0.5f * radius * normal.y();
-    // p2.z = coefficients->values[2] - 0.5f * radius * normal.z();
-
-    // // 计算圆柱的高度
-    // height = pcl::euclideanDistance(p1, p2);
-
-    return cylinderCloud;
 }
 
 bool FittingCylinder::isPointInCylinder(const pcl::PointXYZRGB& point){
-    // 提取圆柱参数
-    // Eigen::Vector3f axis_point(coefficients->values[0], coefficients->values[1], coefficients->values[2]);
-    // Eigen::Vector3f axis_direction(coefficients->values[3], coefficients->values[4], coefficients->values[5]);
     double r = coefficients->values[6];//圆柱半径
 
     // 将目标点转为 Eigen 向量
@@ -189,8 +165,8 @@ Eigen::Vector3f FittingCylinder::getNormal(){
     return normal;
 }
 
-Eigen::Vector3f FittingCylinder::getCenter(){
-    return center;
+Eigen::Vector3f FittingCylinder::getBottomCenter(){
+    return bottomCenter;
 }
 
 double FittingCylinder::getDiameter(){
