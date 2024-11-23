@@ -153,8 +153,8 @@ void VtkWidget::createTextBox()
     infoTextActor->GetBoundingBox(renderer, bbox);
     double textWidth = bbox[1] - bbox[0];
     double textHeight = bbox[3] - bbox[2];
-    double width = textWidth+40; // 加上一些边距
-    double height = textHeight+30; // 加上一些边距
+    double width = textWidth+20; // 加上一些边距
+    double height = textHeight; // 加上一些边距
     points->InsertNextPoint(0, 0, 0);
     points->InsertNextPoint(width, 0, 0);
     points->InsertNextPoint(width, height, 0);
@@ -595,19 +595,24 @@ void VtkWidget::onCompare()
         return;
     }
 
-    // 遍历filecloudmap获取打开的模型文件和实测文件
+    auto modelFile = m_pMainWin->getpWinFileMgr()->getModelFileMap().lastKey();
+    auto measureFile = m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().lastKey();
     auto fileCloudMap = m_pMainWin->getPointCloudListMgr()->getFileCloudMap();
     if(fileCloudMap.size() < 2) return;
-    // for(auto item = fileCloudMap.begin();item != fileCloudMap.end();item++){
 
-    // }
+    // 遍历 filecloudmap，通过对比需要的两个点云的文件名，来获取rgb点云
+    // 然后转成不带颜色的点云，给cloud1和cloud2初始化
+    for(auto item = fileCloudMap.begin();item != fileCloudMap.end();item++){
+        if(item.key() == modelFile){
+            tempCloud = item.value()->m_pointCloud;
+            pcl::copyPointCloud(tempCloud, *cloud2);
+        }
 
-    auto file_model = m_pMainWin->getpWinFileMgr()->getModelFileMap().lastKey();
-    auto file_measure = m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().lastKey();
-
-    // 初始化两个点云
-    pcl::io::loadPLYFile(file_model.toStdString(), *cloud2);
-    pcl::io::loadPCDFile(file_measure.toStdString(), *cloud1);
+        if(item.key() == measureFile){
+            tempCloud = item.value()->m_pointCloud;
+            pcl::copyPointCloud(tempCloud, *cloud1);
+        }
+    }
 
     // 检查点云是否为空
     if (cloud1->empty() || cloud2->empty()) {
