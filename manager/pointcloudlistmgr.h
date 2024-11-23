@@ -25,8 +25,6 @@ public:
     pcl::PointCloud<pcl::PointXYZRGB>& getTempCloud(){
         return tempCloud;
     };
-    // 将点云对象转为智能指针
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr CloudToPtr(pcl::PointCloud<pcl::PointXYZRGB> cloud);
 private:
     QMap<QString, CPointCloud*> fileCloudMap; // 将打开的文件和点云实体绑定
 

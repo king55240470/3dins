@@ -501,7 +501,7 @@ public:
     QString getCEntityInfo() override; // 获取图形的信息，在浮动窗口显示
     vtkSmartPointer<vtkActor> draw() override;
     vtkSmartPointer<vtkActor> drawComparedCloud(); // 绘制对比生成的点云
-    double getPointCloudCount(){
+    double getPointCloudSize(){
         return m_pointCloud.points.size();
     };
 

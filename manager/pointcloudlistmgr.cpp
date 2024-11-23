@@ -51,7 +51,3 @@ CPointCloud *PointCloudListMgr::CreateCompareCloud(pcl::PointCloud<pcl::PointXYZ
     return CloudEntity;
 }
 
-pcl::PointCloud<pcl::PointXYZRGB>::Ptr PointCloudListMgr::CloudToPtr(pcl::PointCloud<pcl::PointXYZRGB> cloud)
-{
-    return pcl::PointCloud<pcl::PointXYZRGB>::Ptr (&cloud);
-}
