@@ -20,8 +20,6 @@ class setDataWidget : public QWidget
 public:
     explicit setDataWidget(QWidget *parent = nullptr);
 
-    void setWidget();
-
     void setPlaneData(pcl::PointXYZRGB,pcl::PointCloud<pcl::PointXYZRGB>::Ptr);//设置拟合平面的领域和距离阈值的对话框
     void PlaneBtnClick();
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr getFittingPlane();

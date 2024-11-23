@@ -22,7 +22,9 @@ setDataWidget::setDataWidget(QWidget *parent)
     cylinder=nullptr;
 }
 
-void setDataWidget::setWidget(){
+void setDataWidget::setPlaneData(pcl::PointXYZRGB searchPoint,pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud){
+    point=searchPoint;
+    cloudptr=cloud;
     dialog = new QDialog(this);
     dialog->resize(400,150);
     dialog->setWindowTitle("设置邻域和阈值");
@@ -41,12 +43,6 @@ void setDataWidget::setWidget(){
     layout->addWidget(btn,2,2,1,1);
     dialog->setLayout(layout);
     dialog->show();
-}
-
-void setDataWidget::setPlaneData(pcl::PointXYZRGB searchPoint,pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud){
-    point=searchPoint;
-    cloudptr=cloud;
-    setWidget();
     connect(btn,&QPushButton::clicked,this,&setDataWidget::PlaneBtnClick);
     dialog->exec();
 }
@@ -89,7 +85,24 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr setDataWidget::getPlaneCloud(){
 void setDataWidget::setCylinderData(pcl::PointXYZRGB searchPoint,pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud){
     point=searchPoint;
     cloudptr=cloud;
-    setWidget();
+    dialog = new QDialog(this);
+    dialog->resize(400,150);
+    dialog->setWindowTitle("设置邻域和阈值");
+    layout = new QGridLayout(dialog);
+    lab1 = new QLabel("请输入邻域：");
+    lab2 = new QLabel("请输入距离阈值：");
+    rad = new QLineEdit();
+    rad->setText("1");
+    dis = new QLineEdit();
+    dis->setText("0.01");
+    btn = new QPushButton("确定");
+    layout->addWidget(lab1,0,0,1,1);
+    layout->addWidget(rad,0,1,1,2);
+    layout->addWidget(lab2,1,0,1,1);
+    layout->addWidget(dis,1,1,1,2);
+    layout->addWidget(btn,2,2,1,1);
+    dialog->setLayout(layout);
+    dialog->show();
     connect(btn,&QPushButton::clicked,this,&setDataWidget::CylinderBtnClick);
     dialog->exec();
 }
