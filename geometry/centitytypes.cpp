@@ -335,7 +335,7 @@ vtkSmartPointer<vtkActor> CCone::draw(){
 int CPointCloud::pointCloudCount = 0;
 QString CPointCloud::getCEntityInfo()
 {
-    auto infoText = QString ("PointCloud\nNumbers of cloud: %1")
+    auto infoText = QString ("PointCloud\nNumbers of points: %1")
     .arg(QString::number(getPointCloudSize(), 'f', 0));
 
     return infoText;
