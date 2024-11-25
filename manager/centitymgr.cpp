@@ -124,7 +124,24 @@ QDataStream& operator>>(QDataStream& in, CEntityMgr& mgr) {
         case enPoint:
             entity=new CPoint();
             break;
-        // ...其他类型
+        case enPlane:
+            entity=new CPlane();
+            break;
+        case enSphere:
+            entity=new CSphere();
+            break;
+        case enCylinder:
+            entity=new CCylinder();
+            break;
+        case enCone:
+            entity=new CCone();
+            break;
+        case enDistance:
+            entity=new CDistance();
+            break;
+        case enPointCloud:
+            entity=new CPointCloud();
+            break;
         default:
             entity = new CEntity();
             break;
