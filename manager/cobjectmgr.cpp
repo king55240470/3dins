@@ -136,7 +136,24 @@ QDataStream& operator>>(QDataStream& in, CObjectMgr& mgr){
         case enPoint:
             object=new CPoint();
             break;
-        // 其他类型处理逻辑...
+        case enPlane:
+            object=new CPlane();
+            break;
+        case enSphere:
+            object=new CSphere();
+            break;
+        case enCylinder:
+            object=new CCylinder();
+            break;
+        case enCone:
+            object=new CCone();
+            break;
+        case enDistance:
+            object=new CDistance();
+            break;
+        case enPointCloud:
+            object=new CPointCloud();
+            break;
         default:
             object = new CObject();
             break;

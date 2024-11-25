@@ -16,7 +16,7 @@ public:
     CPcs* m_pCurCoord;//当前坐标系
     CPcs* m_pExtCoord;
 
-    QVector<CEntity*> m_ConstructList;//存储该实体的一些信息
+    QVector<CEntity*> m_ConstructList; // 元素的构建列表,该元素由其他元素构建而成
     //QVector<CImageTool *>  m_ToolArray;//存储该实体使用的工具
 
     bool m_bShowCNameLabel;//是否显示该实体的名称
@@ -75,15 +75,13 @@ public:
     QDataStream& serialize(QDataStream& out) const override{
         CObject::serialize(out);//序列化基类部分
         out<<*m_pRefCoord<<*m_pCurCoord<<*m_pExtCoord;
+
         out<<static_cast<int>(m_ConstructList.size());
         qDebug()<<"constructListSize:"<<m_ConstructList.size();
         for(const auto* entity:m_ConstructList){//auto让编译器自动推断元素的类型
             out<<*entity;
         }
-        /*out<<static_cast<int>(m_ToolArray.size());
-        for(const auto& entity:m_ToolArray){
-            out<<*entity;
-        }*/
+
         out<<m_bShowCNameLabel
             <<m_nRef
             <<m_bRemeasure;
@@ -97,8 +95,7 @@ public:
         CObject::deserialize(in);//反序列化基类部分
         in>>*m_pRefCoord>>*m_pCurCoord>>*m_pExtCoord;//解引用‘*’将数据流中的内容读取到已经存在的对象中，确保将读取的数据填充到对象内部
 
-        int constructListSize,toolArraySize;
-
+        int constructListSize;
         in>>constructListSize;
         qDebug()<<"constructListSize:"<<constructListSize;
         m_ConstructList.clear();
@@ -107,14 +104,6 @@ public:
             in>>*entity;
             m_ConstructList.append(entity);
         }
-
-        /*in>>toolArraySize;
-        m_ToolArray.clear();
-        for(int i=0;i<toolArraySize;i++){
-            CImageTool *tool=new CImageTool();
-            in>>*tool;
-            m_ToolArray.append(tool);
-        }*/
 
         in>>m_bShowCNameLabel
             >>m_nRef
