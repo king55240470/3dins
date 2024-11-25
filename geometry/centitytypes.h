@@ -577,14 +577,14 @@ public:
         CEntity::serialize(out);  // 先序列化基类部分
         // out << m_pointCloud.size() << m_pointCloud.points;
         out <<m_pt << pointCloudCount<< currentPointCloudId;
-        out <<isFileCloud <<isFittingCloud <<isComparsionCloud ;
+        out <<isFileCloud  <<isComparsionCloud ;
         return out;
     }
 
     QDataStream& deserialize(QDataStream& in) override {
         CEntity::deserialize(in);  // 先反序列化基类部分
         in >>m_pt >> pointCloudCount >> currentPointCloudId;
-        in>>isFileCloud >>isFittingCloud >>isComparsionCloud ;
+        in>>isFileCloud  >>isComparsionCloud ;
         return in;
     }
 public:
