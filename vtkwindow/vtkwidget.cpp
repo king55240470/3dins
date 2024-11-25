@@ -102,7 +102,6 @@ void VtkWidget::OnLeftButtonPress()
 
 void VtkWidget::OnLeftButtonRelease()
 {
-    qDebug()<<"左键释放";
     isDragging = false; // 关闭拖动状态
 }
 void VtkWidget::setCentity(CEntity *entity)
