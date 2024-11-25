@@ -426,7 +426,7 @@ vtkSmartPointer<vtkActor> CDistance::pointToPlane()
     projection.x = glbPos_begin.x - distance * plane_normal.x();
     projection.y = glbPos_begin.y - distance * plane_normal.y();
     projection.z = glbPos_begin.z - distance * plane_normal.z();
-
+    //Projection=projection;
 
     // 创建点集，并插入定义线的两个点
     auto points = vtkSmartPointer<vtkPoints>::New();
@@ -502,7 +502,9 @@ vtkSmartPointer<vtkActor> CDistance::pointToLine()
     // 垂足计算公式
     // p = p0 + v.w.w / |w|^2
     QVector3D projection = QVector3D(lineVec_begin) + dotProduct * lineVec;
-
+    //Projection.x=projection.x();
+    //Projection.y=projection.y();
+    //Projection.z=projection.z();
     // 创建点集，并插入定义线的两个点
     auto points = vtkSmartPointer<vtkPoints>::New();
     points->InsertNextPoint(glbPos_begin.x, glbPos_begin.y, glbPos_begin.z);
@@ -867,6 +869,11 @@ void CDistance::setline(const CLine &Line)
 CPosition CDistance::getbegin()
 {
     return begin;
+}
+
+CPosition CDistance::getProjection()
+{
+    return Projection;
 }
 
 double CDistance::getdistancepoint()

@@ -1,4 +1,4 @@
-#include "vtkwindow/vtkwidget.h"
+ #include "vtkwindow/vtkwidget.h"
 #include <vtkInteractorStyle.h>
 #include <vtkEventQtSlotConnect.h>
 #include <QFileDialog>  // 用于文件对话框
@@ -63,6 +63,9 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
 
 void VtkWidget::OnMouseMove()
 {
+    if(!infoTextActor){
+        return;
+    }
     if (isDragging){
         int clickPos[2];
         renWin->GetInteractor()->GetEventPosition(clickPos);
@@ -70,7 +73,7 @@ void VtkWidget::OnMouseMove()
         double *a;
         a=infoTextActor->GetPosition();
         rectangleActor->SetPosition(a[0],a[1]);
-        createLine();
+        Linechange();
         getRenderWindow()->Render();
     }
 }
@@ -208,44 +211,69 @@ void VtkWidget::createTextBox()
 
 void VtkWidget::createLine()
 {
-    if (lineActor)
+    if (lineActor&&iconActor)
     {
         renderer->RemoveActor(lineActor); // 从渲染器中移除旧的演员
+        renderer->RemoveActor(iconActor);
     }
+    pngReader = vtkSmartPointer<vtkPNGReader>::New();
     double *a=rectangleActor->GetPosition();
-    CPosition b;
     if(elementEntity->GetObjectCName().left(2)=="距离"){
         CDistance * dis=static_cast<CDistance*>(elementEntity);
-        b=dis->getbegin();
+        double distance = dis->getdistanceplane();
+        CObject*obj11=dis->parent[1];
+        CPlane*plane=static_cast<CPlane*>(obj11);
+        QVector4D plane_normal = plane->getNormal();
+        plane_normal.normalize();
+        b.x = dis->getbegin().x - (distance * plane_normal.x())/2;
+        b.y = dis->getbegin().y - (distance * plane_normal.y())/2;
+        b.z = dis->getbegin().z - (distance * plane_normal.z())/2;
+        /*b.x=abs(dis->getbegin().x-dis->getProjection().x);
+        b.x=abs(dis->getbegin().y-dis->getProjection().y);
+        b.x=abs(dis->getbegin().z-dis->getProjection().z);*/
+        pngReader->SetFileName(":/component/construct/distance.png");
     }
     if(elementEntity->getEntityType()==enPoint){
         CPoint*point=static_cast<CPoint*>(elementEntity);
         b=point->GetPt();
+        pngReader->SetFileName(":/component/find/point.jpg");
     }
     if(elementEntity->getEntityType()==enLine){
         CLine*line=static_cast<CLine*>(elementEntity);
         b=line->GetObjectCenterLocalPoint();
+        pngReader->SetFileName(":/component/find/line.jpg");
     }
     if(elementEntity->getEntityType()==enCircle){
         CCircle*circle=static_cast<CCircle*>(elementEntity);
         b=circle->getCenter();
+        pngReader->SetFileName(":/component/find/circle.jpg");
     }
     if(elementEntity->getEntityType()==enSphere){
         CSphere*s=static_cast<CSphere*>(elementEntity);
         b=s->getCenter();
+        pngReader->SetFileName(":/component/find/sphere.jpg");
     }
     if(elementEntity->getEntityType()==enPlane){
         CPlane*s=static_cast<CPlane*>(elementEntity);
         b=s->getCenter();
+        pngReader->SetFileName(":/component/find/plan.jpg");
     }
     if(elementEntity->getEntityType()==enCylinder){
         CCylinder*s=static_cast<CCylinder*>(elementEntity);
         b=s->getBtm_center();
+        pngReader->SetFileName(":/component/find/cylinder.jpg");
     }
     if(elementEntity->getEntityType()==enCone){
         CCone*s=static_cast<CCone*>(elementEntity);
         b=s->getVertex();
+        pngReader->SetFileName(":/component/find/cone.jpg");
     }
+    //图片演员
+    iconActor = vtkSmartPointer<vtkImageActor>::New();
+    iconActor->SetInputData(pngReader->GetOutput());
+    iconActor->SetPosition(a[0],a[1],0);
+
+    renderer->AddActor(iconActor);
 
     vtkSmartPointer<vtkCoordinate> coordinate = vtkSmartPointer<vtkCoordinate>::New();
     //coordinate->SetValue(glbPos_begin.x,glbPos_begin.y,glbPos_begin.z);
@@ -253,13 +281,13 @@ void VtkWidget::createLine()
     coordinate->SetCoordinateSystemToWorld();
     int* viewportMidPoint;
     viewportMidPoint=coordinate->GetComputedViewportValue(renderer);
-    vtkSmartPointer<vtkPolyData> linePolyData = vtkSmartPointer<vtkPolyData>::New();
+    linePolyData = vtkSmartPointer<vtkPolyData>::New();
     vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-    linePolyData->SetPoints(points);
-
     // 添加起点和终点
     points->InsertNextPoint(a[0], a[1], 0.0); // 矩形左下角
     points->InsertNextPoint(viewportMidPoint[0],viewportMidPoint[1],viewportMidPoint[2]); // 3D直线中点
+    linePolyData->SetPoints(points);
+
     vtkSmartPointer<vtkCellArray> lines = vtkSmartPointer<vtkCellArray>::New();
     lines->InsertNextCell(2);
     lines->InsertCellPoint(0);
@@ -268,7 +296,7 @@ void VtkWidget::createLine()
     linePolyData->SetLines(lines);
 
     // 创建mapper
-    vtkSmartPointer<vtkPolyDataMapper2D> lineMapper = vtkSmartPointer<vtkPolyDataMapper2D>::New();
+    lineMapper = vtkSmartPointer<vtkPolyDataMapper2D>::New();
     lineMapper->SetInputData(linePolyData);
 
     // 创建2D线actor
@@ -278,6 +306,24 @@ void VtkWidget::createLine()
     lineActor->GetProperty()->SetLineWidth(2);
     renderer->AddActor(lineActor);
 
+}
+
+void VtkWidget::Linechange()
+{
+    double *a=rectangleActor->GetPosition();
+    vtkSmartPointer<vtkCoordinate> coordinate = vtkSmartPointer<vtkCoordinate>::New();
+    //coordinate->SetValue(glbPos_begin.x,glbPos_begin.y,glbPos_begin.z);
+    coordinate->SetValue(b.x,b.y,b.z);
+    coordinate->SetCoordinateSystemToWorld();
+    int* viewportMidPoint;
+    viewportMidPoint=coordinate->GetComputedViewportValue(renderer);
+    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+    // 添加起点和终点
+    points->InsertNextPoint(a[0], a[1], 0.0); // 矩形左下角
+    points->InsertNextPoint(viewportMidPoint[0],viewportMidPoint[1],viewportMidPoint[2]); // 3D直线中点
+    linePolyData->SetPoints(points);
+    lineMapper->SetInputData(linePolyData);
+    lineActor->SetMapper(lineMapper);
 }
 
 void VtkWidget::closeText()

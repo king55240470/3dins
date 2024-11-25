@@ -61,6 +61,10 @@
 #include <vtkPolyDataMapper2D.h>
 #include <vtkNamedColors.h>
 #include <qlabel.h>
+#include <vtkImageActor.h>
+#include <vtkPNGReader.h>
+#include <vtkImageMapper.h>
+#include <vtkJPEGReader.h>.h>
 VTK_MODULE_INIT(vtkRenderingOpenGL2);
 VTK_MODULE_INIT(vtkInteractionStyle);
 VTK_MODULE_INIT(vtkRenderingVolumeOpenGL2);
@@ -102,6 +106,7 @@ public:
     void createText();
     void createTextBox();
     void createLine();
+    void Linechange();
     void closeText();
     void GetScreenCoordinates(vtkRenderer* renderer, double pt[3], double screenCoord[2]);
 private:
@@ -119,12 +124,17 @@ private:
     vtkSmartPointer<vtkTextActor> infoTextActor;// 浮动信息文本演员
     vtkSmartPointer<vtkActor2D> rectangleActor; // 背景和边框
     vtkSmartPointer<vtkActor2D> lineActor;//指向线条
+    vtkSmartPointer<vtkPNGReader> pngReader; //储存图片信息
+    vtkSmartPointer<vtkImageActor> iconActor; //图片演员
     vtkSmartPointer<vtkOrientationMarkerWidget> axeWidget; // 创建窗口部件来封装坐标器
     vtkSmartPointer<vtkOrientationMarkerWidget> textWidget; // 浮动窗口，用于显示信息
     CEntity* elementEntity;//储存传入的entity
     vtkTimeStamp lastLeftClickTime; // 时间戳，记录上次左键点击的时间
     // double lastLeftClickPos[2]; // 记录左键按下时的位置
     bool isDragging=false;  //判断注释是否能移动
+    CPosition b;//储存指向箭头的终点
+    vtkSmartPointer<vtkPolyData> linePolyData;//储存线的data
+    vtkSmartPointer<vtkPolyDataMapper2D> lineMapper;//指向线的mapper
 public slots:
 
 };
