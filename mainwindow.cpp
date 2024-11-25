@@ -151,9 +151,7 @@ void MainWindow::setupUi(){
     MiddledownTabWidget->addTab(pWinDataWidget,"数据结果");
     MiddledownTabWidget->addTab(pWinLogWidget,"Log查看");
     spMiddledown->addWidget(MiddledownTabWidget);
-
     spMiddledown->addWidget(pWinToolWidget);
-
     spRightdown=new QSplitter(Qt::Horizontal,spRightup);
     spRightup->addWidget(spRightdown);
     spRightdown->addWidget(pWinVtkPresetWidget);
@@ -166,7 +164,6 @@ void MainWindow::setupUi(){
     spMainWindow->setHandleWidth(5);
 
     setCentralWidget(spMainWindow);
-
     ContralWidget * contralWidget=new ContralWidget(pWinToolWidget,this);
     connect(contralAction,&QAction::triggered,[=](){contralWidget->show();});
 
@@ -221,8 +218,6 @@ void MainWindow::openFile(){
     for (const QString &filePath : filePaths) {
         QFileInfo fileInfo(filePath);
         QString fileName = fileInfo.fileName();
-        qDebug()<<"ok 1";
-
         // 根据文件扩展名进行判断
         if (filePath.endsWith("ply")) {
             pWinFileManagerWidget->openModelFile(fileName, filePath);

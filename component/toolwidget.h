@@ -66,6 +66,13 @@ public:
 
     QVector<CEntity*>& getConstructEntityList();
     QVector<CEntity*>& getIdentifyEntityList();
+    //返回UniqueToolBar的引用，以便contralwidget操作
+    UniqueToolBar& getSave();
+    UniqueToolBar& getFind();
+    UniqueToolBar& getCoord();
+    UniqueToolBar& getViewAngle();
+    UniqueToolBar& getConstruct();
+    ToolBarGathter& getToolBarGather();
 
 public slots:
               //构造

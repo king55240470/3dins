@@ -80,6 +80,10 @@ void FileManagerWidget::openModelFile(QString fileName,QString filePath){
 
     // 给拟合的临时点云指针赋值
     auto newcloud = new pcl::PointCloud<pcl::PointXYZRGB>(cloud->m_pointCloud);
+
+    auto tmpCloud=m_pMainWin->getPointCloudListMgr()->getTempCloud();
+    pcl::copyPointCloud(*newcloud, tmpCloud);
+
     m_pMainWin->getpWinFileMgr()->cloudptr = pcl::PointCloud<pcl::PointXYZRGB>::Ptr(newcloud);
     if(!m_pMainWin->getpWinFileMgr()->cloudptr){
         qDebug() << "拟合用的点云指针为空!";
