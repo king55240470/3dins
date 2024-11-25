@@ -10,6 +10,7 @@
 #include <QTreeWidgetItem>
 #include<QSettings>
 #include"toolwidget.h"
+#include"toolaction.h"
 class ContralWidget : public QDialog {
      Q_OBJECT
 public:
@@ -20,6 +21,7 @@ public:
       ~ContralWidget();
 
 protected:
+    QList<UniqueToolBar*> UniqueToolbarList;
 
     const int save_action_index_=2;
     const int find_action_index_=0;

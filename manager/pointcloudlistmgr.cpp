@@ -38,21 +38,16 @@ void PointCloudListMgr::DeleteFileCloud(QString filepath)
 CPointCloud* PointCloudListMgr::CreateFittingCloud(pcl::PointCloud<pcl::PointXYZRGB> plane)
 {
     CPointCloud* CloudEntity=new CPointCloud();
-    CloudEntity->isFittingCloud = true; // 拟合出的点云
     CloudEntity->setPointCloud(plane);
 
     return CloudEntity;
 }
 
-CPointCloud *PointCloudListMgr::CreateComparsionCloud(pcl::PointCloud<pcl::PointXYZRGB> cloud)
+CPointCloud *PointCloudListMgr::CreateCompareCloud(pcl::PointCloud<pcl::PointXYZRGB> cloud)
 {
     CPointCloud* CloudEntity=new CPointCloud();
-    CloudEntity->isFittingCloud = true; // 对比生成的点云
+    CloudEntity->isComparsionCloud = true; // 对比生成的点云
     CloudEntity->setPointCloud(cloud);
     return CloudEntity;
 }
 
-pcl::PointCloud<pcl::PointXYZRGB>::Ptr PointCloudListMgr::CloudToPtr(pcl::PointCloud<pcl::PointXYZRGB> cloud)
-{
-    return pcl::PointCloud<pcl::PointXYZRGB>::Ptr (&cloud);
-}

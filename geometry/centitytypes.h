@@ -535,11 +535,14 @@ public:
     void setplane(const CPlane & Plane);
     void setcircle(const CCircle & Circle);
     void setline(const CLine & Line);
+    CPosition getbegin();
+    CPosition getProjection();
     double getdistancepoint();
     double getdistanceplane();
     double getdistancecircle();
     double getdistanceline();
     double getdistance();
+
     void setdistance(double d);
     bool judge();
     void setProjection(CPosition pos);
@@ -564,10 +567,10 @@ class CPointCloud : public CEntity
 public:
     CPosition m_pt;
     pcl::PointCloud<pcl::PointXYZRGB> m_pointCloud; // 存储的点云对象（已经加载过的）
+    double pointCloudSize; // 点云的大小，即包含点的数量
     static int pointCloudCount;
     int currentPointCloudId;
     bool isFileCloud = false; // 是否是文件生成的点云
-    bool isFittingCloud = false; // 是否是拟合出来的点云
     bool isComparsionCloud = false; //  是否是对比得到的点云
 
     QDataStream& serialize(QDataStream& out) const override {
@@ -597,6 +600,11 @@ public:
     // 点云类的draw
     QString getCEntityInfo() override; // 获取图形的信息，在浮动窗口显示
     vtkSmartPointer<vtkActor> draw() override;
+    vtkSmartPointer<vtkActor> drawComparedCloud(); // 绘制对比生成的点云
+    double getPointCloudSize(){
+        return m_pointCloud.points.size();
+    };
+
     int GetUniqueType() override {
         return enPointCloud;
     }
