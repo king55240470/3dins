@@ -98,6 +98,10 @@ void ElementListWidget::CreateEllipse(CObject*obj)
         QIcon icon(":/component/find/cylinder.jpg");
         item->setIcon(0, icon);
     }
+    if(obj->GetUniqueType()==enDistance){
+        QIcon icon(":/component/construct/distance.png");
+        item->setIcon(0, icon);
+    }
 }
 
 void ElementListWidget::onDeleteEllipse()
@@ -324,7 +328,7 @@ void ElementListWidget::BtnClicked()
 void ElementListWidget::ShowParent(CObject*obj)
 {
     treeWidgetInfo->clear();
-    if(obj->GetUniqueType()==enPoint){
+    if(obj->Form=="预制"){
         QTreeWidgetItem *infoItem = new QTreeWidgetItem(treeWidgetInfo);
         infoItem->setText(0,obj->m_strCName);
         infoItem->setText(1,obj->Form);
