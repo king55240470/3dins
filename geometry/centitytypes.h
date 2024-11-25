@@ -483,6 +483,7 @@ class CPointCloud : public CEntity
 public:
     CPosition m_pt;
     pcl::PointCloud<pcl::PointXYZRGB> m_pointCloud; // 存储的点云对象（已经加载过的）
+    double pointCloudSize; // 点云的大小，即包含点的数量
     static int pointCloudCount;
     int currentPointCloudId;
     bool isFileCloud = false; // 是否是文件生成的点云
@@ -501,6 +502,10 @@ public:
     QString getCEntityInfo() override; // 获取图形的信息，在浮动窗口显示
     vtkSmartPointer<vtkActor> draw() override;
     vtkSmartPointer<vtkActor> drawComparedCloud(); // 绘制对比生成的点云
+    double getPointCloudSize(){
+        return m_pointCloud.points.size();
+    };
+
     int GetUniqueType() override {
         return enPointCloud;
     }

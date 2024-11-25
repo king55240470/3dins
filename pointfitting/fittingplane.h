@@ -26,8 +26,9 @@ private:
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr planeCloud;//存储拟合平面上的点
     pcl::ModelCoefficients::Ptr coefficients;//存储拟合平面方程的4个系数
     pcl::PointIndices::Ptr inliers;//存储内点
-    double radius;
-    double distance;
+    double radius;//邻域
+    double distance;//距离阈值
+
     Eigen::Vector3f normal;//存储平面的法向量
     Eigen::Vector4f center;//存储平面中心
     double length;//平面的长

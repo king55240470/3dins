@@ -13,6 +13,7 @@
 
 class MainWindow;
 class FittingPlane;
+class FittingCylinder;
 class setDataWidget : public QWidget
 {
     Q_OBJECT
@@ -24,23 +25,36 @@ public:
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr getFittingPlane();
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr getPlaneCloud();
     FittingPlane *getPlane();
+
+    void setCylinderData(pcl::PointXYZRGB,pcl::PointCloud<pcl::PointXYZRGB>::Ptr);
+    void CylinderBtnClick();
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr getFittingCylinder();
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr getCylinderCloud();
+    FittingCylinder *getCylinder();
 private:
     MainWindow *m_pMainWin;
 
-    //拟合平面对话框
+    pcl::PointXYZRGB point;
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudptr;
+
+    //对话框
+    QDialog *dialog;
+    QGridLayout *layout;
+    QLabel *lab1;
+    QLabel *lab2;
+    QLineEdit *rad;
+    QLineEdit *dis;
+    QPushButton *btn;
+
+    //拟合平面
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr fittingPlane;
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr planeCloud;
-    QDialog *p_dialog;
-    QGridLayout *p_layout;
-    QLabel *p_lab1;
-    QLabel *p_lab2;
-    QLineEdit *p_rad;
-    QLineEdit *p_dis;
-    QPushButton *p_btn;
-    pcl::PointXYZRGB p_point;
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr p_cloudptr;
-
     FittingPlane *plane;
+
+    //拟合圆柱
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr fittingCylinder;
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cylinderCloud;
+    FittingCylinder *cylinder;
 
 signals:
 };
