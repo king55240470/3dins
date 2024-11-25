@@ -99,7 +99,6 @@ void VtkWidget::OnLeftButtonPress()
 
 void VtkWidget::OnLeftButtonRelease()
 {
-    qDebug()<<"左键释放";
     isDragging = false; // 关闭拖动状态
 }
 void VtkWidget::setCentity(CEntity *entity)
@@ -307,7 +306,6 @@ vtkSmartPointer<vtkRenderer>& VtkWidget::getRenderer(){
 // 刷新vtk窗口
 void VtkWidget::UpdateInfo(){
     reDrawCentity();
-    onTopView(); // 重置相机视角
 }
 
 void VtkWidget::reDrawCentity(){
