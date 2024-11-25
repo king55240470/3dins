@@ -100,6 +100,7 @@ public:
 
     // 显示选中的图形的信息
     void setCentity(CEntity*entity);  //传入centity对象
+    void MouseDrag();
     void OnMouseMove();
     void OnLeftButtonPress();
     void OnLeftButtonRelease();
@@ -136,6 +137,7 @@ private:
     CPosition b;//储存指向箭头的终点
     vtkSmartPointer<vtkPolyData> linePolyData;//储存线的data
     vtkSmartPointer<vtkPolyDataMapper2D> lineMapper;//指向线的mapper
+    vtkSmartPointer<MouseInteractorHighlightActor>m_highlightstyle;
 public slots:
 
 };
