@@ -98,6 +98,15 @@ public slots:
 
 private:
     void clearToolBar(QToolBar *toolbar);
+    //新的工具栏类
+    UniqueToolBar m_save;
+    UniqueToolBar m_find;
+    UniqueToolBar m_coord;
+    UniqueToolBar m_viewAngle;
+    UniqueToolBar m_construct;
+
+    ToolBarGathter m_toolBarGather;
+
     //存储QAction
     ToolAction **  save_actions_;
     ToolAction **  construct_actions_;

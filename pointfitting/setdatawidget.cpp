@@ -1,6 +1,7 @@
 #include "setdatawidget.h"
 #include "mainwindow.h"
 #include "pointfitting/fittingplane.h"
+#include "pointfitting/fittingCylinder.h"
 class VtkWidget;
 
 #include <QMessageBox>
@@ -9,40 +10,46 @@ setDataWidget::setDataWidget(QWidget *parent)
     : QWidget{parent}
 {
     m_pMainWin=(MainWindow*)parent;
-    p_cloudptr.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
+
+    cloudptr.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
+
     fittingPlane.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
     planeCloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
     plane=nullptr;
+
+    fittingCylinder.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
+    cylinderCloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
+    cylinder=nullptr;
 }
 
-void setDataWidget::setPlaneData(pcl::PointXYZRGB searchPoint,pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudptr){
-    p_point=searchPoint;
-    p_cloudptr=cloudptr;
-    p_dialog = new QDialog(this);
-    p_dialog->resize(400,150);
-    p_dialog->setWindowTitle("设置邻域和阈值");
-    p_layout = new QGridLayout(p_dialog);
-    p_lab1 = new QLabel("请输入邻域（一般设置为0.1）：");
-    p_lab2 = new QLabel("请输入距离阈值（一般设置为0.01）：");
-    p_rad = new QLineEdit();
-    p_rad->setText("0.1");
-    p_dis = new QLineEdit();
-    p_dis->setText("0.01");
-    p_btn = new QPushButton("确定");
-    p_layout->addWidget(p_lab1,0,0,1,1);
-    p_layout->addWidget(p_rad,0,1,1,2);
-    p_layout->addWidget(p_lab2,1,0,1,1);
-    p_layout->addWidget(p_dis,1,1,1,2);
-    p_layout->addWidget(p_btn,2,2,1,1);
-    p_dialog->setLayout(p_layout);
-    p_dialog->show();
-    connect(p_btn,&QPushButton::clicked,this,&setDataWidget::PlaneBtnClick);
-    p_dialog->exec();
+void setDataWidget::setPlaneData(pcl::PointXYZRGB searchPoint,pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud){
+    point=searchPoint;
+    cloudptr=cloud;
+    dialog = new QDialog(this);
+    dialog->resize(400,150);
+    dialog->setWindowTitle("设置邻域和阈值");
+    layout = new QGridLayout(dialog);
+    lab1 = new QLabel("请输入邻域（一般设置为0.1）：");
+    lab2 = new QLabel("请输入距离阈值（一般设置为0.01）：");
+    rad = new QLineEdit();
+    rad->setText("0.1");
+    dis = new QLineEdit();
+    dis->setText("0.01");
+    btn = new QPushButton("确定");
+    layout->addWidget(lab1,0,0,1,1);
+    layout->addWidget(rad,0,1,1,2);
+    layout->addWidget(lab2,1,0,1,1);
+    layout->addWidget(dis,1,1,1,2);
+    layout->addWidget(btn,2,2,1,1);
+    dialog->setLayout(layout);
+    dialog->show();
+    connect(btn,&QPushButton::clicked,this,&setDataWidget::PlaneBtnClick);
+    dialog->exec();
 }
 
 void setDataWidget::PlaneBtnClick(){
-    p_dialog->close();
-    if(p_dis->text().toDouble()<=0||p_rad->text().toDouble()<=0){
+    dialog->close();
+    if(dis->text().toDouble()<=0||rad->text().toDouble()<=0){
         QMessageBox *messagebox=new QMessageBox();
         messagebox->setText("输入大于0的数");
         messagebox->setIcon(QMessageBox::Warning);
@@ -51,9 +58,9 @@ void setDataWidget::PlaneBtnClick(){
         return;
     }
     plane=new FittingPlane();
-    plane->setRadius(p_rad->text().toDouble());  // 设置半径
-    plane->setDistance(p_dis->text().toDouble());  // 设置距离阈值
-    planeCloud= plane->RANSAC(p_point,p_cloudptr);
+    plane->setRadius(rad->text().toDouble());  // 设置半径
+    plane->setDistance(dis->text().toDouble());  // 设置距离阈值
+    planeCloud= plane->RANSAC(point,cloudptr);
     if(planeCloud==nullptr){
         qDebug()<<"出现了点云空指针";
         return;
@@ -72,4 +79,64 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr setDataWidget::getFittingPlane(){
 
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr setDataWidget::getPlaneCloud(){
     return planeCloud;
+}
+
+
+void setDataWidget::setCylinderData(pcl::PointXYZRGB searchPoint,pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud){
+    point=searchPoint;
+    cloudptr=cloud;
+    dialog = new QDialog(this);
+    dialog->resize(400,150);
+    dialog->setWindowTitle("设置邻域和阈值");
+    layout = new QGridLayout(dialog);
+    lab1 = new QLabel("请输入邻域：");
+    lab2 = new QLabel("请输入距离阈值：");
+    rad = new QLineEdit();
+    rad->setText("1");
+    dis = new QLineEdit();
+    dis->setText("0.01");
+    btn = new QPushButton("确定");
+    layout->addWidget(lab1,0,0,1,1);
+    layout->addWidget(rad,0,1,1,2);
+    layout->addWidget(lab2,1,0,1,1);
+    layout->addWidget(dis,1,1,1,2);
+    layout->addWidget(btn,2,2,1,1);
+    dialog->setLayout(layout);
+    dialog->show();
+    connect(btn,&QPushButton::clicked,this,&setDataWidget::CylinderBtnClick);
+    dialog->exec();
+}
+
+void setDataWidget::CylinderBtnClick(){
+    dialog->close();
+    if(dis->text().toDouble()<=0||rad->text().toDouble()<=0){
+        QMessageBox *messagebox=new QMessageBox();
+        messagebox->setText("输入大于0的数");
+        messagebox->setIcon(QMessageBox::Warning);
+        messagebox->show();
+        messagebox->exec();
+        return;
+    }
+    cylinder=new FittingCylinder();
+    cylinder->setRadius(rad->text().toDouble());  // 设置半径
+    cylinder->setDistance(dis->text().toDouble());  // 设置距离阈值
+    cylinderCloud= cylinder->RANSAC(point,cloudptr);
+    if(cylinderCloud==nullptr){
+        qDebug()<<"出现了点云空指针";
+        return;
+    }
+    qDebug()<<cylinderCloud->size();
+    pcl::copyPointCloud(*cylinderCloud, *fittingCylinder);
+}
+
+FittingCylinder *setDataWidget::getCylinder(){
+    return cylinder;
+}
+
+pcl::PointCloud<pcl::PointXYZRGB>::Ptr setDataWidget::getFittingCylinder(){
+    return fittingCylinder;
+}
+
+pcl::PointCloud<pcl::PointXYZRGB>::Ptr setDataWidget::getCylinderCloud(){
+    return cylinderCloud;
 }
