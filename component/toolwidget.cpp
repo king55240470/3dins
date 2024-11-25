@@ -65,6 +65,7 @@
 #include <pcl/visualization/pcl_visualizer.h> // PCL 的可视化工具
 
 #include "pointfitting/fittingplane.h"//拟合平面算法
+#include "pointfitting/fittingcylinder.h"//拟合圆柱算法
 #include "pointfitting/setdatawidget.h"
 
 
@@ -1477,6 +1478,9 @@ void ToolWidget:: onFindPlane(){
         return ;
     }
     auto plane=m_pMainWin->getPWinSetDataWidget()->getPlane();
+    if(plane==nullptr){
+        return;
+    }
     PlaneConstructor constructor;
     CPlane* newPlane;
     CPosition center;
@@ -1501,8 +1505,49 @@ void ToolWidget::onFindPoint(){
 }
 void ToolWidget::onFindLine(){}
 void ToolWidget::onFindCircle(){}
-void ToolWidget::onFindRectangle(){}
-void ToolWidget::onFindCylinder(){}
+void ToolWidget::onFindRectangle(){
+}
+void ToolWidget::onFindCylinder(){
+    QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenActorAxes();
+    pcl::PointXYZRGB  point;
+    if(positions.size()==0)return ;
+    point.x=positions[0].x;
+    point.y=positions[0].y;
+    point.z=positions[0].z;
+    auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
+    if(cloudptr==nullptr){
+        WrongWidget("点云指针为空");
+        return ;
+    }
+    m_pMainWin->getPWinSetDataWidget()->setCylinderData(point,cloudptr);
+    // 生成点云对象并添加到entitylist
+    // CPointCloud* pointCloud=new CPointCloud();
+    auto cylinderCloud=m_pMainWin->getPWinSetDataWidget()->getCylinderCloud();
+    if(cylinderCloud==nullptr){
+        qDebug()<<"拟合平面生成错误";
+        return ;
+    }
+    auto cylinder=m_pMainWin->getPWinSetDataWidget()->getCylinder();
+    if(cylinder==nullptr){
+        return;
+    }
+    CylinderConstructor constructor;
+    CCylinder* newCylinder;
+    CPosition center;
+    center.x=cylinder->getBottomCenter().x();
+    center.y=cylinder->getBottomCenter().y();
+    center.z=cylinder->getBottomCenter().z();
+    QVector4D normal(cylinder->getNormal().x(),cylinder->getNormal().y(),cylinder->getNormal().z(),0);
+    newCylinder=constructor.createCylinder(center,normal,cylinder->getHeight(),cylinder->getDiameter());
+    if(newCylinder==nullptr){
+        qDebug()<<"拟合平面生成错误";
+        return ;
+    }
+    addToFindList(newCylinder);
+
+    positions.clear();
+    m_pMainWin->NotifySubscribe();
+}
 void ToolWidget::onFindCone(){}
 void ToolWidget::onFindSphere(){}
 void ToolWidget::updateele(){

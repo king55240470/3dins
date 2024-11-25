@@ -43,6 +43,7 @@ SOURCES += \
     manager/cpcsmgr.cpp \
     manager/filemgr.cpp \
     manager/pointcloudlistmgr.cpp \
+    pointfitting/fittingcylinder.cpp \
     pointfitting/fittingplane.cpp \
     pointfitting/setdatawidget.cpp \
     vtkwindow/clickhighlightstyle.cpp \
@@ -85,6 +86,7 @@ HEADERS += \
     manager/cpcsmgr.h \
     manager/filemgr.h \
     manager/pointcloudlistmgr.h \
+    pointfitting/fittingcylinder.h \
     pointfitting/fittingplane.h \
     pointfitting/setdatawidget.h \
     vtkwindow/clickhighlightstyle.h \

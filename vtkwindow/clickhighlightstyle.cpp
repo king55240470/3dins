@@ -38,12 +38,12 @@ void MouseInteractorHighlightActor::OnLeftButtonDown()
         }
 
         // 如果选中的是文件点云，则给拟合用的cloudptr赋值
-        // if(entity->m_EntityType == enPointCloud){
-        //     auto cloudEntity = (CPointCloud*) entity;
-        //     auto cloud = new pcl::PointCloud<pcl::PointXYZRGB>(cloudEntity->m_pointCloud);
-        //     m_pMainWin->getpWinFileMgr()->cloudptr =
-        //         pcl::PointCloud<pcl::PointXYZRGB>::Ptr (cloud);
-        // }
+        if(entity->m_EntityType == enPointCloud){
+            auto cloudEntity = (CPointCloud*) entity;
+            auto cloud = new pcl::PointCloud<pcl::PointXYZRGB>(cloudEntity->m_pointCloud);
+            m_pMainWin->getpWinFileMgr()->cloudptr =
+                pcl::PointCloud<pcl::PointXYZRGB>::Ptr (cloud);
+        }
 
         // 生成一个用于高亮的顶点，并存入pickedActors
         auto actor = CreatHighLightPoint(pos);
