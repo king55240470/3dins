@@ -1226,6 +1226,9 @@ void ToolWidget::onConstructPoint(){
         for(int i=0;i<positions.size();i++){
             newPoint=constructor.createPoint(positions[i]);
             newPoint->Form="构造";
+            CPoint*p=newPoint;
+            p->Form="构造";
+            newPoint->parent.push_back(p);
             if(newPoint!=nullptr){
                 addToList(newPoint);
             }

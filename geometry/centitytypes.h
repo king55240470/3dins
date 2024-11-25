@@ -452,6 +452,7 @@ public:
     void setcircle(const CCircle & Circle);
     void setline(const CLine & Line);
     CPosition getbegin();
+    CPosition getProjection();
     double getdistancepoint();
     double getdistanceplane();
     double getdistancecircle();
