@@ -270,7 +270,6 @@ void VtkWidget::createLine()
     iconActor = vtkSmartPointer<vtkImageActor>::New();
     iconActor->SetInputData(pngReader->GetOutput());
     iconActor->SetPosition(a[0],a[1],0);
-
     renderer->AddActor(iconActor);
 
     vtkSmartPointer<vtkCoordinate> coordinate = vtkSmartPointer<vtkCoordinate>::New();
@@ -303,7 +302,6 @@ void VtkWidget::createLine()
     lineActor->GetProperty()->SetColor(1, 0, 0); // 设置线的颜色为红色
     lineActor->GetProperty()->SetLineWidth(2);
     renderer->AddActor(lineActor);
-
 }
 
 void VtkWidget::Linechange()
@@ -428,6 +426,7 @@ void VtkWidget::reDrawCentity(){
                 getRenderer()->AddActor(object->draw());
         }
     }
+    renWin->Render(); // 刷新窗口
 }
 
 void VtkWidget::reDrawCloud()
@@ -657,6 +656,10 @@ void VtkWidget::onCompare()
             pcl::copyPointCloud(tempCloud, *cloud1);
         }
     }
+
+    // 初始化两个点云
+    // pcl::io::loadPLYFile(modelFile.toStdString(), *cloud1);
+    // pcl::io::loadPCDFile(measureFile.toStdString(), *cloud2);
 
     // 检查点云是否为空
     if (cloud1->empty() || cloud2->empty()) {
