@@ -100,6 +100,7 @@ public:
 
     // 显示选中的图形的信息
     void setCentity(CEntity*entity);  //传入centity对象
+    void MouseDrag();
     void OnMouseMove();
     void OnLeftButtonPress();
     void OnLeftButtonRelease();
@@ -116,6 +117,7 @@ private:
     // 创建渲染器、渲染窗口和交互器
     vtkSmartPointer<vtkRenderer> renderer;
     vtkSmartPointer<vtkGenericOpenGLRenderWindow> renWin;
+    vtkSmartPointer<MouseInteractorHighlightActor>m_highlightstyle;
 
     pcl::PointCloud<pcl::PointXYZRGB> tempCloud; // 转换rgb点云用的临时点云
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud1; // 对比用的两个点云

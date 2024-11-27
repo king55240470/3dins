@@ -71,6 +71,13 @@ public:
             <<m_strCName
             <<m_strAutoName
             <<m_nObjectID;
+
+        out<<static_cast<int>(parent.size());
+        qDebug()<<"parentSize:"<<parent.size();
+        for(const auto* obj:parent){//auto让编译器自动推断元素的类型
+            out<<*obj;
+        }
+
         return out;
     }
     //反序列化（反序列化通常不使用const成员函数，因为反序列化过程需要修改对象的状态以恢复其原始数据）
@@ -84,6 +91,17 @@ public:
             >>m_strCName
             >>m_strAutoName
             >>m_nObjectID;
+
+        int parentSize;
+        in>>parentSize;
+        qDebug()<<"parentSize:"<<parentSize;
+        parent.clear();
+        for(int i=0;i<parentSize;i++){
+            CObject *obj=new CObject();
+            in>>*obj;
+            parent.append(obj);
+        }
+
         return in;
     }
 
