@@ -3,7 +3,7 @@
 
 #include "mainwindow.h"
 #include "clickhighlightstyle.h"
-#include "custominteractorstyle.h"
+#include "mousedragcommand.h"
 #include "manager/filemgr.h"
 #include "component/toolwidget.h"
 #include <QWidget>
@@ -64,7 +64,7 @@
 #include <vtkImageActor.h>
 #include <vtkPNGReader.h>
 #include <vtkImageMapper.h>
-#include <vtkJPEGReader.h>.h>
+#include <vtkJPEGReader.h>
 VTK_MODULE_INIT(vtkRenderingOpenGL2);
 VTK_MODULE_INIT(vtkInteractionStyle);
 VTK_MODULE_INIT(vtkRenderingVolumeOpenGL2);
@@ -136,6 +136,7 @@ private:
     CPosition b;//储存指向箭头的终点
     vtkSmartPointer<vtkPolyData> linePolyData;//储存线的data
     vtkSmartPointer<vtkPolyDataMapper2D> lineMapper;//指向线的mapper
+    QVector<vtkSmartPointer<vtkActor2D>> directLines; // 存储所有的只指向线段
 public slots:
 
 };
