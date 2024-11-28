@@ -1,4 +1,4 @@
- #include "vtkwindow/vtkwidget.h"
+#include "vtkwindow/vtkwidget.h"
 #include <vtkInteractorStyle.h>
 #include <vtkEventQtSlotConnect.h>
 #include <QFileDialog>  // 用于文件对话框
@@ -35,7 +35,7 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
     vtkWidget->setRenderWindow(renWin);
 
     // 添加高亮样式
-    auto m_highlightstyle = vtkSmartPointer<MouseInteractorHighlightActor>::New();
+    m_highlightstyle = vtkSmartPointer<MouseInteractorHighlightActor>::New();
     m_highlightstyle->SetRenderer(renderer);
     m_highlightstyle->SetUpMainWin(m_pMainWin);
     renWin->GetInteractor()->SetInteractorStyle(m_highlightstyle);
@@ -97,17 +97,25 @@ void VtkWidget::OnLeftButtonPress()
         clickPos[1] <= position[1]+height)
     {
         isDragging = true; // 开启拖动状态
+        renWin->GetInteractor()->SetEventInformation(clickPos[0],clickPos[1],0,0,0,0);
+        renWin->GetInteractor()->SetInteractorStyle(0);
     }
 }
 
 void VtkWidget::OnLeftButtonRelease()
 {
     isDragging = false; // 关闭拖动状态
+    renWin->GetInteractor()->SetInteractorStyle(m_highlightstyle);
 }
 void VtkWidget::setCentity(CEntity *entity)
 {
     elementEntity=entity;
     createText();
+}
+
+void VtkWidget::MouseDrag()
+{
+
 }
 void VtkWidget::createText()
 {
@@ -140,6 +148,7 @@ void VtkWidget::createText()
     renWin->GetInteractor()->AddObserver(vtkCommand::LeftButtonPressEvent, this, &VtkWidget::OnLeftButtonPress);
     renWin->GetInteractor()->AddObserver(vtkCommand::MouseMoveEvent, this, &VtkWidget::OnMouseMove);
     renWin->GetInteractor()->AddObserver(vtkCommand::LeftButtonReleaseEvent, this, &VtkWidget::OnLeftButtonRelease);
+    //renWin->GetInteractor()->AddObserver(vtkCommand::Execute(), this, &VtkWidget::MouseDrag);
 }
 
 // 创建文本框
@@ -226,9 +235,6 @@ void VtkWidget::createLine()
         b.x = dis->getbegin().x - (distance * plane_normal.x())/2;
         b.y = dis->getbegin().y - (distance * plane_normal.y())/2;
         b.z = dis->getbegin().z - (distance * plane_normal.z())/2;
-        /*b.x=abs(dis->getbegin().x-dis->getProjection().x);
-        b.x=abs(dis->getbegin().y-dis->getProjection().y);
-        b.x=abs(dis->getbegin().z-dis->getProjection().z);*/
         pngReader->SetFileName(":/component/construct/distance.png");
     }
     if(elementEntity->getEntityType()==enPoint){
@@ -269,9 +275,10 @@ void VtkWidget::createLine()
     //图片演员
     iconActor = vtkSmartPointer<vtkImageActor>::New();
     iconActor->SetInputData(pngReader->GetOutput());
-    iconActor->SetPosition(a[0],a[1],0);
 
-    renderer->AddActor(iconActor);
+    iconActor->SetPosition(0,0,0);
+
+
 
     vtkSmartPointer<vtkCoordinate> coordinate = vtkSmartPointer<vtkCoordinate>::New();
     //coordinate->SetValue(glbPos_begin.x,glbPos_begin.y,glbPos_begin.z);
@@ -303,6 +310,7 @@ void VtkWidget::createLine()
     lineActor->GetProperty()->SetColor(1, 0, 0); // 设置线的颜色为红色
     lineActor->GetProperty()->SetLineWidth(2);
     renderer->AddActor(lineActor);
+    renderer->AddActor(iconActor);
 
 }
 
