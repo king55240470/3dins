@@ -116,6 +116,7 @@ private:
 
     // 创建渲染器、渲染窗口和交互器
     vtkSmartPointer<vtkRenderer> renderer;
+    // vtkSmartPointer<vtkRenderer> renderer2D; // 专门放文本框和指向线段的渲染器
     vtkSmartPointer<vtkGenericOpenGLRenderWindow> renWin;
     vtkSmartPointer<MouseInteractorHighlightActor>m_highlightstyle;
 
@@ -133,7 +134,6 @@ private:
     vtkSmartPointer<vtkOrientationMarkerWidget> textWidget; // 浮动窗口，用于显示信息
     CEntity* elementEntity;//储存传入的entity
     vtkTimeStamp lastLeftClickTime; // 时间戳，记录上次左键点击的时间
-    // double lastLeftClickPos[2]; // 记录左键按下时的位置
     bool isDragging=false;  //判断注释是否能移动
     CPosition b;//储存指向箭头的终点
     vtkSmartPointer<vtkPolyData> linePolyData;//储存线的data

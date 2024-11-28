@@ -270,10 +270,22 @@ vtkSmartPointer<vtkActor> CCylinder::draw(){
 
     // 创建变换对象，用于旋转圆柱方向
     vtkSmartPointer<vtkTransform> transform = vtkSmartPointer<vtkTransform>::New();
+    // 默认轴向量为y轴
+    QVector3D yAxis(0, 1, 0);
+    // 归一化axis，作为目标轴向量
+    QVector3D targetAxis(getAxis());
+    targetAxis.normalize();
 
-    // 归一化axis并应用到变换
-    double axisData[3] = {getAxis().x(), getAxis().y(), getAxis().z()};
-    transform->RotateWXYZ(180.0, axisData);
+    // 计算旋转角度
+    auto dotProduct = QVector3D::dotProduct(yAxis, targetAxis);
+    double angle = acos(dotProduct) * 180.0 / vtkMath::Pi(); // 将弧度转换为度
+
+    // 计算旋转轴
+    QVector3D rotationAxis = QVector3D::crossProduct(yAxis, targetAxis);
+    rotationAxis.normalize();
+
+    // 应用旋转
+    transform->RotateWXYZ(angle, rotationAxis.x(), rotationAxis.y(), rotationAxis.z());
 
     // 创建映射器
     auto mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
@@ -312,12 +324,25 @@ vtkSmartPointer<vtkActor> CCone::draw(){
     cone->SetHeight(getCone_height());
     cone->SetResolution(100);
 
-    // 创建变换对象，用于旋转圆柱方向
+    // 创建变换对象，用于旋转圆锥方向
     vtkSmartPointer<vtkTransform> transform = vtkSmartPointer<vtkTransform>::New();
 
-    // 归一化axis作为旋转矩阵，并应用到变换
-    double axisData[3] = {getAxis().x(), getAxis().y(), getAxis().z()};
-    transform->RotateWXYZ(180.0, axisData);
+    // 默认轴向量为y轴
+    QVector3D yAxis(0, 1, 0);
+    // 归一化axis，作为目标轴向量
+    QVector3D targetAxis(getAxis());
+    targetAxis.normalize();
+
+    // 计算旋转角度
+    auto dotProduct = QVector3D::dotProduct(yAxis, targetAxis);
+    double angle = acos(dotProduct) * 180.0 / vtkMath::Pi(); // 将弧度转换为度
+
+    // 计算旋转轴
+    QVector3D rotationAxis = QVector3D::crossProduct(yAxis, targetAxis);
+    rotationAxis.normalize();
+
+    // 应用旋转
+    transform->RotateWXYZ(angle, rotationAxis.x(), rotationAxis.y(), rotationAxis.z());
 
     // 创建映射器
     auto mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
