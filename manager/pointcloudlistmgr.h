@@ -16,9 +16,6 @@ class PointCloudListMgr
 public:
     PointCloudListMgr();
     QMap<QString, CPointCloud*> &getFileCloudMap();
-    QVector<CPointCloud*> &getProductCloudList(){
-        return productCloudList;
-    };
 
     CPointCloud* CreateCloudFromFile(QString str); // 给打开的文件分配RGB点云，并生成点云对象
     void DeleteFileCloud(QString filepath); // 删除文件对应的点云
@@ -30,7 +27,6 @@ public:
     };
 private:
     QMap<QString, CPointCloud*> fileCloudMap; // 将打开的文件和点云实体绑定
-    QVector<CPointCloud*> productCloudList; // 管理拟合等功能生成的点云
 
     pcl::PointCloud<pcl::PointXYZRGB> tempCloud; // 临时点云对象
 };

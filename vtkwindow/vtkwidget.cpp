@@ -385,6 +385,7 @@ void VtkWidget::reDrawCentity(){
     }
 
     actorToEntity.clear();
+    CPointCloud::getActorToPointCloud().clear();
     // 遍历entitylist绘制图形并加入渲染器
     for(auto i = 0;i < entitylist.size();i++){
         int constructFlag=0;
@@ -723,7 +724,6 @@ void VtkWidget::onCompare()
     // 由RGB点云生成cpointcloud对象，并存入entitylist
     auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateCompareCloud(*comparisonCloud);
     cloudEntity->isComparsionCloud = true;
-    m_pMainWin->getPointCloudListMgr()->getProductCloudList().push_back(cloudEntity);
     m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
     m_pMainWin->NotifySubscribe();
 }

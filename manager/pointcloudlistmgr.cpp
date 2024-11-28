@@ -20,7 +20,7 @@ CPointCloud* PointCloudListMgr::CreateCloudFromFile(QString str)
     CloudEntity->isFileCloud = true;
     CloudEntity->setPointCloud(tempCloud);
 
-    // 将新的点云实体加入map
+    // 将新的点云实体加入FileCloudMap，将rgb点云加入rgbCloudMap
     getFileCloudMap().insert(str, CloudEntity);
     return CloudEntity;
 }

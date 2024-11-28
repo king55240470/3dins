@@ -133,12 +133,11 @@ private:
     vtkSmartPointer<vtkOrientationMarkerWidget> axeWidget; // 创建窗口部件来封装坐标器
     vtkSmartPointer<vtkOrientationMarkerWidget> textWidget; // 浮动窗口，用于显示信息
     CEntity* elementEntity;//储存传入的entity
-    vtkTimeStamp lastLeftClickTime; // 时间戳，记录上次左键点击的时间
     bool isDragging=false;  //判断注释是否能移动
     CPosition b;//储存指向箭头的终点
     vtkSmartPointer<vtkPolyData> linePolyData;//储存线的data
     vtkSmartPointer<vtkPolyDataMapper2D> lineMapper;//指向线的mapper
-    QVector<vtkSmartPointer<vtkActor2D>> directLines; // 存储所有的只指向线段
+    QVector<vtkSmartPointer<vtkActor2D>> directLines; // 存储所有的指向线段
 public slots:
 
 };
