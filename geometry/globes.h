@@ -50,6 +50,7 @@ enum ENTITY_TYPE : int
     enRegion        = 0x20,
     enScanCode      = 0x21,
     enTotalCount    = 0x22,
+    enCuboid        = 0x23,
 };
 
 //校正偏差

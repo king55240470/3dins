@@ -72,11 +72,11 @@ public:
             <<m_strAutoName
             <<m_nObjectID;
 
-        out<<static_cast<int>(parent.size());
-        qDebug()<<"parentSize:"<<parent.size();
-        for(const auto* obj:parent){//auto让编译器自动推断元素的类型
-            out<<*obj;
-        }
+        // out<<static_cast<int>(parent.size());
+        // qDebug()<<"parentSize:"<<parent.size();
+        // for(const auto* obj:parent){//auto让编译器自动推断元素的类型
+        //     out<<*obj;
+        // }
 
         return out;
     }
@@ -92,15 +92,15 @@ public:
             >>m_strAutoName
             >>m_nObjectID;
 
-        int parentSize;
-        in>>parentSize;
-        qDebug()<<"parentSize:"<<parentSize;
-        parent.clear();
-        for(int i=0;i<parentSize;i++){
-            CObject *obj=new CObject();
-            in>>*obj;
-            parent.append(obj);
-        }
+        // int parentSize;
+        // in>>parentSize;
+        // qDebug()<<"parentSize:"<<parentSize;
+        // parent.clear();
+        // for(int i=0;i<parentSize;i++){
+        //     CObject *obj=new CObject();
+        //     in>>*obj;
+        //     parent.append(obj);
+        // }
 
         return in;
     }

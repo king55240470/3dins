@@ -75,7 +75,7 @@ QDataStream& operator<<(QDataStream& out, const CObjectMgr& mgr){
         << mgr.m_colorGroup[0] << mgr.m_colorGroup[1] << mgr.m_nGroupIndex;
 
     qsizetype size=mgr.m_objectList.size();
-    // qDebug()<<"objectListSize:"<<mgr.m_objectList.size();
+    qDebug()<<"objectListSize:"<<mgr.m_objectList.size();
     out << size;  // 序列化对象列表的大小
     for (const auto& object : mgr.m_objectList) {
         int typeInt = object->GetUniqueType();  // 获取对象的类型标识符
@@ -117,7 +117,7 @@ QDataStream& operator>>(QDataStream& in, CObjectMgr& mgr){
 
     qsizetype objectListSize;
     in >> objectListSize;
-    // qDebug()<<"objectListSize:"<<objectListSize;
+    qDebug()<<"objectListSize:"<<objectListSize;
     mgr.RemoveAll();
     for (qsizetype i = 0; i < objectListSize; ++i) {
         int typeInt;
