@@ -407,6 +407,83 @@ PresetElemWidget::PresetElemWidget(QWidget *parent)
     connect(coneBtn, &QPushButton::clicked, this, &PresetElemWidget::btnConeClicked);
 
 
+    // 创建第八个Tab的内容
+    QWidget *eighthTab = new QWidget();
+    QGridLayout *eighthLayout = new QGridLayout(eighthTab);
+    QGroupBox *egroupBoxLeft = new QGroupBox("中心点");
+    QGridLayout *groupBoxLeftLayout = new QGridLayout();
+
+    QLabel *boxLabelX = new QLabel("X:");
+    boxEditX = new QLineEdit();
+    boxEditX->setText("0");
+    QLabel *boxLabelY = new QLabel("Y:");
+    boxEditY = new QLineEdit();
+    boxEditY->setText("0");
+    QLabel *boxLabelZ = new QLabel("Z:");
+    boxEditZ = new QLineEdit();
+    boxEditZ->setText("0");
+
+    groupBoxLeftLayout->addWidget(boxLabelX, 0, 0);
+    groupBoxLeftLayout->addWidget(boxEditX, 0, 1);
+    groupBoxLeftLayout->addWidget(boxLabelY, 1, 0);
+    groupBoxLeftLayout->addWidget(boxEditY, 1, 1);
+    groupBoxLeftLayout->addWidget(boxLabelZ, 2, 0);
+    groupBoxLeftLayout->addWidget(boxEditZ, 2, 1);
+    egroupBoxLeft->setLayout(groupBoxLeftLayout);
+
+    QGroupBox *groupBoxRUp = new QGroupBox("尺寸");
+    QGridLayout *groupBoxRUpLayout = new QGridLayout();
+
+    QLabel *boxLabelLength = new QLabel("长度:");
+    boxEditLength = new QLineEdit();
+    boxEditLength->setText("1");
+    QLabel *boxLabelWidth = new QLabel("宽度:");
+    boxEditWidth = new QLineEdit();
+    boxEditWidth->setText("1");
+    QLabel *boxLabelHeight = new QLabel("高度:");
+    boxEditHeight = new QLineEdit();
+    boxEditHeight->setText("1");
+
+    groupBoxRUpLayout->addWidget(boxLabelLength, 0, 0);
+    groupBoxRUpLayout->addWidget(boxEditLength, 0, 1);
+    groupBoxRUpLayout->addWidget(boxLabelWidth, 1, 0);
+    groupBoxRUpLayout->addWidget(boxEditWidth, 1, 1);
+    groupBoxRUpLayout->addWidget(boxLabelHeight, 2, 0);
+    groupBoxRUpLayout->addWidget(boxEditHeight, 2, 1);
+    groupBoxRUp->setLayout(groupBoxRUpLayout);
+
+    QGroupBox *egroupBoxRight = new QGroupBox("旋转");
+    QGridLayout *groupBoxRightLayout = new QGridLayout();
+
+    QLabel *boxLabelAngleX = new QLabel("旋转角X:");
+    boxEditAngleX = new QLineEdit();
+    boxEditAngleX->setText("0");
+    QLabel *boxLabelAngleY = new QLabel("旋转角Y:");
+    boxEditAngleY = new QLineEdit();
+    boxEditAngleY->setText("0");
+    QLabel *boxLabelAngleZ = new QLabel("旋转角Z:");
+    boxEditAngleZ = new QLineEdit();
+    boxEditAngleZ->setText("0");
+
+    groupBoxRightLayout->addWidget(boxLabelAngleX, 0, 0);
+    groupBoxRightLayout->addWidget(boxEditAngleX, 0, 1);
+    groupBoxRightLayout->addWidget(boxLabelAngleY, 1, 0);
+    groupBoxRightLayout->addWidget(boxEditAngleY, 1, 1);
+    groupBoxRightLayout->addWidget(boxLabelAngleZ, 2, 0);
+    groupBoxRightLayout->addWidget(boxEditAngleZ, 2, 1);
+    egroupBoxRight->setLayout(groupBoxRightLayout);
+
+    eighthLayout->addWidget(egroupBoxLeft, 0, 0, 2, 1);
+    eighthLayout->addWidget(groupBoxRUp, 0, 1, 1, 1);
+    eighthLayout->addWidget(egroupBoxRight, 1, 1, 1, 1);
+
+    // 添加确认按钮
+    boxBtn = new QPushButton("预置（长方体）");
+    eighthLayout->addWidget(boxBtn, 2, 0, 1, 2);
+
+    connect(boxBtn, &QPushButton::clicked, this, &PresetElemWidget::btnBoxClicked);
+
+
     // 将tab页面添加到tab widget
     tabWidget->addTab(firstTab, "点");
     tabWidget->addTab(secondTab, "线");
@@ -415,6 +492,7 @@ PresetElemWidget::PresetElemWidget(QWidget *parent)
     tabWidget->addTab(fifthTab, "球");
     tabWidget->addTab(sixthTab, "圆柱");
     tabWidget->addTab(seventhTab, "圆锥");
+    tabWidget->addTab(eighthTab, "长方体");
 
     // 显示tab widget
     tabWidget->setAttribute(Qt::WA_DeleteOnClose); // 关闭窗口时释放资源
@@ -752,3 +830,63 @@ void PresetElemWidget::btnConeClicked()
 
 }
 
+void PresetElemWidget::btnBoxClicked(){
+    CPosition center;
+    bool ok;
+    center.x = boxEditX->text().toDouble(&ok);
+    if (!ok) {
+        QMessageBox::critical(this, "输入错误", "长方体-中心坐标X需要是双精度浮点类型数。");
+        return;
+    }
+    center.y = boxEditY->text().toDouble(&ok);
+    if (!ok) {
+        QMessageBox::critical(this, "输入错误", "长方体-中心坐标Y需要是双精度浮点类型数。");
+        return;
+    }
+    center.z = boxEditZ->text().toDouble(&ok);
+    if (!ok) {
+        QMessageBox::critical(this, "输入错误", "长方体-中心坐标Z需要是双精度浮点类型数。");
+        return;
+    }
+
+    double Length=0;
+    Length=boxEditLength->text().toDouble(&ok);
+    if (!ok) {
+        QMessageBox::critical(this, "输入错误", "长方体-长需要是双精度浮点类型数。");
+        return;
+    }
+    double Width=0;
+    Width=boxEditWidth->text().toDouble(&ok);
+    if (!ok) {
+        QMessageBox::critical(this, "输入错误", "长方体-宽需要是双精度浮点类型数。");
+        return;
+    }
+    double Height=0;
+    Height=boxEditHeight->text().toDouble(&ok);
+    if (!ok) {
+        QMessageBox::critical(this, "输入错误", "长方体-高需要是双精度浮点类型数。");
+        return;
+    }
+
+    double angleX=0;
+    angleX=boxEditAngleX->text().toDouble(&ok);
+    if (!ok) {
+        QMessageBox::critical(this, "输入错误", "长方体-绕x轴旋转角度需要是双精度浮点类型数。");
+        return;
+    }
+    double angleY=0;
+    angleY=boxEditAngleY->text().toDouble(&ok);
+    if (!ok) {
+        QMessageBox::critical(this, "输入错误", "长方体-绕y轴旋转角度需要是双精度浮点类型数。");
+        return;
+    }
+    double angleZ=0;
+    angleZ=boxEditAngleZ->text().toDouble(&ok);
+    if (!ok) {
+        QMessageBox::critical(this, "输入错误", "长方体-绕z轴旋转角度需要是双精度浮点类型数。");
+        return;
+    }
+
+    m_pMainWin->OnPresetCuboid(center,Length,Width,Height,angleX,angleY,angleZ);
+
+}

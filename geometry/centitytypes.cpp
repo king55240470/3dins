@@ -17,6 +17,7 @@
 #include <vtkVertexGlyphFilter.h>
 #include <vtkPolygon.h>
 #include <vtkMath.h>
+#include <vtkCubeSource.h>
 
 
 // 点类的draw()
@@ -357,6 +358,45 @@ vtkSmartPointer<vtkActor> CCone::draw(){
     return actor;
 }
 
+QString CCuboid::getCEntityInfo()
+{
+    auto infoText=" ";
+    return infoText;
+}
+
+// 长方体的draw()
+vtkSmartPointer<vtkActor> CCuboid::draw(){
+    CPosition pos(getCenter().x,getCenter().y,getCenter().z);
+    QVector4D posVec = GetRefCoord()->m_mat * QVector4D(pos.x, pos.y, pos.z, 1);
+    CPosition globalPos(posVec.x(), posVec.y(), posVec.z());
+
+    auto cuboid = vtkSmartPointer<vtkCubeSource>::New();
+    cuboid->SetCenter(globalPos.x, globalPos.y, globalPos.z); // 设置长方体中心点
+    cuboid->SetXLength(getLength()); // 设置长方体长度
+    cuboid->SetYLength(getWidth());  // 设置长方体宽度
+    cuboid->SetZLength(getHeight()); // 设置长方体高度
+
+    // 创建变换对象，用于旋转和变换方向
+    vtkSmartPointer<vtkTransform> transform = vtkSmartPointer<vtkTransform>::New();
+
+    transform->RotateX(getAngleX()); // 绕X轴旋转
+    transform->RotateY(getAngleY()); // 绕Y轴旋转
+    transform->RotateZ(getAngleZ()); // 绕Z轴旋转
+
+    // 创建映射器
+    auto mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    mapper->SetInputConnection(cuboid->GetOutputPort());
+
+    // 创建执行器
+    auto actor = vtkSmartPointer<vtkActor>::New();
+    actor->SetMapper(mapper);
+    actor->GetProperty()->SetColor(0.5, 0.5, 0.5); // 设置颜色
+    actor->SetUserTransform(transform); // 应用变换
+
+    return actor;
+
+}
+
 int CPointCloud::pointCloudCount = 0;
 QString CPointCloud::getCEntityInfo()
 {
@@ -576,6 +616,7 @@ int CSphere::sphereCount=0;
 int CCylinder::cylinderCount=0;
 int CCone::coneCount=0;
 int CDistance::currentCdistacneId=0;
+int CCuboid::cuboidCount=0;
 void CCircle::SetDiameter(double d)
 {
     m_d = d;
@@ -824,6 +865,75 @@ void CCone::setAxis(const QVector4D &newAxis)
 {
     axis = newAxis;
 }
+
+CPosition CCuboid::getCenter() const
+{
+    return center;
+}
+
+void CCuboid::setCenter(const CPosition &newCenter)
+{
+    center=newCenter;
+}
+
+double CCuboid::getLength() const
+{
+    return length;
+}
+
+void CCuboid::setLength(double newLength)
+{
+    length=newLength;
+}
+
+double CCuboid::getWidth() const
+{
+    return width;
+}
+
+void CCuboid::setWidth(double newWidth)
+{
+    width=newWidth;
+}
+
+double CCuboid::getHeight() const
+{
+    return height;
+}
+
+void CCuboid::setHeight(double newHeight)
+{
+    height=newHeight;
+}
+
+double CCuboid::getAngleX() const
+{
+    return angleX;
+}
+
+void CCuboid::setAngleX(double newAnglex)
+{
+    angleX=newAnglex;
+}
+double CCuboid::getAngleY() const
+{
+    return angleY;
+}
+
+void CCuboid::setAngleY(double newAngleY)
+{
+    angleY=newAngleY;
+}
+double CCuboid::getAngleZ() const
+{
+    return angleZ;
+}
+
+void CCuboid::setAngleZ(double newAngleZ)
+{
+    angleZ=newAngleZ;
+}
+
 
 QString CDistance::getCEntityInfo()
 {
