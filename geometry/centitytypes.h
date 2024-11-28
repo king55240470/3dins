@@ -637,6 +637,7 @@ class CPointCloud : public CEntity
 public:
     CPosition m_pt;
     pcl::PointCloud<pcl::PointXYZRGB> m_pointCloud; // 存储的点云对象（已经加载过的）
+    static QMap<vtkActor*, pcl::PointCloud<pcl::PointXYZRGB>> actorToPointCloud; // 管理RGB点云生成的actor
     double pointCloudSize; // 点云的大小，即包含点的数量
     static int pointCloudCount;
     int currentPointCloudId;
@@ -648,15 +649,15 @@ public:
         out <<m_pt << pointCloudCount<< currentPointCloudId;
         out <<isFileCloud  <<isComparsionCloud ;
 
-    //     out << static_cast<quint32>(m_pointCloud.size());
-    //     qDebug()<<static_cast<quint32>(m_pointCloud.size());
-    //     // 保存每个点的 XYZRGB 信息
-    //     for (const auto& point : m_pointCloud.points) {
-    //         out << point.x << point.y << point.z;
-    //         out << point.r << point.g << point.b;
-    //     }
+        //     out << static_cast<quint32>(m_pointCloud.size());
+        //     qDebug()<<static_cast<quint32>(m_pointCloud.size());
+        //     // 保存每个点的 XYZRGB 信息
+        //     for (const auto& point : m_pointCloud.points) {
+        //         out << point.x << point.y << point.z;
+        //         out << point.r << point.g << point.b;
+        //     }
 
-    // qDebug()<<static_cast<quint32>(m_pointCloud.size());
+        // qDebug()<<static_cast<quint32>(m_pointCloud.size());
 
         return out;
     }
@@ -691,10 +692,12 @@ public:
         m_strAutoName = QString("点云%1").arg(currentPointCloudId);
         m_strCName = QString("点云%1").arg(currentPointCloudId);
     }
-    // 点云类的draw
+
     QString getCEntityInfo() override; // 获取图形的信息，在浮动窗口显示
-    vtkSmartPointer<vtkActor> draw() override;
-    vtkSmartPointer<vtkActor> drawComparedCloud(); // 绘制对比生成的点云
+    vtkSmartPointer<vtkActor> draw() override;// 点云类的draw
+    // 点云类型的centity每生成一个actor，在这里记录
+    static QMap<vtkActor*, pcl::PointCloud<pcl::PointXYZRGB>> &getActorToPointCloud();
+
     double getPointCloudSize(){
         return m_pointCloud.points.size();
     };

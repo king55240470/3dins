@@ -37,12 +37,18 @@ void MouseInteractorHighlightActor::OnLeftButtonDown()
             qDebug()<<entity->m_strAutoName;
         }
 
-        // 如果选中的是点云类型，则给拟合用的cloudptr赋值
+        // 如果选中的是点云类型的actor，则寻找在actorToPointCloud中对应的rgb点云，然后给cloudptr赋值
         if(entity->m_EntityType == enPointCloud){
-            auto cloudEntity = (CPointCloud*) entity;
-            auto cloud = new pcl::PointCloud<pcl::PointXYZRGB>(cloudEntity->m_pointCloud);
-            m_pMainWin->getpWinFileMgr()->cloudptr =
-                pcl::PointCloud<pcl::PointXYZRGB>::Ptr (cloud);
+            auto rgbCloudMap = CPointCloud::getActorToPointCloud();
+
+            for(auto item = rgbCloudMap.begin();item != rgbCloudMap.end();item++){
+                if (newPickedActor == item.key()){
+                    // 转为智能指针
+                    m_pMainWin->getpWinFileMgr()->cloudptr = pcl::PointCloud<pcl::PointXYZRGB>::Ptr
+                        (new pcl::PointCloud<pcl::PointXYZRGB>(item.value()));
+                }
+            }
+
         }
 
         // 生成一个用于高亮的顶点，并存入pickedActors
@@ -72,7 +78,6 @@ void MouseInteractorHighlightActor::OnRightButtonDown()
     picker->Pick(clickPos[0], clickPos[1], clickPos[2], renderer);
     // 获取选中的actor并取消高亮
     vtkActor* newpickedActor = picker->GetActor();
-    double* pos = picker->GetPickPosition(); // 用于存储拾取点的世界坐标
 
     // 如果选中了actor
     if(newpickedActor){

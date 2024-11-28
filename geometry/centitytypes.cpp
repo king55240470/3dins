@@ -20,6 +20,12 @@
 #include <vtkCubeSource.h>
 
 
+// 定义 getActorToPointCloud 和 actorToPointCloud;
+QMap<vtkActor*, pcl::PointCloud<pcl::PointXYZRGB>> CPointCloud::actorToPointCloud;
+QMap<vtkActor*, pcl::PointCloud<pcl::PointXYZRGB>> &CPointCloud::getActorToPointCloud(){
+    return actorToPointCloud;
+}
+
 // 点类的draw()
 vtkSmartPointer<vtkActor> CPoint::draw(){
     // 创建点集
@@ -392,6 +398,8 @@ vtkSmartPointer<vtkActor> CCuboid::draw(){
     actor->SetMapper(mapper);
     actor->GetProperty()->SetColor(0.5, 0.5, 0.5); // 设置颜色
     actor->SetUserTransform(transform); // 应用变换
+    actor->GetProperty()->SetRepresentationToWireframe(); // 改为线框绘制
+    actor->GetProperty()->SetLineWidth(2);
 
     return actor;
 
@@ -445,12 +453,10 @@ vtkSmartPointer<vtkActor> CPointCloud::draw(){
         actor->GetProperty()->SetColor(0.5, 0.5, 0.5);
     }
 
-    return actor;
-}
+    // 添加到actorToPointCloud
+    CPointCloud::getActorToPointCloud().insert(actor, m_pointCloud);
 
-vtkSmartPointer<vtkActor> CPointCloud::drawComparedCloud()
-{
-    return nullptr;
+    return actor;
 }
 
 // 各种距离的draw
