@@ -8,13 +8,13 @@ MouseInteractorHighlightActor::MouseInteractorHighlightActor(vtkInteractorStyleT
 {
     lastRightClickTime.Modified();
     vtkMenu = new QMenu(m_pMainWin); // 创建菜单
-    vtkMenu->addAction("Option 1");
-    vtkMenu->addAction("Option 2");
+    vtkMenu->addAction("取消选中");
 }
 
 // 实现左键按下事件的处理方法
 void MouseInteractorHighlightActor::OnLeftButtonDown()
 {
+    vtkMenu->hideTearOffMenu(); // 隐藏菜单栏
     // 获取鼠标点击的位置
     int* clickPos = this->GetInteractor()->GetEventPosition();
 
@@ -37,7 +37,7 @@ void MouseInteractorHighlightActor::OnLeftButtonDown()
             qDebug()<<entity->m_strAutoName;
         }
 
-        // 如果选中的是文件点云，则给拟合用的cloudptr赋值
+        // 如果选中的是点云类型，则给拟合用的cloudptr赋值
         if(entity->m_EntityType == enPointCloud){
             auto cloudEntity = (CPointCloud*) entity;
             auto cloud = new pcl::PointCloud<pcl::PointXYZRGB>(cloudEntity->m_pointCloud);
@@ -62,6 +62,8 @@ void MouseInteractorHighlightActor::OnLeftButtonDown()
 // 重写右键按下事件，取消选中；双击则弹出菜单栏
 void MouseInteractorHighlightActor::OnRightButtonDown()
 {
+    vtkMenu->showTearOffMenu(); // 弹出菜单栏
+
     // 获取鼠标点击的位置
     int* clickPos = this->GetInteractor()->GetEventPosition();
 
@@ -74,10 +76,6 @@ void MouseInteractorHighlightActor::OnRightButtonDown()
 
     // 如果选中了actor
     if(newpickedActor){
-        // 弹出菜单
-        // vtkMenu->exec(QCursor::pos());
-        // qDebug() << "Right button double clicked" <<  "\n";
-
         // 清除选中的点
         m_pMainWin->getChosenListMgr()->getChosenActorAxes().clear(); // 清除所有选中的点的记录
 

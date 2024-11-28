@@ -471,13 +471,13 @@ void VtkWidget::createAxes()
 
 // 切换相机视角1
 void VtkWidget::onTopView() {
+    m_pMainWin->NotifySubscribe();
     vtkCamera *camera = renderer->GetActiveCamera();
     if (camera) {
         camera->SetPosition(0, 0, 1);  // 重置相机位置为俯视
         camera->SetFocalPoint(0, 0, 0);
         camera->SetViewUp(0, 1, 0);
-
-        camera->OrthogonalizeViewUp(); // 确保与SetViewUp方向正交
+        camera->OrthogonalizeViewUp(); // 确保与SetVieswUp方向正交
 
         // 重新设置相机并渲染
         renderer->ResetCamera();
@@ -487,12 +487,13 @@ void VtkWidget::onTopView() {
 
 // 切换相机视角2
 void VtkWidget::onRightView(){
+    m_pMainWin->NotifySubscribe();
+
     vtkCamera *camera = renderer->GetActiveCamera();
     if (camera) {
         camera->SetPosition(1, 0, 0);  // 重置相机位置为右侧
         camera->SetFocalPoint(0, 0, 0);
         camera->SetViewUp(0, 1, 0);
-
         camera->OrthogonalizeViewUp(); // 确保与SetViewUp方向正交
 
         // 重新设置相机并渲染
@@ -503,12 +504,13 @@ void VtkWidget::onRightView(){
 
 // 切换相机视角3
 void VtkWidget::onFrontView(){
+    m_pMainWin->NotifySubscribe();
+
     vtkCamera *camera = renderer->GetActiveCamera();
     if (camera) {
         camera->SetPosition(0, -1, 0);  // 重置相机位置为正视
         camera->SetFocalPoint(0, 0, 0);
         camera->SetViewUp(0, 0, 1);
-
         camera->OrthogonalizeViewUp(); // 确保与SetViewUp方向正交
 
         // 重新设置相机并渲染
@@ -519,11 +521,12 @@ void VtkWidget::onFrontView(){
 
 // 切换相机视角4，立体视角可以在前三个的基础上旋转
 void VtkWidget::onIsometricView(){
+    m_pMainWin->NotifySubscribe();
+
     vtkCamera *camera = renderer->GetActiveCamera();
     if (camera) {
         camera->SetPosition(0, 0, 0); // 重置相机位置
         camera->SetViewUp(0, 1, 0);    // 重置视角向上方向
-
         camera->Azimuth(60);
         camera->Elevation(60);
         camera->OrthogonalizeViewUp();
@@ -539,7 +542,6 @@ void VtkWidget::showConvertedCloud(){
     // 获取待测量的点云文件map
     auto measured_map = m_pMainWin->getpWinFileMgr()->getMeasuredFileMap();
     auto model_map = m_pMainWin->getpWinFileMgr()->getModelFileMap();
-
 
     auto cloud_rgb_1(new pcl::PointCloud<pcl::PointXYZRGB>);
     // auto cloud_rgb_1 = m_pMainWin->getPointCloudListMgr()->getTempCloud();
@@ -721,6 +723,7 @@ void VtkWidget::onCompare()
     // 由RGB点云生成cpointcloud对象，并存入entitylist
     auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateCompareCloud(*comparisonCloud);
     cloudEntity->isComparsionCloud = true;
+    m_pMainWin->getPointCloudListMgr()->getProductCloudList().push_back(cloudEntity);
     m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
     m_pMainWin->NotifySubscribe();
 }
