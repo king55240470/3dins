@@ -28,6 +28,7 @@ public:
     CPosition begin;
     CPosition end;
 
+public:
     QDataStream& serialize(QDataStream& out) const override {
         CEntity::serialize(out);  // 先序列化基类部分
         out << m_k << m_b << lineCount << currentLineId<<k<<b;
@@ -254,6 +255,7 @@ private:
     static int plainCount;
     int currentPlainId;
 
+public:
     QDataStream& serialize(QDataStream& out) const override {
         CEntity::serialize(out);  // 先序列化基类部分
         out <<center << normal<< dir_long_edge << length << width;
@@ -573,7 +575,11 @@ class CDistance : public CEntity{
         CEntity::serialize(out);  // 先序列化基类部分
         out <<currentCdistacneId << uptolerance<< undertolerance << begin <<end;
         out <<qualified;
-        out <<plane <<circle <<line <<distance <<Projection;
+        plane.serialize(out);
+        circle.serialize(out);
+        line.serialize(out);
+        out<< distance << Projection;
+        out <<isHavePlane <<isHaveLine <<isHaveCircle;
         return out;
     }
 
@@ -581,7 +587,11 @@ class CDistance : public CEntity{
         CEntity::deserialize(in);  // 先反序列化基类部分
         in >>currentCdistacneId >> uptolerance >> undertolerance >> begin >>end;
         in>>qualified;
-        in>>plane >>circle >>line >>distance >>Projection;
+        plane.deserialize(in);
+        circle.deserialize(in);
+        line.deserialize(in);
+        in>>distance >>Projection;
+        in>> isHavePlane >>isHaveLine >>isHaveCircle;
         return in;
     }
 public:
