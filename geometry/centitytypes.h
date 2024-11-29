@@ -634,5 +634,17 @@ public:
         return GetWorldPcsPos(m_pt);
     }
 };
+class CSS  : public CEntity
+{
+private:
+    CPosition center;
+
+
+public:
+    CSS(){
+
+    }
+
+};
 
 #endif // CENTITYTYPES_H

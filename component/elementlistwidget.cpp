@@ -344,12 +344,18 @@ void ElementListWidget::ShowParent(CObject*obj)
 void ElementListWidget::showInfotext()
 {
     QList<QTreeWidgetItem*> selectedItems = getSelectedItems();
+    QVector<CEntity*>list;
     if(selectedItems.size()==1){
         for(QTreeWidgetItem*item:selectedItems){
             CObject *obj1 = item->data(0, Qt::UserRole).value<CObject*>();
             CEntity* ent = static_cast<CEntity*>(obj1);
+            /*if(obj1->GetUniqueType()==enDistance){
+                CEntity* ent = static_cast<CEntity*>(obj1);
+                list.push_back(ent);
+            }*/
             m_pMainWin->getPWinVtkWidget()->setCentity(ent);
         }
+
     }
 }
 
