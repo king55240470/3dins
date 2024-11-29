@@ -3,7 +3,7 @@
 
 #include "mainwindow.h"
 #include "clickhighlightstyle.h"
-#include "custominteractorstyle.h"
+#include "mousedragcommand.h"
 #include "manager/filemgr.h"
 #include "component/toolwidget.h"
 #include <QWidget>
@@ -64,7 +64,7 @@
 #include <vtkImageActor.h>
 #include <vtkPNGReader.h>
 #include <vtkImageMapper.h>
-#include <vtkJPEGReader.h>.h>
+#include <vtkJPEGReader.h>
 VTK_MODULE_INIT(vtkRenderingOpenGL2);
 VTK_MODULE_INIT(vtkInteractionStyle);
 VTK_MODULE_INIT(vtkRenderingVolumeOpenGL2);
@@ -100,6 +100,7 @@ public:
 
     // 显示选中的图形的信息
     void setCentity(CEntity*entity);  //传入centity对象
+    void MouseDrag();
     void OnMouseMove();
     void OnLeftButtonPress();
     void OnLeftButtonRelease();
@@ -115,7 +116,9 @@ private:
 
     // 创建渲染器、渲染窗口和交互器
     vtkSmartPointer<vtkRenderer> renderer;
+    // vtkSmartPointer<vtkRenderer> renderer2D; // 专门放文本框和指向线段的渲染器
     vtkSmartPointer<vtkGenericOpenGLRenderWindow> renWin;
+    vtkSmartPointer<MouseInteractorHighlightActor>m_highlightstyle;
 
     pcl::PointCloud<pcl::PointXYZRGB> tempCloud; // 转换rgb点云用的临时点云
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud1; // 对比用的两个点云
@@ -130,12 +133,11 @@ private:
     vtkSmartPointer<vtkOrientationMarkerWidget> axeWidget; // 创建窗口部件来封装坐标器
     vtkSmartPointer<vtkOrientationMarkerWidget> textWidget; // 浮动窗口，用于显示信息
     CEntity* elementEntity;//储存传入的entity
-    vtkTimeStamp lastLeftClickTime; // 时间戳，记录上次左键点击的时间
-    // double lastLeftClickPos[2]; // 记录左键按下时的位置
     bool isDragging=false;  //判断注释是否能移动
     CPosition b;//储存指向箭头的终点
     vtkSmartPointer<vtkPolyData> linePolyData;//储存线的data
     vtkSmartPointer<vtkPolyDataMapper2D> lineMapper;//指向线的mapper
+    QVector<vtkSmartPointer<vtkActor2D>> directLines; // 存储所有的指向线段
 public slots:
 
 };

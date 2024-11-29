@@ -25,7 +25,7 @@ CEntity* PointCloudConstructor::create(QVector<CEntity*>& entitylist){
     CCylinder* cylinder=nullptr;
     CCone*cone=nullptr;
     CSphere* sphere=nullptr;
-
+    CCuboid* cuboid=nullptr;
     for(int i=0;i<entitylist.size();i++){
         CEntity* entity=entitylist[i];
         if(!entity->IsSelected())continue;
@@ -38,6 +38,9 @@ CEntity* PointCloudConstructor::create(QVector<CEntity*>& entitylist){
         }else if(entity->GetUniqueType()==enSphere){
             sphere=(CSphere*)entity;
             break;
+        }else if(entity->GetUniqueType()==enCuboid){
+            cuboid=(CCuboid*)entity;
+            break;
         }
     }
     if(cylinder!=nullptr){
@@ -48,6 +51,9 @@ CEntity* PointCloudConstructor::create(QVector<CEntity*>& entitylist){
     }
     if(sphere!=nullptr){
         return createPointCloud(sphere,m_sourceCloud);
+    }
+    if(cuboid!=nullptr){
+        return createPointCloud(cuboid,m_sourceCloud);
     }
     setWrongInformation(SourceEntityLess);
     return nullptr;
@@ -124,7 +130,7 @@ CPointCloud* PointCloudConstructor::createPointCloud(CCylinder* cylinder,pcl::Po
     auto polyData=m_cylinder->GetOutput();
     return createPointCloud(polyData,pointsPolydata);
 }
-CPointCloud* PointCloudConstructor::createPointCloud(CCone* cone,pcl::PointCloud<pcl::PointXYZRGB>::Ptr sourceCloud){
+CPointCloud* PointCloudConstructor::createPointCloud(CCone *cone, pcl::PointCloud<pcl::PointXYZRGB>::Ptr sourceCloud){
     vtkSmartPointer<vtkPolyData> pointsPolydata = getPointsPolydata(sourceCloud);
     CPosition pos(cone->getVertex().x, cone->getVertex().y, cone->getVertex().z);
     CPosition globalPos(pos.x, pos.y, pos.z);
@@ -230,4 +236,10 @@ vtkSmartPointer<vtkPolyData> PointCloudConstructor::getPointsPolydata(pcl::Point
 }
 void PointCloudConstructor::setSourceCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr sourceCloud){
     m_sourceCloud=sourceCloud;
+}
+CPointCloud* PointCloudConstructor::createPointCloud(CCuboid* cuboid,pcl::PointCloud<pcl::PointXYZRGB>::Ptr sourceCloud){
+    if(cuboid!=nullptr){
+        return createPointCloud(cuboid->getCenter(),QVector4D(1,0,0,0),QVector4D(0,1,0,0),QVector4D(0,0,1,0),cuboid->getLength(),cuboid->getWidth(),cuboid->getHeight(),sourceCloud);
+    }
+    return nullptr;
 }

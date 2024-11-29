@@ -87,6 +87,7 @@ public:
     void OnPresetSphere(CPosition posCenter, double diametre);
     void OnPresetCylinder(CPosition pos, QVector4D vec, double height, double diametre);
     void OnPresetCone(CPosition posCenter, QVector4D axis, double partH, double fullH, double angle);
+    void OnPresetCuboid(CPosition posCenter,double length,double width,double height,double angleX,double angleY,double angleZ);
 
     CObjectMgr *getObjectListMgr();
     CEntityMgr*getEntityListMgr();

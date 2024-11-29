@@ -32,6 +32,8 @@ public:
     CPointCloud* createPointCloud(vtkPolyData*ployData,vtkSmartPointer<vtkPolyData> pointsPolydata);
     void setSourceCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr sourceCloud);
     vtkSmartPointer<vtkPolyData> getPointsPolydata(pcl::PointCloud<pcl::PointXYZRGB>::Ptr sourceCloud);
+    CPointCloud* createPointCloud(CCuboid* cuboid,pcl::PointCloud<pcl::PointXYZRGB>::Ptr sourceCloud);
+
 };
 
 #endif // POINTCLOUDCONSTRUCTOR_H
