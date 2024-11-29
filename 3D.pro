@@ -48,7 +48,7 @@ SOURCES += \
     pointfitting/fittingplane.cpp \
     pointfitting/setdatawidget.cpp \
     vtkwindow/clickhighlightstyle.cpp \
-    vtkwindow/custominteractorstyle.cpp \
+    vtkwindow/mousedragcommand.cpp \
     vtkwindow/vtkpresetwidget.cpp \
     vtkwindow/vtkwidget.cpp \
     vtkwindow/vtkwindowreportwidget.cpp
@@ -92,7 +92,7 @@ HEADERS += \
     pointfitting/fittingplane.h \
     pointfitting/setdatawidget.h \
     vtkwindow/clickhighlightstyle.h \
-    vtkwindow/custominteractorstyle.h \
+    vtkwindow/mousedragcommand.h \
     vtkwindow/vtkpresetwidget.h \
     vtkwindow/vtkwidget.h \
     vtkwindow/vtkwindowreportwidget.h

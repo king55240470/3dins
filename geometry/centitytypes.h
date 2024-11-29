@@ -486,6 +486,76 @@ public:
     void setVertex(const CPosition &newVertex);
 };
 
+class CCuboid : public CEntity{
+    CPosition center;
+    double length;
+    double width;
+    double height;
+    double angleX;
+    double angleY;
+    double angleZ;
+
+    static int cuboidCount;
+    int currentCuboidId;
+
+    QDataStream& serialize(QDataStream& out) const override {
+        CEntity::serialize(out);  // 先序列化基类部分
+        out <<center << length<< width << angleX <<angleY <<angleZ;
+        out <<cuboidCount<<currentCuboidId;
+        return out;
+    }
+
+    QDataStream& deserialize(QDataStream& in) override {
+        CEntity::deserialize(in);  // 先反序列化基类部分
+        in >>center >> length >> width >> angleX >>angleY >>angleZ;
+        in>>cuboidCount>>currentCuboidId;
+        return in;
+    }
+
+public:
+    CCuboid(){
+        center.x=0;
+        center.y=0;
+        center.z=0;
+        currentCuboidId= ++cuboidCount;
+        m_strAutoName = QString("长方体%1").arg(currentCuboidId);
+        m_strCName = QString("长方体%1").arg(currentCuboidId);
+    }
+
+    CPosition getCenter() const;
+    void setCenter(const CPosition &newCenter);
+    double getLength() const;
+    void setLength(double newLength);
+    double getWidth() const;
+    void setWidth(double newWidth);
+    double getHeight() const;
+    void setHeight(double newHeight);
+
+    double getAngleX() const;
+    void setAngleX(double newAnglex);
+    double getAngleY() const;
+    void setAngleY(double newAngleY);
+    double getAngleZ() const;
+    void setAngleZ(double newAngleZ);
+
+
+
+    int GetUniqueType() override{
+
+        return enCuboid;
+    }
+    CPosition GetObjectCenterLocalPoint()
+    {
+        return center;
+    }
+    CPosition GetObjectCenterGlobalPoint()
+    {
+        return GetWorldPcsPos(center);
+    }
+    QString getCEntityInfo() override;
+    vtkSmartPointer<vtkActor> draw() override;
+};
+
 class CDistance : public CEntity{
     static int currentCdistacneId;
     double uptolerance;
@@ -567,6 +637,7 @@ class CPointCloud : public CEntity
 public:
     CPosition m_pt;
     pcl::PointCloud<pcl::PointXYZRGB> m_pointCloud; // 存储的点云对象（已经加载过的）
+    static QMap<vtkActor*, pcl::PointCloud<pcl::PointXYZRGB>> actorToPointCloud; // 管理RGB点云生成的actor
     double pointCloudSize; // 点云的大小，即包含点的数量
     static int pointCloudCount;
     int currentPointCloudId;
@@ -575,9 +646,19 @@ public:
 
     QDataStream& serialize(QDataStream& out) const override {
         CEntity::serialize(out);  // 先序列化基类部分
-        // out << m_pointCloud.size() << m_pointCloud.points;
         out <<m_pt << pointCloudCount<< currentPointCloudId;
         out <<isFileCloud  <<isComparsionCloud ;
+
+        //     out << static_cast<quint32>(m_pointCloud.size());
+        //     qDebug()<<static_cast<quint32>(m_pointCloud.size());
+        //     // 保存每个点的 XYZRGB 信息
+        //     for (const auto& point : m_pointCloud.points) {
+        //         out << point.x << point.y << point.z;
+        //         out << point.r << point.g << point.b;
+        //     }
+
+        // qDebug()<<static_cast<quint32>(m_pointCloud.size());
+
         return out;
     }
 
@@ -585,6 +666,20 @@ public:
         CEntity::deserialize(in);  // 先反序列化基类部分
         in >>m_pt >> pointCloudCount >> currentPointCloudId;
         in>>isFileCloud  >>isComparsionCloud ;
+
+        // quint32 size;
+        // in >> size;
+        // qDebug()<<size;
+        // m_pointCloud.resize(size);
+
+        // // 读取每个点的 XYZRGB 信息
+        // for (auto& point : m_pointCloud.points) {
+        //     in >> point.x >> point.y >> point.z;
+        //     in >> point.r >> point.g >> point.b;
+        // }
+
+        // qDebug()<<size;
+
         return in;
     }
 public:
@@ -597,10 +692,12 @@ public:
         m_strAutoName = QString("点云%1").arg(currentPointCloudId);
         m_strCName = QString("点云%1").arg(currentPointCloudId);
     }
-    // 点云类的draw
+
     QString getCEntityInfo() override; // 获取图形的信息，在浮动窗口显示
-    vtkSmartPointer<vtkActor> draw() override;
-    vtkSmartPointer<vtkActor> drawComparedCloud(); // 绘制对比生成的点云
+    vtkSmartPointer<vtkActor> draw() override;// 点云类的draw
+    // 点云类型的centity每生成一个actor，在这里记录
+    static QMap<vtkActor*, pcl::PointCloud<pcl::PointXYZRGB>> &getActorToPointCloud();
+
     double getPointCloudSize(){
         return m_pointCloud.points.size();
     };

@@ -1,4 +1,4 @@
- #include "vtkwindow/vtkwidget.h"
+#include "vtkwindow/vtkwidget.h"
 #include <vtkInteractorStyle.h>
 #include <vtkEventQtSlotConnect.h>
 #include <QFileDialog>  // 用于文件对话框
@@ -35,7 +35,7 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
     vtkWidget->setRenderWindow(renWin);
 
     // 添加高亮样式
-    auto m_highlightstyle = vtkSmartPointer<MouseInteractorHighlightActor>::New();
+    m_highlightstyle = vtkSmartPointer<MouseInteractorHighlightActor>::New();
     m_highlightstyle->SetRenderer(renderer);
     m_highlightstyle->SetUpMainWin(m_pMainWin);
     renWin->GetInteractor()->SetInteractorStyle(m_highlightstyle);
@@ -97,17 +97,25 @@ void VtkWidget::OnLeftButtonPress()
         clickPos[1] <= position[1]+height)
     {
         isDragging = true; // 开启拖动状态
+        renWin->GetInteractor()->SetEventInformation(clickPos[0],clickPos[1],0,0,0,0);
+        renWin->GetInteractor()->SetInteractorStyle(0);
     }
 }
 
 void VtkWidget::OnLeftButtonRelease()
 {
     isDragging = false; // 关闭拖动状态
+    renWin->GetInteractor()->SetInteractorStyle(m_highlightstyle);
 }
 void VtkWidget::setCentity(CEntity *entity)
 {
     elementEntity=entity;
     createText();
+}
+
+void VtkWidget::MouseDrag()
+{
+
 }
 void VtkWidget::createText()
 {
@@ -140,6 +148,7 @@ void VtkWidget::createText()
     renWin->GetInteractor()->AddObserver(vtkCommand::LeftButtonPressEvent, this, &VtkWidget::OnLeftButtonPress);
     renWin->GetInteractor()->AddObserver(vtkCommand::MouseMoveEvent, this, &VtkWidget::OnMouseMove);
     renWin->GetInteractor()->AddObserver(vtkCommand::LeftButtonReleaseEvent, this, &VtkWidget::OnLeftButtonRelease);
+    //renWin->GetInteractor()->AddObserver(vtkCommand::Execute(), this, &VtkWidget::MouseDrag);
 }
 
 // 创建文本框
@@ -226,9 +235,6 @@ void VtkWidget::createLine()
         b.x = dis->getbegin().x - (distance * plane_normal.x())/2;
         b.y = dis->getbegin().y - (distance * plane_normal.y())/2;
         b.z = dis->getbegin().z - (distance * plane_normal.z())/2;
-        /*b.x=abs(dis->getbegin().x-dis->getProjection().x);
-        b.x=abs(dis->getbegin().y-dis->getProjection().y);
-        b.x=abs(dis->getbegin().z-dis->getProjection().z);*/
         pngReader->SetFileName(":/component/construct/distance.png");
     }
     if(elementEntity->getEntityType()==enPoint){
@@ -270,7 +276,6 @@ void VtkWidget::createLine()
     iconActor = vtkSmartPointer<vtkImageActor>::New();
     iconActor->SetInputData(pngReader->GetOutput());
     iconActor->SetPosition(a[0],a[1],0);
-
     renderer->AddActor(iconActor);
 
     vtkSmartPointer<vtkCoordinate> coordinate = vtkSmartPointer<vtkCoordinate>::New();
@@ -303,7 +308,7 @@ void VtkWidget::createLine()
     lineActor->GetProperty()->SetColor(1, 0, 0); // 设置线的颜色为红色
     lineActor->GetProperty()->SetLineWidth(2);
     renderer->AddActor(lineActor);
-
+    renderer->AddActor(iconActor);
 }
 
 void VtkWidget::Linechange()
@@ -352,7 +357,6 @@ vtkSmartPointer<vtkRenderer>& VtkWidget::getRenderer(){
 // 刷新vtk窗口
 void VtkWidget::UpdateInfo(){
     reDrawCentity();
-    onTopView(); // 重置相机视角
 }
 
 void VtkWidget::reDrawCentity(){
@@ -381,6 +385,7 @@ void VtkWidget::reDrawCentity(){
     }
 
     actorToEntity.clear();
+    CPointCloud::getActorToPointCloud().clear();
     // 遍历entitylist绘制图形并加入渲染器
     for(auto i = 0;i < entitylist.size();i++){
         int constructFlag=0;
@@ -429,6 +434,7 @@ void VtkWidget::reDrawCentity(){
                 getRenderer()->AddActor(object->draw());
         }
     }
+    renWin->Render(); // 刷新窗口
 }
 
 void VtkWidget::reDrawCloud()
@@ -466,13 +472,13 @@ void VtkWidget::createAxes()
 
 // 切换相机视角1
 void VtkWidget::onTopView() {
+    m_pMainWin->NotifySubscribe();
     vtkCamera *camera = renderer->GetActiveCamera();
     if (camera) {
         camera->SetPosition(0, 0, 1);  // 重置相机位置为俯视
         camera->SetFocalPoint(0, 0, 0);
         camera->SetViewUp(0, 1, 0);
-
-        camera->OrthogonalizeViewUp(); // 确保与SetViewUp方向正交
+        camera->OrthogonalizeViewUp(); // 确保与SetVieswUp方向正交
 
         // 重新设置相机并渲染
         renderer->ResetCamera();
@@ -482,12 +488,13 @@ void VtkWidget::onTopView() {
 
 // 切换相机视角2
 void VtkWidget::onRightView(){
+    m_pMainWin->NotifySubscribe();
+
     vtkCamera *camera = renderer->GetActiveCamera();
     if (camera) {
         camera->SetPosition(1, 0, 0);  // 重置相机位置为右侧
         camera->SetFocalPoint(0, 0, 0);
         camera->SetViewUp(0, 1, 0);
-
         camera->OrthogonalizeViewUp(); // 确保与SetViewUp方向正交
 
         // 重新设置相机并渲染
@@ -498,12 +505,13 @@ void VtkWidget::onRightView(){
 
 // 切换相机视角3
 void VtkWidget::onFrontView(){
+    m_pMainWin->NotifySubscribe();
+
     vtkCamera *camera = renderer->GetActiveCamera();
     if (camera) {
         camera->SetPosition(0, -1, 0);  // 重置相机位置为正视
         camera->SetFocalPoint(0, 0, 0);
         camera->SetViewUp(0, 0, 1);
-
         camera->OrthogonalizeViewUp(); // 确保与SetViewUp方向正交
 
         // 重新设置相机并渲染
@@ -514,11 +522,12 @@ void VtkWidget::onFrontView(){
 
 // 切换相机视角4，立体视角可以在前三个的基础上旋转
 void VtkWidget::onIsometricView(){
+    m_pMainWin->NotifySubscribe();
+
     vtkCamera *camera = renderer->GetActiveCamera();
     if (camera) {
         camera->SetPosition(0, 0, 0); // 重置相机位置
         camera->SetViewUp(0, 1, 0);    // 重置视角向上方向
-
         camera->Azimuth(60);
         camera->Elevation(60);
         camera->OrthogonalizeViewUp();
@@ -534,7 +543,6 @@ void VtkWidget::showConvertedCloud(){
     // 获取待测量的点云文件map
     auto measured_map = m_pMainWin->getpWinFileMgr()->getMeasuredFileMap();
     auto model_map = m_pMainWin->getpWinFileMgr()->getModelFileMap();
-
 
     auto cloud_rgb_1(new pcl::PointCloud<pcl::PointXYZRGB>);
     // auto cloud_rgb_1 = m_pMainWin->getPointCloudListMgr()->getTempCloud();
@@ -658,6 +666,10 @@ void VtkWidget::onCompare()
             pcl::copyPointCloud(tempCloud, *cloud1);
         }
     }
+
+    // 初始化两个点云
+    // pcl::io::loadPLYFile(modelFile.toStdString(), *cloud1);
+    // pcl::io::loadPCDFile(measureFile.toStdString(), *cloud2);
 
     // 检查点云是否为空
     if (cloud1->empty() || cloud2->empty()) {

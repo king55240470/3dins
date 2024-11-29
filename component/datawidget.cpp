@@ -572,9 +572,83 @@ void DataWidget::updateinfo()
                 table->setItem(2, 1, new QTableWidgetItem(QString::number(position.z,'f',6)));
                 table->setItem(2, 2, new QTableWidgetItem(""));
 
-                table->setItem(2, 0, new QTableWidgetItem("H"));
-                table->setItem(2, 1, new QTableWidgetItem(QString::number(cone->getHeight(),'f',6)));
+                table->setItem(3, 0, new QTableWidgetItem("H"));
+                table->setItem(3, 1, new QTableWidgetItem(QString::number(cone->getHeight(),'f',6)));
+                table->setItem(3, 2, new QTableWidgetItem(""));
+            }
+        }
+        if(obj->GetUniqueType()==enCuboid){
+            CCuboid* cuboid= dynamic_cast<CCuboid*>(obj);
+            CPosition position;
+            //转换为全局坐标
+            QVector4D vec=cuboid->m_pRefCoord->m_mat*QVector4D(cuboid->GetObjectCenterLocalPoint().x,cuboid->GetObjectCenterLocalPoint().y,cuboid->GetObjectCenterLocalPoint().z,1);
+            CPosition gloPosition(vec.x(),vec.y(),vec.z());
+            if(m_pMainWin->m_nRelyOnWhichCs==csRef){
+                box->setEnabled(true);
+                box->setCurrentIndex(box->findText((m_pMainWin->m_pcsListMgr->FindNode(cuboid->GetRefCoord()))->GetObjectCName()));
+                //即为点存储的坐标（出生时参考的坐标）
+
+                cuboid->SetExtCoord(cuboid->GetRefCoord());
+
+                //当切换扩展坐标系时检测到变化
+                connect(box, &QComboBox::currentIndexChanged, this, [=](){
+                    // QString currentText =box->currentText();
+                    // qDebug() << "当前选中的文本是: " << currentText;
+                    if(box->currentText()=="机械坐标系"){
+                        cuboid->SetExtCoord(m_pMainWin->m_pcsListMgr->GetBaseCoordSystem());
+                    }else{
+                        for(CObject *obj:m_pMainWin->m_ObjectListMgr->getObjectList()){
+                            if(box->currentText()==obj->GetObjectCName()){
+                                CPcsNode* node=dynamic_cast<CPcsNode*>(obj);
+                                cuboid->SetExtCoord(node->getPcs());
+                                // qDebug() << "Current Text: " << box->currentText();
+                                // qDebug() << "Object Name: " << obj->GetObjectCName();
+                                break;
+                            }
+                        }
+                    }
+
+                    CPosition temposition=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(gloPosition,cuboid->m_pExtCoord);
+
+                    table->setItem(0, 1, new QTableWidgetItem(QString::number(temposition.x,'f',6)));
+                    table->setItem(1, 1, new QTableWidgetItem(QString::number(temposition.y,'f',6)));
+                    table->setItem(2, 1, new QTableWidgetItem(QString::number(temposition.z,'f',6)));
+
+                    table->viewport()->update();
+                });
+            }else{
+                box->setCurrentIndex(box->findText((m_pMainWin->m_pcsListMgr->FindNode(cuboid->GetCurCoord()))->GetObjectCName()));
+                box->setEnabled(false);
+
+                cuboid->SetExtCoord(cuboid->GetCurCoord());
+            }
+
+            position=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(gloPosition,cuboid->m_pExtCoord);
+
+            if (cuboid != nullptr){
+                table->setItem(0, 0, new QTableWidgetItem("X"));
+                table->setItem(0, 1, new QTableWidgetItem(QString::number(position.x,'f',6)));
+                table->setItem(0, 2, new QTableWidgetItem("")); // 可选择设置状态
+
+                table->setItem(1, 0, new QTableWidgetItem("Y"));
+                table->setItem(1, 1, new QTableWidgetItem(QString::number(position.y,'f',6)));
+                table->setItem(1, 2, new QTableWidgetItem("")); // 可选择设置状态
+
+                table->setItem(2, 0, new QTableWidgetItem("Z"));
+                table->setItem(2, 1, new QTableWidgetItem(QString::number(position.z,'f',6)));
                 table->setItem(2, 2, new QTableWidgetItem(""));
+
+                table->setItem(3, 0, new QTableWidgetItem("Length"));
+                table->setItem(3, 1, new QTableWidgetItem(QString::number(cuboid->getLength(),'f',6)));
+                table->setItem(3, 2, new QTableWidgetItem(""));
+
+                table->setItem(4, 0, new QTableWidgetItem("Width"));
+                table->setItem(4, 1, new QTableWidgetItem(QString::number(cuboid->getWidth(),'f',6)));
+                table->setItem(4, 2, new QTableWidgetItem(""));
+
+                table->setItem(5, 0, new QTableWidgetItem("Height"));
+                table->setItem(5, 1, new QTableWidgetItem(QString::number(cuboid->getHeight(),'f',6)));
+                table->setItem(5, 2, new QTableWidgetItem(""));
             }
         }
         if(obj->m_strCName.left(5)=="工件坐标系"){
