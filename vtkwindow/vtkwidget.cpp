@@ -113,6 +113,11 @@ void VtkWidget::setCentity(CEntity *entity)
     createText();
 }
 
+void VtkWidget::setCentityList(QVector<CEntity *> list)
+{
+    elementEntityList=list;
+}
+
 void VtkWidget::MouseDrag()
 {
 
@@ -139,7 +144,6 @@ void VtkWidget::createText()
     infoTextActor->SetInput(byteArray.constData());
     infoTextActor->SetPosition(renWin->GetSize()[0] - 200, renWin->GetSize()[1] - 100);
     //infoTextActor->SetInput("浮动窗口");
-
     // 设置交互器的鼠标移动回调
     renderer->AddActor(infoTextActor);
     createTextBox();
@@ -212,16 +216,14 @@ void VtkWidget::createTextBox()
     rectangleActor->SetPosition(a[0],a[1]);
     qDebug()<<a[0]<<a[1];
     //rectangleActor->SetVisibility(false);
-
     renderer->AddActor(rectangleActor);
 }
 
 void VtkWidget::createLine()
 {
-    if (lineActor&&iconActor)
+    if (lineActor)
     {
         renderer->RemoveActor(lineActor); // 从渲染器中移除旧的演员
-        renderer->RemoveActor(iconActor);
     }
     pngReader = vtkSmartPointer<vtkPNGReader>::New();
     double *a=rectangleActor->GetPosition();
@@ -360,7 +362,7 @@ vtkSmartPointer<vtkRenderer>& VtkWidget::getRenderer(){
 // 刷新vtk窗口
 void VtkWidget::UpdateInfo(){
     reDrawCentity();
-    onTopView(); // 重置相机视角
+    //onTopView(); // 重置相机视角
 }
 
 void VtkWidget::reDrawCentity(){

@@ -100,6 +100,7 @@ public:
 
     // 显示选中的图形的信息
     void setCentity(CEntity*entity);  //传入centity对象
+    void setCentityList(QVector<CEntity*>list);
     void MouseDrag();
     void OnMouseMove();
     void OnLeftButtonPress();
@@ -131,6 +132,7 @@ private:
     vtkSmartPointer<vtkOrientationMarkerWidget> axeWidget; // 创建窗口部件来封装坐标器
     vtkSmartPointer<vtkOrientationMarkerWidget> textWidget; // 浮动窗口，用于显示信息
     CEntity* elementEntity;//储存传入的entity
+    QVector<CEntity*>elementEntityList;
     vtkTimeStamp lastLeftClickTime; // 时间戳，记录上次左键点击的时间
     // double lastLeftClickPos[2]; // 记录左键按下时的位置
     bool isDragging=false;  //判断注释是否能移动
