@@ -30,7 +30,7 @@ public:
 
     void NotifySubscribe();
 
-    static const int SingalToolBarActionNum=9;//每行工具栏的图标数目
+    static const int SingalToolBarActionNum=10;//每行工具栏的图标数目
     static const int ActionKindNum=5;//工具栏的种类数
     //获取图标名称
     QStringList* getSaveActionNames();
@@ -66,6 +66,13 @@ public:
 
     QVector<CEntity*>& getConstructEntityList();
     QVector<CEntity*>& getIdentifyEntityList();
+    //返回UniqueToolBar的引用，以便contralwidget操作
+    UniqueToolBar& getSave();
+    UniqueToolBar& getFind();
+    UniqueToolBar& getCoord();
+    UniqueToolBar& getViewAngle();
+    UniqueToolBar& getConstruct();
+    ToolBarGathter& getToolBarGather();
 
 public slots:
               //构造
@@ -78,6 +85,7 @@ public slots:
     void onConstructCone();
     void onConstructSphere();
     void onConstructDistance();
+    void onConstructPointCloud();
     //识别
     void onFindPlane();
     void onFindPoint();

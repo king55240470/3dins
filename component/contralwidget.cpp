@@ -3,6 +3,13 @@
 ContralWidget::ContralWidget(ToolWidget* toolWidget_,QWidget *parent) : QDialog(parent) {
 
     toolWidget=toolWidget_;
+    save_action_name_list_=&toolWidget->getSave().m_nameList;
+    find_action_name_list_=&toolWidget->getFind().m_nameList;
+    construct_action_name_list_=&toolWidget->getConstruct().m_nameList;
+    coord_action_name_list_=&toolWidget->getCoord().m_nameList;
+    view_angle_action_name_list_=&toolWidget->getViewAngle().m_nameList;
+
+
 
     save_action_name_list_=toolWidget->getSaveActionNames();
     find_action_name_list_=toolWidget->getFindActionNames();
@@ -52,6 +59,8 @@ ContralWidget::ContralWidget(ToolWidget* toolWidget_,QWidget *parent) : QDialog(
         int coord_action_add_num=0;
         int view_angle_action_add_num=0;
 
+
+
         for(int i=0;i<toolWidget->getFindActionNum();i++){
             if(action_is_checked_[find_action_index_][i]) {
                 find_action_add_list<<(*find_action_name_list_)[i];
@@ -82,6 +91,13 @@ ContralWidget::ContralWidget(ToolWidget* toolWidget_,QWidget *parent) : QDialog(
                 view_angle_action_add_num++;
             }
         }
+        // toolWidget->getSave().setChosenNameList(save_action_add_list);
+        // toolWidget->getFind().setChosenNameList(find_action_add_list);
+        // toolWidget->getConstruct().setChosenNameList(construct_action_add_list);
+        // toolWidget->getCoord().setChosenNameList(coord_action_add_list);
+        // toolWidget->getViewAngle().setChosenNameList(view_angle_action_add_list);
+        // toolWidget->getToolBarGather().addToWidget(toolWidget);
+
 
         int toolbar_index=-1;
         toolbar_index= toolWidget->addFindActions(find_action_add_list,find_action_add_num, toolbar_index);
@@ -94,6 +110,7 @@ ContralWidget::ContralWidget(ToolWidget* toolWidget_,QWidget *parent) : QDialog(
     });
 
     setLayout(layout); // 设置窗口的布局
+
 }
 void ContralWidget::createTreeWidgetItem(){
     // 添加一些父节点
