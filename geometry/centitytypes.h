@@ -113,6 +113,18 @@ public:
     CPosition m_pt;
     static int pointCount;
     int currentPointId;
+
+    QDataStream& serialize(QDataStream& out) const override {
+        CEntity::serialize(out);  // 先序列化基类部分
+        out << m_pt << pointCount << currentPointId;
+        return out;
+    }
+
+    QDataStream& deserialize(QDataStream& in) override {
+        CEntity::deserialize(in);  // 先反序列化基类部分
+        in >> m_pt >> pointCount >> currentPointId;
+        return in;
+    }
 public:
     CPoint()
     {
@@ -242,6 +254,20 @@ private:
     static int plainCount;
     int currentPlainId;
 
+    QDataStream& serialize(QDataStream& out) const override {
+        CEntity::serialize(out);  // 先序列化基类部分
+        out <<center << normal<< dir_long_edge << length << width;
+        out<<plainCount<<currentPlainId;
+        return out;
+    }
+
+    QDataStream& deserialize(QDataStream& in) override {
+        CEntity::deserialize(in);  // 先反序列化基类部分
+        in >>center >> normal >> dir_long_edge >> length >> width;
+        in>>plainCount>>currentPlainId;
+        return in;
+    }
+
 public:
     CPosition getCenter() const;
     void setCenter(const CPosition &newCenter);
@@ -290,6 +316,20 @@ class CSphere : public CEntity{
     static int sphereCount;
     int currentSphereId;
 
+    QDataStream& serialize(QDataStream& out) const override {
+        CEntity::serialize(out);  // 先序列化基类部分
+        out <<center << diameter;
+        out <<sphereCount<<currentSphereId;
+        return out;
+    }
+
+    QDataStream& deserialize(QDataStream& in) override {
+        CEntity::deserialize(in);  // 先反序列化基类部分
+        in >>center >> diameter ;
+        in>>sphereCount>>currentSphereId;
+        return in;
+    }
+
 public:
     CPosition getCenter() const;
     void setCenter(const CPosition &newCenter);
@@ -332,6 +372,20 @@ class CCylinder : public CEntity{
 
     static int cylinderCount;
     int currentCylinderId;
+
+    QDataStream& serialize(QDataStream& out) const override {
+        CEntity::serialize(out);  // 先序列化基类部分
+        out <<axis << diameter<< height << btm_center;
+        out <<cylinderCount<<currentCylinderId;
+        return out;
+    }
+
+    QDataStream& deserialize(QDataStream& in) override {
+        CEntity::deserialize(in);  // 先反序列化基类部分
+        in >>axis >> diameter >> height >> btm_center;
+        in>>cylinderCount>>currentCylinderId;
+        return in;
+    }
 
 
 public:
@@ -380,6 +434,20 @@ class CCone : public CEntity{
 
     static int coneCount;
     int currentConeId;
+
+    QDataStream& serialize(QDataStream& out) const override {
+        CEntity::serialize(out);  // 先序列化基类部分
+        out <<axis << radian<< height << cone_height <<vertex;
+        out <<coneCount<<currentConeId;
+        return out;
+    }
+
+    QDataStream& deserialize(QDataStream& in) override {
+        CEntity::deserialize(in);  // 先反序列化基类部分
+        in >>axis >> radian >> height >> cone_height >>vertex;
+        in>>coneCount>>currentConeId;
+        return in;
+    }
 
 public:
     CCone(){
@@ -430,6 +498,22 @@ class CDistance : public CEntity{
     CLine line;
     double distance;
     CPosition Projection;
+
+    QDataStream& serialize(QDataStream& out) const override {
+        CEntity::serialize(out);  // 先序列化基类部分
+        out <<currentCdistacneId << uptolerance<< undertolerance << begin <<end;
+        out <<qualified;
+        out <<plane <<circle <<line <<distance <<Projection;
+        return out;
+    }
+
+    QDataStream& deserialize(QDataStream& in) override {
+        CEntity::deserialize(in);  // 先反序列化基类部分
+        in >>currentCdistacneId >> uptolerance >> undertolerance >> begin >>end;
+        in>>qualified;
+        in>>plane >>circle >>line >>distance >>Projection;
+        return in;
+    }
 public:
     CDistance(){
         uptolerance=0.0;
@@ -451,11 +535,14 @@ public:
     void setplane(const CPlane & Plane);
     void setcircle(const CCircle & Circle);
     void setline(const CLine & Line);
+    CPosition getbegin();
+    CPosition getProjection();
     double getdistancepoint();
     double getdistanceplane();
     double getdistancecircle();
     double getdistanceline();
     double getdistance();
+
     void setdistance(double d);
     bool judge();
     void setProjection(CPosition pos);
@@ -480,11 +567,26 @@ class CPointCloud : public CEntity
 public:
     CPosition m_pt;
     pcl::PointCloud<pcl::PointXYZRGB> m_pointCloud; // 存储的点云对象（已经加载过的）
+    double pointCloudSize; // 点云的大小，即包含点的数量
     static int pointCloudCount;
     int currentPointCloudId;
     bool isFileCloud = false; // 是否是文件生成的点云
-    bool isFittingCloud = false; // 是否是拟合出来的点云
     bool isComparsionCloud = false; //  是否是对比得到的点云
+
+    QDataStream& serialize(QDataStream& out) const override {
+        CEntity::serialize(out);  // 先序列化基类部分
+        // out << m_pointCloud.size() << m_pointCloud.points;
+        out <<m_pt << pointCloudCount<< currentPointCloudId;
+        out <<isFileCloud  <<isComparsionCloud ;
+        return out;
+    }
+
+    QDataStream& deserialize(QDataStream& in) override {
+        CEntity::deserialize(in);  // 先反序列化基类部分
+        in >>m_pt >> pointCloudCount >> currentPointCloudId;
+        in>>isFileCloud  >>isComparsionCloud ;
+        return in;
+    }
 public:
     CPointCloud()
     {
@@ -498,6 +600,11 @@ public:
     // 点云类的draw
     QString getCEntityInfo() override; // 获取图形的信息，在浮动窗口显示
     vtkSmartPointer<vtkActor> draw() override;
+    vtkSmartPointer<vtkActor> drawComparedCloud(); // 绘制对比生成的点云
+    double getPointCloudSize(){
+        return m_pointCloud.points.size();
+    };
+
     int GetUniqueType() override {
         return enPointCloud;
     }

@@ -442,6 +442,7 @@ void MainWindow::OnPresetPoint(CPosition pt){
 void MainWindow::OnPresetLine(CPosition ptStart, CPosition ptEnd)
 {
     CLine *pLine = (CLine *)CreateEntity(enLine);
+    pLine->Form="预制";
     pLine->setBegin(ptStart);
     pLine->setEnd(ptEnd);
     pLine->m_CreateForm = ePreset;
@@ -462,6 +463,7 @@ void MainWindow::OnPresetCircle(CPosition pt, double diameter)
     //double diameter = 1.5;
 
     CCircle *pCircle = (CCircle *)CreateEntity(enCircle);
+    pCircle->Form="预制";
     pCircle->SetCenter(pt);
     pCircle->SetDiameter(diameter);
     pCircle->m_CreateForm = ePreset;
@@ -501,6 +503,7 @@ void MainWindow::OnPresetCircle(CPosition pt, double diameter)
 void MainWindow::OnPresetPlane(CPosition posCenter, QVector4D normal, QVector4D direction, double length, double width)
 {
     CPlane *pPlane = (CPlane *)CreateEntity(enPlane);
+    pPlane->Form="预制";
     pPlane->setCenter(posCenter);
     pPlane->setDir_long_edge(direction);
     pPlane->setNormal(normal);
@@ -524,6 +527,7 @@ void MainWindow::OnPresetPlane(CPosition posCenter, QVector4D normal, QVector4D 
 void MainWindow::OnPresetSphere(CPosition posCenter, double diametre)
 {
     CSphere *pSphere = (CSphere *)CreateEntity(enSphere);
+    pSphere->Form="预制";
     pSphere->setCenter(posCenter);
     pSphere->setDiameter(diametre);
 
@@ -543,6 +547,7 @@ void MainWindow::OnPresetSphere(CPosition posCenter, double diametre)
 void MainWindow::OnPresetCylinder(CPosition pos, QVector4D vec, double height, double diametre)
 {
     CCylinder *pCylinder = (CCylinder *)CreateEntity(enCylinder);
+    pCylinder->Form="预制";
     pCylinder->setAxis(vec);
     pCylinder->setBtm_center(pos);
     pCylinder->setDiameter(diametre);
@@ -568,6 +573,7 @@ void MainWindow::OnPresetCone(CPosition posCenter, QVector4D axis, double partH,
 
 {
     CCone *pCone = (CCone *)CreateEntity(enCone);
+    pCone->Form="预制";
     pCone->setCone_height(partH);
     pCone->setHeight(fullH);
     pCone->setAxis(axis);

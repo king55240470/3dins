@@ -20,13 +20,11 @@ public:
     CPointCloud* CreateCloudFromFile(QString str); // 给打开的文件分配RGB点云，并生成点云对象
     void DeleteFileCloud(QString filepath); // 删除文件对应的点云
     CPointCloud* CreateFittingCloud(pcl::PointCloud<pcl::PointXYZRGB> plane);
-    CPointCloud* CreateComparsionCloud(pcl::PointCloud<pcl::PointXYZRGB> cloud);
+    CPointCloud* CreateCompareCloud(pcl::PointCloud<pcl::PointXYZRGB> cloud);
 
     pcl::PointCloud<pcl::PointXYZRGB>& getTempCloud(){
         return tempCloud;
     };
-    // 将点云对象转为智能指针
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr CloudToPtr(pcl::PointCloud<pcl::PointXYZRGB> cloud);
 private:
     QMap<QString, CPointCloud*> fileCloudMap; // 将打开的文件和点云实体绑定
 
