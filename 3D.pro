@@ -26,6 +26,7 @@ SOURCES += \
     constructor/distanceconstructor.cpp \
     constructor/lineconstructor.cpp \
     constructor/planeconstructor.cpp \
+    constructor/pointcloudconstructor.cpp \
     constructor/pointconstructor.cpp \
     constructor/rectangleconstructor.cpp \
     constructor/sphereconstructor.cpp \
@@ -43,6 +44,7 @@ SOURCES += \
     manager/cpcsmgr.cpp \
     manager/filemgr.cpp \
     manager/pointcloudlistmgr.cpp \
+    pointfitting/fittingcylinder.cpp \
     pointfitting/fittingplane.cpp \
     pointfitting/setdatawidget.cpp \
     vtkwindow/clickhighlightstyle.cpp \
@@ -68,6 +70,7 @@ HEADERS += \
     constructor/distanceconstructor.h \
     constructor/lineconstructor.h \
     constructor/planeconstructor.h \
+    constructor/pointcloudconstructor.h \
     constructor/pointconstructor.h \
     constructor/rectangleconstructor.h \
     constructor/sphereconstructor.h \
@@ -85,6 +88,7 @@ HEADERS += \
     manager/cpcsmgr.h \
     manager/filemgr.h \
     manager/pointcloudlistmgr.h \
+    pointfitting/fittingcylinder.h \
     pointfitting/fittingplane.h \
     pointfitting/setdatawidget.h \
     vtkwindow/clickhighlightstyle.h \
@@ -641,14 +645,14 @@ CONFIG(debug, debug|release){
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkexodusII-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkexpat-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkFiltersAMR-9.1.lib"
-    LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkFiltersCellGrid-9.1.lib"
+    # LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkFiltersCellGrid-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkFiltersCore-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkFiltersExtraction-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkFiltersFlowPaths-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkFiltersGeneral-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkFiltersGeneric-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkFiltersGeometry-9.1.lib"
-    LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkFiltersGeometryPreview-9.1.lib"
+    # LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkFiltersGeometryPreview-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkFiltersHybrid-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkFiltersHyperTree-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkFiltersImaging-9.1.lib"
@@ -657,12 +661,12 @@ CONFIG(debug, debug|release){
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkFiltersParallelImaging-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkFiltersPoints-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkFiltersProgrammable-9.1.lib"
-    LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkFiltersReduction-9.1.lib"
+    # LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkFiltersReduction-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkFiltersSelection-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkFiltersSMP-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkFiltersSources-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkFiltersStatistics-9.1.lib"
-    LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkFiltersTensor-9.1.lib"
+    # LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkFiltersTensor-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkFiltersTexture-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkFiltersTopology-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkFiltersVerdict-9.1.lib"
@@ -693,8 +697,8 @@ CONFIG(debug, debug|release){
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkInteractionWidgets-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkIOAMR-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkIOAsynchronous-9.1.lib"
-    LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkIOCellGrid-9.1.lib"
-    LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkIOCesium3DTiles-9.1.lib"
+    # LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkIOCellGrid-9.1.lib"
+    # LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkIOCesium3DTiles-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkIOCGNSReader-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkIOChemistry-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkIOCityGML-9.1.lib"
@@ -705,7 +709,7 @@ CONFIG(debug, debug|release){
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkIOExport-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkIOExportGL2PS-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkIOExportPDF-9.1.lib"
-    LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkIOFLUENTCFF-9.1.lib"
+    # LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkIOFLUENTCFF-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkIOGeometry-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkIOHDF-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkIOImage-9.1.lib"
@@ -747,16 +751,16 @@ CONFIG(debug, debug|release){
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkpng-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkpugixml-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkRenderingAnnotation-9.1.lib"
-    LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkRenderingCellGrid-9.1.lib"
+    # LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkRenderingCellGrid-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkRenderingContext2D-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkRenderingContextOpenGL2-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkRenderingCore-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkRenderingFreeType-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkRenderingGL2PSOpenGL2-9.1.lib"
-    LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkRenderingHyperTreeGrid-9.1.lib"
+    # LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkRenderingHyperTreeGrid-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkRenderingImage-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkRenderingLabel-9.1.lib"
-    LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkRenderingLICOpenGL2-9.1.lib"
+    # LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkRenderingLICOpenGL2-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkRenderingLOD-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkRenderingOpenGL2-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkRenderingQt-9.1.lib"

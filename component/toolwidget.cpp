@@ -60,11 +60,13 @@
 #include"constructor/coneconstructor.h"
 #include"constructor/distanceconstructor.h"
 #include"constructor/distanceconstructor.h"
+#include"constructor/pointcloudconstructor.h"
 
 #include <pcl/point_cloud.h>     // PCL 的点云类
 #include <pcl/visualization/pcl_visualizer.h> // PCL 的可视化工具
 
 #include "pointfitting/fittingplane.h"//拟合平面算法
+#include "pointfitting/fittingcylinder.h"//拟合圆柱算法
 #include "pointfitting/setdatawidget.h"
 
 
@@ -78,49 +80,17 @@
 #include <QPainter>
 #include <QApplication>
 
+//绘制vtk的各种封闭曲面
+#include <vtkCylinderSource.h>//圆柱体
+#include<vtkCubeSource.h>//长方体
+#include<vtkConeSource.h>//圆锥
+#include<vtkSphereSource.h>//球
+#include<vtkSelectEnclosedPoints.h>//圈中点的算法
+
 int getImagePaths(const QString& directory, QStringList &iconPaths, QStringList &iconNames);
 
 ToolWidget::ToolWidget(QWidget *parent)
     : QWidget(parent) {
-
-
-    // m_save.m_pathList<<":/component/save/excel.png"<< ":/component/save/pdf.jpg"<< ":/component/save/txt.jpg"<< ":/component/save/word.jpg"<<":/component/save/image.jpg";
-    // m_construct.m_pathList<<":/component/construct/point.jpg"<<":/component/construct/line.jpg"<<":/component/construct/circle.jpg"<<   ":/component/construct/plan.jpg"<<  ":/component/construct/rectangle.jpg"<<":/component/construct/cylinder.jpg"<< ":/component/construct/cone.jpg"<< ":/component/construct/sphere.jpg"<<":/component/construct/distance.png";
-    // m_find.m_pathList<<":/component/construct/point.jpg"<<":/component/construct/line.jpg"<<":/component/construct/circle.jpg"<<   ":/component/construct/plan.jpg"<<  ":/component/construct/rectangle.jpg"<<":/component/construct/cylinder.jpg"<< ":/component/construct/cone.jpg"<< ":/component/construct/sphere.jpg";
-    // m_coord.m_pathList<<":/component/coord/create.png"<<  ":/component/coord/spin.jpg"<<":/component/coord/save.png";
-    // m_viewAngle.m_pathList<<":/component/viewangle/front.png"<<":/component/viewangle/up.png"<<":/component/viewangle/right.png"<<":/component/viewangle/isometric.png";
-
-
-    // m_save.m_nameList<<"excel"<< "pdf"<< "txt"<< "word"<<"image";
-    // m_construct.m_nameList<<"点"<<"线"<<"圆"<<"平面"<<"矩形"<<"圆柱"<<"圆锥"<<"球形"<<"距离";
-    // m_find.m_nameList<<"点"<<"线"<<"圆"<<"平面"<<"矩形"<<"圆柱"<<"圆锥"<<"球形";;
-    // m_coord.m_nameList<<"创建坐标系"<<"旋转坐标系"<<"保存坐标系";
-    // m_viewAngle.m_nameList<<"主视角"<<"俯视角"<<"侧视角"<<"立体视角";
-    // // 在Unique 的类中实现QAction的创建和初始化
-    // //m_save.loadAction();
-
-    // m_save.setName("保存");
-    // m_construct.setName("构造");
-    // m_find.setName("识别");
-    // m_coord.setName("坐标系");
-    // m_viewAngle.setName("视角");
-    // //将每个工具栏加入汇总
-    // m_toolBarGather.addUniqueToolBar(&m_find);
-    // m_toolBarGather.addUniqueToolBar(&m_construct);
-    // m_toolBarGather.addUniqueToolBar(&m_coord);
-    // m_toolBarGather.addUniqueToolBar(&m_save);
-    // m_toolBarGather.addUniqueToolBar(&m_viewAngle);
-    // //向列表中添加工具栏的所有内容
-    // //每行工具栏的图标数目
-    // m_toolBarGather.setSingalToolBarActionNum(9);
-
-    // m_construct.loadAction();
-    // m_find.loadAction();
-    // m_coord.loadAction();
-    // m_viewAngle.loadAction();
-    // m_save.loadAction();
-
-    // m_toolBarGather.addToWidget(this);
 
 
     QVBoxLayout *layout = new QVBoxLayout(this);
@@ -132,7 +102,7 @@ ToolWidget::ToolWidget(QWidget *parent)
     resize(400,250);
 
     m_nSaveActionNum=5;
-    m_nConstructActionNum=9;
+    m_nConstructActionNum=10;
     m_nFindActionNum=8;
     m_nCoordActionNum=3;
     m_nViewAngleActionNum=4;
@@ -142,7 +112,7 @@ ToolWidget::ToolWidget(QWidget *parent)
 
 
     save_action_iconpath_list_<<":/component/save/excel.png"<< ":/component/save/pdf.jpg"<< ":/component/save/txt.jpg"<< ":/component/save/word.jpg"<<":/component/save/image.jpg";
-    construct_action_iconpath_list_<<":/component/construct/point.jpg"<<":/component/construct/line.jpg"<<":/component/construct/circle.jpg"<<   ":/component/construct/plan.jpg"<<  ":/component/construct/rectangle.jpg"<<":/component/construct/cylinder.jpg"<< ":/component/construct/cone.jpg"<< ":/component/construct/sphere.jpg"<<":/component/construct/distance.png";
+    construct_action_iconpath_list_<<":/component/construct/point.jpg"<<":/component/construct/line.jpg"<<":/component/construct/circle.jpg"<<   ":/component/construct/plan.jpg"<<  ":/component/construct/rectangle.jpg"<<":/component/construct/cylinder.jpg"<< ":/component/construct/cone.jpg"<< ":/component/construct/sphere.jpg"<<":/component/construct/distance.png"<<":/component/construct/pointCloud.png";
     find_action_iconpath_list_<<":/component/construct/point.jpg"<<":/component/construct/line.jpg"<<":/component/construct/circle.jpg"<<   ":/component/construct/plan.jpg"<<  ":/component/construct/rectangle.jpg"<<":/component/construct/cylinder.jpg"<< ":/component/construct/cone.jpg"<< ":/component/construct/sphere.jpg";
     coord_action_iconpath_list_<<":/component/coord/create.png"<<  ":/component/coord/spin.jpg"<<":/component/coord/save.png";
     view_angle_action_iconpath_list_<<":/component/viewangle/front.png"<<":/component/viewangle/up.png"<<":/component/viewangle/right.png"<<":/component/viewangle/isometric.png";
@@ -152,7 +122,7 @@ ToolWidget::ToolWidget(QWidget *parent)
 
 
     save_action_name_list_<<"excel"<< "pdf"<< "txt"<< "word"<<"image";
-    construct_action_name_list_<<"点"<<"线"<<"圆"<<"平面"<<"矩形"<<"圆柱"<<"圆锥"<<"球形"<<"距离";
+    construct_action_name_list_<<"点"<<"线"<<"圆"<<"平面"<<"矩形"<<"圆柱"<<"圆锥"<<"球形"<<"距离"<<"点云";
     find_action_name_list_<<"点"<<"线"<<"圆"<<"平面"<<"矩形"<<"圆柱"<<"圆锥"<<"球形";;
     coord_action_name_list_<<"创建坐标系"<<"旋转坐标系"<<"保存坐标系";
     view_angle_action_name_list_<<"主视角"<<"俯视角"<<"侧视角"<<"立体视角";
@@ -583,6 +553,7 @@ void ToolWidget::connectActionWithF(){
     connect(construct_actions_[construct_action_name_list_.indexOf("圆锥")],&QAction::triggered,this,&  ToolWidget::onConstructCone);
     connect(construct_actions_[construct_action_name_list_.indexOf("球形")],&QAction::triggered,this,&  ToolWidget::onConstructSphere);
     connect(construct_actions_[construct_action_name_list_.indexOf("距离")],&QAction::triggered,this,&  ToolWidget::onConstructDistance);
+    connect(construct_actions_[construct_action_name_list_.indexOf("点云")],&QAction::triggered,this,&  ToolWidget::onConstructPointCloud);
 
     //保存
     connect(save_actions_[save_action_name_list_.indexOf("excel")],&QAction::triggered,this,&  ToolWidget::onSaveExcel);
@@ -1224,6 +1195,9 @@ void ToolWidget::onConstructPoint(){
         for(int i=0;i<positions.size();i++){
             newPoint=constructor.createPoint(positions[i]);
             newPoint->Form="构造";
+            CPoint*p=newPoint;
+            p->Form="构造";
+            newPoint->parent.push_back(p);
             if(newPoint!=nullptr){
                 addToList(newPoint);
             }
@@ -1250,13 +1224,10 @@ void ToolWidget::onConstructPoint(){
 }
 
 void ToolWidget::onConstructLine(){
-    qDebug()<<"ok here 1";
     QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenActorAxes();
-    qDebug()<<"ok here 1.5";
     LineConstructor constructor;
     CLine* newLine;
     bool createLine=false;
-    qDebug()<<"ok here 2";
     if(positions.size()==2){
         newLine=constructor.createLine(positions[0],positions[1]);
         addToList(newLine);
@@ -1288,9 +1259,7 @@ void ToolWidget::onConstructLine(){
         }
         return ;
     }
-    qDebug()<<"ok here 4";
     m_pMainWin->NotifySubscribe();
-     qDebug()<<"ok here 5";
 
 }
 static void WrongWidget(QString message,QString moreMessage){
@@ -1399,6 +1368,7 @@ void ToolWidget::onConstructSphere(){
         }else if(constructor.getWrongInformation()==PointDontMatch){
             WrongWidget("四点无法构成球形");
         }
+        return ;
     }
     addToList(newSphere);
     m_pMainWin->NotifySubscribe();
@@ -1454,6 +1424,25 @@ void ToolWidget::onConstructDistance(){
 
 }
 
+
+void ToolWidget::onConstructPointCloud(){
+    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+    auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
+    if(cloudptr==nullptr){
+        WrongWidget("点云指针为空");
+        return ;
+    }
+    PointCloudConstructor constructor;
+    constructor.setSourceCloud(cloudptr);
+    CPointCloud* newPointCloud=(CPointCloud*)constructor.create(entityList);
+    if(newPointCloud==nullptr){
+        WrongWidget("构造点云失败");
+        return ;
+    }
+    addToList(newPointCloud);
+    m_pMainWin->NotifySubscribe();
+}
+
 void ToolWidget:: onFindPlane(){
     QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenActorAxes();
     pcl::PointXYZRGB  point;
@@ -1471,14 +1460,15 @@ void ToolWidget:: onFindPlane(){
     //std::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>> shared_cloud(new pcl::PointCloud<pcl::PointXYZRGB>(cloud));
     //m_pMainWin->getPWinSetDataWidget()->setPlaneData(point,shared_cloud);
     // 生成点云对象并添加到entitylist
-    // CPointCloud* pointCloud=new CPointCloud();
     auto planeCloud=m_pMainWin->getPWinSetDataWidget()->getPlaneCloud();
     if(planeCloud==nullptr){
         qDebug()<<"拟合平面生成错误";
         return ;
     }
-    // pointCloud->setPointCloud(*m_pMainWin->getPWinSetDataWidget()->getFittingPlane());
     auto plane=m_pMainWin->getPWinSetDataWidget()->getPlane();
+    if(plane==nullptr){
+        return;
+    }
     PlaneConstructor constructor;
     CPlane* newPlane;
     CPosition center;
@@ -1503,8 +1493,49 @@ void ToolWidget::onFindPoint(){
 }
 void ToolWidget::onFindLine(){}
 void ToolWidget::onFindCircle(){}
-void ToolWidget::onFindRectangle(){}
-void ToolWidget::onFindCylinder(){}
+void ToolWidget::onFindRectangle(){
+}
+void ToolWidget::onFindCylinder(){
+    QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenActorAxes();
+    pcl::PointXYZRGB  point;
+    if(positions.size()==0)return ;
+    point.x=positions[0].x;
+    point.y=positions[0].y;
+    point.z=positions[0].z;
+    auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
+    if(cloudptr==nullptr){
+        WrongWidget("点云指针为空");
+        return ;
+    }
+    m_pMainWin->getPWinSetDataWidget()->setCylinderData(point,cloudptr);
+    // 生成点云对象并添加到entitylist
+    // CPointCloud* pointCloud=new CPointCloud();
+    auto cylinderCloud=m_pMainWin->getPWinSetDataWidget()->getCylinderCloud();
+    if(cylinderCloud==nullptr){
+        qDebug()<<"拟合平面生成错误";
+        return ;
+    }
+    auto cylinder=m_pMainWin->getPWinSetDataWidget()->getCylinder();
+    if(cylinder==nullptr){
+        return;
+    }
+    CylinderConstructor constructor;
+    CCylinder* newCylinder;
+    CPosition center;
+    center.x=cylinder->getBottomCenter().x();
+    center.y=cylinder->getBottomCenter().y();
+    center.z=cylinder->getBottomCenter().z();
+    QVector4D normal(cylinder->getNormal().x(),cylinder->getNormal().y(),cylinder->getNormal().z(),0);
+    newCylinder=constructor.createCylinder(center,normal,cylinder->getHeight(),cylinder->getDiameter());
+    if(newCylinder==nullptr){
+        qDebug()<<"拟合平面生成错误";
+        return ;
+    }
+    addToFindList(newCylinder);
+
+    positions.clear();
+    m_pMainWin->NotifySubscribe();
+}
 void ToolWidget::onFindCone(){}
 void ToolWidget::onFindSphere(){}
 void ToolWidget::updateele(){

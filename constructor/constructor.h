@@ -11,6 +11,9 @@ enum WrongInformation{
     Unkown,
     PointDontMatch,
     Null,
+    SourceCloudNull,
+    SourceEntityLess,
+    SourceEntityMuch
 };
 
 class Constructor
