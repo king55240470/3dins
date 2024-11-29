@@ -26,6 +26,7 @@ SOURCES += \
     constructor/distanceconstructor.cpp \
     constructor/lineconstructor.cpp \
     constructor/planeconstructor.cpp \
+    constructor/pointcloudconstructor.cpp \
     constructor/pointconstructor.cpp \
     constructor/rectangleconstructor.cpp \
     constructor/sphereconstructor.cpp \
@@ -69,6 +70,7 @@ HEADERS += \
     constructor/distanceconstructor.h \
     constructor/lineconstructor.h \
     constructor/planeconstructor.h \
+    constructor/pointcloudconstructor.h \
     constructor/pointconstructor.h \
     constructor/rectangleconstructor.h \
     constructor/sphereconstructor.h \
