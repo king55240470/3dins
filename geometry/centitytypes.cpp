@@ -330,7 +330,7 @@ vtkSmartPointer<vtkActor> CCone::draw(){
     auto cone = vtkSmartPointer<vtkConeSource>::New();
     cone->SetCenter(globalPos.x, globalPos.y, globalPos.z);
     cone->SetRadius(getRadian());
-    cone->SetHeight(getCone_height());
+    cone->SetHeight(getHeight());
     cone->SetResolution(100);
 
     // 创建变换对象，用于旋转圆锥方向
