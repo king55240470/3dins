@@ -28,7 +28,7 @@ private:
     Eigen::Vector3f topCenter;//圆锥顶点
     Eigen::Vector3f normal;//圆锥轴向量
     double angle;//圆锥张开角度
-    double height;
+    double height;//圆锥高度
 };
 
 #endif // FITTINGCONE_H

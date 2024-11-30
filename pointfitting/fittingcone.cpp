@@ -41,13 +41,6 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingCone::RANSAC(pcl::PointXYZRGB sear
 
         pcl::copyPointCloud(*cloudptr, pointIdxRadiusSearch, *cloud_subset);
 
-        // // 使用PCA拟合圆锥轴
-        // pcl::PCA<pcl::PointXYZRGB> pca;
-        // pca.setInputCloud(cloud_subset);
-        // Eigen::Matrix3f eigen_vectors = pca.getEigenVectors();
-        // // 获取主成分方向作为圆锥的轴
-        // Eigen::Vector3f cone_axis = eigen_vectors.col(2);  // Z轴是主轴
-
         pcl::NormalEstimation<pcl::PointXYZRGB, pcl::Normal> ne;
         pcl::PointCloud<pcl::Normal>::Ptr normals(new pcl::PointCloud<pcl::Normal>);
         pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZRGB>());
@@ -56,7 +49,6 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingCone::RANSAC(pcl::PointXYZRGB sear
         ne.setSearchMethod(tree);
         ne.setKSearch(50);
         ne.compute(*normals);
-        qDebug()<<"111";
 
         pcl::SACSegmentationFromNormals<pcl::PointXYZRGB, pcl::Normal> seg;
         seg.setOptimizeCoefficients(true);
@@ -70,6 +62,20 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingCone::RANSAC(pcl::PointXYZRGB sear
 
         // 执行分割
         seg.segment(*inliers, *coefficients);
+
+        //计算圆锥顶点
+        topCenter=Eigen::Vector3f(coefficients->values[0], coefficients->values[1], coefficients->values[2]);
+        qDebug()<<"center:"<<topCenter.x()<<topCenter.y()<<topCenter.z();
+
+        //计算圆锥轴向量
+        normal=Eigen::Vector3f(coefficients->values[3], coefficients->values[4], coefficients->values[5]);
+        normal.normalize();
+        qDebug()<<"normal:"<<normal.x()<<normal.y()<<normal.z();
+
+        //计算圆锥张开角度
+        angle=coefficients->values[6];
+        angle = 2 * angle * 180.0 / M_PI;
+        qDebug()<<"angle:"<<angle;
 
         //获取圆锥上的所有点云
         for (int i=0;i<cloudptr->size();i++) {
@@ -86,17 +92,24 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingCone::RANSAC(pcl::PointXYZRGB sear
             point.g = 0;
             point.b = 0;
         }
-        qDebug()<<"444";
 
-        //计算圆锥顶点
-        topCenter=Eigen::Vector3f(coefficients->values[0], coefficients->values[1], coefficients->values[2]);
+        if(coneCloud->empty()){
+            QMessageBox *messagebox=new QMessageBox();
+            messagebox->setText("输入的邻域或距离阈值太小，\n请重新输入！");
+            messagebox->setIcon(QMessageBox::Warning);
+            messagebox->show();
+            messagebox->exec();
+            PCL_ERROR("ConeCloud is empty!\n");
+            return nullptr;
+        }
 
-        //计算圆锥轴向量
-        normal=Eigen::Vector3f(coefficients->values[3], coefficients->values[4], coefficients->values[5]);
-        normal.normalize();
-
-        //计算圆锥张开角度
-        angle=coefficients->values[6];
+        // // 使用PCA拟合圆锥轴
+        // pcl::PCA<pcl::PointXYZRGB> pca;
+        // pca.setInputCloud(coneCloud);
+        // Eigen::Matrix3f eigen_vectors = pca.getEigenVectors();
+        // // 获取主成分方向作为圆锥的轴
+        // normal = eigen_vectors.col(2);  // Z轴是主轴
+        // normal.normalize();
 
         // 计算圆锥的高度：通过点云中的投影来获得
         double min_proj = std::numeric_limits<float>::max();
@@ -106,13 +119,26 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingCone::RANSAC(pcl::PointXYZRGB sear
         for (int i = 0; i < coneCloud->size(); i++) {
             Eigen::Vector3f point(coneCloud->points[i].x, coneCloud->points[i].y, coneCloud->points[i].z);
             double proj = point.dot(normal); // 计算点到圆柱轴的投影
-            min_proj = std::min(min_proj, proj);
+            if(proj<min_proj){
+                min_proj=proj;
+                topCenter=point;
+            }
+            //min_proj = std::min(min_proj, proj);
+            qDebug()<<"center:"<<topCenter.x()<<topCenter.y()<<topCenter.z();
             max_proj = std::max(max_proj, proj);
         }
 
         height = max_proj - min_proj; // 高度是投影值的差
 
-        qDebug()<<"555";
+        if(height<=0){
+            QMessageBox *messagebox=new QMessageBox();
+            messagebox->setText("输入的邻域或距离阈值太小，\n请重新输入！");
+            messagebox->setIcon(QMessageBox::Warning);
+            messagebox->show();
+            messagebox->exec();
+            PCL_ERROR("Height < 0!\n");
+            return nullptr;
+        }
 
         return coneCloud;
 
@@ -131,13 +157,13 @@ bool FittingCone::isPointInCone(const pcl::PointXYZRGB& point){
 
     Eigen::Vector3f pointVec(point.x - topCenter.x(), point.y - topCenter.y(), point.z - topCenter.z());
 
-    float coneHeight = pointVec.dot(normal);  // 投影到圆锥的轴上（即高度）
+    double coneHeight = pointVec.dot(normal);  // 投影到圆锥的轴上（即高度）
 
     // 计算圆锥的半角
-    float coneRadius = tan(angle) * coneHeight;  // 圆锥半径
+    double coneRadius = tan(angle) * coneHeight;  // 圆锥半径
 
     // 计算点与轴的垂直距离
-    float perpendicularDistance = std::sqrt(std::pow(point.x - topCenter.x(), 2) +
+    double perpendicularDistance = std::sqrt(std::pow(point.x - topCenter.x(), 2) +
                                             std::pow(point.y - topCenter.y(), 2));
 
     return perpendicularDistance <= coneRadius;

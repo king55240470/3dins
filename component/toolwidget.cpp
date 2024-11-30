@@ -1578,9 +1578,9 @@ void ToolWidget::onFindCylinder(){
     CylinderConstructor constructor;
     CCylinder* newCylinder;
     CPosition center;
-    center.x=cylinder->getBottomCenter().x();
-    center.y=cylinder->getBottomCenter().y();
-    center.z=cylinder->getBottomCenter().z();
+    center.x=cylinder->getCenter().x();
+    center.y=cylinder->getCenter().y();
+    center.z=cylinder->getCenter().z();
     QVector4D normal(cylinder->getNormal().x(),cylinder->getNormal().y(),cylinder->getNormal().z(),0);
     newCylinder=constructor.createCylinder(center,normal,cylinder->getHeight(),cylinder->getDiameter());
     if(newCylinder==nullptr){
