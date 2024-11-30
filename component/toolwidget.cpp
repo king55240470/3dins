@@ -1442,13 +1442,6 @@ void ToolWidget::onConstructPointCloud(){
         WrongWidget("点云指针为空");
         return ;
     }
-    // constructor.setSourceCloud(cloudptr);
-    // CPointCloud* newPointCloud=(CPointCloud*)constructor.create(entityList);
-    // if(newPointCloud==nullptr){
-    //     WrongWidget("构造点云失败");
-    //     continue;
-    // }
-    // addToList(newPointCloud);
     PointCloudConstructor constructor;
 
     for(int i=0;i<pointClouds.size();i++){
@@ -1459,6 +1452,7 @@ void ToolWidget::onConstructPointCloud(){
             WrongWidget("构造点云失败");
             continue;
         }
+        newPointCloud->m_strAutoName+="(切割)";
         addToList(newPointCloud);
     }
 
@@ -1467,7 +1461,28 @@ void ToolWidget::onConstructPointCloud(){
 }
 
 void ToolWidget:: onFindPlane(){
+    //读取选中的点云
+    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+    QVector<CPointCloud*> pointClouds;
+
+    for(int i=0;i<entityList.size();i++){
+        CEntity* entity=entityList[i];
+        if(!entity->IsSelected())continue;
+        if(entity->GetUniqueType()==enPointCloud){
+            CPointCloud* pointCloud=(CPointCloud*)entity;
+            pointClouds.append(pointCloud);
+        }
+    }
+    if(pointClouds.size()<1){
+        WrongWidget("选中的点云数目为0");
+        return ;
+    }else if(pointClouds.size()>1){
+        WrongWidget("选中的点云数目大于1");
+        return ;
+    }
+    //读取选中的点
     QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenActorAxes();
+
     pcl::PointXYZRGB  point;
     if(positions.size()==0)return ;
     point.x=positions[0].x;
@@ -1475,15 +1490,12 @@ void ToolWidget:: onFindPlane(){
     point.z=positions[0].z;
     auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
 
-    auto cloud=m_pMainWin->getPointCloudListMgr()->getTempCloud();
-    if(cloudptr==nullptr){
-        WrongWidget("点云指针为空");
-        return ;
-    }
-    m_pMainWin->getPWinSetDataWidget()->setPlaneData(point,cloudptr);
-    //std::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>> shared_cloud(new pcl::PointCloud<pcl::PointXYZRGB>(cloud));
-    //m_pMainWin->getPWinSetDataWidget()->setPlaneData(point,shared_cloud);
-    // 生成点云对象并添加到entitylist
+    // if(cloudptr==nullptr){
+    //     WrongWidget("点云指针为空");
+    //     return ;
+    // }
+    //m_pMainWin->getPWinSetDataWidget()->setPlaneData(point,cloudptr);
+    m_pMainWin->getPWinSetDataWidget()->setPlaneData(point,pointClouds[0]->m_pointCloud.makeShared());
     auto planeCloud=m_pMainWin->getPWinSetDataWidget()->getPlaneCloud();
     if(planeCloud==nullptr){
         qDebug()<<"拟合平面生成错误";
@@ -1520,6 +1532,24 @@ void ToolWidget::onFindCircle(){}
 void ToolWidget::onFindRectangle(){
 }
 void ToolWidget::onFindCylinder(){
+    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+    QVector<CPointCloud*> pointClouds;
+
+    for(int i=0;i<entityList.size();i++){
+        CEntity* entity=entityList[i];
+        if(!entity->IsSelected())continue;
+        if(entity->GetUniqueType()==enPointCloud){
+            CPointCloud* pointCloud=(CPointCloud*)entity;
+            pointClouds.append(pointCloud);
+        }
+    }
+    if(pointClouds.size()<1){
+        WrongWidget("选中的点云数目为0");
+        return ;
+    }else if(pointClouds.size()>1){
+        WrongWidget("选中的点云数目大于1");
+        return ;
+    }
     QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenActorAxes();
     pcl::PointXYZRGB  point;
     if(positions.size()==0)return ;
@@ -1527,11 +1557,11 @@ void ToolWidget::onFindCylinder(){
     point.y=positions[0].y;
     point.z=positions[0].z;
     auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
-    if(cloudptr==nullptr){
-        WrongWidget("点云指针为空");
-        return ;
-    }
-    m_pMainWin->getPWinSetDataWidget()->setCylinderData(point,cloudptr);
+    // if(cloudptr==nullptr){
+    //     WrongWidget("点云指针为空");
+    //     return ;
+    // }
+    m_pMainWin->getPWinSetDataWidget()->setCylinderData(point,pointClouds[0]->m_pointCloud.makeShared());
     // 生成点云对象并添加到entitylist
     // CPointCloud* pointCloud=new CPointCloud();
     auto cylinderCloud=m_pMainWin->getPWinSetDataWidget()->getCylinderCloud();
