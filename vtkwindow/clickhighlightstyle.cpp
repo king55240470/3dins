@@ -1,14 +1,13 @@
 #include "clickhighlightstyle.h"
-#include <QDebug>
 
 // 实现New()方法的宏
 vtkStandardNewMacro(MouseInteractorHighlightActor);
 
 MouseInteractorHighlightActor::MouseInteractorHighlightActor(vtkInteractorStyleTrackballCamera* parent)
 {
-    lastRightClickTime.Modified();
     vtkMenu = new QMenu(m_pMainWin); // 创建菜单
-    vtkMenu->addAction("取消选中");
+    auto cancelSelect = new QAction("还没写");
+    vtkMenu->addAction(cancelSelect);
 }
 
 // 实现左键按下事件的处理方法
@@ -37,18 +36,10 @@ void MouseInteractorHighlightActor::OnLeftButtonDown()
             qDebug()<<entity->m_strAutoName;
         }
 
-        // 如果选中的是点云类型的actor，则寻找在actorToPointCloud中对应的rgb点云，然后给cloudptr赋值
-        if(entity->m_EntityType == enPointCloud){
-            auto rgbCloudMap = CPointCloud::getActorToPointCloud();
-
-            for(auto item = rgbCloudMap.begin();item != rgbCloudMap.end();item++){
-                if (newPickedActor == item.key()){
-                    // 转为智能指针
-                    m_pMainWin->getpWinFileMgr()->cloudptr = pcl::PointCloud<pcl::PointXYZRGB>::Ptr
-                        (new pcl::PointCloud<pcl::PointXYZRGB>(item.value()));
-                }
-            }
-
+        // 如果选中的是点云类型的actor，则转成CPointCloud，然后给cloudptr赋值
+        if(entity->GetUniqueType() == enPointCloud){
+            auto cloudEntity = (CPointCloud*)entity;
+            m_pMainWin->getpWinFileMgr()->cloudptr = cloudEntity->m_pointCloud.makeShared();
         }
 
         // 生成一个用于高亮的顶点，并存入pickedActors
@@ -202,4 +193,9 @@ QVector<std::pair<vtkSmartPointer<vtkActor>, vtkSmartPointer<vtkProperty> > > &M
 QVector<vtkActor *> MouseInteractorHighlightActor::getpoint_actors()
 {
     return  point_actors;
+}
+
+void MouseInteractorHighlightActor::onCancelSelect()
+{
+    OnRightButtonDown();
 }

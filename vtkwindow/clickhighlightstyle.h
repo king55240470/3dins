@@ -7,6 +7,8 @@
 #include "manager/filemgr.h"
 
 #include <QVector>
+#include <QDebug>
+#include <QObject>
 #include <vtkSmartPointer.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
@@ -57,6 +59,8 @@ public:
     QVector<std::pair<vtkSmartPointer<vtkActor>,vtkSmartPointer<vtkProperty>>>& getPickedActors();
     // 获取point_actors
     QVector<vtkActor*> getpoint_actors();
+
+    void onCancelSelect(); // 取消选中
 
 private:
     MainWindow* m_pMainWin = nullptr; // mainwindow指针
