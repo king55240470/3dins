@@ -227,9 +227,9 @@ void setDataWidget::setConeData(pcl::PointXYZRGB searchPoint,pcl::PointCloud<pcl
     lab1 = new QLabel("请输入邻域：");
     lab2 = new QLabel("请输入距离阈值：");
     rad = new QLineEdit();
-    rad->setText("1");
+    rad->setText("10");
     dis = new QLineEdit();
-    dis->setText("0.01");
+    dis->setText("1");
     btn = new QPushButton("确定");
     layout->addWidget(lab1,0,0,1,1);
     layout->addWidget(rad,0,1,1,2);
