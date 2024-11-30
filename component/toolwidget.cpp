@@ -1428,18 +1428,41 @@ void ToolWidget::onConstructDistance(){
 void ToolWidget::onConstructPointCloud(){
     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
     auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
+    QVector<CPointCloud*> pointClouds;
+
+    for(int i=0;i<entityList.size();i++){
+        CEntity* entity=entityList[i];
+        if(!entity->IsSelected())continue;
+        if(entity->GetUniqueType()==enPointCloud){
+            CPointCloud* pointCloud=(CPointCloud*)entity;
+            pointClouds.append(pointCloud);
+        }
+    }
     if(cloudptr==nullptr){
         WrongWidget("点云指针为空");
         return ;
     }
+    // constructor.setSourceCloud(cloudptr);
+    // CPointCloud* newPointCloud=(CPointCloud*)constructor.create(entityList);
+    // if(newPointCloud==nullptr){
+    //     WrongWidget("构造点云失败");
+    //     continue;
+    // }
+    // addToList(newPointCloud);
     PointCloudConstructor constructor;
-    constructor.setSourceCloud(cloudptr);
-    CPointCloud* newPointCloud=(CPointCloud*)constructor.create(entityList);
-    if(newPointCloud==nullptr){
-        WrongWidget("构造点云失败");
-        return ;
+
+    for(int i=0;i<pointClouds.size();i++){
+        auto& sourceCloud=pointClouds[i]->m_pointCloud;
+        constructor.setSourceCloud(sourceCloud.makeShared());
+        CPointCloud* newPointCloud=(CPointCloud*)constructor.create(entityList);
+        if(newPointCloud==nullptr){
+            WrongWidget("构造点云失败");
+            continue;
+        }
+        addToList(newPointCloud);
     }
-    addToList(newPointCloud);
+
+
     m_pMainWin->NotifySubscribe();
 }
 
@@ -1451,6 +1474,7 @@ void ToolWidget:: onFindPlane(){
     point.y=positions[0].y;
     point.z=positions[0].z;
     auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
+
     auto cloud=m_pMainWin->getPointCloudListMgr()->getTempCloud();
     if(cloudptr==nullptr){
         WrongWidget("点云指针为空");

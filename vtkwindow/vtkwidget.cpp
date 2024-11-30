@@ -642,35 +642,60 @@ void VtkWidget::showConvertedCloud(){
 // 比较两个点云的处理函数
 void VtkWidget::onCompare()
 {
-    if(m_pMainWin->getpWinFileMgr()->getModelFileMap().empty() ||
-        m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().empty()){
-        QMessageBox::warning(this, "Warning", "打开的文件不足");
-        return;
-    }
+    // if(m_pMainWin->getpWinFileMgr()->getModelFileMap().empty() ||
+    //     m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().empty()){
+    //     QMessageBox::warning(this, "Warning", "打开的文件不足");
+    //     return;
+    // }
 
-    auto modelFile = m_pMainWin->getpWinFileMgr()->getModelFileMap().lastKey();
-    auto measureFile = m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().lastKey();
-    auto fileCloudMap = m_pMainWin->getPointCloudListMgr()->getFileCloudMap();
-    if(fileCloudMap.size() < 2) return;
+    // auto modelFile = m_pMainWin->getpWinFileMgr()->getModelFileMap().lastKey();
+    // auto measureFile = m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().lastKey();
+    // auto fileCloudMap = m_pMainWin->getPointCloudListMgr()->getFileCloudMap();
+    // if(fileCloudMap.size() < 2) return;
 
-    // 遍历 filecloudmap，通过对比需要的两个点云的文件名，来获取rgb点云
-    // 然后转成不带颜色的点云，给cloud1和cloud2初始化
-    for(auto item = fileCloudMap.begin();item != fileCloudMap.end();item++){
-        if(item.key() == modelFile){
-            tempCloud = item.value()->m_pointCloud;
-            pcl::copyPointCloud(tempCloud, *cloud2);
-        }
+    // // 遍历 filecloudmap，通过对比需要的两个点云的文件名，来获取rgb点云
+    // // 然后转成不带颜色的点云，给cloud1和cloud2初始化
+    // for(auto item = fileCloudMap.begin();item != fileCloudMap.end();item++){
+    //     if(item.key() == modelFile){
+    //         tempCloud = item.value()->m_pointCloud;
+    //         pcl::copyPointCloud(tempCloud, *cloud2);
+    //     }
 
-        if(item.key() == measureFile){
-            tempCloud = item.value()->m_pointCloud;
-            pcl::copyPointCloud(tempCloud, *cloud1);
-        }
-    }
+    //     if(item.key() == measureFile){
+    //         tempCloud = item.value()->m_pointCloud;
+    //         pcl::copyPointCloud(tempCloud, *cloud1);
+    //     }
+    // }
 
     // 初始化两个点云
     // pcl::io::loadPLYFile(modelFile.toStdString(), *cloud1);
     // pcl::io::loadPCDFile(measureFile.toStdString(), *cloud2);
 
+    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+    auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
+    QVector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> clouds;
+    for(int i=0;i<entityList.size();i++){
+        CEntity* entity=entityList[i];
+        if(!entity->IsSelected())continue;
+        if(entity->GetUniqueType()==enPointCloud){
+            auto & temp=((CPointCloud*)entity)->m_pointCloud;
+            clouds.append(temp.makeShared());
+            //pcl::copyPointCloud( ((CPointCloud*)entity)->m_pointCloud, *cloud1);
+        }
+    }
+    if(clouds.size()!=2){
+        QString message="点云指针数目异常(只允许两个点云数据))";
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("错误");
+        msgBox.setText(message);
+        msgBox.setIcon(QMessageBox::Critical); // 设置对话框图标为错误
+        msgBox.setStandardButtons(QMessageBox::Ok); // 只显示“确定”按钮
+        msgBox.exec(); // 显示对话框
+        return ;
+    }
+    pcl::copyPointCloud( *clouds[0], *cloud1);
+    pcl::copyPointCloud( *clouds[1], *cloud2);
+for(int i=0;i<2;i++)
     // 检查点云是否为空
     if (cloud1->empty() || cloud2->empty()) {
         QMessageBox::warning(this, "Warning", "其中一个或两个点云为空!");
