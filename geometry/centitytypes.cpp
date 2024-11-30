@@ -330,30 +330,9 @@ vtkSmartPointer<vtkActor> CCone::draw(){
     auto cone = vtkSmartPointer<vtkConeSource>::New();
     cone->SetCenter(globalPos.x, globalPos.y, globalPos.z);
     cone->SetRadius(getRadian());
-    cone->SetHeight(getCone_height());
+    cone->SetDirection(getAxis()[0], getAxis()[1], getAxis()[2]); // 设置轴向量
+    cone->SetHeight(getHeight());
     cone->SetResolution(100);
-
-    // 创建变换对象，用于旋转圆锥方向
-    vtkSmartPointer<vtkTransform> transform = vtkSmartPointer<vtkTransform>::New();
-
-    // 默认轴向量为y轴
-    QVector3D yAxis(0, 1, 0);
-    // 归一化axis，作为目标轴向量
-    QVector3D targetAxis(getAxis());
-    targetAxis.normalize();
-
-    // 计算旋转角度
-    auto dotProduct = QVector3D::dotProduct(yAxis, targetAxis);
-    double angle = acos(dotProduct) * 180.0 / vtkMath::Pi(); // 将弧度转换为度
-
-    // 计算旋转轴
-    QVector3D rotationAxis = QVector3D::crossProduct(yAxis, targetAxis);
-    rotationAxis.normalize();
-
-    // 应用旋转
-    transform->Translate(globalPos.x, globalPos.y, globalPos.z); // 将旋转中心移动到圆柱体中心
-    transform->RotateWXYZ(angle, rotationAxis.x(), rotationAxis.y(), rotationAxis.z());
-    transform->Translate(-globalPos.x, -globalPos.y, -globalPos.z); // 将旋转中心移回原点
 
     // 创建映射器
     auto mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
@@ -363,7 +342,6 @@ vtkSmartPointer<vtkActor> CCone::draw(){
     auto actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
     actor->GetProperty()->SetColor(0.5, 0.5, 0.5);
-    actor->SetUserTransform(transform); // 应用变换
 
     return actor;
 }
