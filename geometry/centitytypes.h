@@ -554,7 +554,7 @@ public:
     {
         return GetWorldPcsPos(center);
     }
-    QString getCEntityInfo() override;
+    QString getCEntityInfo() override;// 获取图形的信息，在浮动窗口显示
     vtkSmartPointer<vtkActor> draw() override;
 };
 
@@ -636,11 +636,7 @@ public:
     vtkSmartPointer<vtkActor> pointToPlane();
     vtkSmartPointer<vtkActor> pointToLine();
     vtkSmartPointer<vtkActor> pointToCircle();
-
 };
-
-
-
 
 class CPointCloud : public CEntity
 {

@@ -780,7 +780,7 @@ void   ToolWidget::onSavePdf(){
     textDocument.setHtml(html);
     textDocument.print(m_pdfWriter);
     textDocument.end();
-     QMessageBox::information(nullptr, "提示", "保存成功");
+    QMessageBox::information(nullptr, "提示", "保存成功");
 
     pdfFile.close();
 }
@@ -940,7 +940,7 @@ void ToolWidget::onSaveTxt(){
             out<<"中心:("<<position.x<<","<<position.y<<","<<position.z<<",)"<<Qt::endl;
             out<<"直径D:"<<sphere->getDiameter();
             out<<Qt::endl;
-             out<<Qt::endl;
+            out<<Qt::endl;
 
         }else if(entity->GetUniqueType()==enPlane){
             CPlane* plane=(CPlane*)entity;
@@ -948,12 +948,12 @@ void ToolWidget::onSaveTxt(){
             QVector4D normal,dir_long_edge;
             normal=plane->getNormal();
             dir_long_edge=plane->getDir_long_edge();
-             out<<"类型：平面 名称:"<<plane->m_strAutoName<<Qt::endl;
-             out<<"中心:("<<position.x<<","<<position.y<<","<<position.z<<",)"<<Qt::endl;
-             out<<"法线:("<<normal.x()<<","<<normal.y()<<","<<normal.z()<<",)"<<Qt::endl;
-             out<<"边向量:("<<dir_long_edge.x()<<","<<dir_long_edge.y()<<","<<dir_long_edge.z()<<",)"<<Qt::endl;
-             out<<"长:"<<plane->getLength()<<" 宽:"<<plane->getWidth()<<Qt::endl;
-              out<<Qt::endl;
+            out<<"类型：平面 名称:"<<plane->m_strAutoName<<Qt::endl;
+            out<<"中心:("<<position.x<<","<<position.y<<","<<position.z<<",)"<<Qt::endl;
+            out<<"法线:("<<normal.x()<<","<<normal.y()<<","<<normal.z()<<",)"<<Qt::endl;
+            out<<"边向量:("<<dir_long_edge.x()<<","<<dir_long_edge.y()<<","<<dir_long_edge.z()<<",)"<<Qt::endl;
+            out<<"长:"<<plane->getLength()<<" 宽:"<<plane->getWidth()<<Qt::endl;
+            out<<Qt::endl;
 
         }else if(entity->GetUniqueType()==enCone){
             CCone* cone=(CCone*)entity;
@@ -965,7 +965,7 @@ void ToolWidget::onSaveTxt(){
             out<<"顶点:("<<position.x<<","<<position.y<<","<<position.z<<",)"<<Qt::endl;
             out<<"轴线向量:("<<axis.x()<<","<<axis.y()<<","<<axis.z()<<",)"<<Qt::endl;
             out<<"高:"<<cone->getHeight()<<" 弧度:"<<cone->getRadian()<<" 圆锥高:"<<cone->getCone_height()<<Qt::endl;
-          out<<Qt::endl;
+            out<<Qt::endl;
 
         }else if(entity->GetUniqueType()==enCylinder){
             CCylinder* cylinder=(CCylinder*)entity;
@@ -976,7 +976,7 @@ void ToolWidget::onSaveTxt(){
             out<<"底面中心:("<<position.x<<","<<position.y<<","<<position.z<<",)"<<Qt::endl;
             out<<"轴线向量:("<<axis.x()<<","<<axis.y()<<","<<axis.z()<<",)"<<Qt::endl;
             out<<"高:"<<cylinder->getHeight()<<" 直径:"<<cylinder->getDiameter()<<Qt::endl;
-             out<<Qt::endl;
+            out<<Qt::endl;
 
         }else if(entity->GetUniqueType()==enLine){
             CLine* line=(CLine*)entity;
@@ -984,20 +984,20 @@ void ToolWidget::onSaveTxt(){
             position1=line->getPosition1();
             position2=line->getPosition2();
             out<<"类型：线 名称:"<<line->m_strAutoName<<Qt::endl;
-             out<<"起点:("<<position1.x<<","<<position1.y<<","<<position1.z<<",)"<<Qt::endl;
-             out<<"终点:("<<position2.x<<","<<position2.y<<","<<position2.z<<",)"<<Qt::endl;
-              out<<Qt::endl;
+            out<<"起点:("<<position1.x<<","<<position1.y<<","<<position1.z<<",)"<<Qt::endl;
+            out<<"终点:("<<position2.x<<","<<position2.y<<","<<position2.z<<",)"<<Qt::endl;
+            out<<Qt::endl;
 
         }else if(entity->GetUniqueType()==enDistance){
             CDistance* Distance=(CDistance*) entity;
             out<<"类型：距离 名称:"<<Distance->m_strCName<<Qt::endl;
             out<<"大小:"<<Distance->getdistance()<<" 上公差："<<Distance->getUptolerance()<<" 下公差:"<<Distance->getUndertolerance();
             out<<Qt::endl;
-             out<<Qt::endl;
+            out<<Qt::endl;
         }else if(entity->GetUniqueType()==enPointCloud){
             CPointCloud* PointCloud=(CPointCloud*) entity;
             out<<"类型：距离 名称:"<<PointCloud->m_strCName<<Qt::endl;
-             out<<Qt::endl;
+            out<<Qt::endl;
         }
         ;
     }
@@ -1310,7 +1310,7 @@ void ToolWidget::onConstructPlane(){
         auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
         newPlane=(CPlane*)constructor.create(entityList);
         if(newPlane!=nullptr){
-         addToList(newPlane);
+            addToList(newPlane);
         }
     }
 
@@ -1467,37 +1467,40 @@ void ToolWidget:: onFindPlane(){
     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
     QVector<CPointCloud*> pointClouds;
 
-    for(int i=0;i<entityList.size();i++){
-        CEntity* entity=entityList[i];
-        if(!entity->IsSelected())continue;
-        if(entity->GetUniqueType()==enPointCloud){
-            CPointCloud* pointCloud=(CPointCloud*)entity;
-            pointClouds.append(pointCloud);
-        }
-    }
-    if(pointClouds.size()<1){
-        WrongWidget("选中的点云数目为0");
-        return ;
-    }else if(pointClouds.size()>1){
-        WrongWidget("选中的点云数目大于1");
-        return ;
-    }
     //读取选中的点
     QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenActorAxes();
-
     pcl::PointXYZRGB  point;
     if(positions.size()==0)return ;
     point.x=positions[0].x;
     point.y=positions[0].y;
     point.z=positions[0].z;
-    auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
 
-    // if(cloudptr==nullptr){
-    //     WrongWidget("点云指针为空");
-    //     return ;
-    // }
-    //m_pMainWin->getPWinSetDataWidget()->setPlaneData(point,cloudptr);
-    m_pMainWin->getPWinSetDataWidget()->setPlaneData(point,pointClouds[0]->m_pointCloud.makeShared());
+    // 获取拟合用的点云指针
+    auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
+    m_pMainWin->getPWinSetDataWidget()->setPlaneData(point,cloudptr);
+
+    // 如果没有从窗口里选中点云，则从列表中获取，列表中也没有选中则报异常
+    if(cloudptr==nullptr){
+        for(int i=0;i<entityList.size();i++){
+            CEntity* entity=entityList[i];
+            if(!entity->IsSelected())continue;
+            if(entity->GetUniqueType()==enPointCloud){
+                CPointCloud* pointCloud=(CPointCloud*)entity;
+                pointClouds.append(pointCloud);
+            }
+        }
+        if(pointClouds.size()<1){
+            WrongWidget("选中的点云数目为0");
+            return ;
+        }else if(pointClouds.size()>1){
+            WrongWidget("选中的点云数目大于1");
+            return ;
+        }
+        else
+            m_pMainWin->getPWinSetDataWidget()->setPlaneData(point,pointClouds[0]->m_pointCloud.makeShared());
+        return ;
+    }
+
     auto planeCloud=m_pMainWin->getPWinSetDataWidget()->getPlaneCloud();
     if(planeCloud==nullptr){
         qDebug()<<"拟合平面生成错误";
@@ -1537,35 +1540,41 @@ void ToolWidget::onFindCylinder(){
     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
     QVector<CPointCloud*> pointClouds;
 
-    for(int i=0;i<entityList.size();i++){
-        CEntity* entity=entityList[i];
-        if(!entity->IsSelected())continue;
-        if(entity->GetUniqueType()==enPointCloud){
-            CPointCloud* pointCloud=(CPointCloud*)entity;
-            pointClouds.append(pointCloud);
-        }
-    }
-    if(pointClouds.size()<1){
-        WrongWidget("选中的点云数目为0");
-        return ;
-    }else if(pointClouds.size()>1){
-        WrongWidget("选中的点云数目大于1");
-        return ;
-    }
+    //读取选中的点
     QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenActorAxes();
     pcl::PointXYZRGB  point;
     if(positions.size()==0)return ;
     point.x=positions[0].x;
     point.y=positions[0].y;
     point.z=positions[0].z;
+
+    // 获取拟合用的点云指针
     auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
-    // if(cloudptr==nullptr){
-    //     WrongWidget("点云指针为空");
-    //     return ;
-    // }
-    m_pMainWin->getPWinSetDataWidget()->setCylinderData(point,pointClouds[0]->m_pointCloud.makeShared());
+
+    // 如果没有从窗口里选中点云，则从列表中获取，列表中也没有选中则报异常
+    if(cloudptr==nullptr){
+        for(int i=0;i<entityList.size();i++){
+            CEntity* entity=entityList[i];
+            if(!entity->IsSelected())continue;
+            if(entity->GetUniqueType()==enPointCloud){
+                CPointCloud* pointCloud=(CPointCloud*)entity;
+                pointClouds.append(pointCloud);
+            }
+        }
+        if(pointClouds.size()<1){
+            WrongWidget("选中的点云数目为0");
+            return ;
+        }else if(pointClouds.size()>1){
+            WrongWidget("选中的点云数目大于1");
+            return ;
+        }
+        else
+            m_pMainWin->getPWinSetDataWidget()->setCylinderData(point,pointClouds[0]->m_pointCloud.makeShared());
+        return ;
+    }
+    m_pMainWin->getPWinSetDataWidget()->setCylinderData(point, cloudptr);
+
     // 生成点云对象并添加到entitylist
-    // CPointCloud* pointCloud=new CPointCloud();
     auto cylinderCloud=m_pMainWin->getPWinSetDataWidget()->getCylinderCloud();
     if(cylinderCloud==nullptr){
         qDebug()<<"拟合圆柱生成错误";
