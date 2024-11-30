@@ -36,9 +36,10 @@ void MouseInteractorHighlightActor::OnLeftButtonDown()
             qDebug()<<entity->m_strAutoName;
         }
 
-        // 如果选中的是点云类型的actor，则转成CPointCloud，然后给cloudptr赋值
+        // 如果选中的是点云类型的actor，则转成CPointCloud，然后给拟合用的cloudptr赋值
         if(entity->GetUniqueType() == enPointCloud){
             auto cloudEntity = (CPointCloud*)entity;
+            qDebug() << "选中的点云大小:" << cloudEntity->m_pointCloud.size();
             m_pMainWin->getpWinFileMgr()->cloudptr = cloudEntity->m_pointCloud.makeShared();
         }
 
