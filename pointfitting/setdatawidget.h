@@ -14,6 +14,8 @@
 class MainWindow;
 class FittingPlane;
 class FittingCylinder;
+class FittingSphere;
+class FittingCone;
 class setDataWidget : public QWidget
 {
     Q_OBJECT
@@ -31,6 +33,18 @@ public:
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr getFittingCylinder();
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr getCylinderCloud();
     FittingCylinder *getCylinder();
+
+    void setSphereData(pcl::PointXYZRGB,pcl::PointCloud<pcl::PointXYZRGB>::Ptr);
+    void SphereBtnClick();
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr getFittingSphere();
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr getSphereCloud();
+    FittingSphere *getSphere();
+
+    void setConeData(pcl::PointXYZRGB,pcl::PointCloud<pcl::PointXYZRGB>::Ptr);
+    void ConeBtnClick();
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr getFittingCone();
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr getConeCloud();
+    FittingCone *getCone();
 private:
     MainWindow *m_pMainWin;
 
@@ -55,6 +69,16 @@ private:
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr fittingCylinder;
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr cylinderCloud;
     FittingCylinder *cylinder;
+
+    //拟合球
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr fittingSphere;
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr sphereCloud;
+    FittingSphere *sphere;
+
+    //拟合圆锥
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr fittingCone;
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr coneCloud;
+    FittingCone *cone;
 
 signals:
 };
