@@ -103,7 +103,7 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingCone::RANSAC(pcl::PointXYZRGB sear
             return nullptr;
         }
 
-        // // 使用PCA拟合圆锥轴
+        // 使用PCA拟合圆锥轴
         // pcl::PCA<pcl::PointXYZRGB> pca;
         // pca.setInputCloud(coneCloud);
         // Eigen::Matrix3f eigen_vectors = pca.getEigenVectors();
@@ -124,9 +124,10 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingCone::RANSAC(pcl::PointXYZRGB sear
                 topCenter=point;
             }
             //min_proj = std::min(min_proj, proj);
-            qDebug()<<"center:"<<topCenter.x()<<topCenter.y()<<topCenter.z();
             max_proj = std::max(max_proj, proj);
         }
+
+        qDebug()<<"center:"<<topCenter.x()<<topCenter.y()<<topCenter.z();
 
         height = max_proj - min_proj; // 高度是投影值的差
 
