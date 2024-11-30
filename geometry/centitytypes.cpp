@@ -453,9 +453,6 @@ vtkSmartPointer<vtkActor> CPointCloud::draw(){
         actor->GetProperty()->SetColor(0.5, 0.5, 0.5);
     }
 
-    // 添加到actorToPointCloud
-    CPointCloud::getActorToPointCloud().insert(actor, m_pointCloud);
-
     return actor;
 }
 
