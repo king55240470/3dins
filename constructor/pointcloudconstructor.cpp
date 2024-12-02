@@ -183,7 +183,7 @@ CPointCloud* PointCloudConstructor::createPointCloud(CPosition center, QVector4D
     }
     // 定义立方体的顶点
     for(int i=0;i<8;i++){
-        points_cube->InsertNextPoint(peaks[i].x(),peaks[i].y(),peaks[i].x());
+        points_cube->InsertNextPoint(peaks[i].x(),peaks[i].y(),peaks[i].z());
     }
 
     // 定义立方体的面
