@@ -659,15 +659,21 @@ public:
         out <<m_pt << pointCloudCount<< currentPointCloudId;
         out <<isFileCloud  <<isComparsionCloud ;
 
-        //     out << static_cast<quint32>(m_pointCloud.size());
-        //     qDebug()<<static_cast<quint32>(m_pointCloud.size());
-        //     // 保存每个点的 XYZRGB 信息
-        //     for (const auto& point : m_pointCloud.points) {
-        //         out << point.x << point.y << point.z;
-        //         out << point.r << point.g << point.b;
-        //     }
+        // const quint32 VERSION = 1;
+        // out << VERSION;
 
-        // qDebug()<<static_cast<quint32>(m_pointCloud.size());
+        // 写入点云大小
+        quint32 pointCloudSize = static_cast<quint32>(m_pointCloud.size());
+        out << pointCloudSize;
+
+        // 保存每个点的 XYZRGB 信息
+        for (const auto& point : m_pointCloud.points) {
+            out << point.x << point.y << point.z;
+
+            out << static_cast<qint32>(point.r) << static_cast<qint32>(point.g) << static_cast<qint32>(point.b);
+        }
+
+        out << pointCloudSize;
 
         return out;
     }
@@ -677,18 +683,87 @@ public:
         in >>m_pt >> pointCloudCount >> currentPointCloudId;
         in>>isFileCloud  >>isComparsionCloud ;
 
-        // quint32 size;
-        // in >> size;
-        // qDebug()<<size;
-        // m_pointCloud.resize(size);
-
-        // // 读取每个点的 XYZRGB 信息
-        // for (auto& point : m_pointCloud.points) {
-        //     in >> point.x >> point.y >> point.z;
-        //     in >> point.r >> point.g >> point.b;
+        // 读取版本号
+        // quint32 version;
+        // in >> version;
+        // if (version != 1) {
+        //     qWarning() << "Unsupported version!";
+        //     return in;
         // }
 
-        // qDebug()<<size;
+        quint32 pointCloudSize;
+        in >> pointCloudSize;
+        // const quint32 MAX_POINT_CLOUD_SIZE = 1000000; // 最大点云数
+        // if (pointCloudSize > MAX_POINT_CLOUD_SIZE) {
+        //     qWarning() << "Point cloud size exceeds maximum allowed size.";
+        //     return in;
+        // }
+
+        m_pointCloud.clear();
+        // m_pointCloud.resize(pointCloudSize); //已初始化
+        for (quint32 i = 0; i < pointCloudSize; ++i)
+        {
+            pcl::PointXYZRGB point;
+            qint32 r, g, b;
+
+            // in >> point.x >> point.y >> point.z;
+            // in >> r >> g >> b;
+
+            in >> point.x;
+            if (in.status() != QDataStream::Ok) {
+                qWarning() << "Failed to deserialize point.x";
+                return in;
+            }
+
+            in >> point.y;
+            if (in.status() != QDataStream::Ok) {
+                qWarning() << "Failed to deserialize point.y";
+                return in;
+            }
+
+            in >> point.z;
+            if (in.status() != QDataStream::Ok) {
+                qWarning() << "Failed to deserialize point.z";
+                return in;
+            }
+
+            in >> r;
+            if (in.status() != QDataStream::Ok) {
+                qWarning() << "Failed to deserialize point.r";
+                return in;
+            }
+
+            in >> g;
+            if (in.status() != QDataStream::Ok) {
+                qWarning() << "Failed to deserialize point.g";
+                return in;
+            }
+
+            in >> b;
+            if (in.status() != QDataStream::Ok) {
+                qWarning() << "Failed to deserialize point.b";
+                return in;
+            }
+
+            if (in.status() != QDataStream::Ok) {
+                qWarning() << "Failed to deserialize point data.";
+                return in;
+            }
+
+            point.r = static_cast<uint8_t>(r);
+            point.g = static_cast<uint8_t>(g);
+            point.b = static_cast<uint8_t>(b);
+
+            m_pointCloud.points.push_back(point);
+        }
+
+        m_pointCloud.width = static_cast<uint32_t>(m_pointCloud.points.size());
+        m_pointCloud.height = 1; // Assuming unorganized point cloud
+        m_pointCloud.is_dense = true;
+
+        quint32 temp;
+        in >> temp;
+        qDebug()<<"temp:"<<temp;
 
         return in;
     }
