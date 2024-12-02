@@ -29,5 +29,6 @@
         <file>component/viewangle/right.png</file>
         <file>component/viewangle/up.png</file>
         <file>component/construct/distance.png</file>
+        <file>component/construct/pointCloud.png</file>
     </qresource>
 </RCC>

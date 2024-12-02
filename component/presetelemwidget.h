@@ -97,6 +97,18 @@ public:
     QLineEdit *coneEditAngle;
     QPushButton *coneBtn;
 
+    //预置长方体
+    QLineEdit *boxEditX;
+    QLineEdit *boxEditY;
+    QLineEdit *boxEditZ;
+    QLineEdit *boxEditLength;
+    QLineEdit *boxEditWidth;
+    QLineEdit *boxEditHeight;
+    QLineEdit *boxEditAngleX;  // 长方体绕X轴旋转角度
+    QLineEdit *boxEditAngleY;  // 长方体绕Y轴旋转角度
+    QLineEdit *boxEditAngleZ;  // 长方体绕Z轴旋转角度
+    QPushButton *boxBtn;
+
     //槽函数
     void btnPointClicked();
     void btnLineClicked();
@@ -105,6 +117,7 @@ public:
     void btnSphereClicked();
     void btnCylinderClicked();
     void btnConeClicked();
+    void btnBoxClicked();
 
 
 signals:

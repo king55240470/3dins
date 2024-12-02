@@ -26,6 +26,7 @@ SOURCES += \
     constructor/distanceconstructor.cpp \
     constructor/lineconstructor.cpp \
     constructor/planeconstructor.cpp \
+    constructor/pointcloudconstructor.cpp \
     constructor/pointconstructor.cpp \
     constructor/rectangleconstructor.cpp \
     constructor/sphereconstructor.cpp \
@@ -47,7 +48,7 @@ SOURCES += \
     pointfitting/fittingplane.cpp \
     pointfitting/setdatawidget.cpp \
     vtkwindow/clickhighlightstyle.cpp \
-    vtkwindow/custominteractorstyle.cpp \
+    vtkwindow/mousedragcommand.cpp \
     vtkwindow/vtkpresetwidget.cpp \
     vtkwindow/vtkwidget.cpp \
     vtkwindow/vtkwindowreportwidget.cpp
@@ -69,6 +70,7 @@ HEADERS += \
     constructor/distanceconstructor.h \
     constructor/lineconstructor.h \
     constructor/planeconstructor.h \
+    constructor/pointcloudconstructor.h \
     constructor/pointconstructor.h \
     constructor/rectangleconstructor.h \
     constructor/sphereconstructor.h \
@@ -90,7 +92,7 @@ HEADERS += \
     pointfitting/fittingplane.h \
     pointfitting/setdatawidget.h \
     vtkwindow/clickhighlightstyle.h \
-    vtkwindow/custominteractorstyle.h \
+    vtkwindow/mousedragcommand.h \
     vtkwindow/vtkpresetwidget.h \
     vtkwindow/vtkwidget.h \
     vtkwindow/vtkwindowreportwidget.h
