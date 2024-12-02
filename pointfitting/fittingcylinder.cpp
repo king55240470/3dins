@@ -74,16 +74,25 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingCylinder::RANSAC(pcl::PointXYZRGB 
         }
 
         // 计算圆柱中心
-        center=Eigen::Vector3f(coefficients->values[0], coefficients->values[1], coefficients->values[2]);
+        //center=Eigen::Vector3f(coefficients->values[0], coefficients->values[1], coefficients->values[2]);
+        double x=0,y=0,z=0,i=0;
+        for(auto point : cylinderCloud->points){
+            x+=point.x;
+            y=y+point.y;
+            z=z+point.z;
+            i++;
+        }
+        qDebug()<<x<<y<<z;
+        center.x()=x*1.0/i;
+        center.y()=y*1.0/i;
+        center.z()=z*1.0/i;
 
         // 计算圆柱法向量（圆柱轴的方向）
         normal=Eigen::Vector3f(coefficients->values[3], coefficients->values[4], coefficients->values[5]);
         normal.normalize(); // 确保法向量是单位向量
-        qDebug()<<"normal:"<<normal.x()<<normal.y()<<normal.z();
 
         // 计算圆柱直径
         diameter = 2 * coefficients->values[6];
-        qDebug()<<"diameter:"<<diameter;
 
         // 计算圆柱的高度：通过点云中的投影来获得
         double min_proj = std::numeric_limits<float>::max();
@@ -98,30 +107,16 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingCylinder::RANSAC(pcl::PointXYZRGB 
         }
 
         height = max_proj - min_proj; // 高度是投影值的差
-        qDebug()<<"height:"<<height;
 
-        //计算圆柱底面圆心
-        bottomCenter=center-center.dot(normal)*normal;
-        qDebug()<<"bottomCenter:"<<bottomCenter.x()<<bottomCenter.y()<<bottomCenter.z();
-
-        // bottomCenter.x()=0.172948;
-        // bottomCenter.y()=0.015130;
-        // bottomCenter.z()=0.169908;
-
-        // double x=0,y=0,z=0,i=0;
-        // for(auto point : cloudptr->points){
-        //     x+=point.x;
-        //     y=y+point.y;
-        //     z=z+point.z;
-        //     i++;
-        // }
-        // qDebug()<<x<<y<<z;
-        // center.x()=x*1.0/i;
-        // center.y()=y*1.0/i;
-        // center.z()=z*1.0/i;
-        // qDebug()<<center.x()<<center.y()<<center.z();
-        // center=center+0.5*height*normal;
-        // qDebug()<<center.x()<<center.y()<<center.z();
+        if(height<=0){
+            QMessageBox *messagebox=new QMessageBox();
+            messagebox->setText("输入的邻域或距离阈值太小，\n请重新输入！");
+            messagebox->setIcon(QMessageBox::Warning);
+            messagebox->show();
+            messagebox->exec();
+            PCL_ERROR("Height < 0!\n");
+            return nullptr;
+        }
 
         return cylinderCloud;
 
@@ -165,8 +160,8 @@ Eigen::Vector3f FittingCylinder::getNormal(){
     return normal;
 }
 
-Eigen::Vector3f FittingCylinder::getBottomCenter(){
-    return bottomCenter;
+Eigen::Vector3f FittingCylinder::getCenter(){
+    return center;
 }
 
 double FittingCylinder::getDiameter(){
