@@ -136,6 +136,9 @@ QDataStream& operator>>(QDataStream& in, CEntityMgr& mgr) {
         case enCone:
             entity=new CCone();
             break;
+        case enCuboid:
+            entity=new CCuboid();
+            break;
         case enDistance:
             entity=new CDistance();
             break;
