@@ -82,6 +82,10 @@ void MainWindow::setupUi(){
     connect(coneAction,&QAction::triggered,this,[&](){
         showPresetElemWidget(6);
     });
+    QAction* boxAction =presetMenu->addAction("长方体");
+    connect(boxAction,&QAction::triggered,this,[&](){
+        showPresetElemWidget(7);
+    });
 
     QMenu *cloudOperation=bar->addMenu("点云操作");
     QAction* compareAction=cloudOperation->addAction("点云对比");
@@ -151,9 +155,7 @@ void MainWindow::setupUi(){
     MiddledownTabWidget->addTab(pWinDataWidget,"数据结果");
     MiddledownTabWidget->addTab(pWinLogWidget,"Log查看");
     spMiddledown->addWidget(MiddledownTabWidget);
-
     spMiddledown->addWidget(pWinToolWidget);
-
     spRightdown=new QSplitter(Qt::Horizontal,spRightup);
     spRightup->addWidget(spRightdown);
     spRightdown->addWidget(pWinVtkPresetWidget);
@@ -166,7 +168,6 @@ void MainWindow::setupUi(){
     spMainWindow->setHandleWidth(5);
 
     setCentralWidget(spMainWindow);
-
     ContralWidget * contralWidget=new ContralWidget(pWinToolWidget,this);
     connect(contralAction,&QAction::triggered,[=](){contralWidget->show();});
 
@@ -221,8 +222,6 @@ void MainWindow::openFile(){
     for (const QString &filePath : filePaths) {
         QFileInfo fileInfo(filePath);
         QString fileName = fileInfo.fileName();
-        qDebug()<<"ok 1";
-
         // 根据文件扩展名进行判断
         if (filePath.endsWith("ply")) {
             pWinFileManagerWidget->openModelFile(fileName, filePath);
@@ -409,6 +408,10 @@ CEntity* MainWindow::CreateEntity(int nType){
     case enCone:
         pTempEntity = new CCone();
         pTempEntity->setEntityType(enCone);
+        break;
+    case enCuboid:
+        pTempEntity = new CCuboid();
+        pTempEntity->setEntityType(enCuboid);
         break;
     default:
         break;
@@ -599,6 +602,29 @@ void MainWindow::OnPresetCone(CPosition posCenter, QVector4D axis, double partH,
     NotifySubscribe();
 }
 
+void MainWindow::OnPresetCuboid(CPosition posCenter,double length,double width,double height,double angleX,double angleY,double angleZ)
+{
+    CCuboid *pCuboid=(CCuboid *)CreateEntity(enCuboid);
+    pCuboid->Form="预制";
+    pCuboid->setCenter(posCenter);;
+    pCuboid->setLength(length);
+    pCuboid->setWidth(width);
+    pCuboid->setHeight(height);
+    pCuboid->setAngleX(angleX);
+    pCuboid->setAngleY(angleY);
+    pCuboid->setAngleZ(angleZ);
+
+    pCuboid->m_CreateForm = ePreset;
+    pCuboid->SetCurCoord(m_pcsListMgr->m_pPcsCurrent);
+    pCuboid->SetRefCoord(m_pcsListMgr->m_pPcsCurrent);
+    pCuboid->SetExtCoord(m_pcsListMgr->m_pPcsCurrent);
+
+    m_EntityListMgr->Add(pCuboid);
+    m_ObjectListMgr->Add(pCuboid);
+
+    NotifySubscribe();
+}
+
 CObjectMgr *MainWindow::getObjectListMgr()
 {
     return m_ObjectListMgr;
@@ -625,6 +651,8 @@ void MainWindow::showPresetElemWidget(int index){
     case 5:pWinPresetElemWidget->tabWidget->setCurrentIndex(5);
         break;
     case 6:pWinPresetElemWidget->tabWidget->setCurrentIndex(6);
+        break;
+    case 7:pWinPresetElemWidget->tabWidget->setCurrentIndex(7);
         break;
     }
     pWinPresetElemWidget->show();
