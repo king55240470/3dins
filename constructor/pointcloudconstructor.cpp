@@ -116,50 +116,65 @@ CPointCloud* PointCloudConstructor::createPointCloud(CSphere* sphere,pcl::PointC
     auto polyData=m_sphere->GetOutput();
     return createPointCloud(polyData,pointsPolydata);
 }
-CPointCloud* PointCloudConstructor::createPointCloud(CCylinder* cylinder,pcl::PointCloud<pcl::PointXYZRGB>::Ptr sourceCloud){
+CPointCloud* PointCloudConstructor::createPointCloud(CCylinder* m_cylinder,pcl::PointCloud<pcl::PointXYZRGB>::Ptr sourceCloud){
     vtkSmartPointer<vtkPolyData> pointsPolydata = getPointsPolydata(sourceCloud);
-    CPosition pos(cylinder->getBtm_center().x, cylinder->getBtm_center().y, cylinder->getBtm_center().z);
-    CPosition globalPos(pos.x, pos.y, pos.z);
+    CPosition pos( m_cylinder->getBtm_center().x, m_cylinder->getBtm_center().y, m_cylinder->getBtm_center().z);
+    QVector4D posVec = m_cylinder->GetRefCoord()->m_mat * QVector4D(pos.x, pos.y, pos.z, 1);
+    CPosition globalPos(posVec.x(), posVec.y(), posVec.z());
 
     // 创建圆柱体源
-    auto m_cylinder = vtkSmartPointer<vtkCylinderSource>::New();
-    m_cylinder->SetCenter(globalPos.x, globalPos.y, globalPos.z);
-    m_cylinder->SetRadius(cylinder->getDiameter() / 2);
-    m_cylinder->SetResolution(100);
-    m_cylinder->SetHeight(cylinder->getHeight());
+    auto cylinder = vtkSmartPointer<vtkCylinderSource>::New();
+    cylinder->SetCenter(globalPos.x, globalPos.y, globalPos.z);
+    cylinder->SetRadius(m_cylinder->getDiameter() / 2);
+    cylinder->SetResolution(100);
+    cylinder->SetHeight(m_cylinder->getHeight());
 
     // 创建变换对象，用于旋转圆柱方向
     vtkSmartPointer<vtkTransform> transform = vtkSmartPointer<vtkTransform>::New();
+    // 默认轴向量为y轴
+    QVector3D yAxis(0, 1, 0);
+    // 归一化axis，作为目标轴向量
+    QVector3D targetAxis(m_cylinder->getAxis());
+    targetAxis.normalize();
 
-    // 归一化axis并应用到变换
-    double axisData[3] = {cylinder->getAxis().x(), cylinder->getAxis().y(), cylinder->getAxis().z()};
-    transform->RotateWXYZ(180.0, axisData);
-    m_cylinder->Update();
+    // 计算旋转角度
+    auto dotProduct = QVector3D::dotProduct(yAxis, targetAxis);
+    double angle = acos(dotProduct) * 180.0 / vtkMath::Pi(); // 将弧度转换为度
 
-    auto polyData=m_cylinder->GetOutput();
-    return createPointCloud(polyData,pointsPolydata);
+    // 计算旋转轴
+    QVector3D rotationAxis = QVector3D::crossProduct(yAxis, targetAxis);
+    rotationAxis.normalize();
+
+    // 应用旋转
+    transform->Translate(globalPos.x, globalPos.y, globalPos.z); // 将旋转中心移动到圆柱体中心
+    transform->RotateWXYZ(angle, rotationAxis.x(), rotationAxis.y(), rotationAxis.z());
+    transform->Translate(-globalPos.x, -globalPos.y, -globalPos.z); // 将旋转中心移回原点
+
+    vtkSmartPointer<vtkTransformPolyDataFilter> transformFilter = vtkTransformPolyDataFilter::New();
+    transformFilter->SetInputConnection(cylinder->GetOutputPort());
+    transformFilter->SetTransform(transform);
+    transformFilter->Update();
+
+    // 获取变换后的 vtkPolyData
+    vtkSmartPointer<vtkPolyData> transformedPolyData = transformFilter->GetOutput();
+
+    return createPointCloud(transformedPolyData,pointsPolydata);
 }
-CPointCloud* PointCloudConstructor::createPointCloud(CCone *cone, pcl::PointCloud<pcl::PointXYZRGB>::Ptr sourceCloud){
+CPointCloud* PointCloudConstructor::createPointCloud(CCone *m_cone, pcl::PointCloud<pcl::PointXYZRGB>::Ptr sourceCloud){
     vtkSmartPointer<vtkPolyData> pointsPolydata = getPointsPolydata(sourceCloud);
-    CPosition pos(cone->getVertex().x, cone->getVertex().y, cone->getVertex().z);
-    CPosition globalPos(pos.x, pos.y, pos.z);
+    CPosition pos(m_cone->getVertex().x, m_cone->getVertex().y, m_cone->getVertex().z);
+    QVector4D posVec = m_cone->GetRefCoord()->m_mat * QVector4D(pos.x, pos.y, pos.z, 1);
+    CPosition globalPos(posVec.x(), posVec.y(), posVec.z());
 
     // 创建圆锥源
-    auto m_cone = vtkSmartPointer<vtkConeSource>::New();
-    m_cone->SetCenter(globalPos.x, globalPos.y, globalPos.z);
-    m_cone->SetRadius(cone->getRadian());
-    m_cone->SetHeight(cone->getCone_height());
-    m_cone->SetResolution(100);
+    auto cone = vtkSmartPointer<vtkConeSource>::New();
+    cone->SetCenter(globalPos.x, globalPos.y, globalPos.z);
+    cone->SetRadius(m_cone->getRadian());
+    cone->SetDirection(m_cone->getAxis()[0], m_cone->getAxis()[1], m_cone->getAxis()[2]); // 设置轴向量
+    cone->SetHeight(m_cone->getHeight());
+    cone->SetResolution(100);
 
-    // 创建变换对象，用于旋转圆柱方向
-    vtkSmartPointer<vtkTransform> transform = vtkSmartPointer<vtkTransform>::New();
-
-    // 归一化axis作为旋转矩阵，并应用到变换
-    double axisData[3] = {cone->getAxis().x(), cone->getAxis().y(), cone->getAxis().z()};
-    transform->RotateWXYZ(180.0, axisData);
-    auto polyData=m_cone->GetOutput();
-    return createPointCloud(polyData,pointsPolydata);
-    return nullptr;
+    return createPointCloud(cone->GetOutput(),pointsPolydata);
 }
 CPointCloud* PointCloudConstructor::createPointCloud(CPosition center, QVector4D XAxis,QVector4D YAxis,QVector4D ZAxis,double XLength,double YLength,double ZLength,pcl::PointCloud<pcl::PointXYZRGB>::Ptr sourceCloud){
 
