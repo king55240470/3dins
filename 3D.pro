@@ -789,6 +789,9 @@ CONFIG(debug, debug|release){
     }
 }
 
+DEFINES += CURL_STATICLIB
+INCLUDEPATH += D:\curl-8.11.0\builds\libcurl-vc14.2-x86-release-static-ipv6-sspi-schannel\include
+LIBS += -LD:\curl-8.11.0\builds\libcurl-vc14.2-x86-release-static-ipv6-sspi-schannel\lib
 
 # INCLUDEPATH += $$PWD/../MyDll
 # LIBS += -L$$PWD/../build/Desktop_Qt_6_6_0_MSVC2019_64bit-Debug/MyDll/debug -lMyDll

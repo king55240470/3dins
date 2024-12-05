@@ -314,7 +314,8 @@ QString CCone::getCEntityInfo()
 {
     auto infoText = QString("Information:\ncenter: (%1,%2,%3)\nradian:%4\nheight:%5\naxis:(%6,%7,%8)")
     .arg(QString::number(getVertex().x, 'f', 2)).arg(QString::number(getVertex().y, 'f', 2)).arg(QString::number(getVertex().z, 'f', 2))
-        .arg(QString::number(radian, 'f', 2)).arg(QString::number(height, 'f', 2)).arg(QString::number(axis.x(), 'f', 2)).arg(QString::number(axis.y(), 'f', 2)).arg(QString::number(axis.z(), 'f', 2));
+        .arg(QString::number(radian, 'f', 2)).arg(QString::number(height, 'f', 2))
+        .arg(QString::number(axis.x(), 'f', 2)).arg(QString::number(axis.y(), 'f', 2)).arg(QString::number(axis.z(), 'f', 2));
 
     return infoText;
 }
@@ -348,7 +349,14 @@ vtkSmartPointer<vtkActor> CCone::draw(){
 
 QString CCuboid::getCEntityInfo()
 {
-    auto infoText=" ";
+    auto infoText = QString("Center: (%1, %2, %3)\nLength: %4\nWidth: %5\nHeigth: %6\n"
+                            "RotatedAngleX: %7\nRotatedAngleY: %8\nRotatedAngleZ: %9")
+    .arg(QString::number(getCenter().x, 'f', 2)).arg(QString::number(getCenter().y, 'f', 2))
+    .arg(QString::number(getCenter().z, 'f', 2))
+    .arg(QString::number(getLength(), 'f', 2)).arg(QString::number(getWidth(), 'f', 2))
+    .arg(QString::number(getHeight(), 'f', 2)).arg(QString::number(getAngleX(), 'f', 2))
+    .arg(QString::number(getAngleY(), 'f', 2)).arg(QString::number(getAngleZ(), 'f', 2));
+
     return infoText;
 }
 
@@ -407,6 +415,9 @@ vtkSmartPointer<vtkActor> CPointCloud::draw(){
     points->SetNumberOfPoints(m_pointCloud.points.size());
     for (size_t i = 0; i < m_pointCloud.points.size(); ++i)
     {
+        // m_pointCloud.points[i].r = 120;
+        // m_pointCloud.points[i].g = 120;
+        // m_pointCloud.points[i].b = 120;
         points->SetPoint(i, m_pointCloud.points[i].x, m_pointCloud.points[i].y, m_pointCloud.points[i].z);
         // 如果是对比生成的点云则设置颜色
         if(isComparsionCloud)
