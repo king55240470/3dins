@@ -67,6 +67,8 @@
 
 #include "pointfitting/fittingplane.h"//拟合平面算法
 #include "pointfitting/fittingcylinder.h"//拟合圆柱算法
+#include "pointfitting/fittingsphere.h"//拟合圆柱算法
+#include "pointfitting/fittingcone.h"//拟合圆柱算法
 #include "pointfitting/setdatawidget.h"
 
 
@@ -86,6 +88,17 @@
 #include<vtkConeSource.h>//圆锥
 #include<vtkSphereSource.h>//球
 #include<vtkSelectEnclosedPoints.h>//圈中点的算法
+
+
+#include <QVTKOpenGLNativeWidget.h>
+
+#include <vtkRenderWindow.h>
+#include <vtkRenderer.h>
+#include<vtkPNGWriter.h>
+#include <vtkJPEGWriter.h>
+#include <vtkTIFFWriter.h>
+#include <vtkBMPWriter.h>
+#include <vtkWindowToImageFilter.h>
 
 int getImagePaths(const QString& directory, QStringList &iconPaths, QStringList &iconNames);
 
@@ -1090,60 +1103,104 @@ void   ToolWidget::onSaveWord(){
         file.close();
         QMessageBox::information(nullptr, "提示", "保存成功");
     }}
+
+void saveScreenshot() {
+
+}
+static void WrongWidget(QString message,QString moreMessage="空");
 void   ToolWidget::onSaveImage(){
-    QString imagePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("Excel(*.png *.jpg)"));
-    if (imagePath.isEmpty()){
+    QString filter = "PNG (*.png);;JPEG (*.jpg *.jpeg);;TIFF (*.tif *.tiff);;BMP (*.bmp)";
+    QString fileName = QFileDialog::getSaveFileName(this, "Save Screenshot", "", filter, &filter);
+
+    if (fileName.isEmpty()) {
+        WrongWidget("输入路径错误!");
         return ;
     }
-    QStringList headers;
-    headers << "类型" << "名称" << "数据1" << "数据2" << "数据3" << "数据4" << "数据5";
-    auto& entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
-    QList<QList<QString>> dataAll;
-    ExtractData(entitylist, dataAll);
+    QString selectedFilter = QFileInfo(fileName).suffix();
+    std::string format=selectedFilter.toStdString();
 
-    QTableWidget tableWidget(dataAll.size(), headers.size());
-    tableWidget.setHorizontalHeaderLabels({"类型", "名称", "数据1", "数据2", "数据3", "数据4", "数据5"});
+    vtkSmartPointer<vtkRenderWindow> renderWindow=m_pMainWin->getPWinVtkWidget()->getRenderWindow();
+    renderWindow->Render();
+    vtkNew<vtkWindowToImageFilter> windowToImageFilter;
+    windowToImageFilter->SetInput(renderWindow);
+    windowToImageFilter->SetScale(1);
+    windowToImageFilter->SetInputBufferTypeToRGBA();
+    windowToImageFilter->ReadFrontBufferOff();
+    windowToImageFilter->Update();
 
-    // 设置水平表头自动调整大小
-    tableWidget.horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    vtkSmartPointer<vtkImageWriter> writer;
 
-    for (int i = 0; i < dataAll.size(); ++i) {
-        QStringList& inlist = dataAll[i];
-        for (int j = 0; j < inlist.size(); ++j) {
-            tableWidget.setItem(i, j, new QTableWidgetItem(inlist[j]));
-        }
+    if (format == "png") {
+        writer = vtkSmartPointer<vtkPNGWriter>::New();
+    } else if (format == "jpg" || format == "jpeg") {
+        writer = vtkSmartPointer<vtkJPEGWriter>::New();
+    } else if (format == "tiff" || format == "tif") {
+        writer = vtkSmartPointer<vtkTIFFWriter>::New();
+    } else if (format == "bmp") {
+        writer = vtkSmartPointer<vtkBMPWriter>::New();
+    } else {
+        std::cerr << "Unsupported format: " << format << std::endl;
+        return;
     }
 
-    // 调整表格大小以适应内容
-    int totalWidth = 0;
-    int totalHeight = 0;
+    writer->SetFileName(fileName.toStdString().c_str());
+    writer->SetInputConnection(windowToImageFilter->GetOutputPort());
+    writer->Write();
 
-    // 计算总宽度
-    for (int i = 0; i < tableWidget.columnCount(); ++i) {
-        totalWidth += tableWidget.columnWidth(i) + 10;
-    }
 
-    // 计算总高度
-    for (int i = 0; i < tableWidget.rowCount(); ++i) {
-        totalHeight += tableWidget.rowHeight(i) + 10;
-    }
+    // QString imagePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("Excel(*.png *.jpg)"));
+    // if (imagePath.isEmpty()){
+    //     return ;
+    // }
+    // QStringList headers;
+    // headers << "类型" << "名称" << "数据1" << "数据2" << "数据3" << "数据4" << "数据5";
+    // auto& entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
+    // QList<QList<QString>> dataAll;
+    // ExtractData(entitylist, dataAll);
 
-    tableWidget.setFixedSize(totalWidth, totalHeight);
+    // QTableWidget tableWidget(dataAll.size(), headers.size());
+    // tableWidget.setHorizontalHeaderLabels({"类型", "名称", "数据1", "数据2", "数据3", "数据4", "数据5"});
 
-    // 创建一个 QPixmap 对象以适应整个表格
-    QPixmap pixmap(totalWidth, totalHeight);
-    pixmap.fill(Qt::white);  // 设置背景为白色
-    QPainter painter(&pixmap);
+    // // 设置水平表头自动调整大小
+    // tableWidget.horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
-    // 将表格内容绘制到 QPixmap 上
-    tableWidget.render(&painter);
+    // for (int i = 0; i < dataAll.size(); ++i) {
+    //     QStringList& inlist = dataAll[i];
+    //     for (int j = 0; j < inlist.size(); ++j) {
+    //         tableWidget.setItem(i, j, new QTableWidgetItem(inlist[j]));
+    //     }
+    // }
 
-    // 保存为图片
-    pixmap.save(imagePath);
+    // // 调整表格大小以适应内容
+    // int totalWidth = 0;
+    // int totalHeight = 0;
+
+    // // 计算总宽度
+    // for (int i = 0; i < tableWidget.columnCount(); ++i) {
+    //     totalWidth += tableWidget.columnWidth(i) + 10;
+    // }
+
+    // // 计算总高度
+    // for (int i = 0; i < tableWidget.rowCount(); ++i) {
+    //     totalHeight += tableWidget.rowHeight(i) + 10;
+    // }
+
+    // tableWidget.setFixedSize(totalWidth, totalHeight);
+
+    // // 创建一个 QPixmap 对象以适应整个表格
+    // QPixmap pixmap(totalWidth, totalHeight);
+    // pixmap.fill(Qt::white);  // 设置背景为白色
+    // QPainter painter(&pixmap);
+
+    // // 将表格内容绘制到 QPixmap 上
+    // tableWidget.render(&painter);
+
+    // // 保存为图片
+    // pixmap.save(imagePath);
     QMessageBox::information(nullptr, "提示", "保存成功");
 }
 
-static void WrongWidget(QString message,QString moreMessage="空");
+
 void ToolWidget::addToList(CEntity* newEntity){
     newEntity->m_CreateForm = ePreset;
     newEntity->m_pRefCoord = m_pMainWin->m_pcsListMgr->m_pPcsCurrent;
@@ -1575,7 +1632,7 @@ void ToolWidget::onFindCylinder(){
     // 生成点云对象并添加到entitylist
     auto cylinderCloud=m_pMainWin->getPWinSetDataWidget()->getCylinderCloud();
     if(cylinderCloud==nullptr){
-        qDebug()<<"拟合平面生成错误";
+        qDebug()<<"拟合圆柱生成错误";
         return ;
     }
     auto cylinder=m_pMainWin->getPWinSetDataWidget()->getCylinder();
@@ -1585,13 +1642,13 @@ void ToolWidget::onFindCylinder(){
     CylinderConstructor constructor;
     CCylinder* newCylinder;
     CPosition center;
-    center.x=cylinder->getBottomCenter().x();
-    center.y=cylinder->getBottomCenter().y();
-    center.z=cylinder->getBottomCenter().z();
+    center.x=cylinder->getCenter().x();
+    center.y=cylinder->getCenter().y();
+    center.z=cylinder->getCenter().z();
     QVector4D normal(cylinder->getNormal().x(),cylinder->getNormal().y(),cylinder->getNormal().z(),0);
     newCylinder=constructor.createCylinder(center,normal,cylinder->getHeight(),cylinder->getDiameter());
     if(newCylinder==nullptr){
-        qDebug()<<"拟合平面生成错误";
+        qDebug()<<"拟合圆柱生成错误";
         return ;
     }
     addToFindList(newCylinder);
@@ -1599,8 +1656,132 @@ void ToolWidget::onFindCylinder(){
     positions.clear();
     m_pMainWin->NotifySubscribe();
 }
-void ToolWidget::onFindCone(){}
-void ToolWidget::onFindSphere(){}
+void ToolWidget::onFindCone(){
+    //读取选中的点云
+    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+    QVector<CPointCloud*> pointClouds;
+
+    for(int i=0;i<entityList.size();i++){
+        CEntity* entity=entityList[i];
+        if(!entity->IsSelected())continue;
+        if(entity->GetUniqueType()==enPointCloud){
+            CPointCloud* pointCloud=(CPointCloud*)entity;
+            pointClouds.append(pointCloud);
+        }
+    }
+    if(pointClouds.size()<1){
+        WrongWidget("选中的点云数目为0");
+        return ;
+    }else if(pointClouds.size()>1){
+        WrongWidget("选中的点云数目大于1");
+        return ;
+    }
+    //读取选中的点
+    QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenActorAxes();
+
+    pcl::PointXYZRGB  point;
+    if(positions.size()==0)return ;
+    point.x=positions[0].x;
+    point.y=positions[0].y;
+    point.z=positions[0].z;
+    auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
+
+    // if(cloudptr==nullptr){
+    //     WrongWidget("点云指针为空");
+    //     return ;
+    // }
+    //m_pMainWin->getPWinSetDataWidget()->setPlaneData(point,cloudptr);
+    m_pMainWin->getPWinSetDataWidget()->setConeData(point,pointClouds[0]->m_pointCloud.makeShared());
+    auto coneCloud=m_pMainWin->getPWinSetDataWidget()->getConeCloud();
+    if(coneCloud==nullptr){
+        qDebug()<<"拟合圆锥生成错误";
+        return ;
+    }
+    auto cone=m_pMainWin->getPWinSetDataWidget()->getCone();
+    if(cone==nullptr){
+        return;
+    }
+    ConeConstructor constructor;
+    CCone* newSphere;
+    CPosition center;
+    center.x=cone->getTopCenter()[0];
+    center.y=cone->getTopCenter()[1];
+    center.z=cone->getTopCenter()[2];
+    QVector4D normal(cone->getNormal().x(),cone->getNormal().y(),cone->getNormal().z(),0);
+    double angle=cone->getAngle();
+    double height=cone->getHeight();
+    newSphere=constructor.createCone(center,normal,height,height,angle);
+    if(newSphere==nullptr){
+        qDebug()<<"拟合圆锥生成错误";
+        return ;
+    }
+    addToFindList(newSphere);
+
+    positions.clear();
+    m_pMainWin->NotifySubscribe();
+}
+void ToolWidget::onFindSphere(){
+    //读取选中的点云
+    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+    QVector<CPointCloud*> pointClouds;
+
+    for(int i=0;i<entityList.size();i++){
+        CEntity* entity=entityList[i];
+        if(!entity->IsSelected())continue;
+        if(entity->GetUniqueType()==enPointCloud){
+            CPointCloud* pointCloud=(CPointCloud*)entity;
+            pointClouds.append(pointCloud);
+        }
+    }
+    if(pointClouds.size()<1){
+        WrongWidget("选中的点云数目为0");
+        return ;
+    }else if(pointClouds.size()>1){
+        WrongWidget("选中的点云数目大于1");
+        return ;
+    }
+    //读取选中的点
+    QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenActorAxes();
+
+    pcl::PointXYZRGB  point;
+    if(positions.size()==0)return ;
+    point.x=positions[0].x;
+    point.y=positions[0].y;
+    point.z=positions[0].z;
+    auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
+
+    // if(cloudptr==nullptr){
+    //     WrongWidget("点云指针为空");
+    //     return ;
+    // }
+    //m_pMainWin->getPWinSetDataWidget()->setPlaneData(point,cloudptr);
+    m_pMainWin->getPWinSetDataWidget()->setSphereData(point,pointClouds[0]->m_pointCloud.makeShared());
+    auto sphereCloud=m_pMainWin->getPWinSetDataWidget()->getSphereCloud();
+    if(sphereCloud==nullptr){
+        qDebug()<<"拟合球生成错误";
+        return ;
+    }
+    auto sphere=m_pMainWin->getPWinSetDataWidget()->getSphere();
+    if(sphere==nullptr){
+        return;
+    }
+    SphereConstructor constructor;
+    CSphere* newSphere;
+    CPosition center;
+    center.x=sphere->getCenter()[0];
+    center.y=sphere->getCenter()[1];
+    center.z=sphere->getCenter()[2];
+    double radius=sphere->getRad();
+    newSphere=constructor.createSphere(center,radius);
+    if(newSphere==nullptr){
+        qDebug()<<"拟合球生成错误";
+        return ;
+    }
+    addToFindList(newSphere);
+
+    positions.clear();
+    m_pMainWin->NotifySubscribe();
+}
 void ToolWidget::updateele(){
 }
 void ToolWidget::NotifySubscribe(){

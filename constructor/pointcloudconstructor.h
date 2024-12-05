@@ -2,7 +2,7 @@
 #define POINTCLOUDCONSTRUCTOR_H
 #include"geometry/centitytypes.h"
 #include"constructor.h"
-
+#include <Eigen/Dense>
 
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
