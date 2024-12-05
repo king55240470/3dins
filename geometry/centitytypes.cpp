@@ -26,6 +26,10 @@ QMap<vtkActor*, pcl::PointCloud<pcl::PointXYZRGB>> &CPointCloud::getActorToPoint
     return actorToPointCloud;
 }
 
+ bool CPointCloud::haveSaved=false;
+ bool CPointCloud::haveOpened=false;
+// int CPointCloud::pcCount=0;
+
 // 点类的draw()
 vtkSmartPointer<vtkActor> CPoint::draw(){
     // 创建点集
