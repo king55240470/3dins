@@ -164,33 +164,44 @@ vtkSmartPointer<vtkActor> CCircle::draw(){
     return actor;
 }
 
-vtkSmartPointer<vtkActor> CPlane::draw(){
-    // 获取图形在参考坐标系下的坐标(预置时输入的)，并计算得到他在机械坐标系下的位置(全局坐标)
+vtkSmartPointer<vtkActor> CPlane::draw() {
+    // 获取图形在参考坐标系下的坐标，并计算全局坐标
     CPosition pos(getCenter().x, getCenter().y, getCenter().z);
-    //QVector4D posVec = GetRefCoord()->m_mat * QVector4D(pos.x, pos.y, pos.z, 1);
     CPosition globalPos(pos.x, pos.y, pos.z);
 
-    // 创建面——矩形法
+    // 获取平面参数
     double halfL = getLength() / 2.0;
     double halfW = getWidth() / 2.0;
 
     QVector4D normalVec = getNormal(); // 获取法向量
     // 将法向量单位化
-    double norm_length = sqrt(normalVec.x() * normalVec.x() + normalVec.y() * normalVec.y() + normalVec.z() * normalVec.z());
+    double norm_length = sqrt(normalVec.x() * normalVec.x() +
+                              normalVec.y() * normalVec.y() +
+                              normalVec.z() * normalVec.z());
     QVector4D unitNormal = normalVec / norm_length;
 
-    //现在第一个向量是长边向量
+    // 获取向量方向
     QVector3D firstPerpVec = dir_long_edge.toVector3D();
 
-    double norm_1 = sqrt(firstPerpVec.x() * firstPerpVec.x() + firstPerpVec.y() * firstPerpVec.y() + firstPerpVec.z() * firstPerpVec.z());
-    //这个才是单位化后的长边向量
+    // 验证 firstPerpVec 是否与 unitNormal 正交
+    double dotProduct = QVector3D::dotProduct(firstPerpVec, unitNormal.toVector3D());
+    if (fabs(dotProduct) > 1e-6) { // 如果不正交，重新计算正交向量
+        firstPerpVec = QVector3D::crossProduct(unitNormal.toVector3D(), QVector3D(1, 0, 0));
+        if (firstPerpVec.length() < 1e-6) { // 如果仍为零，改用另一个方向
+            firstPerpVec = QVector3D::crossProduct(unitNormal.toVector3D(), QVector3D(0, 1, 0));
+        }
+    }
+
+    // 将 firstPerpVec 单位化
+    double norm_1 = sqrt(firstPerpVec.x() * firstPerpVec.x() +
+                         firstPerpVec.y() * firstPerpVec.y() +
+                         firstPerpVec.z() * firstPerpVec.z());
     QVector3D unitNormal_1 = firstPerpVec / norm_1;
 
-    // 3.计算第二个向量，用normal和firstPerpVec的叉积
+    // 计算第二个正交向量
+    QVector3D secondPerpVec = QVector3D::crossProduct(unitNormal_1, unitNormal.toVector3D());
 
-    QVector3D secondPerpVec = QVector3D::crossProduct(unitNormal_1,unitNormal.toVector3D());
-
-    //计算四个顶点的全局坐标
+    // 计算矩形四个顶点的全局坐标
     double p1x = globalPos.x + halfW * secondPerpVec.x() - halfL * unitNormal_1.x();
     double p1y = globalPos.y + halfW * secondPerpVec.y() - halfL * unitNormal_1.y();
     double p1z = globalPos.z + halfW * secondPerpVec.z() - halfL * unitNormal_1.z();
@@ -206,6 +217,7 @@ vtkSmartPointer<vtkActor> CPlane::draw(){
     double p4x = globalPos.x - halfW * secondPerpVec.x() - halfL * unitNormal_1.x();
     double p4y = globalPos.y - halfW * secondPerpVec.y() - halfL * unitNormal_1.y();
     double p4z = globalPos.z - halfW * secondPerpVec.z() - halfL * unitNormal_1.z();
+
     // 向点集插入四个点
     auto points = vtkSmartPointer<vtkPoints>::New();
     points->InsertNextPoint(p1x, p1y, p1z);
@@ -217,23 +229,21 @@ vtkSmartPointer<vtkActor> CPlane::draw(){
     vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
     polyData->SetPoints(points);
 
-    // 创建一个vtkCellArray对象来存储多边形
+    // 创建一个 vtkCellArray 对象来存储多边形
     vtkSmartPointer<vtkCellArray> cells = vtkSmartPointer<vtkCellArray>::New();
-    // 定义一个四边形（四个顶点），注意VTK中的多边形索引是从0开始的
-    vtkIdType verts[4] = {0, 1, 2, 3}; // 这里的0,1,2,3是点的索引
-    cells->InsertNextCell(4, verts); // 插入一个包含4个顶点的多边形
+    vtkIdType verts[4] = {0, 1, 2, 3};
+    cells->InsertNextCell(4, verts);
 
-    // 设置多边形到polyData
+    // 设置多边形到 polyData
     polyData->SetPolys(cells);
 
-    // 创建一个vtkPolyDataMapper来映射polyData到图形表示
+    // 创建一个 vtkPolyDataMapper 来映射 polyData 到图形表示
     vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     mapper->SetInputData(polyData);
 
-    // 创建一个vtkActor来表示多边形
+    // 创建一个 vtkActor 来表示多边形
     vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
-    // 可以设置演员的属性，比如颜色
     actor->GetProperty()->SetColor(0.7, 0.7, 0.7);
 
     return actor;
