@@ -167,30 +167,25 @@ vtkSmartPointer<vtkActor> CCircle::draw(){
 vtkSmartPointer<vtkActor> CPlane::draw(){
     // 获取图形在参考坐标系下的坐标(预置时输入的)，并计算得到他在机械坐标系下的位置(全局坐标)
     CPosition pos(getCenter().x, getCenter().y, getCenter().z);
-    //QVector4D posVec = GetRefCoord()->m_mat * QVector4D(pos.x, pos.y, pos.z, 1);
-    CPosition globalPos(pos.x, pos.y, pos.z);
+    QVector4D posVec = GetRefCoord()->m_mat * QVector4D(pos.x, pos.y, pos.z, 1);
+    CPosition globalPos(posVec.x(), posVec.y(), posVec.z());
 
     // 创建面——矩形法
     double halfL = getLength() / 2.0;
     double halfW = getWidth() / 2.0;
 
-    QVector4D normalVec = getNormal(); // 获取法向量
-    // 将法向量单位化
-    double norm_length = sqrt(normalVec.x() * normalVec.x() + normalVec.y() * normalVec.y() + normalVec.z() * normalVec.z());
-    QVector4D unitNormal = normalVec / norm_length;
+    // 获取法向量并单位化
+    QVector4D normalVec = getNormal();
+    normalVec.normalize();
 
-    //现在第一个向量是长边向量
+    // 第一个向量是长边向量
     QVector3D firstPerpVec = dir_long_edge.toVector3D();
+    QVector3D unitNormal_1 = firstPerpVec.normalized();
 
-    double norm_1 = sqrt(firstPerpVec.x() * firstPerpVec.x() + firstPerpVec.y() * firstPerpVec.y() + firstPerpVec.z() * firstPerpVec.z());
-    //这个才是单位化后的长边向量
-    QVector3D unitNormal_1 = firstPerpVec / norm_1;
+    // 计算第二个向量，用法向量和firstPerpVec的叉积
+    QVector3D secondPerpVec = QVector3D::crossProduct(unitNormal_1, normalVec.toVector3D());
 
-    // 3.计算第二个向量，用normal和firstPerpVec的叉积
-
-    QVector3D secondPerpVec = QVector3D::crossProduct(unitNormal_1,unitNormal.toVector3D());
-
-    //计算四个顶点的全局坐标
+    // 利用 secondPerpVec 计算四个顶点的全局坐标
     double p1x = globalPos.x + halfW * secondPerpVec.x() - halfL * unitNormal_1.x();
     double p1y = globalPos.y + halfW * secondPerpVec.y() - halfL * unitNormal_1.y();
     double p1z = globalPos.z + halfW * secondPerpVec.z() - halfL * unitNormal_1.z();
@@ -206,6 +201,7 @@ vtkSmartPointer<vtkActor> CPlane::draw(){
     double p4x = globalPos.x - halfW * secondPerpVec.x() - halfL * unitNormal_1.x();
     double p4y = globalPos.y - halfW * secondPerpVec.y() - halfL * unitNormal_1.y();
     double p4z = globalPos.z - halfW * secondPerpVec.z() - halfL * unitNormal_1.z();
+
     // 向点集插入四个点
     auto points = vtkSmartPointer<vtkPoints>::New();
     points->InsertNextPoint(p1x, p1y, p1z);
@@ -234,7 +230,7 @@ vtkSmartPointer<vtkActor> CPlane::draw(){
     vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
     // 可以设置演员的属性，比如颜色
-    actor->GetProperty()->SetColor(0.7, 0.7, 0.7);
+    actor->GetProperty()->SetColor(0.5, 0.5, 0.5);
 
     return actor;
 }
@@ -483,11 +479,6 @@ vtkSmartPointer<vtkActor> CDistance::pointToPlane()
     QVector4D posVec_begin = GetRefCoord()->m_mat * QVector4D(pos_begin.x, pos_begin.y, pos_begin.z, 1);
     CPosition glbPos_begin(posVec_begin.x(), posVec_begin.y(), posVec_begin.z());
 
-    // 取平面中心并转为全局坐标
-    CPosition plane_point = plane.getCenter();
-    QVector4D posVec_point = GetRefCoord()->m_mat * QVector4D(plane_point.x, plane_point.y, plane_point.z,1);
-    CPosition glbPos_point(posVec_point.x(), posVec_point.y(), posVec_point.z());
-
     // 计算点到平面的距离
     double distance = getdistanceplane();
 
@@ -496,7 +487,6 @@ vtkSmartPointer<vtkActor> CDistance::pointToPlane()
     projection.x = glbPos_begin.x - distance * plane_normal.x();
     projection.y = glbPos_begin.y - distance * plane_normal.y();
     projection.z = glbPos_begin.z - distance * plane_normal.z();
-    //Projection=projection;
 
     // 创建点集，并插入定义线的两个点
     auto points = vtkSmartPointer<vtkPoints>::New();
@@ -569,7 +559,6 @@ vtkSmartPointer<vtkActor> CDistance::pointToLine()
     double dotProduct = QVector3D::dotProduct(pointToLineVec, lineVec);
 
     // 计算垂足
-    // 垂足计算公式
     // p = p0 + v.w.w / |w|^2
     QVector3D projection = QVector3D(lineVec_begin) + dotProduct * lineVec;
     //Projection.x=projection.x();

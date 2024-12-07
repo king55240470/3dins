@@ -631,6 +631,7 @@ public:
     bool isHavePlane = false;
     bool isHaveLine = false;
     bool isHaveCircle = false;
+    bool isPlaneToPlane = false;
 
     // CDistance的draw()，这里要分别写几个显示不同的距离
     vtkSmartPointer<vtkActor> draw() override;
