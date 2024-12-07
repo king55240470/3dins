@@ -11,6 +11,7 @@
 #include <pcl/common/distances.h>
 #include <vtkSmartPointer.h>
 #include <vtkActor.h>
+#include <QStandardItem>
 
 
 class CLine  : public CEntity
@@ -630,6 +631,7 @@ public:
     bool isHavePlane = false;
     bool isHaveLine = false;
     bool isHaveCircle = false;
+    bool isPlaneToPlane = false;
 
     // CDistance的draw()，这里要分别写几个显示不同的距离
     vtkSmartPointer<vtkActor> draw() override;
@@ -649,28 +651,19 @@ public:
     int currentPointCloudId;
     bool isFileCloud = false; // 是否是文件生成的点云
     bool isComparsionCloud = false; //  是否是对比得到的点云
+    static bool haveSaved;
+    static bool haveOpened;
 
     QDataStream& serialize(QDataStream& out) const override {
         CEntity::serialize(out);  // 先序列化基类部分
         out <<m_pt << pointCloudCount<< currentPointCloudId;
         out <<isFileCloud  <<isComparsionCloud ;
 
-        // const quint32 VERSION = 1;
-        // out << VERSION;
-
-        // 写入点云大小
-        quint32 pointCloudSize = static_cast<quint32>(m_pointCloud.size());
-        out << pointCloudSize;
-
-        // 保存每个点的 XYZRGB 信息
-        for (const auto& point : m_pointCloud.points) {
-            out << point.x << point.y << point.z;
-
-            out << static_cast<qint32>(point.r) << static_cast<qint32>(point.g) << static_cast<qint32>(point.b);
+        if(!haveSaved){
+            std::string file_path = "D:/output_" + std::to_string(currentPointCloudId) + ".ply";
+            out<< QString::fromStdString(file_path);
+            pcl::io::savePLYFile(file_path, m_pointCloud);
         }
-
-        out << pointCloudSize;
-
         return out;
     }
 
@@ -679,87 +672,12 @@ public:
         in >>m_pt >> pointCloudCount >> currentPointCloudId;
         in>>isFileCloud  >>isComparsionCloud ;
 
-        // 读取版本号
-        // quint32 version;
-        // in >> version;
-        // if (version != 1) {
-        //     qWarning() << "Unsupported version!";
-        //     return in;
-        // }
-
-        quint32 pointCloudSize;
-        in >> pointCloudSize;
-        // const quint32 MAX_POINT_CLOUD_SIZE = 1000000; // 最大点云数
-        // if (pointCloudSize > MAX_POINT_CLOUD_SIZE) {
-        //     qWarning() << "Point cloud size exceeds maximum allowed size.";
-        //     return in;
-        // }
-
-        m_pointCloud.clear();
-        // m_pointCloud.resize(pointCloudSize); //已初始化
-        for (quint32 i = 0; i < pointCloudSize; ++i)
-        {
-            pcl::PointXYZRGB point;
-            qint32 r, g, b;
-
-            // in >> point.x >> point.y >> point.z;
-            // in >> r >> g >> b;
-
-            in >> point.x;
-            if (in.status() != QDataStream::Ok) {
-                qWarning() << "Failed to deserialize point.x";
-                return in;
-            }
-
-            in >> point.y;
-            if (in.status() != QDataStream::Ok) {
-                qWarning() << "Failed to deserialize point.y";
-                return in;
-            }
-
-            in >> point.z;
-            if (in.status() != QDataStream::Ok) {
-                qWarning() << "Failed to deserialize point.z";
-                return in;
-            }
-
-            in >> r;
-            if (in.status() != QDataStream::Ok) {
-                qWarning() << "Failed to deserialize point.r";
-                return in;
-            }
-
-            in >> g;
-            if (in.status() != QDataStream::Ok) {
-                qWarning() << "Failed to deserialize point.g";
-                return in;
-            }
-
-            in >> b;
-            if (in.status() != QDataStream::Ok) {
-                qWarning() << "Failed to deserialize point.b";
-                return in;
-            }
-
-            if (in.status() != QDataStream::Ok) {
-                qWarning() << "Failed to deserialize point data.";
-                return in;
-            }
-
-            point.r = static_cast<uint8_t>(r);
-            point.g = static_cast<uint8_t>(g);
-            point.b = static_cast<uint8_t>(b);
-
-            m_pointCloud.points.push_back(point);
+        if(!haveOpened){
+            QString path;
+            in>> path;
+            std::string file_path=path.toStdString();
+            pcl::io::loadPLYFile<pcl::PointXYZRGB>(file_path, m_pointCloud);
         }
-
-        m_pointCloud.width = static_cast<uint32_t>(m_pointCloud.points.size());
-        m_pointCloud.height = 1; // Assuming unorganized point cloud
-        m_pointCloud.is_dense = true;
-
-        quint32 temp;
-        in >> temp;
-        qDebug()<<"temp:"<<temp;
 
         return in;
     }

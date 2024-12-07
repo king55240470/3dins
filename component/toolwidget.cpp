@@ -89,6 +89,17 @@
 #include<vtkSphereSource.h>//球
 #include<vtkSelectEnclosedPoints.h>//圈中点的算法
 
+
+#include <QVTKOpenGLNativeWidget.h>
+
+#include <vtkRenderWindow.h>
+#include <vtkRenderer.h>
+#include<vtkPNGWriter.h>
+#include <vtkJPEGWriter.h>
+#include <vtkTIFFWriter.h>
+#include <vtkBMPWriter.h>
+#include <vtkWindowToImageFilter.h>
+
 int getImagePaths(const QString& directory, QStringList &iconPaths, QStringList &iconNames);
 
 ToolWidget::ToolWidget(QWidget *parent)
@@ -1092,60 +1103,104 @@ void   ToolWidget::onSaveWord(){
         file.close();
         QMessageBox::information(nullptr, "提示", "保存成功");
     }}
+
+void saveScreenshot() {
+
+}
+static void WrongWidget(QString message,QString moreMessage="空");
 void   ToolWidget::onSaveImage(){
-    QString imagePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("Excel(*.png *.jpg)"));
-    if (imagePath.isEmpty()){
+    QString filter = "PNG (*.png);;JPEG (*.jpg *.jpeg);;TIFF (*.tif *.tiff);;BMP (*.bmp)";
+    QString fileName = QFileDialog::getSaveFileName(this, "Save Screenshot", "", filter, &filter);
+
+    if (fileName.isEmpty()) {
+        WrongWidget("输入路径错误!");
         return ;
     }
-    QStringList headers;
-    headers << "类型" << "名称" << "数据1" << "数据2" << "数据3" << "数据4" << "数据5";
-    auto& entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
-    QList<QList<QString>> dataAll;
-    ExtractData(entitylist, dataAll);
+    QString selectedFilter = QFileInfo(fileName).suffix();
+    std::string format=selectedFilter.toStdString();
 
-    QTableWidget tableWidget(dataAll.size(), headers.size());
-    tableWidget.setHorizontalHeaderLabels({"类型", "名称", "数据1", "数据2", "数据3", "数据4", "数据5"});
+    vtkSmartPointer<vtkRenderWindow> renderWindow=m_pMainWin->getPWinVtkWidget()->getRenderWindow();
+    renderWindow->Render();
+    vtkNew<vtkWindowToImageFilter> windowToImageFilter;
+    windowToImageFilter->SetInput(renderWindow);
+    windowToImageFilter->SetScale(1);
+    windowToImageFilter->SetInputBufferTypeToRGBA();
+    windowToImageFilter->ReadFrontBufferOff();
+    windowToImageFilter->Update();
 
-    // 设置水平表头自动调整大小
-    tableWidget.horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    vtkSmartPointer<vtkImageWriter> writer;
 
-    for (int i = 0; i < dataAll.size(); ++i) {
-        QStringList& inlist = dataAll[i];
-        for (int j = 0; j < inlist.size(); ++j) {
-            tableWidget.setItem(i, j, new QTableWidgetItem(inlist[j]));
-        }
+    if (format == "png") {
+        writer = vtkSmartPointer<vtkPNGWriter>::New();
+    } else if (format == "jpg" || format == "jpeg") {
+        writer = vtkSmartPointer<vtkJPEGWriter>::New();
+    } else if (format == "tiff" || format == "tif") {
+        writer = vtkSmartPointer<vtkTIFFWriter>::New();
+    } else if (format == "bmp") {
+        writer = vtkSmartPointer<vtkBMPWriter>::New();
+    } else {
+        std::cerr << "Unsupported format: " << format << std::endl;
+        return;
     }
 
-    // 调整表格大小以适应内容
-    int totalWidth = 0;
-    int totalHeight = 0;
+    writer->SetFileName(fileName.toStdString().c_str());
+    writer->SetInputConnection(windowToImageFilter->GetOutputPort());
+    writer->Write();
 
-    // 计算总宽度
-    for (int i = 0; i < tableWidget.columnCount(); ++i) {
-        totalWidth += tableWidget.columnWidth(i) + 10;
-    }
 
-    // 计算总高度
-    for (int i = 0; i < tableWidget.rowCount(); ++i) {
-        totalHeight += tableWidget.rowHeight(i) + 10;
-    }
+    // QString imagePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("Excel(*.png *.jpg)"));
+    // if (imagePath.isEmpty()){
+    //     return ;
+    // }
+    // QStringList headers;
+    // headers << "类型" << "名称" << "数据1" << "数据2" << "数据3" << "数据4" << "数据5";
+    // auto& entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
+    // QList<QList<QString>> dataAll;
+    // ExtractData(entitylist, dataAll);
 
-    tableWidget.setFixedSize(totalWidth, totalHeight);
+    // QTableWidget tableWidget(dataAll.size(), headers.size());
+    // tableWidget.setHorizontalHeaderLabels({"类型", "名称", "数据1", "数据2", "数据3", "数据4", "数据5"});
 
-    // 创建一个 QPixmap 对象以适应整个表格
-    QPixmap pixmap(totalWidth, totalHeight);
-    pixmap.fill(Qt::white);  // 设置背景为白色
-    QPainter painter(&pixmap);
+    // // 设置水平表头自动调整大小
+    // tableWidget.horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
-    // 将表格内容绘制到 QPixmap 上
-    tableWidget.render(&painter);
+    // for (int i = 0; i < dataAll.size(); ++i) {
+    //     QStringList& inlist = dataAll[i];
+    //     for (int j = 0; j < inlist.size(); ++j) {
+    //         tableWidget.setItem(i, j, new QTableWidgetItem(inlist[j]));
+    //     }
+    // }
 
-    // 保存为图片
-    pixmap.save(imagePath);
+    // // 调整表格大小以适应内容
+    // int totalWidth = 0;
+    // int totalHeight = 0;
+
+    // // 计算总宽度
+    // for (int i = 0; i < tableWidget.columnCount(); ++i) {
+    //     totalWidth += tableWidget.columnWidth(i) + 10;
+    // }
+
+    // // 计算总高度
+    // for (int i = 0; i < tableWidget.rowCount(); ++i) {
+    //     totalHeight += tableWidget.rowHeight(i) + 10;
+    // }
+
+    // tableWidget.setFixedSize(totalWidth, totalHeight);
+
+    // // 创建一个 QPixmap 对象以适应整个表格
+    // QPixmap pixmap(totalWidth, totalHeight);
+    // pixmap.fill(Qt::white);  // 设置背景为白色
+    // QPainter painter(&pixmap);
+
+    // // 将表格内容绘制到 QPixmap 上
+    // tableWidget.render(&painter);
+
+    // // 保存为图片
+    // pixmap.save(imagePath);
     QMessageBox::information(nullptr, "提示", "保存成功");
 }
 
-static void WrongWidget(QString message,QString moreMessage="空");
+
 void ToolWidget::addToList(CEntity* newEntity){
     newEntity->m_CreateForm = ePreset;
     newEntity->m_pRefCoord = m_pMainWin->m_pcsListMgr->m_pPcsCurrent;

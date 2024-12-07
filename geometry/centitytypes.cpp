@@ -26,6 +26,10 @@ QMap<vtkActor*, pcl::PointCloud<pcl::PointXYZRGB>> &CPointCloud::getActorToPoint
     return actorToPointCloud;
 }
 
+bool CPointCloud::haveSaved=false;
+bool CPointCloud::haveOpened=false;
+// int CPointCloud::pcCount=0;
+
 // 点类的draw()
 vtkSmartPointer<vtkActor> CPoint::draw(){
     // 创建点集
@@ -160,33 +164,45 @@ vtkSmartPointer<vtkActor> CCircle::draw(){
     return actor;
 }
 
-vtkSmartPointer<vtkActor> CPlane::draw(){
-    // 获取图形在参考坐标系下的坐标(预置时输入的)，并计算得到他在机械坐标系下的位置(全局坐标)
+vtkSmartPointer<vtkActor> CPlane::draw() {
+    // 获取图形在参考坐标系下的坐标，并计算全局坐标
     CPosition pos(getCenter().x, getCenter().y, getCenter().z);
-    //QVector4D posVec = GetRefCoord()->m_mat * QVector4D(pos.x, pos.y, pos.z, 1);
-    CPosition globalPos(pos.x, pos.y, pos.z);
+    QVector4D posVec = GetRefCoord()->m_mat * QVector4D(pos.x, pos.y, pos.z, 1);
+    CPosition globalPos(posVec.x(), posVec.y(), posVec.z());
 
-    // 创建面——矩形法
+    // 获取平面参数
     double halfL = getLength() / 2.0;
     double halfW = getWidth() / 2.0;
 
-    QVector4D normalVec = getNormal(); // 获取法向量
-    // 将法向量单位化
-    double norm_length = sqrt(normalVec.x() * normalVec.x() + normalVec.y() * normalVec.y() + normalVec.z() * normalVec.z());
+    // 获取法向量并单位化
+    QVector4D normalVec = getNormal();
+    double norm_length = sqrt(normalVec.x() * normalVec.x() +
+                              normalVec.y() * normalVec.y() +
+                              normalVec.z() * normalVec.z());
     QVector4D unitNormal = normalVec / norm_length;
 
-    //现在第一个向量是长边向量
+    // 第一个向量是长边向量
     QVector3D firstPerpVec = dir_long_edge.toVector3D();
 
-    double norm_1 = sqrt(firstPerpVec.x() * firstPerpVec.x() + firstPerpVec.y() * firstPerpVec.y() + firstPerpVec.z() * firstPerpVec.z());
-    //这个才是单位化后的长边向量
+    // 验证 firstPerpVec 是否与 unitNormal 正交
+    double dotProduct = QVector3D::dotProduct(firstPerpVec, unitNormal.toVector3D());
+    if (fabs(dotProduct) > 1e-6) { // 如果不正交，重新计算正交向量
+        firstPerpVec = QVector3D::crossProduct(unitNormal.toVector3D(), QVector3D(1, 0, 0));
+        if (firstPerpVec.length() < 1e-6) { // 如果仍为零，改用另一个方向
+            firstPerpVec = QVector3D::crossProduct(unitNormal.toVector3D(), QVector3D(0, 1, 0));
+        }
+    }
+
+    // 将 firstPerpVec 单位化
+    double norm_1 = sqrt(firstPerpVec.x() * firstPerpVec.x() +
+                         firstPerpVec.y() * firstPerpVec.y() +
+                         firstPerpVec.z() * firstPerpVec.z());
     QVector3D unitNormal_1 = firstPerpVec / norm_1;
 
-    // 3.计算第二个向量，用normal和firstPerpVec的叉积
+    // 计算第二个正交向量
+    QVector3D secondPerpVec = QVector3D::crossProduct(unitNormal_1, unitNormal.toVector3D());
 
-    QVector3D secondPerpVec = QVector3D::crossProduct(unitNormal_1,unitNormal.toVector3D());
-
-    //计算四个顶点的全局坐标
+    // 计算矩形四个顶点的全局坐标
     double p1x = globalPos.x + halfW * secondPerpVec.x() - halfL * unitNormal_1.x();
     double p1y = globalPos.y + halfW * secondPerpVec.y() - halfL * unitNormal_1.y();
     double p1z = globalPos.z + halfW * secondPerpVec.z() - halfL * unitNormal_1.z();
@@ -202,6 +218,7 @@ vtkSmartPointer<vtkActor> CPlane::draw(){
     double p4x = globalPos.x - halfW * secondPerpVec.x() - halfL * unitNormal_1.x();
     double p4y = globalPos.y - halfW * secondPerpVec.y() - halfL * unitNormal_1.y();
     double p4z = globalPos.z - halfW * secondPerpVec.z() - halfL * unitNormal_1.z();
+
     // 向点集插入四个点
     auto points = vtkSmartPointer<vtkPoints>::New();
     points->InsertNextPoint(p1x, p1y, p1z);
@@ -213,24 +230,22 @@ vtkSmartPointer<vtkActor> CPlane::draw(){
     vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
     polyData->SetPoints(points);
 
-    // 创建一个vtkCellArray对象来存储多边形
+    // 创建一个 vtkCellArray 对象来存储多边形
     vtkSmartPointer<vtkCellArray> cells = vtkSmartPointer<vtkCellArray>::New();
-    // 定义一个四边形（四个顶点），注意VTK中的多边形索引是从0开始的
-    vtkIdType verts[4] = {0, 1, 2, 3}; // 这里的0,1,2,3是点的索引
-    cells->InsertNextCell(4, verts); // 插入一个包含4个顶点的多边形
+    vtkIdType verts[4] = {0, 1, 2, 3};
+    cells->InsertNextCell(4, verts);
 
-    // 设置多边形到polyData
+    // 设置多边形到 polyData
     polyData->SetPolys(cells);
 
-    // 创建一个vtkPolyDataMapper来映射polyData到图形表示
+    // 创建一个 vtkPolyDataMapper 来映射 polyData 到图形表示
     vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     mapper->SetInputData(polyData);
 
-    // 创建一个vtkActor来表示多边形
+    // 创建一个 vtkActor 来表示多边形
     vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
-    // 可以设置演员的属性，比如颜色
-    actor->GetProperty()->SetColor(0.7, 0.7, 0.7);
+    actor->GetProperty()->SetColor(0.5, 0.5, 0.5);
 
     return actor;
 }
@@ -314,7 +329,8 @@ QString CCone::getCEntityInfo()
 {
     auto infoText = QString("Information:\ncenter: (%1,%2,%3)\nradian:%4\nheight:%5\naxis:(%6,%7,%8)")
     .arg(QString::number(getVertex().x, 'f', 2)).arg(QString::number(getVertex().y, 'f', 2)).arg(QString::number(getVertex().z, 'f', 2))
-        .arg(QString::number(radian, 'f', 2)).arg(QString::number(height, 'f', 2)).arg(QString::number(axis.x(), 'f', 2)).arg(QString::number(axis.y(), 'f', 2)).arg(QString::number(axis.z(), 'f', 2));
+        .arg(QString::number(radian, 'f', 2)).arg(QString::number(height, 'f', 2))
+        .arg(QString::number(axis.x(), 'f', 2)).arg(QString::number(axis.y(), 'f', 2)).arg(QString::number(axis.z(), 'f', 2));
 
     return infoText;
 }
@@ -350,7 +366,14 @@ vtkSmartPointer<vtkActor> CCone::draw(){
 
 QString CCuboid::getCEntityInfo()
 {
-    auto infoText=" ";
+    auto infoText = QString("Center: (%1, %2, %3)\nLength: %4\nWidth: %5\nHeigth: %6\n"
+                            "RotatedAngleX: %7\nRotatedAngleY: %8\nRotatedAngleZ: %9")
+                        .arg(QString::number(getCenter().x, 'f', 2)).arg(QString::number(getCenter().y, 'f', 2))
+                        .arg(QString::number(getCenter().z, 'f', 2))
+                        .arg(QString::number(getLength(), 'f', 2)).arg(QString::number(getWidth(), 'f', 2))
+                        .arg(QString::number(getHeight(), 'f', 2)).arg(QString::number(getAngleX(), 'f', 2))
+                        .arg(QString::number(getAngleY(), 'f', 2)).arg(QString::number(getAngleZ(), 'f', 2));
+
     return infoText;
 }
 
@@ -413,6 +436,12 @@ vtkSmartPointer<vtkActor> CPointCloud::draw(){
         // 如果是对比生成的点云则设置颜色
         if(isComparsionCloud)
             colors->SetTuple3(i, m_pointCloud.points[i].r, m_pointCloud.points[i].g, m_pointCloud.points[i].b);
+        else{
+            m_pointCloud.points[i].r = 120;
+            m_pointCloud.points[i].g = 120;
+            m_pointCloud.points[i].b = 120;
+            colors->SetTuple3(i, m_pointCloud.points[i].r, m_pointCloud.points[i].g, m_pointCloud.points[i].b);
+        }
     }
 
     vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
@@ -467,11 +496,6 @@ vtkSmartPointer<vtkActor> CDistance::pointToPlane()
     QVector4D posVec_begin = GetRefCoord()->m_mat * QVector4D(pos_begin.x, pos_begin.y, pos_begin.z, 1);
     CPosition glbPos_begin(posVec_begin.x(), posVec_begin.y(), posVec_begin.z());
 
-    // 取平面中心并转为全局坐标
-    CPosition plane_point = plane.getCenter();
-    QVector4D posVec_point = GetRefCoord()->m_mat * QVector4D(plane_point.x, plane_point.y, plane_point.z,1);
-    CPosition glbPos_point(posVec_point.x(), posVec_point.y(), posVec_point.z());
-
     // 计算点到平面的距离
     double distance = getdistanceplane();
 
@@ -480,7 +504,6 @@ vtkSmartPointer<vtkActor> CDistance::pointToPlane()
     projection.x = glbPos_begin.x - distance * plane_normal.x();
     projection.y = glbPos_begin.y - distance * plane_normal.y();
     projection.z = glbPos_begin.z - distance * plane_normal.z();
-    //Projection=projection;
 
     // 创建点集，并插入定义线的两个点
     auto points = vtkSmartPointer<vtkPoints>::New();
@@ -553,7 +576,6 @@ vtkSmartPointer<vtkActor> CDistance::pointToLine()
     double dotProduct = QVector3D::dotProduct(pointToLineVec, lineVec);
 
     // 计算垂足
-    // 垂足计算公式
     // p = p0 + v.w.w / |w|^2
     QVector3D projection = QVector3D(lineVec_begin) + dotProduct * lineVec;
     //Projection.x=projection.x();
