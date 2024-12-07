@@ -340,7 +340,7 @@ vtkSmartPointer<vtkActor> CCone::draw(){
     // 获取图形在参考坐标系下的坐标(预置时输入的)，并计算得到他在机械坐标系下的位置(全局坐标)
     CPosition pos(getVertex().x, getVertex().y, getVertex().z);
     QVector4D posVec = GetRefCoord()->m_mat * QVector4D(pos.x, pos.y, pos.z, 1);
-    QVector4D center=posVec-getAxis()*getHeight();
+    QVector4D center=posVec-getAxis()*(getHeight()/2.0);
     CPosition globalPos(center.x(), center.y(), center.z());
 
     // 创建圆锥源

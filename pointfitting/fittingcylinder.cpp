@@ -13,7 +13,7 @@
 #include <pcl/common/pca.h>
 #include <QDebug>
 #include <QMessageBox>
-#include<geometry/centitytypes.h>
+#include <geometry/centitytypes.h>
 
 FittingCylinder::FittingCylinder() {
     cylinderCloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
@@ -171,7 +171,7 @@ bool FittingCylinder::isPointInCylinder(const pcl::PointXYZRGB& point){
     double distance = cross_product.norm() / normal.norm();  // 点到轴线的垂直距离
 
     // 判断点是否在圆柱表面
-    return std::fabs(distance - r) <= radius;
+    return fabs(distance - r) <= radius;
 }
 
 void FittingCylinder::setRadius(double rad){
