@@ -1706,9 +1706,9 @@ void ToolWidget::onFindCone(){
     ConeConstructor constructor;
     CCone* newCone;
     CPosition center;
-    center.x=cone->getCenter()[0];
-    center.y=cone->getCenter()[1];
-    center.z=cone->getCenter()[2];
+    center.x=cone->getTopCenter()[0];
+    center.y=cone->getTopCenter()[1];
+    center.z=cone->getTopCenter()[2];
     QVector4D normal(cone->getNormal().x(),cone->getNormal().y(),cone->getNormal().z(),0);
     double angle=cone->getAngle();
     double height=cone->getHeight();
