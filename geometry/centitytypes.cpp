@@ -324,12 +324,14 @@ vtkSmartPointer<vtkActor> CCone::draw(){
     // 获取图形在参考坐标系下的坐标(预置时输入的)，并计算得到他在机械坐标系下的位置(全局坐标)
     CPosition pos(getVertex().x, getVertex().y, getVertex().z);
     QVector4D posVec = GetRefCoord()->m_mat * QVector4D(pos.x, pos.y, pos.z, 1);
-    CPosition globalPos(posVec.x(), posVec.y(), posVec.z());
+    QVector4D center=posVec-getAxis()*getHeight();
+    CPosition globalPos(center.x(), center.y(), center.z());
 
     // 创建圆锥源
     auto cone = vtkSmartPointer<vtkConeSource>::New();
+    cone->SetAngle(getRadian()*180/M_PI);
     cone->SetCenter(globalPos.x, globalPos.y, globalPos.z);
-    cone->SetRadius(getRadian());
+    cone->SetRadius(tan(getRadian()/2)*getHeight());
     cone->SetDirection(getAxis()[0], getAxis()[1], getAxis()[2]); // 设置轴向量
     cone->SetHeight(getHeight());
     cone->SetResolution(100);

@@ -1235,6 +1235,8 @@ void ToolWidget::onConstructLine(){
         addToList(newLine);
         createLine=true;
         positions.clear();
+        QVector4D pos(positions[0].x-positions[1].x,positions[0].y-positions[1].y,positions[0].z-positions[1].z,0);
+        pos.normalize();
     }
     else{
         auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
@@ -1647,20 +1649,20 @@ void ToolWidget::onFindCone(){
         return;
     }
     ConeConstructor constructor;
-    CCone* newSphere;
+    CCone* newCone;
     CPosition center;
-    center.x=cone->getTopCenter()[0];
-    center.y=cone->getTopCenter()[1];
-    center.z=cone->getTopCenter()[2];
+    center.x=cone->getCenter()[0];
+    center.y=cone->getCenter()[1];
+    center.z=cone->getCenter()[2];
     QVector4D normal(cone->getNormal().x(),cone->getNormal().y(),cone->getNormal().z(),0);
     double angle=cone->getAngle();
     double height=cone->getHeight();
-    newSphere=constructor.createCone(center,normal,height,height,angle);
-    if(newSphere==nullptr){
+    newCone=constructor.createCone(center,-normal,height,height,angle);
+    if(newCone==nullptr){
         qDebug()<<"拟合圆锥生成错误";
         return ;
     }
-    addToFindList(newSphere);
+    addToFindList(newCone);
 
     positions.clear();
     m_pMainWin->NotifySubscribe();
