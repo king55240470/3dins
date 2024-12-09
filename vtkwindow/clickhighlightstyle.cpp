@@ -60,7 +60,7 @@ void MouseInteractorHighlightActor::OnLeftButtonDown()
 // 重写右键按下事件，取消选中；双击则弹出菜单栏
 void MouseInteractorHighlightActor::OnRightButtonDown()
 {
-    vtkMenu->showTearOffMenu(); // 弹出菜单栏
+    // vtkMenu->showTearOffMenu(); // 弹出菜单栏
 
     // 获取鼠标点击的位置
     int* clickPos = this->GetInteractor()->GetEventPosition();

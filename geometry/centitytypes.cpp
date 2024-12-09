@@ -167,20 +167,21 @@ vtkSmartPointer<vtkActor> CCircle::draw(){
 vtkSmartPointer<vtkActor> CPlane::draw() {
     // 获取图形在参考坐标系下的坐标，并计算全局坐标
     CPosition pos(getCenter().x, getCenter().y, getCenter().z);
-    CPosition globalPos(pos.x, pos.y, pos.z);
+    QVector4D posVec = GetRefCoord()->m_mat * QVector4D(pos.x, pos.y, pos.z, 1);
+    CPosition globalPos(posVec.x(), posVec.y(), posVec.z());
 
     // 获取平面参数
     double halfL = getLength() / 2.0;
     double halfW = getWidth() / 2.0;
 
-    QVector4D normalVec = getNormal(); // 获取法向量
-    // 将法向量单位化
+    // 获取法向量并单位化
+    QVector4D normalVec = getNormal();
     double norm_length = sqrt(normalVec.x() * normalVec.x() +
                               normalVec.y() * normalVec.y() +
                               normalVec.z() * normalVec.z());
     QVector4D unitNormal = normalVec / norm_length;
 
-    // 获取向量方向
+    // 第一个向量是长边向量
     QVector3D firstPerpVec = dir_long_edge.toVector3D();
 
     // 验证 firstPerpVec 是否与 unitNormal 正交
@@ -244,7 +245,7 @@ vtkSmartPointer<vtkActor> CPlane::draw() {
     // 创建一个 vtkActor 来表示多边形
     vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
-    actor->GetProperty()->SetColor(0.7, 0.7, 0.7);
+    actor->GetProperty()->SetColor(0.5, 0.5, 0.5);
 
     return actor;
 }
@@ -339,12 +340,14 @@ vtkSmartPointer<vtkActor> CCone::draw(){
     // 获取图形在参考坐标系下的坐标(预置时输入的)，并计算得到他在机械坐标系下的位置(全局坐标)
     CPosition pos(getVertex().x, getVertex().y, getVertex().z);
     QVector4D posVec = GetRefCoord()->m_mat * QVector4D(pos.x, pos.y, pos.z, 1);
-    CPosition globalPos(posVec.x(), posVec.y(), posVec.z());
+    QVector4D center=posVec-getAxis()*(getHeight()/2.0);
+    CPosition globalPos(center.x(), center.y(), center.z());
 
     // 创建圆锥源
     auto cone = vtkSmartPointer<vtkConeSource>::New();
+    cone->SetAngle(getRadian()*180/M_PI);
     cone->SetCenter(globalPos.x, globalPos.y, globalPos.z);
-    cone->SetRadius(getRadian());
+    cone->SetRadius(tan(getRadian()/2)*getHeight());
     cone->SetDirection(getAxis()[0], getAxis()[1], getAxis()[2]); // 设置轴向量
     cone->SetHeight(getHeight());
     cone->SetResolution(100);
@@ -493,11 +496,6 @@ vtkSmartPointer<vtkActor> CDistance::pointToPlane()
     QVector4D posVec_begin = GetRefCoord()->m_mat * QVector4D(pos_begin.x, pos_begin.y, pos_begin.z, 1);
     CPosition glbPos_begin(posVec_begin.x(), posVec_begin.y(), posVec_begin.z());
 
-    // 取平面中心并转为全局坐标
-    CPosition plane_point = plane.getCenter();
-    QVector4D posVec_point = GetRefCoord()->m_mat * QVector4D(plane_point.x, plane_point.y, plane_point.z,1);
-    CPosition glbPos_point(posVec_point.x(), posVec_point.y(), posVec_point.z());
-
     // 计算点到平面的距离
     double distance = getdistanceplane();
 
@@ -506,7 +504,6 @@ vtkSmartPointer<vtkActor> CDistance::pointToPlane()
     projection.x = glbPos_begin.x - distance * plane_normal.x();
     projection.y = glbPos_begin.y - distance * plane_normal.y();
     projection.z = glbPos_begin.z - distance * plane_normal.z();
-    //Projection=projection;
 
     // 创建点集，并插入定义线的两个点
     auto points = vtkSmartPointer<vtkPoints>::New();
@@ -579,7 +576,6 @@ vtkSmartPointer<vtkActor> CDistance::pointToLine()
     double dotProduct = QVector3D::dotProduct(pointToLineVec, lineVec);
 
     // 计算垂足
-    // 垂足计算公式
     // p = p0 + v.w.w / |w|^2
     QVector3D projection = QVector3D(lineVec_begin) + dotProduct * lineVec;
     //Projection.x=projection.x();
