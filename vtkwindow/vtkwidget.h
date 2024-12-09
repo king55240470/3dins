@@ -84,7 +84,6 @@ public:
 
     void UpdateInfo();// 在notifsubscribey里更新信息
     void reDrawCentity();// 重新绘制基本图形和坐标轴
-    void reDrawCloud();// 重新绘制点云
 
     void createAxes();// 创建左下角坐标轴
 
@@ -94,7 +93,6 @@ public:
     void onFrontView(); // 正视
     void onIsometricView(); // 旋转立体
 
-    void showConvertedCloud();// 将点云转为vtk的顶点图形并显示
     void onCompare();// 比较两个点云
     void onAlign();    // 配准的函数
 

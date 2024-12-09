@@ -97,6 +97,7 @@ QDataStream& operator<<(QDataStream& out, const CEntityMgr& mgr) {
     //     entity->serialize(out);  // 调用对象的序列化方法
     // }
     // qDebug()<<"m_entityList.size and m_SelList.size"<<mgr.m_entityList.size()<<mgr.m_SelList.size();
+    CPointCloud::haveSaved=true;
     return out;
 }
 
@@ -136,6 +137,9 @@ QDataStream& operator>>(QDataStream& in, CEntityMgr& mgr) {
         case enCone:
             entity=new CCone();
             break;
+        case enCuboid:
+            entity=new CCuboid();
+            break;
         case enDistance:
             entity=new CDistance();
             break;
@@ -153,6 +157,8 @@ QDataStream& operator>>(QDataStream& in, CEntityMgr& mgr) {
             // mgr.Add(entity);
         }
     }
+
+    CPointCloud::haveOpened=true;
 
     // // 反序列化 m_SelList
     // in >> selListSize;

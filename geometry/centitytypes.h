@@ -11,6 +11,7 @@
 #include <pcl/common/distances.h>
 #include <vtkSmartPointer.h>
 #include <vtkActor.h>
+#include <QStandardItem>
 
 
 class CLine  : public CEntity
@@ -554,7 +555,7 @@ public:
     {
         return GetWorldPcsPos(center);
     }
-    QString getCEntityInfo() override;
+    QString getCEntityInfo() override;// 获取图形的信息，在浮动窗口显示
     vtkSmartPointer<vtkActor> draw() override;
 };
 
@@ -630,17 +631,14 @@ public:
     bool isHavePlane = false;
     bool isHaveLine = false;
     bool isHaveCircle = false;
+    bool isPlaneToPlane = false;
 
     // CDistance的draw()，这里要分别写几个显示不同的距离
     vtkSmartPointer<vtkActor> draw() override;
     vtkSmartPointer<vtkActor> pointToPlane();
     vtkSmartPointer<vtkActor> pointToLine();
     vtkSmartPointer<vtkActor> pointToCircle();
-
 };
-
-
-
 
 class CPointCloud : public CEntity
 {
@@ -653,22 +651,19 @@ public:
     int currentPointCloudId;
     bool isFileCloud = false; // 是否是文件生成的点云
     bool isComparsionCloud = false; //  是否是对比得到的点云
+    static bool haveSaved;
+    static bool haveOpened;
 
     QDataStream& serialize(QDataStream& out) const override {
         CEntity::serialize(out);  // 先序列化基类部分
         out <<m_pt << pointCloudCount<< currentPointCloudId;
         out <<isFileCloud  <<isComparsionCloud ;
 
-        //     out << static_cast<quint32>(m_pointCloud.size());
-        //     qDebug()<<static_cast<quint32>(m_pointCloud.size());
-        //     // 保存每个点的 XYZRGB 信息
-        //     for (const auto& point : m_pointCloud.points) {
-        //         out << point.x << point.y << point.z;
-        //         out << point.r << point.g << point.b;
-        //     }
-
-        // qDebug()<<static_cast<quint32>(m_pointCloud.size());
-
+        if(!haveSaved){
+            std::string file_path = "D:/output_" + std::to_string(currentPointCloudId) + ".ply";
+            out<< QString::fromStdString(file_path);
+            pcl::io::savePLYFile(file_path, m_pointCloud);
+        }
         return out;
     }
 
@@ -677,18 +672,12 @@ public:
         in >>m_pt >> pointCloudCount >> currentPointCloudId;
         in>>isFileCloud  >>isComparsionCloud ;
 
-        // quint32 size;
-        // in >> size;
-        // qDebug()<<size;
-        // m_pointCloud.resize(size);
-
-        // // 读取每个点的 XYZRGB 信息
-        // for (auto& point : m_pointCloud.points) {
-        //     in >> point.x >> point.y >> point.z;
-        //     in >> point.r >> point.g >> point.b;
-        // }
-
-        // qDebug()<<size;
+        if(!haveOpened){
+            QString path;
+            in>> path;
+            std::string file_path=path.toStdString();
+            pcl::io::loadPLYFile<pcl::PointXYZRGB>(file_path, m_pointCloud);
+        }
 
         return in;
     }
