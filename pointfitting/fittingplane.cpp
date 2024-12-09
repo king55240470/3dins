@@ -134,7 +134,7 @@ bool FittingPlane::isPointInPlane(const pcl::PointXYZRGB& point){
                coefficients->values[1] * point.y +
                coefficients->values[2] * point.z +
                coefficients->values[3];
-    return std::abs(d) <= radius*0.1;
+    return fabs(d) <= radius*0.1;
 }
 
 void FittingPlane::setRadius(double rad){

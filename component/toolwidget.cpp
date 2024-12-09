@@ -1289,6 +1289,8 @@ void ToolWidget::onConstructLine(){
         addToList(newLine);
         createLine=true;
         positions.clear();
+        QVector4D pos(positions[0].x-positions[1].x,positions[0].y-positions[1].y,positions[0].z-positions[1].z,0);
+        pos.normalize();
     }
     else{
         auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
@@ -1642,31 +1644,41 @@ void ToolWidget::onFindCone(){
     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
     QVector<CPointCloud*> pointClouds;
 
-    for(int i=0;i<entityList.size();i++){
-        CEntity* entity=entityList[i];
-        if(!entity->IsSelected())continue;
-        if(entity->GetUniqueType()==enPointCloud){
-            CPointCloud* pointCloud=(CPointCloud*)entity;
-            pointClouds.append(pointCloud);
-        }
-    }
-    if(pointClouds.size()<1){
-        WrongWidget("选中的点云数目为0");
-        return ;
-    }else if(pointClouds.size()>1){
-        WrongWidget("选中的点云数目大于1");
-        return ;
-    }
     //读取选中的点
     QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenActorAxes();
-
     pcl::PointXYZRGB  point;
     if(positions.size()==0)return ;
-    point.x=positions[0].x;
-    point.y=positions[0].y;
-    point.z=positions[0].z;
+    point.x=positions.last().x;
+    point.y=positions.last().y;
+    point.z=positions.last().z;
+
+    // 获取拟合用的点云指针
     auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
-     m_pMainWin->getPWinSetDataWidget()->setConeData(point,pointClouds[0]->m_pointCloud.makeShared());
+
+    // 如果没有从窗口里选中点云，则从列表中获取，列表中也没有选中则报异常
+    if(cloudptr==nullptr){
+        for(int i=0;i<entityList.size();i++){
+            CEntity* entity=entityList[i];
+            if(!entity->IsSelected())continue;
+            if(entity->GetUniqueType()==enPointCloud){
+                CPointCloud* pointCloud=(CPointCloud*)entity;
+                pointClouds.append(pointCloud);
+            }
+        }
+        if(pointClouds.size()<1){
+            WrongWidget("选中的点云数目为0");
+            return ;
+        }else if(pointClouds.size()>1){
+            WrongWidget("选中的点云数目大于1");
+            return ;
+        }
+        else
+            m_pMainWin->getPWinSetDataWidget()->setConeData(point,pointClouds[0]->m_pointCloud.makeShared());
+        return ;
+    }
+    m_pMainWin->getPWinSetDataWidget()->setConeData(point, cloudptr);
+
+
     auto coneCloud=m_pMainWin->getPWinSetDataWidget()->getConeCloud();
     if(coneCloud==nullptr){
         qDebug()<<"拟合圆锥生成错误";
@@ -1677,7 +1689,7 @@ void ToolWidget::onFindCone(){
         return;
     }
     ConeConstructor constructor;
-    CCone* newSphere;
+    CCone* newCone;
     CPosition center;
     center.x=cone->getTopCenter()[0];
     center.y=cone->getTopCenter()[1];
@@ -1685,12 +1697,12 @@ void ToolWidget::onFindCone(){
     QVector4D normal(cone->getNormal().x(),cone->getNormal().y(),cone->getNormal().z(),0);
     double angle=cone->getAngle();
     double height=cone->getHeight();
-    newSphere=constructor.createCone(center,normal,height,height,angle);
-    if(newSphere==nullptr){
+    newCone=constructor.createCone(center,-normal,height,height,angle);
+    if(newCone==nullptr){
         qDebug()<<"拟合圆锥生成错误";
         return ;
     }
-    addToFindList(newSphere);
+    addToFindList(newCone);
 
     positions.clear();
     m_pMainWin->NotifySubscribe();
@@ -1700,37 +1712,40 @@ void ToolWidget::onFindSphere(){
     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
     QVector<CPointCloud*> pointClouds;
 
-    for(int i=0;i<entityList.size();i++){
-        CEntity* entity=entityList[i];
-        if(!entity->IsSelected())continue;
-        if(entity->GetUniqueType()==enPointCloud){
-            CPointCloud* pointCloud=(CPointCloud*)entity;
-            pointClouds.append(pointCloud);
-        }
-    }
-    if(pointClouds.size()<1){
-        WrongWidget("选中的点云数目为0");
-        return ;
-    }else if(pointClouds.size()>1){
-        WrongWidget("选中的点云数目大于1");
-        return ;
-    }
     //读取选中的点
     QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenActorAxes();
-
     pcl::PointXYZRGB  point;
     if(positions.size()==0)return ;
-    point.x=positions[0].x;
-    point.y=positions[0].y;
-    point.z=positions[0].z;
+    point.x=positions.last().x;
+    point.y=positions.last().y;
+    point.z=positions.last().z;
+
+    // 获取拟合用的点云指针
     auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
 
-    // if(cloudptr==nullptr){
-    //     WrongWidget("点云指针为空");
-    //     return ;
-    // }
-    //m_pMainWin->getPWinSetDataWidget()->setPlaneData(point,cloudptr);
-    m_pMainWin->getPWinSetDataWidget()->setSphereData(point,pointClouds[0]->m_pointCloud.makeShared());
+    // 如果没有从窗口里选中点云，则从列表中获取，列表中也没有选中则报异常
+    if(cloudptr==nullptr){
+        for(int i=0;i<entityList.size();i++){
+            CEntity* entity=entityList[i];
+            if(!entity->IsSelected())continue;
+            if(entity->GetUniqueType()==enPointCloud){
+                CPointCloud* pointCloud=(CPointCloud*)entity;
+                pointClouds.append(pointCloud);
+            }
+        }
+        if(pointClouds.size()<1){
+            WrongWidget("选中的点云数目为0");
+            return ;
+        }else if(pointClouds.size()>1){
+            WrongWidget("选中的点云数目大于1");
+            return ;
+        }
+        else
+            m_pMainWin->getPWinSetDataWidget()->setConeData(point,pointClouds[0]->m_pointCloud.makeShared());
+        return ;
+    }
+    m_pMainWin->getPWinSetDataWidget()->setConeData(point, cloudptr);
+
     auto sphereCloud=m_pMainWin->getPWinSetDataWidget()->getSphereCloud();
     if(sphereCloud==nullptr){
         qDebug()<<"拟合球生成错误";
