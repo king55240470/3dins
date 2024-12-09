@@ -3,6 +3,7 @@
 #include <QVector4D>
 #include <QTimer>
 #include "manager/cpcsmgr.h"
+#include <QMessageBox>
 
 DataWidget::DataWidget(QWidget *parent)
     : QWidget{parent}
@@ -27,7 +28,7 @@ DataWidget::DataWidget(QWidget *parent)
     table=new QTableWidget();
     table->setColumnCount(3);
     table->setHorizontalHeaderLabels(QStringList()<<"数据项"<<"量测值"<<"状态");
-    table->setRowCount(6);
+    table->setRowCount(8);
     table->verticalHeader()->setHidden(true);//隐藏列号
     table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);//使table内部表格随边框的大小而改变
 
@@ -43,6 +44,8 @@ void DataWidget::getobjindex(int objindex)
 
 void DataWidget::updateinfo()
 {
+    table->blockSignals(true); // 暂停信号
+
     table->clear();
     if(index==-1){
         table->clear();
@@ -99,6 +102,7 @@ void DataWidget::updateinfo()
 
                 //当切换扩展坐标系时检测到变化
                 connect(box, &QComboBox::currentIndexChanged, this, [=](){
+                    table->blockSignals(true); // 暂停信号
                     // QString currentText =box->currentText();
                     // qDebug() << "当前选中的文本是: " << currentText;
                     if(box->currentText()=="机械坐标系"){
@@ -168,6 +172,7 @@ void DataWidget::updateinfo()
 
                 //当切换扩展坐标系时检测到变化
                 connect(box, &QComboBox::currentIndexChanged, this, [=](){
+                    table->blockSignals(true); // 暂停信号
                     // QString currentText =box->currentText();
                     // qDebug() << "当前选中的文本是: " << currentText;
                     if(box->currentText()=="机械坐标系"){
@@ -250,6 +255,7 @@ void DataWidget::updateinfo()
 
                 //当切换扩展坐标系时检测到变化
                 connect(box, &QComboBox::currentIndexChanged, this, [=](){
+                    table->blockSignals(true); // 暂停信号
                     // QString currentText =box->currentText();
                     // qDebug() << "当前选中的文本是: " << currentText;
                     if(box->currentText()=="机械坐标系"){
@@ -317,6 +323,7 @@ void DataWidget::updateinfo()
 
                 //当切换扩展坐标系时检测到变化
                 connect(box, &QComboBox::currentIndexChanged, this, [=](){
+                    table->blockSignals(true); // 暂停信号
                     // QString currentText =box->currentText();
                     // qDebug() << "当前选中的文本是: " << currentText;
                     if(box->currentText()=="机械坐标系"){
@@ -371,6 +378,18 @@ void DataWidget::updateinfo()
                 table->setItem(4, 0, new QTableWidgetItem("Width"));
                 table->setItem(4, 1, new QTableWidgetItem(QString::number(plane->getWidth(),'f',6)));
                 table->setItem(4, 2, new QTableWidgetItem(""));
+
+                table->setItem(5, 0, new QTableWidgetItem("NormalVector_x"));
+                table->setItem(5, 1, new QTableWidgetItem(QString::number(plane->getNormal().x(),'f',6)));
+                table->setItem(5, 2, new QTableWidgetItem(""));
+
+                table->setItem(6, 0, new QTableWidgetItem("NormalVector_y"));
+                table->setItem(6, 1, new QTableWidgetItem(QString::number(plane->getNormal().y(),'f',6)));
+                table->setItem(6, 2, new QTableWidgetItem(""));
+
+                table->setItem(7, 0, new QTableWidgetItem("NormalVector_z"));
+                table->setItem(7, 1, new QTableWidgetItem(QString::number(plane->getNormal().z(),'f',6)));
+                table->setItem(7, 2, new QTableWidgetItem(""));
             }
         }
         if(obj->GetUniqueType()==enSphere){
@@ -388,6 +407,7 @@ void DataWidget::updateinfo()
 
                 //当切换扩展坐标系时检测到变化
                 connect(box, &QComboBox::currentIndexChanged, this, [=](){
+                    table->blockSignals(true); // 暂停信号
                     // QString currentText =box->currentText();
                     // qDebug() << "当前选中的文本是: " << currentText;
                     if(box->currentText()=="机械坐标系"){
@@ -455,6 +475,7 @@ void DataWidget::updateinfo()
 
                 //当切换扩展坐标系时检测到变化
                 connect(box, &QComboBox::currentIndexChanged, this, [=](){
+                    table->blockSignals(true); // 暂停信号
                     // QString currentText =box->currentText();
                     // qDebug() << "当前选中的文本是: " << currentText;
                     if(box->currentText()=="机械坐标系"){
@@ -526,6 +547,7 @@ void DataWidget::updateinfo()
 
                 //当切换扩展坐标系时检测到变化
                 connect(box, &QComboBox::currentIndexChanged, this, [=](){
+                    table->blockSignals(true); // 暂停信号
                     // QString currentText =box->currentText();
                     // qDebug() << "当前选中的文本是: " << currentText;
                     if(box->currentText()=="机械坐标系"){
@@ -592,6 +614,7 @@ void DataWidget::updateinfo()
 
                 //当切换扩展坐标系时检测到变化
                 connect(box, &QComboBox::currentIndexChanged, this, [=](){
+                    table->blockSignals(true); // 暂停信号
                     // QString currentText =box->currentText();
                     // qDebug() << "当前选中的文本是: " << currentText;
                     if(box->currentText()=="机械坐标系"){
@@ -698,4 +721,636 @@ void DataWidget::updateinfo()
                 }
             }
         }
+
+        dataModify();
+
+}
+
+// 创建坐标系修改数据，切换extend坐标系后无法修改（blockSignals）
+void DataWidget::dataModify(){
+    disconnect(table, &QTableWidget::cellChanged, nullptr, nullptr); //断开之前的信号槽连接
+
+    table->blockSignals(false); // 恢复信号
+    CObject* obj=m_pMainWin->getObjectListMgr()->getObjectList()[index];
+
+    connect(table, &QTableWidget::cellChanged, this, [=](int row, int column) {
+        // 检查是否是坐标列被修改
+        if (column == 1) {
+            bool ok;
+            double newValue = table->item(row, column)->text().toDouble(&ok); // 获取用户输入的值
+            if (!ok) {
+                // 如果输入无效，恢复旧值并返回
+                QMessageBox::warning(nullptr, "Invalid Input", "Please enter a valid number.");
+                return;
+            }
+
+            // 根据 obj 类型更新对应的坐标值
+            if (obj->GetUniqueType() == enPoint) {
+                CPoint* point = dynamic_cast<CPoint*>(obj);
+                // 更新点坐标
+                switch (row) {
+                case 0:{
+                    CPosition pTemp={newValue,point->m_pt.y,point->m_pt.z};
+
+                    if(!(box->currentText()=="机械坐标系")){
+                        for(CObject *obj:m_pMainWin->m_ObjectListMgr->getObjectList()){
+                            if(box->currentText()==obj->GetObjectCName()){
+                                CPcsNode* node=dynamic_cast<CPcsNode*>(obj);
+                                //转换为全局坐标
+                                QVector4D vec=node->getPcs()->m_mat*QVector4D(newValue,point->m_pt.y,point->m_pt.z,1);
+                                CPosition glo(vec.x(),vec.y(),vec.z());
+                                pTemp=glo;
+                                break;
+                            }
+                        }
+                    }
+                    CPosition result=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(pTemp,point->m_pRefCoord);
+                    point->m_pt=result;
+                    break;
+                }
+                case 1:{
+                    CPosition pTemp={point->m_pt.x,newValue,point->m_pt.z};
+
+                    if(!(box->currentText()=="机械坐标系")){
+                        for(CObject *obj:m_pMainWin->m_ObjectListMgr->getObjectList()){
+                            if(box->currentText()==obj->GetObjectCName()){
+                                CPcsNode* node=dynamic_cast<CPcsNode*>(obj);
+                                //转换为全局坐标
+                                QVector4D vec=node->getPcs()->m_mat*QVector4D(point->m_pt.x,newValue,point->m_pt.z,1);
+                                CPosition glo(vec.x(),vec.y(),vec.z());
+                                pTemp=glo;
+                                break;
+                            }
+                        }
+                    }
+                    CPosition result=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(pTemp,point->m_pRefCoord);
+                    point->m_pt=result;
+                    break;
+                }
+                case 2:{
+                    CPosition pTemp={point->m_pt.x,point->m_pt.y,newValue};
+
+                    if(!(box->currentText()=="机械坐标系")){
+                        for(CObject *obj:m_pMainWin->m_ObjectListMgr->getObjectList()){
+                            if(box->currentText()==obj->GetObjectCName()){
+                                CPcsNode* node=dynamic_cast<CPcsNode*>(obj);
+                                //转换为全局坐标
+                                QVector4D vec=node->getPcs()->m_mat*QVector4D(point->m_pt.x,point->m_pt.y,newValue,1);
+                                CPosition glo(vec.x(),vec.y(),vec.z());
+                                pTemp=glo;
+                                break;
+                            }
+                        }
+                    }
+                    CPosition result=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(pTemp,point->m_pRefCoord);
+                    point->m_pt=result;
+                    break;
+                }
+                }
+            }
+
+            else if (obj->GetUniqueType() == enLine) {
+                CLine* line = dynamic_cast<CLine*>(obj);
+                // 更新线的坐标
+                switch (row) {
+                case 0:{
+                    CPosition pTemp={newValue,line->getPosition1().y,line->getPosition1().z};
+
+                    if(!(box->currentText()=="机械坐标系")){
+                        for(CObject *obj:m_pMainWin->m_ObjectListMgr->getObjectList()){
+                            if(box->currentText()==obj->GetObjectCName()){
+                                CPcsNode* node=dynamic_cast<CPcsNode*>(obj);
+                                //转换为全局坐标
+                                QVector4D vec=node->getPcs()->m_mat*QVector4D(newValue,line->getPosition1().y,line->getPosition1().z,1);
+                                CPosition glo(vec.x(),vec.y(),vec.z());
+                                pTemp=glo;
+                                break;
+                            }
+                        }
+                    }
+                    CPosition result=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(pTemp,line->m_pRefCoord);
+                    line->begin=result;
+                    break;
+                }
+                case 1:{
+                    CPosition pTemp={line->getPosition1().x,newValue,line->getPosition1().z};
+
+                    if(!(box->currentText()=="机械坐标系")){
+                        for(CObject *obj:m_pMainWin->m_ObjectListMgr->getObjectList()){
+                            if(box->currentText()==obj->GetObjectCName()){
+                                CPcsNode* node=dynamic_cast<CPcsNode*>(obj);
+                                //转换为全局坐标
+                                QVector4D vec=node->getPcs()->m_mat*QVector4D(line->getPosition1().x,newValue,line->getPosition1().z,1);
+                                CPosition glo(vec.x(),vec.y(),vec.z());
+                                pTemp=glo;
+                                break;
+                            }
+                        }
+                    }
+                    CPosition result=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(pTemp,line->m_pRefCoord);
+                    line->begin=result;
+                    break;
+                }
+                case 2:{
+                    CPosition pTemp={line->getPosition1().x,line->getPosition1().y,newValue};
+
+                    if(!(box->currentText()=="机械坐标系")){
+                        for(CObject *obj:m_pMainWin->m_ObjectListMgr->getObjectList()){
+                            if(box->currentText()==obj->GetObjectCName()){
+                                CPcsNode* node=dynamic_cast<CPcsNode*>(obj);
+                                //转换为全局坐标
+                                QVector4D vec=node->getPcs()->m_mat*QVector4D(line->getPosition1().x,line->getPosition1().y,newValue,1);
+                                CPosition glo(vec.x(),vec.y(),vec.z());
+                                pTemp=glo;
+                                break;
+                            }
+                        }
+                    }
+                    CPosition result=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(pTemp,line->m_pRefCoord);
+                    line->begin=result;
+                    break;
+                }
+                case 3:{
+                    CPosition pTemp={newValue,line->getPosition2().y,line->getPosition2().z};
+
+                    if(!(box->currentText()=="机械坐标系")){
+                        for(CObject *obj:m_pMainWin->m_ObjectListMgr->getObjectList()){
+                            if(box->currentText()==obj->GetObjectCName()){
+                                CPcsNode* node=dynamic_cast<CPcsNode*>(obj);
+                                //转换为全局坐标
+                                QVector4D vec=node->getPcs()->m_mat*QVector4D(newValue,line->getPosition2().y,line->getPosition2().z,1);
+                                CPosition glo(vec.x(),vec.y(),vec.z());
+                                pTemp=glo;
+                                break;
+                            }
+                        }
+                    }
+                    CPosition result=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(pTemp,line->m_pRefCoord);
+                    line->end=result;
+                    break;
+                }
+                case 4:{
+                    CPosition pTemp={line->getPosition2().x,newValue,line->getPosition2().z};
+
+                    if(!(box->currentText()=="机械坐标系")){
+                        for(CObject *obj:m_pMainWin->m_ObjectListMgr->getObjectList()){
+                            if(box->currentText()==obj->GetObjectCName()){
+                                CPcsNode* node=dynamic_cast<CPcsNode*>(obj);
+                                //转换为全局坐标
+                                QVector4D vec=node->getPcs()->m_mat*QVector4D(line->getPosition2().x,newValue,line->getPosition2().z,1);
+                                CPosition glo(vec.x(),vec.y(),vec.z());
+                                pTemp=glo;
+                                break;
+                            }
+                        }
+                    }
+                    CPosition result=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(pTemp,line->m_pRefCoord);
+                    line->end=result;
+                    break;
+                }
+                case 5:{
+                    CPosition pTemp={line->getPosition2().x,line->getPosition2().y,newValue};
+
+                    if(!(box->currentText()=="机械坐标系")){
+                        for(CObject *obj:m_pMainWin->m_ObjectListMgr->getObjectList()){
+                            if(box->currentText()==obj->GetObjectCName()){
+                                CPcsNode* node=dynamic_cast<CPcsNode*>(obj);
+                                //转换为全局坐标
+                                QVector4D vec=node->getPcs()->m_mat*QVector4D(line->getPosition2().x,line->getPosition2().y,newValue,1);
+                                CPosition glo(vec.x(),vec.y(),vec.z());
+                                pTemp=glo;
+                                break;
+                            }
+                        }
+                    }
+                    CPosition result=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(pTemp,line->m_pRefCoord);
+                    line->end=result;
+                    break;
+                }
+                }
+            }
+
+            else if (obj->GetUniqueType() == enCircle) {
+                CCircle* circle = dynamic_cast<CCircle*>(obj);
+                // 更新圆的坐标或直径
+                switch (row) {
+                case 0:{
+                    CPosition pTemp={newValue,circle->m_pt.y,circle->m_pt.z};
+
+                    if(!(box->currentText()=="机械坐标系")){
+                        for(CObject *obj:m_pMainWin->m_ObjectListMgr->getObjectList()){
+                            if(box->currentText()==obj->GetObjectCName()){
+                                CPcsNode* node=dynamic_cast<CPcsNode*>(obj);
+                                //转换为全局坐标
+                                QVector4D vec=node->getPcs()->m_mat*QVector4D(newValue,circle->m_pt.y,circle->m_pt.z,1);
+                                CPosition glo(vec.x(),vec.y(),vec.z());
+                                pTemp=glo;
+                                break;
+                            }
+                        }
+                    }
+                    CPosition result=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(pTemp,circle->m_pRefCoord);
+                    circle->m_pt=result;
+                    break;
+                }
+                case 1:{
+                    CPosition pTemp={circle->m_pt.x,newValue,circle->m_pt.z};
+
+                    if(!(box->currentText()=="机械坐标系")){
+                        for(CObject *obj:m_pMainWin->m_ObjectListMgr->getObjectList()){
+                            if(box->currentText()==obj->GetObjectCName()){
+                                CPcsNode* node=dynamic_cast<CPcsNode*>(obj);
+                                //转换为全局坐标
+                                QVector4D vec=node->getPcs()->m_mat*QVector4D(circle->m_pt.x,newValue,circle->m_pt.z,1);
+                                CPosition glo(vec.x(),vec.y(),vec.z());
+                                pTemp=glo;
+                                break;
+                            }
+                        }
+                    }
+                    CPosition result=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(pTemp,circle->m_pRefCoord);
+                    circle->m_pt=result;
+                    break;
+                }
+                case 2:{
+                    CPosition pTemp={circle->m_pt.x,circle->m_pt.y,newValue};
+
+                    if(!(box->currentText()=="机械坐标系")){
+                        for(CObject *obj:m_pMainWin->m_ObjectListMgr->getObjectList()){
+                            if(box->currentText()==obj->GetObjectCName()){
+                                CPcsNode* node=dynamic_cast<CPcsNode*>(obj);
+                                //转换为全局坐标
+                                QVector4D vec=node->getPcs()->m_mat*QVector4D(circle->m_pt.x,circle->m_pt.y,newValue,1);
+                                CPosition glo(vec.x(),vec.y(),vec.z());
+                                pTemp=glo;
+                                break;
+                            }
+                        }
+                    }
+                    CPosition result=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(pTemp,circle->m_pRefCoord);
+                    circle->m_pt=result;
+                    break;
+                }
+                case 3:{
+                    circle->m_d=newValue;
+                    break;
+                }
+                }
+            }
+
+            else if(obj->GetUniqueType() == enPlane){
+                CPlane* plane = dynamic_cast<CPlane*>(obj);
+                switch(row){
+                case 0:{
+                    CPosition pTemp={newValue,plane->getCenter().y,plane->getCenter().z};
+                    if(!(box->currentText()=="机械坐标系")){
+                        for(CObject *obj:m_pMainWin->m_ObjectListMgr->getObjectList()){
+                            if(box->currentText()==obj->GetObjectCName()){
+                                CPcsNode* node=dynamic_cast<CPcsNode*>(obj);
+                                //转换为全局坐标
+                                QVector4D vec=node->getPcs()->m_mat*QVector4D(newValue,plane->getCenter().y,plane->getCenter().z,1);
+                                CPosition glo(vec.x(),vec.y(),vec.z());
+                                pTemp=glo;
+                                break;
+                            }
+                        }
+                    }
+                    CPosition result=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(pTemp,plane->m_pRefCoord);
+                    plane->center=result;
+                    break;
+                }
+                case 1:{
+                    CPosition pTemp={plane->getCenter().x,newValue,plane->getCenter().z};
+                    if(!(box->currentText()=="机械坐标系")){
+                        for(CObject *obj:m_pMainWin->m_ObjectListMgr->getObjectList()){
+                            if(box->currentText()==obj->GetObjectCName()){
+                                CPcsNode* node=dynamic_cast<CPcsNode*>(obj);
+                                //转换为全局坐标
+                                QVector4D vec=node->getPcs()->m_mat*QVector4D(plane->getCenter().x,newValue,plane->getCenter().z,1);
+                                CPosition glo(vec.x(),vec.y(),vec.z());
+                                pTemp=glo;
+                                break;
+                            }
+                        }
+                    }
+                    CPosition result=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(pTemp,plane->m_pRefCoord);
+                    plane->center=result;
+                    break;
+                }
+                case 2:{
+                    CPosition pTemp={plane->getCenter().x,plane->getCenter().y,newValue};
+                    if(!(box->currentText()=="机械坐标系")){
+                        for(CObject *obj:m_pMainWin->m_ObjectListMgr->getObjectList()){
+                            if(box->currentText()==obj->GetObjectCName()){
+                                CPcsNode* node=dynamic_cast<CPcsNode*>(obj);
+                                //转换为全局坐标
+                                QVector4D vec=node->getPcs()->m_mat*QVector4D(plane->getCenter().x,plane->getCenter().y,newValue,1);
+                                CPosition glo(vec.x(),vec.y(),vec.z());
+                                pTemp=glo;
+                                break;
+                            }
+                        }
+                    }
+                    CPosition result=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(pTemp,plane->m_pRefCoord);
+                    plane->center=result;
+                    break;
+                }
+                case 3:{
+                    plane->length=newValue;
+                    break;
+                }
+                case 4:{
+                    plane->width=newValue;
+                    break;
+                }
+                case 5:{
+                    plane->normal.setX(newValue);
+                    break;
+                }
+                case 6:{
+                    plane->normal.setY(newValue);
+                    break;
+                }
+                case 7:{
+                    plane->normal.setZ(newValue);
+                    break;
+                }
+                }
+            }
+
+            else if(obj->GetUniqueType()==enSphere){
+                CSphere* sphere = dynamic_cast<CSphere*>(obj);
+                switch(row){
+                case 0:{
+                    CPosition pTemp={newValue,sphere->getCenter().y,sphere->getCenter().z};
+                    if(!(box->currentText()=="机械坐标系")){
+                        for(CObject *obj:m_pMainWin->m_ObjectListMgr->getObjectList()){
+                            if(box->currentText()==obj->GetObjectCName()){
+                                CPcsNode* node=dynamic_cast<CPcsNode*>(obj);
+                                //转换为全局坐标
+                                QVector4D vec=node->getPcs()->m_mat*QVector4D(newValue,sphere->getCenter().y,sphere->getCenter().z,1);
+                                CPosition glo(vec.x(),vec.y(),vec.z());
+                                pTemp=glo;
+                                break;
+                            }
+                        }
+                    }
+                    CPosition result=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(pTemp,sphere->m_pRefCoord);
+                    sphere->center=result;
+                    break;
+                }
+                case 1:{
+                    CPosition pTemp={sphere->getCenter().x,newValue,sphere->getCenter().z};
+                    if(!(box->currentText()=="机械坐标系")){
+                        for(CObject *obj:m_pMainWin->m_ObjectListMgr->getObjectList()){
+                            if(box->currentText()==obj->GetObjectCName()){
+                                CPcsNode* node=dynamic_cast<CPcsNode*>(obj);
+                                //转换为全局坐标
+                                QVector4D vec=node->getPcs()->m_mat*QVector4D(sphere->getCenter().x,newValue,sphere->getCenter().z,1);
+                                CPosition glo(vec.x(),vec.y(),vec.z());
+                                pTemp=glo;
+                                break;
+                            }
+                        }
+                    }
+                    CPosition result=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(pTemp,sphere->m_pRefCoord);
+                    sphere->center=result;
+                    break;
+                }
+                case 2:{
+                    CPosition pTemp={sphere->getCenter().x,sphere->getCenter().y,newValue};
+                    if(!(box->currentText()=="机械坐标系")){
+                        for(CObject *obj:m_pMainWin->m_ObjectListMgr->getObjectList()){
+                            if(box->currentText()==obj->GetObjectCName()){
+                                CPcsNode* node=dynamic_cast<CPcsNode*>(obj);
+                                //转换为全局坐标
+                                QVector4D vec=node->getPcs()->m_mat*QVector4D(sphere->getCenter().x,sphere->getCenter().y,newValue,1);
+                                CPosition glo(vec.x(),vec.y(),vec.z());
+                                pTemp=glo;
+                                break;
+                            }
+                        }
+                    }
+                    CPosition result=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(pTemp,sphere->m_pRefCoord);
+                    sphere->center=result;
+                    break;
+                }
+                case 3:{
+                    sphere->diameter=newValue;
+                    break;
+                }
+                }
+            }
+
+            else if(obj->GetUniqueType()==enCylinder){
+                CCylinder* cylinder = dynamic_cast<CCylinder*>(obj);
+                switch(row){
+                case 0:{
+                    CPosition pTemp={newValue,cylinder->getBtm_center().y,cylinder->getBtm_center().z};
+                    if(!(box->currentText()=="机械坐标系")){
+                        for(CObject *obj:m_pMainWin->m_ObjectListMgr->getObjectList()){
+                            if(box->currentText()==obj->GetObjectCName()){
+                                CPcsNode* node=dynamic_cast<CPcsNode*>(obj);
+                                //转换为全局坐标
+                                QVector4D vec=node->getPcs()->m_mat*QVector4D(newValue,cylinder->getBtm_center().y,cylinder->getBtm_center().z,1);
+                                CPosition glo(vec.x(),vec.y(),vec.z());
+                                pTemp=glo;
+                                break;
+                            }
+                        }
+                    }
+                    CPosition result=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(pTemp,cylinder->m_pRefCoord);
+                    cylinder->btm_center=result;
+                    break;
+                }
+                case 1:{
+                    CPosition pTemp={cylinder->getBtm_center().x,newValue,cylinder->getBtm_center().z};
+                    if(!(box->currentText()=="机械坐标系")){
+                        for(CObject *obj:m_pMainWin->m_ObjectListMgr->getObjectList()){
+                            if(box->currentText()==obj->GetObjectCName()){
+                                CPcsNode* node=dynamic_cast<CPcsNode*>(obj);
+                                //转换为全局坐标
+                                QVector4D vec=node->getPcs()->m_mat*QVector4D(cylinder->getBtm_center().x,newValue,cylinder->getBtm_center().z,1);
+                                CPosition glo(vec.x(),vec.y(),vec.z());
+                                pTemp=glo;
+                                break;
+                            }
+                        }
+                    }
+                    CPosition result=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(pTemp,cylinder->m_pRefCoord);
+                    cylinder->btm_center=result;
+                    break;
+                }
+                case 2:{
+                    CPosition pTemp={cylinder->getBtm_center().x,cylinder->getBtm_center().y,newValue};
+                    if(!(box->currentText()=="机械坐标系")){
+                        for(CObject *obj:m_pMainWin->m_ObjectListMgr->getObjectList()){
+                            if(box->currentText()==obj->GetObjectCName()){
+                                CPcsNode* node=dynamic_cast<CPcsNode*>(obj);
+                                //转换为全局坐标
+                                QVector4D vec=node->getPcs()->m_mat*QVector4D(cylinder->getBtm_center().x,cylinder->getBtm_center().y,newValue,1);
+                                CPosition glo(vec.x(),vec.y(),vec.z());
+                                pTemp=glo;
+                                break;
+                            }
+                        }
+                    }
+                    CPosition result=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(pTemp,cylinder->m_pRefCoord);
+                    cylinder->btm_center=result;
+                    break;
+                }
+                case 3:{
+                    cylinder->diameter=newValue;
+                    break;
+                }
+                case 4:{
+                    cylinder->height=newValue;
+                }
+                }
+            }
+
+            else if(obj->GetUniqueType()==enCone){
+                CCone* cone = dynamic_cast<CCone*>(obj);
+                switch(row){
+                case 0:{
+                    CPosition pTemp={newValue,cone->GetObjectCenterLocalPoint().y,cone->GetObjectCenterLocalPoint().z};
+                    if(!(box->currentText()=="机械坐标系")){
+                        for(CObject *obj:m_pMainWin->m_ObjectListMgr->getObjectList()){
+                            if(box->currentText()==obj->GetObjectCName()){
+                                CPcsNode* node=dynamic_cast<CPcsNode*>(obj);
+                                //转换为全局坐标
+                                QVector4D vec=node->getPcs()->m_mat*QVector4D(newValue,cone->GetObjectCenterLocalPoint().y,cone->GetObjectCenterLocalPoint().z,1);
+                                CPosition glo(vec.x(),vec.y(),vec.z());
+                                pTemp=glo;
+                                break;
+                            }
+                        }
+                    }
+                    CPosition result=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(pTemp,cone->m_pRefCoord);
+                    cone->vertex=result;
+                    break;
+                }
+                case 1:{
+                    CPosition pTemp={cone->GetObjectCenterLocalPoint().x,newValue,cone->GetObjectCenterLocalPoint().z};
+                    if(!(box->currentText()=="机械坐标系")){
+                        for(CObject *obj:m_pMainWin->m_ObjectListMgr->getObjectList()){
+                            if(box->currentText()==obj->GetObjectCName()){
+                                CPcsNode* node=dynamic_cast<CPcsNode*>(obj);
+                                //转换为全局坐标
+                                QVector4D vec=node->getPcs()->m_mat*QVector4D(cone->GetObjectCenterLocalPoint().x,newValue,cone->GetObjectCenterLocalPoint().z,1);
+                                CPosition glo(vec.x(),vec.y(),vec.z());
+                                pTemp=glo;
+                                break;
+                            }
+                        }
+                    }
+                    CPosition result=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(pTemp,cone->m_pRefCoord);
+                    cone->vertex=result;
+                    break;
+                }
+                case 2:{
+                    CPosition pTemp={cone->GetObjectCenterLocalPoint().x,cone->GetObjectCenterLocalPoint().y,newValue};
+                    if(!(box->currentText()=="机械坐标系")){
+                        for(CObject *obj:m_pMainWin->m_ObjectListMgr->getObjectList()){
+                            if(box->currentText()==obj->GetObjectCName()){
+                                CPcsNode* node=dynamic_cast<CPcsNode*>(obj);
+                                //转换为全局坐标
+                                QVector4D vec=node->getPcs()->m_mat*QVector4D(cone->GetObjectCenterLocalPoint().x,cone->GetObjectCenterLocalPoint().y,newValue,1);
+                                CPosition glo(vec.x(),vec.y(),vec.z());
+                                pTemp=glo;
+                                break;
+                            }
+                        }
+                    }
+                    CPosition result=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(pTemp,cone->m_pRefCoord);
+                    cone->vertex=result;
+                    break;
+                }
+                case 3:{
+                    cone->height=newValue;
+                    break;
+                }
+                }
+            }
+
+            else if(obj->GetUniqueType()==enCuboid){
+                CCuboid* cuboid= dynamic_cast<CCuboid*>(obj);
+                switch(row){
+                case 0:{
+                    CPosition pTemp={newValue,cuboid->GetObjectCenterLocalPoint().y,cuboid->GetObjectCenterLocalPoint().z};
+                    if(!(box->currentText()=="机械坐标系")){
+                        for(CObject *obj:m_pMainWin->m_ObjectListMgr->getObjectList()){
+                            if(box->currentText()==obj->GetObjectCName()){
+                                CPcsNode* node=dynamic_cast<CPcsNode*>(obj);
+                                //转换为全局坐标
+                                QVector4D vec=node->getPcs()->m_mat*QVector4D(newValue,cuboid->GetObjectCenterLocalPoint().y,cuboid->GetObjectCenterLocalPoint().z,1);
+                                CPosition glo(vec.x(),vec.y(),vec.z());
+                                pTemp=glo;
+                                break;
+                            }
+                        }
+                    }
+                    CPosition result=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(pTemp,cuboid->m_pRefCoord);
+                    cuboid->center=result;
+                    break;
+                }
+                case 1:{
+                    CPosition pTemp={cuboid->GetObjectCenterLocalPoint().x,newValue,cuboid->GetObjectCenterLocalPoint().z};
+                    if(!(box->currentText()=="机械坐标系")){
+                        for(CObject *obj:m_pMainWin->m_ObjectListMgr->getObjectList()){
+                            if(box->currentText()==obj->GetObjectCName()){
+                                CPcsNode* node=dynamic_cast<CPcsNode*>(obj);
+                                //转换为全局坐标
+                                QVector4D vec=node->getPcs()->m_mat*QVector4D(cuboid->GetObjectCenterLocalPoint().x,newValue,cuboid->GetObjectCenterLocalPoint().z,1);
+                                CPosition glo(vec.x(),vec.y(),vec.z());
+                                pTemp=glo;
+                                break;
+                            }
+                        }
+                    }
+                    CPosition result=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(pTemp,cuboid->m_pRefCoord);
+                    cuboid->center=result;
+                    break;
+                }
+                case 2:{
+                    CPosition pTemp={cuboid->GetObjectCenterLocalPoint().x,cuboid->GetObjectCenterLocalPoint().y,newValue};
+                    if(!(box->currentText()=="机械坐标系")){
+                        for(CObject *obj:m_pMainWin->m_ObjectListMgr->getObjectList()){
+                            if(box->currentText()==obj->GetObjectCName()){
+                                CPcsNode* node=dynamic_cast<CPcsNode*>(obj);
+                                //转换为全局坐标
+                                QVector4D vec=node->getPcs()->m_mat*QVector4D(cuboid->GetObjectCenterLocalPoint().x,cuboid->GetObjectCenterLocalPoint().y,newValue,1);
+                                CPosition glo(vec.x(),vec.y(),vec.z());
+                                pTemp=glo;
+                                break;
+                            }
+                        }
+                    }
+                    CPosition result=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(pTemp,cuboid->m_pRefCoord);
+                    cuboid->center=result;
+                    break;
+                }
+                case 3:{
+                    cuboid->length=newValue;
+                    break;
+                }
+                case 4:{
+                    cuboid->width=newValue;
+                    break;
+                }
+                case 5:{
+                    cuboid->height=newValue;
+                    break;
+                }
+                }
+            }
+
+            // else if(obj->m_strCName.left(5)=="工件坐标系"){
+            // }
+
+            // 重新绘制图形
+            m_pMainWin->NotifySubscribe();
+        }
+    });
+
 }
