@@ -97,6 +97,11 @@ void MainWindow::setupUi(){
         pWinVtkWidget->onAlign();
     });
 
+    QAction* openFTP=bar->addAction("FTP文件传输");
+    connect(openFTP,&QAction::triggered,this,[&](){
+        pMyFtp->show();
+    });
+
     // 添加竖线分隔符
     QFrame *line = new QFrame();
     line->setFrameShape(QFrame::VLine);  // 设置形状为垂直线

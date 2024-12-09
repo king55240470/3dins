@@ -1048,7 +1048,7 @@ double CDistance::getdistanceplane()
                                     glbPos_begin.z - glbPos_center.z);
     // 使用点积自动判定begin与法向量正向还是反向
     double distance = QVector3D::dotProduct(direction, unitNormal.toVector3D()) / unitNormal.length();
-    return distance;
+    return abs(distance);
 }
 
 double CDistance::getdistancecircle()

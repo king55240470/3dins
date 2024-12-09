@@ -13,6 +13,7 @@
 #include "manager/cpcsmgr.h"
 #include "manager/chosencentitymgr.h"
 #include "manager/pointcloudlistmgr.h"
+#include "myFTP/myftp.h"
 #include <QMap>//从actor映射到centity
 
 class DataWidget;
@@ -26,6 +27,7 @@ class LogWidget;
 class PresetElemWidget;
 class FileMgr;
 class setDataWidget;
+
 
 class MainWindow : public QMainWindow
 {
@@ -47,6 +49,7 @@ private:
     ReportWidget *pWinReportWidget;
     LogWidget *pWinLogWidget;
     PresetElemWidget *pWinPresetElemWidget;
+    myFTP *pMyFtp;
 
     FileMgr *pWinFileMgr;
 
