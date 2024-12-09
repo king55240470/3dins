@@ -45,8 +45,10 @@ SOURCES += \
     manager/cpcsmgr.cpp \
     manager/filemgr.cpp \
     manager/pointcloudlistmgr.cpp \
+    pointfitting/fittingcone.cpp \
     pointfitting/fittingcylinder.cpp \
     pointfitting/fittingplane.cpp \
+    pointfitting/fittingsphere.cpp \
     pointfitting/setdatawidget.cpp \
     vtkwindow/clickhighlightstyle.cpp \
     vtkwindow/mousedragcommand.cpp \
@@ -89,8 +91,10 @@ HEADERS += \
     manager/cpcsmgr.h \
     manager/filemgr.h \
     manager/pointcloudlistmgr.h \
+    pointfitting/fittingcone.h \
     pointfitting/fittingcylinder.h \
     pointfitting/fittingplane.h \
+    pointfitting/fittingsphere.h \
     pointfitting/setdatawidget.h \
     vtkwindow/clickhighlightstyle.h \
     vtkwindow/mousedragcommand.h \
@@ -794,4 +798,7 @@ LIBS += -LD:\curl-8.11.0\builds\libcurl-vc14.2-x86-release-dll-ipv6-sspi-schanne
 LIBS += -llibcurl
 LIBS += -lWs2_32 -lWldap32 -lCrypt32 -lNormaliz
 
+DEFINES += CURL_STATICLIB
+INCLUDEPATH += D:\curl-8.11.0\builds\libcurl-vc14.2-x86-release-static-ipv6-sspi-schannel\include
+LIBS += -LD:\curl-8.11.0\builds\libcurl-vc14.2-x86-release-static-ipv6-sspi-schannel\lib
 

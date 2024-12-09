@@ -148,6 +148,9 @@ QDataStream& operator>>(QDataStream& in, CObjectMgr& mgr){
         case enCone:
             object=new CCone();
             break;
+        case enCuboid:
+            object=new CCuboid();
+            break;
         case enDistance:
             object=new CDistance();
             break;

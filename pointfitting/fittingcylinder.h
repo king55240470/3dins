@@ -13,7 +13,7 @@ public:
     void setRadius(double);
     void setDistance(double);
     Eigen::Vector3f getNormal();
-    Eigen::Vector3f getBottomCenter();
+    Eigen::Vector3f getCenter();
     double getDiameter();
     double getHeight();
 private:
@@ -26,7 +26,8 @@ private:
 
     Eigen::Vector3f normal;//圆柱法向量
     Eigen::Vector3f center;//圆柱中心
-    Eigen::Vector3f bottomCenter;//圆柱底面圆心中心
+    Eigen::Vector3f one_center;//圆柱轴线上的某个点
+    Eigen::Vector3f bottomCenter;//圆柱底面的中心
     double diameter;//圆柱直径
     double height;//圆柱高度
 };
