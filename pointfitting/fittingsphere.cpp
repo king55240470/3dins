@@ -89,7 +89,7 @@ bool FittingSphere::isPointInSphere(const pcl::PointXYZRGB& point){
                        std::pow(point.y - center.y(), 2) +
                        std::pow(point.z - center.z(), 2));
 
-    return std::abs(d - radius) < 0.01;
+    return fabs(d - radius) < 0.01;
 }
 
 void FittingSphere::setRadius(double rad){

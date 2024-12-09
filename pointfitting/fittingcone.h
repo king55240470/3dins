@@ -3,6 +3,7 @@
 
 #include <pcl/point_cloud.h>     // PCL 的点云类
 #include <pcl/visualization/pcl_visualizer.h> // PCL 的可视化工具
+#include <pcl/sample_consensus/sac_model_cone.h>
 
 class FittingCone
 {

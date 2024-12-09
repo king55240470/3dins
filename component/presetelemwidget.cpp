@@ -198,7 +198,7 @@ PresetElemWidget::PresetElemWidget(QWidget *parent)
     groupRightUpLayout->addWidget(planeEditW, 1, 1);
     groupBoxRightUp->setLayout(groupRightUpLayout);
 
-    QGroupBox *groupBoxLeftDown = new QGroupBox("面法向");
+    QGroupBox *groupBoxLeftDown = new QGroupBox("平面法向量");
     QGridLayout *groupLeftDownLayout = new QGridLayout();
     QLabel *planeLabelX2 = new QLabel("X:");
     planeNormalX = new QLineEdit();
@@ -217,7 +217,7 @@ PresetElemWidget::PresetElemWidget(QWidget *parent)
     groupLeftDownLayout->addWidget(planeNormalZ, 2, 1);
     groupBoxLeftDown->setLayout(groupLeftDownLayout);
 
-    QGroupBox *groupBoxRightDown = new QGroupBox("向量方向");
+    QGroupBox *groupBoxRightDown = new QGroupBox("平面参考方向(长边方向)");
     QGridLayout *groupRightDownLayout = new QGridLayout();
     QLabel *planeLabelX3 = new QLabel("L:");
     planeDirectionX = new QLineEdit();

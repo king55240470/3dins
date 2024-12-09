@@ -17,8 +17,12 @@
 #include <pcl/common/common.h>
 #include <pcl/sample_consensus/ransac.h>
 #include <pcl/sample_consensus/sac_model_cone.h>
+#include <pcl/sample_consensus/method_types.h>
+#include <pcl/sample_consensus/model_types.h>
+#include <geometry/centitytypes.h>
 
 #include <QMessageBox>
+#include <QDebug>
 
 FittingCone::FittingCone() {
     coneCloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
@@ -50,17 +54,27 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingCone::RANSAC(pcl::PointXYZRGB sear
         ne.setKSearch(50);
         ne.compute(*normals);
 
+        if(normals->size()!=cloud_subset->size()){
+            QMessageBox *messagebox=new QMessageBox();
+            messagebox->setText("输入的邻域太小，\n请重新输入！\n");
+            messagebox->setIcon(QMessageBox::Warning);
+            messagebox->show();
+            messagebox->exec();
+            PCL_ERROR("normals->size()!=cloud_subset->size()!\n");
+            return nullptr;
+        }
+
         pcl::SACSegmentationFromNormals<pcl::PointXYZRGB, pcl::Normal> seg;
         seg.setOptimizeCoefficients(true);
         seg.setModelType(pcl::SACMODEL_CONE);
         seg.setMethodType(pcl::SAC_RANSAC);
         seg.setNormalDistanceWeight(0.01);//设置法向量权重
-        seg.setMaxIterations(5000);//设置最大迭代次数
+        seg.setMaxIterations(10000);//设置最大迭代次数
         seg.setDistanceThreshold(distance);//设置阈值
         seg.setInputNormals(normals);
         seg.setInputCloud(cloud_subset);
 
-        // 执行分割
+        //执行分割
         seg.segment(*inliers, *coefficients);
 
         //计算圆锥顶点
@@ -69,12 +83,10 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingCone::RANSAC(pcl::PointXYZRGB sear
 
         //计算圆锥轴向量
         normal=Eigen::Vector3f(coefficients->values[3], coefficients->values[4], coefficients->values[5]);
-        normal.normalize();
         qDebug()<<"normal:"<<normal.x()<<normal.y()<<normal.z();
 
-        //计算圆锥张开角度
-        angle=coefficients->values[6];
-        angle = 2 * angle * 180.0 / M_PI;
+        //计算圆锥张开角度（弧度）
+        angle=2*coefficients->values[6];
         qDebug()<<"angle:"<<angle;
 
         //获取圆锥上的所有点云
@@ -95,7 +107,7 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingCone::RANSAC(pcl::PointXYZRGB sear
 
         if(coneCloud->empty()){
             QMessageBox *messagebox=new QMessageBox();
-            messagebox->setText("输入的邻域或距离阈值太小，\n请重新输入！");
+            messagebox->setText("请修改邻域或距离阈值，\n有可能是邻域太小，\n或者距离阈值太大，\nConeCloud is empty!\n");
             messagebox->setIcon(QMessageBox::Warning);
             messagebox->show();
             messagebox->exec();
@@ -103,15 +115,7 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingCone::RANSAC(pcl::PointXYZRGB sear
             return nullptr;
         }
 
-        // 使用PCA拟合圆锥轴
-        // pcl::PCA<pcl::PointXYZRGB> pca;
-        // pca.setInputCloud(coneCloud);
-        // Eigen::Matrix3f eigen_vectors = pca.getEigenVectors();
-        // // 获取主成分方向作为圆锥的轴
-        // normal = eigen_vectors.col(2);  // Z轴是主轴
-        // normal.normalize();
-
-        // 计算圆锥的高度：通过点云中的投影来获得
+        // 计算圆锥高度：通过点云中的投影来获得
         double min_proj = std::numeric_limits<float>::max();
         double max_proj = std::numeric_limits<float>::lowest();
 
@@ -119,21 +123,16 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingCone::RANSAC(pcl::PointXYZRGB sear
         for (int i = 0; i < coneCloud->size(); i++) {
             Eigen::Vector3f point(coneCloud->points[i].x, coneCloud->points[i].y, coneCloud->points[i].z);
             double proj = point.dot(normal); // 计算点到圆柱轴的投影
-            if(proj<min_proj){
-                min_proj=proj;
-                topCenter=point;
-            }
-            //min_proj = std::min(min_proj, proj);
+            min_proj = std::min(min_proj, proj);
             max_proj = std::max(max_proj, proj);
         }
 
-        qDebug()<<"center:"<<topCenter.x()<<topCenter.y()<<topCenter.z();
-
         height = max_proj - min_proj; // 高度是投影值的差
+        qDebug()<<"height:"<<height;
 
         if(height<=0){
             QMessageBox *messagebox=new QMessageBox();
-            messagebox->setText("输入的邻域或距离阈值太小，\n请重新输入！");
+            messagebox->setText("输入的邻域或距离阈值太小，\n请重新输入！\nHeight < 0!");
             messagebox->setIcon(QMessageBox::Warning);
             messagebox->show();
             messagebox->exec();
@@ -145,7 +144,7 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingCone::RANSAC(pcl::PointXYZRGB sear
 
     }else{
         QMessageBox *messagebox=new QMessageBox();
-        messagebox->setText("输入的邻域或距离阈值太小，\n请重新输入！");
+        messagebox->setText("输入的邻域或距离阈值太小，\n请重新输入！\nCouldn't find more points within radius");
         messagebox->setIcon(QMessageBox::Warning);
         messagebox->show();
         messagebox->exec();
@@ -156,18 +155,14 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingCone::RANSAC(pcl::PointXYZRGB sear
 
 bool FittingCone::isPointInCone(const pcl::PointXYZRGB& point){
 
-    Eigen::Vector3f pointVec(point.x - topCenter.x(), point.y - topCenter.y(), point.z - topCenter.z());
+    // 计算点到圆锥顶点的向量
+    Eigen::Vector3f pointToVertex (point.x - topCenter.x(),point.y - topCenter.y(),point.z - topCenter.z());
 
-    double coneHeight = pointVec.dot(normal);  // 投影到圆锥的轴上（即高度）
+    // 计算法向量和点到顶点向量的夹角
+    float cosineAlpha = normal.dot(pointToVertex) / (normal.norm() * pointToVertex.norm());
 
-    // 计算圆锥的半角
-    double coneRadius = tan(angle) * coneHeight;  // 圆锥半径
-
-    // 计算点与轴的垂直距离
-    double perpendicularDistance = std::sqrt(std::pow(point.x - topCenter.x(), 2) +
-                                            std::pow(point.y - topCenter.y(), 2));
-
-    return perpendicularDistance <= coneRadius;
+    // 判断是否满足夹角小于或等于圆锥的开口角度
+    return cosineAlpha >= cos(angle);
 }
 
 void FittingCone::setRadius(double rad){

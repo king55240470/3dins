@@ -161,18 +161,23 @@ CPointCloud* PointCloudConstructor::createPointCloud(CCylinder* m_cylinder,pcl::
     return createPointCloud(transformedPolyData,pointsPolydata);
 }
 CPointCloud* PointCloudConstructor::createPointCloud(CCone *m_cone, pcl::PointCloud<pcl::PointXYZRGB>::Ptr sourceCloud){
-    vtkSmartPointer<vtkPolyData> pointsPolydata = getPointsPolydata(sourceCloud);
+     vtkSmartPointer<vtkPolyData> pointsPolydata = getPointsPolydata(sourceCloud);
+
+
     CPosition pos(m_cone->getVertex().x, m_cone->getVertex().y, m_cone->getVertex().z);
     QVector4D posVec = m_cone->GetRefCoord()->m_mat * QVector4D(pos.x, pos.y, pos.z, 1);
-    CPosition globalPos(posVec.x(), posVec.y(), posVec.z());
+    QVector4D center=posVec-m_cone->getAxis()*(m_cone->getHeight()/2.0);
+    CPosition globalPos(center.x(), center.y(), center.z());
 
     // 创建圆锥源
     auto cone = vtkSmartPointer<vtkConeSource>::New();
+    cone->SetAngle(m_cone->getRadian()*180/M_PI);
     cone->SetCenter(globalPos.x, globalPos.y, globalPos.z);
-    cone->SetRadius(m_cone->getRadian());
+    cone->SetRadius(tan(m_cone->getRadian()/2)*m_cone->getHeight());
     cone->SetDirection(m_cone->getAxis()[0], m_cone->getAxis()[1], m_cone->getAxis()[2]); // 设置轴向量
     cone->SetHeight(m_cone->getHeight());
     cone->SetResolution(100);
+    cone->CappingOn();
 
     return createPointCloud(cone->GetOutput(),pointsPolydata);
 }
