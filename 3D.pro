@@ -45,7 +45,6 @@ SOURCES += \
     manager/cpcsmgr.cpp \
     manager/filemgr.cpp \
     manager/pointcloudlistmgr.cpp \
-    myFTP/myftp.cpp \
     pointfitting/fittingcylinder.cpp \
     pointfitting/fittingplane.cpp \
     pointfitting/setdatawidget.cpp \
@@ -90,7 +89,6 @@ HEADERS += \
     manager/cpcsmgr.h \
     manager/filemgr.h \
     manager/pointcloudlistmgr.h \
-    myFTP/myftp.h \
     pointfitting/fittingcylinder.h \
     pointfitting/fittingplane.h \
     pointfitting/setdatawidget.h \
