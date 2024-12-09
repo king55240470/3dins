@@ -280,7 +280,6 @@ void VtkWidget::createLine()
     renderer->AddActor(iconActor);
 
     vtkSmartPointer<vtkCoordinate> coordinate = vtkSmartPointer<vtkCoordinate>::New();
-    //coordinate->SetValue(glbPos_begin.x,glbPos_begin.y,glbPos_begin.z);
     coordinate->SetValue(b.x,b.y,b.z);
     coordinate->SetCoordinateSystemToWorld();
     int* viewportMidPoint;
@@ -550,7 +549,7 @@ void VtkWidget::onCompare()
     }
 
     if(clouds.size()!=2){
-        QString message="点云指针数目异常(只允许两个点云数据))";
+        QString message="点云数目异常(只允许两个点云数据))";
         QMessageBox msgBox;
         msgBox.setWindowTitle("错误");
         msgBox.setText(message);
@@ -624,26 +623,31 @@ void VtkWidget::onCompare()
 //FPFH(粗配准)+ICP(精配准)
 void VtkWidget::onAlign()
 {
-    // 检测两个文件列表是否有空的
-    if(m_pMainWin->getpWinFileMgr()->getModelFileMap().empty() ||
-        m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().empty()){
-        QMessageBox::warning(this, "Warning", "打开的文件不足");
-        return;
+    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+    auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
+    QVector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> clouds;
+    for(int i=0;i<entityList.size();i++){
+        CEntity* entity=entityList[i];
+        if(!entity->IsSelected())continue;
+        if(entity->GetUniqueType()==enPointCloud){
+            auto & temp=((CPointCloud*)entity)->m_pointCloud;
+            clouds.append(temp.makeShared());
+        }
     }
 
-    // 获取打开的模型文件和实测文件
-    auto file_model = m_pMainWin->getpWinFileMgr()->getModelFileMap().lastKey();
-    auto file_measure = m_pMainWin->getpWinFileMgr()->getModelFileMap().lastKey();
-
-    // 初始化两个点云
-    pcl::io::loadPLYFile(file_model.toStdString(), *cloud1);
-    pcl::io::loadPCDFile(file_measure.toStdString(), *cloud2);
-
-    // 检查点云是否为空
-    if (cloud1->empty() || cloud2->empty()) {
-        QMessageBox::warning(this, "Warning", "One or both point clouds are empty!");
-        return;
+    if(clouds.size()!=2){
+        QString message="点云数目异常(只允许两个点云数据))";
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("错误");
+        msgBox.setText(message);
+        msgBox.setIcon(QMessageBox::Critical); // 设置对话框图标为错误
+        msgBox.setStandardButtons(QMessageBox::Ok); // 只显示“确定”按钮
+        msgBox.exec(); // 显示对话框
+        return ;
     }
+
+    pcl::copyPointCloud( *clouds[0], *cloud1);
+    pcl::copyPointCloud( *clouds[1], *cloud2);
 
     // 下采样：提高计算效率，对输入点云进行下采样
     pcl::PointCloud<pcl::PointXYZ>::Ptr downsampledCloud1(new pcl::PointCloud<pcl::PointXYZ>());

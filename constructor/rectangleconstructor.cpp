@@ -121,6 +121,7 @@ CEntity* RectangleConstructor::create(QVector<CEntity*>& entitylist){
         setWrongInformation(PointTooMuch);
     }else if(positions.size()<3){
         setWrongInformation(PointTooLess);
+        qDebug()<<"构造矩形点的数目"<<positions.size();
     }
     return nullptr;
 }
