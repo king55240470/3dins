@@ -18,6 +18,7 @@
 #include <vtkInteractorStyleTrackballCamera.h>
 #include <vtkVertexGlyphFilter.h>
 #include <vtkPropPicker.h>
+#include <vtkPointPicker.h>
 #include <vtkCellPicker.h>
 #include <vtkPointSource.h>
 #include <vtkSphereSource.h>
@@ -48,6 +49,7 @@ public:
 
     vtkActor* CreatHighLightPoint(double pos[3]); // 生成一个用于高亮的顶点
     void DeleteHighLightPoint(); // 删除所有临时高亮的顶点
+    void CancelHighlightActors();
 
     // 高亮显示指定的actor
     void HighlightActor(vtkActor* actor);
