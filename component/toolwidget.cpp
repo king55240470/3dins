@@ -712,7 +712,7 @@ void   ExtractData(QVector<CEntity *>& entitylist,QList<QList<QString>>& dataAll
 }
 void   ToolWidget::onSavePdf(){
 
-    QString path = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("Pdf(*.pdf)"));
+    QString path = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "", QString("Pdf(*.pdf)"));
     if (path.isEmpty()){
         return ;
     }
@@ -797,7 +797,7 @@ void   ToolWidget::onSavePdf(){
 }
 void   ToolWidget::onSaveExcel(){
 
-    QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("Excel(*.xlsx *.xls)"));
+    QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "", QString("Excel(*.xlsx *.xls)"));
     if (filePath.isEmpty()){
         return ;
     }
@@ -905,7 +905,7 @@ void   ToolWidget::onSaveExcel(){
 }
 
 void ToolWidget::onSaveTxt(){
-    QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("txt(*.txt )"));  
+    QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "", QString("txt(*.txt )"));
     if (filePath.isEmpty()){
         return ;
     }
@@ -1019,7 +1019,7 @@ void ToolWidget::onSaveTxt(){
 }
 
 void   ToolWidget::onSaveWord(){
-    QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "文件名", QString("word(*.doc *.docx)"));
+    QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "", QString("word(*.doc *.docx)"));
     if (filePath.isEmpty()){
         return ;
     }
@@ -1104,11 +1104,9 @@ void   ToolWidget::onSaveWord(){
         QMessageBox::information(nullptr, "提示", "保存成功");
     }}
 
-void saveScreenshot() {
-
-}
 static void WrongWidget(QString message,QString moreMessage="空");
 void   ToolWidget::onSaveImage(){
+    //得到路径名称
     QString filter = "PNG (*.png);;JPEG (*.jpg *.jpeg);;TIFF (*.tif *.tiff);;BMP (*.bmp)";
     QString fileName = QFileDialog::getSaveFileName(this, "Save Screenshot", "", filter, &filter);
 
@@ -1121,15 +1119,16 @@ void   ToolWidget::onSaveImage(){
 
     vtkSmartPointer<vtkRenderWindow> renderWindow=m_pMainWin->getPWinVtkWidget()->getRenderWindow();
     renderWindow->Render();
+    //得到截图
     vtkNew<vtkWindowToImageFilter> windowToImageFilter;
     windowToImageFilter->SetInput(renderWindow);
-    windowToImageFilter->SetScale(1);
-    windowToImageFilter->SetInputBufferTypeToRGBA();
-    windowToImageFilter->ReadFrontBufferOff();
+    windowToImageFilter->SetScale(1);// 缩放因子，可以根据需要调整
+    windowToImageFilter->SetInputBufferTypeToRGBA();//RGBA缓冲
+    windowToImageFilter->ReadFrontBufferOff();//读取
     windowToImageFilter->Update();
 
     vtkSmartPointer<vtkImageWriter> writer;
-
+    //确认格式
     if (format == "png") {
         writer = vtkSmartPointer<vtkPNGWriter>::New();
     } else if (format == "jpg" || format == "jpeg") {
@@ -1142,7 +1141,7 @@ void   ToolWidget::onSaveImage(){
         std::cerr << "Unsupported format: " << format << std::endl;
         return;
     }
-
+    //写入文件
     writer->SetFileName(fileName.toStdString().c_str());
     writer->SetInputConnection(windowToImageFilter->GetOutputPort());
     writer->Write();
@@ -1391,25 +1390,7 @@ void ToolWidget::onConstructPlane(){
     m_pMainWin->NotifySubscribe();
 }
 void ToolWidget::onConstructRectangle(){
-
-    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
-    RectangleConstructor constructor;
-    CPlane* newRectangle=(CPlane*)constructor.create(entityList);
-    if(newRectangle==nullptr){
-        if(constructor.getWrongInformation()==PointTooMuch){
-            WrongWidget("列表选中的点过多");
-        }else if(constructor.getWrongInformation()==PointTooLess){
-            WrongWidget("列表选中的点过少");
-        }else if(constructor.getWrongInformation()==PointTooClose){
-            WrongWidget("列表选中的点过近");
-        }else if(constructor.getWrongInformation()==PointDontMatch){
-            WrongWidget("四点无法构成矩形");
-        }
-        return ;
-    }
-    addToList(newRectangle);
-    m_pMainWin->NotifySubscribe();
-
+    onConstructPlane();
 }
 
 void ToolWidget::onConstructSphere(){
@@ -1696,6 +1677,7 @@ void ToolWidget::onFindCone(){
         return ;
     }
     m_pMainWin->getPWinSetDataWidget()->setConeData(point, cloudptr);
+
 
     auto coneCloud=m_pMainWin->getPWinSetDataWidget()->getConeCloud();
     if(coneCloud==nullptr){

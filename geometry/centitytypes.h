@@ -246,7 +246,7 @@ public:
 
 class CPlane : public CEntity
 {
-private:
+public:
     CPosition center;
     QVector4D normal;
     QVector4D dir_long_edge;   // dir 表示方向direction
@@ -312,7 +312,7 @@ public:
 };
 
 class CSphere : public CEntity{
-
+public:
     CPosition center;
     double diameter;
 
@@ -368,6 +368,7 @@ public:
 
 
 class CCylinder : public CEntity{
+public:
     QVector4D axis;
     double diameter;
     double height;
@@ -428,7 +429,7 @@ public:
 };
 
 class CCone : public CEntity{
-
+public:
     QVector4D axis;
     double radian;
     double height;
@@ -438,10 +439,10 @@ class CCone : public CEntity{
     static int coneCount;
     int currentConeId;
 
-    QDataStream& serialize(QDataStream& out) const override {
-        CEntity::serialize(out);  // 先序列化基类部分
-        out <<axis << radian<< height << cone_height <<vertex;
-        out <<coneCount<<currentConeId;
+    QDataStream &serialize(QDataStream &out) const override {
+        CEntity::serialize(out); // 先序列化基类部分
+        out << axis << radian << height << cone_height << vertex;
+        out << coneCount << currentConeId;
         return out;
     }
 
@@ -490,6 +491,7 @@ public:
 };
 
 class CCuboid : public CEntity{
+public:
     CPosition center;
     double length;
     double width;

@@ -18,6 +18,7 @@ public:
     void getobjindex(int objindex);
     void getentityindex(int entityindex);
     void OnComboBoxIndexChanged(int);
+    void dataModify(); //修改元素信息
 private:
     QVBoxLayout *vlayout;
     QHBoxLayout *hlayout;
