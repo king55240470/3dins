@@ -47,6 +47,7 @@ SOURCES += \
     pointfitting/fittingcone.cpp \
     pointfitting/fittingcylinder.cpp \
     pointfitting/fittingplane.cpp \
+    pointfitting/fittingpoint.cpp \
     pointfitting/fittingsphere.cpp \
     pointfitting/setdatawidget.cpp \
     vtkwindow/clickhighlightstyle.cpp \
@@ -93,6 +94,7 @@ HEADERS += \
     pointfitting/fittingcone.h \
     pointfitting/fittingcylinder.h \
     pointfitting/fittingplane.h \
+    pointfitting/fittingpoint.h \
     pointfitting/fittingsphere.h \
     pointfitting/setdatawidget.h \
     vtkwindow/clickhighlightstyle.h \
