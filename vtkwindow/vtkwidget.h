@@ -81,9 +81,13 @@ public:
     void setUpVtk(QVBoxLayout *layout);// 配置vtk窗口
     vtkSmartPointer<vtkRenderWindow> getRenderWindow();// 获取m_renWin
     vtkSmartPointer<vtkRenderer>& getRenderer();// 获取渲染器
+    vtkSmartPointer<MouseInteractorHighlightActor>& getInteractorStyle(){
+        return m_highlightstyle;
+    }
 
     void UpdateInfo();// 在notifsubscribey里更新信息
     void reDrawCentity();// 重新绘制基本图形和坐标轴
+    void onHighLightActor(CEntity* entity); // 高亮列表中选中的centity
 
     void createAxes();// 创建左下角坐标轴
 
@@ -116,7 +120,7 @@ private:
     vtkSmartPointer<vtkRenderer> renderer;
     // vtkSmartPointer<vtkRenderer> renderer2D; // 专门放文本框和指向线段的渲染器
     vtkSmartPointer<vtkGenericOpenGLRenderWindow> renWin;
-    vtkSmartPointer<MouseInteractorHighlightActor>m_highlightstyle;
+    vtkSmartPointer<MouseInteractorHighlightActor> m_highlightstyle;
 
     pcl::PointCloud<pcl::PointXYZRGB> tempCloud; // 转换rgb点云用的临时点云
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud1; // 对比用的两个点云

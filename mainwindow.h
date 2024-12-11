@@ -6,6 +6,7 @@
 #include <QMenuBar>
 #include <QStatusbar>
 #include <QPushButton>
+#include <QFile>
 #include "geometry/globes.h"
 #include "geometry/centity.h"
 #include "manager/centitymgr.h"
