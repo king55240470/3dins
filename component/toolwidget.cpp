@@ -69,6 +69,7 @@
 #include "pointfitting/fittingcylinder.h"//拟合圆柱算法
 #include "pointfitting/fittingsphere.h"//拟合圆柱算法
 #include "pointfitting/fittingcone.h"//拟合圆柱算法
+#include "pointfitting/fittingpoint.h"
 #include "pointfitting/setdatawidget.h"
 
 
@@ -1569,6 +1570,61 @@ void ToolWidget:: onFindPlane(){
 }
 
 void ToolWidget::onFindPoint(){
+    FittingPoint *nearPoint=new FittingPoint();
+
+    //读取选中的点云
+    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+    QVector<CPointCloud*> pointClouds;
+
+    //读取选中的点
+    QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenActorAxes();
+    pcl::PointXYZRGB  point;
+    if(positions.size()==0)return ;
+    point.x=positions[0].x;
+    point.y=positions[0].y;
+    point.z=positions[0].z;
+
+    // 获取拟合用的点云指针
+    auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
+    nearPoint->RANSAC(point,cloudptr);
+
+    // 如果没有从窗口里选中点云，则从列表中获取，列表中也没有选中则报异常
+    if(cloudptr==nullptr){
+        for(int i=0;i<entityList.size();i++){
+            CEntity* entity=entityList[i];
+            if(!entity->IsSelected())continue;
+            if(entity->GetUniqueType()==enPointCloud){
+                CPointCloud* pointCloud=(CPointCloud*)entity;
+                pointClouds.append(pointCloud);
+            }
+        }
+        if(pointClouds.size()<1){
+            WrongWidget("选中的点云数目为0");
+            return ;
+        }else if(pointClouds.size()>1){
+            WrongWidget("选中的点云数目大于1");
+            return ;
+        }
+        else
+            nearPoint->RANSAC(point,pointClouds[0]->m_pointCloud.makeShared());
+        return ;
+    }
+
+    PointConstructor constructor;
+    CPoint* newPoint;
+    CPosition center;
+    center.x=nearPoint->getPoint()[0];
+    center.y=nearPoint->getPoint()[1];
+    center.z=nearPoint->getPoint()[2];
+    newPoint=constructor.createPoint(center);
+    if(newPoint==nullptr){
+        qDebug()<<"找到最近点生成错误";
+        return ;
+    }
+    addToFindList(newPoint);
+
+    positions.clear();
+    m_pMainWin->NotifySubscribe();
 }
 void ToolWidget::onFindLine(){}
 void ToolWidget::onFindCircle(){}
