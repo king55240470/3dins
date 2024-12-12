@@ -496,23 +496,21 @@ public:
     double length;
     double width;
     double height;
-    double angleX;
-    double angleY;
-    double angleZ;
+    QVector4D normal;
 
     static int cuboidCount;
     int currentCuboidId;
 
     QDataStream& serialize(QDataStream& out) const override {
         CEntity::serialize(out);  // 先序列化基类部分
-        out <<center << length<< width << angleX <<angleY <<angleZ;
+        out <<center << length<< width << normal;
         out <<cuboidCount<<currentCuboidId;
         return out;
     }
 
     QDataStream& deserialize(QDataStream& in) override {
         CEntity::deserialize(in);  // 先反序列化基类部分
-        in >>center >> length >> width >> angleX >>angleY >>angleZ;
+        in >>center >> length >> width >> normal;
         in>>cuboidCount>>currentCuboidId;
         return in;
     }
@@ -522,6 +520,7 @@ public:
         center.x=0;
         center.y=0;
         center.z=0;
+        normal=QVector4D(0,0,0,1);
         currentCuboidId= ++cuboidCount;
         m_strAutoName = QString("长方体%1").arg(currentCuboidId);
         m_strCName = QString("长方体%1").arg(currentCuboidId);
@@ -535,14 +534,8 @@ public:
     void setWidth(double newWidth);
     double getHeight() const;
     void setHeight(double newHeight);
-
-    double getAngleX() const;
-    void setAngleX(double newAnglex);
-    double getAngleY() const;
-    void setAngleY(double newAngleY);
-    double getAngleZ() const;
-    void setAngleZ(double newAngleZ);
-
+    QVector4D getNormal() const;
+    void setNormal(const QVector4D &newNormal);
 
 
     int GetUniqueType() override{

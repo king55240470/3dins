@@ -603,7 +603,7 @@ void MainWindow::OnPresetCone(CPosition posCenter, QVector4D axis, double partH,
     NotifySubscribe();
 }
 
-void MainWindow::OnPresetCuboid(CPosition posCenter,double length,double width,double height,double angleX,double angleY,double angleZ)
+void MainWindow::OnPresetCuboid(CPosition posCenter,double length,double width,double height,QVector4D normal)
 {
     CCuboid *pCuboid=(CCuboid *)CreateEntity(enCuboid);
     pCuboid->Form="预制";
@@ -611,9 +611,7 @@ void MainWindow::OnPresetCuboid(CPosition posCenter,double length,double width,d
     pCuboid->setLength(length);
     pCuboid->setWidth(width);
     pCuboid->setHeight(height);
-    pCuboid->setAngleX(angleX);
-    pCuboid->setAngleY(angleY);
-    pCuboid->setAngleZ(angleZ);
+    pCuboid->setNormal(normal);
 
     pCuboid->m_CreateForm = ePreset;
     pCuboid->SetCurCoord(m_pcsListMgr->m_pPcsCurrent);
