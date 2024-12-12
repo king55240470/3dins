@@ -452,25 +452,29 @@ PresetElemWidget::PresetElemWidget(QWidget *parent)
     groupBoxRUpLayout->addWidget(boxEditHeight, 2, 1);
     groupBoxRUp->setLayout(groupBoxRUpLayout);
 
-    QGroupBox *egroupBoxRight = new QGroupBox("旋转");
+    QGroupBox *egroupBoxRight = new QGroupBox("法线");
     QGridLayout *groupBoxRightLayout = new QGridLayout();
 
-    QLabel *boxLabelAngleX = new QLabel("旋转角X:");
-    boxEditAngleX = new QLineEdit();
-    boxEditAngleX->setText("0");
-    QLabel *boxLabelAngleY = new QLabel("旋转角Y:");
-    boxEditAngleY = new QLineEdit();
-    boxEditAngleY->setText("0");
-    QLabel *boxLabelAngleZ = new QLabel("旋转角Z:");
-    boxEditAngleZ = new QLineEdit();
-    boxEditAngleZ->setText("0");
+    // 创建法线分量输入框
+    QLabel *boxLabelNormalX = new QLabel("法线分量 Nx:");
+    boxEditNormalX = new QLineEdit();
+    boxEditNormalX->setText("0");
 
-    groupBoxRightLayout->addWidget(boxLabelAngleX, 0, 0);
-    groupBoxRightLayout->addWidget(boxEditAngleX, 0, 1);
-    groupBoxRightLayout->addWidget(boxLabelAngleY, 1, 0);
-    groupBoxRightLayout->addWidget(boxEditAngleY, 1, 1);
-    groupBoxRightLayout->addWidget(boxLabelAngleZ, 2, 0);
-    groupBoxRightLayout->addWidget(boxEditAngleZ, 2, 1);
+    QLabel *boxLabelNormalY = new QLabel("法线分量 Ny:");
+    boxEditNormalY = new QLineEdit();
+    boxEditNormalY->setText("0");
+
+    QLabel *boxLabelNormalZ = new QLabel("法线分量 Nz:");
+    boxEditNormalZ = new QLineEdit();
+    boxEditNormalZ->setText("1"); // 默认值设置为 1，表示初始法线为 (0, 0, 1)
+
+    // 将法线分量组件添加到布局中
+    groupBoxRightLayout->addWidget(boxLabelNormalX, 0, 0);
+    groupBoxRightLayout->addWidget(boxEditNormalX, 0, 1);
+    groupBoxRightLayout->addWidget(boxLabelNormalY, 1, 0);
+    groupBoxRightLayout->addWidget(boxEditNormalY, 1, 1);
+    groupBoxRightLayout->addWidget(boxLabelNormalZ, 2, 0);
+    groupBoxRightLayout->addWidget(boxEditNormalZ, 2, 1);
     egroupBoxRight->setLayout(groupBoxRightLayout);
 
     eighthLayout->addWidget(egroupBoxLeft, 0, 0, 2, 1);
@@ -868,25 +872,22 @@ void PresetElemWidget::btnBoxClicked(){
         return;
     }
 
-    double angleX=0;
-    angleX=boxEditAngleX->text().toDouble(&ok);
+    QVector4D vecNormal;
+    vecNormal.setX(boxEditNormalX->text().toDouble(&ok));
     if (!ok) {
-        QMessageBox::critical(this, "输入错误", "长方体-绕x轴旋转角度需要是双精度浮点类型数。");
+        QMessageBox::critical(this, "输入错误", "长方体-法线坐标X需要是双精度浮点类型数。");
         return;
     }
-    double angleY=0;
-    angleY=boxEditAngleY->text().toDouble(&ok);
+    vecNormal.setY(boxEditNormalY->text().toDouble(&ok));
     if (!ok) {
-        QMessageBox::critical(this, "输入错误", "长方体-绕y轴旋转角度需要是双精度浮点类型数。");
+        QMessageBox::critical(this, "输入错误", "长方体-法线坐标Y需要是双精度浮点类型数。");
         return;
     }
-    double angleZ=0;
-    angleZ=boxEditAngleZ->text().toDouble(&ok);
+    vecNormal.setZ(boxEditNormalZ->text().toDouble(&ok));
     if (!ok) {
-        QMessageBox::critical(this, "输入错误", "长方体-绕z轴旋转角度需要是双精度浮点类型数。");
+        QMessageBox::critical(this, "输入错误", "长方体-法线坐标Z需要是双精度浮点类型数。");
         return;
     }
 
-    m_pMainWin->OnPresetCuboid(center,Length,Width,Height,angleX,angleY,angleZ);
-
+    m_pMainWin->OnPresetCuboid(center,Length,Width,Height,vecNormal);
 }
