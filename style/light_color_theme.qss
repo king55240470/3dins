@@ -1,0 +1,218 @@
+/* 设置整个应用的背景和字体 */
+QWidget {
+    font-size: 14px "Arial";
+    color: #333;
+    background-color: #f0f0f0; /* 浅灰色背景 */
+}
+
+/* QMainWindow的样式 */
+QMainWindow {
+    background-color: #f0f0f0; /* 稍微深一点的灰色背景 */
+}
+
+/* QLineEdit的样式 */
+QLineEdit {
+    background-color: #ffffff;
+    border: 1px solid #bbbbbb;
+    padding: 5px;
+    border-radius: 5px;
+    selection-background-color: #add8e6;
+    selection-color: #000000;
+}
+
+QLineEdit:focus {
+    font-size: 14px "微软雅黑";
+    border: 1px solid #4a90e2;
+    box-shadow: 0 0 3px #4a90e2;
+}
+
+/* QLabel的样式 */
+QLabel {
+    font-size: 14px "微软雅黑";
+    background-color: transparent;
+    padding: 5px;
+    border-radius: 3px;
+}
+
+/* 鼠标悬停在QLabel上时的样式 */
+QLabel:hover {
+    background-color: rgb(200, 200, 200); /* 轻微的背景色变化 */
+    border-color: transparent;
+}
+
+/* QLabel被选中时的样式 */
+QLabel:selected {
+    background-color: #add8e6;
+    color: #000000;
+}
+
+/* 增加边框 */
+QLabel.framed {
+    border: 1px solid #cccccc;
+}
+
+/* QPushButton的样式 */
+QPushButton {
+    font-size: 14px "微软雅黑";
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #4a90e2, stop: 1 #3570b2);
+    border: 1px solid #3570b2;
+    border-radius: 5px;
+    padding: 10px;
+    color: #ffffff;
+}
+
+QPushButton:hover {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #5fa7ea, stop: 1 #3b7cb5);
+}
+
+QPushButton:pressed {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #3570b2, stop: 1 #4a90e2);
+}
+
+QToolBar {
+    background-color: #f0f0f0;
+    padding: 2px; /* 工具栏内部的填充 */
+    font-size: 14px; /* 字体大小 */
+}
+
+QToolBar::separator {
+    width: 1px; /* 分隔线的宽度 */
+    background: #bbbbbb; /* 分隔线的颜色 */
+}
+
+/* QTreeWidget的样式 */
+QTreeWidget {
+    font-size: 12px "微软雅黑";
+    background-color: #ffffff;
+    border: 1px solid #cccccc;
+    alternate-background-color: #f0f0f0;
+}
+
+QTreeWidget::item {
+    padding: 5px;
+}
+
+QTreeWidget::item:selected {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #3570b2, stop: 1 #4a90e2);
+    color: #ffffff;
+}
+
+QTreeWidget::branch {
+    background-color: transparent;
+    color: #333;
+}
+
+/* QTreeWidget的头部样式 */
+QHeaderView {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f0f0f0, stop: 1 #e0e0e0);
+    border: 1px solid #cccccc;
+    padding: 2px;
+    border-radius: 2px;
+}
+
+QHeaderView::section {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f0f0f0, stop: 1 #e0e0e0);
+    border: 1px solid #cccccc;
+    padding: 5px;
+}
+
+/* QTreeView的样式 */
+QTreeView {
+    font-size: 14px "微软雅黑";
+    background-color: #ffffff;
+    border: 1px solid #cccccc;
+    alternate-background-color: #444;
+    show-decoration-selected: 1; /* 确保选中时显示装饰 */
+}
+
+QTreeView::item {
+    padding: 5px;
+}
+
+QTreeView::item:selected {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #3570b2, stop: 1 #4a90e2);
+    color: #ffffff;
+}
+
+QTreeView::branch {
+    background-color: transparent;
+    color: #333;
+}
+
+/* QStandardItemModel的样式 */
+QTreeView QStandardItem {
+    background-color: transparent;
+    color: #333;
+}
+
+QTreeView QStandardItem:selected {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #3570b2, stop: 1 #4a90e2);
+    color: #ffffff;
+}
+
+/* QMenu的样式 */
+QMenu {
+    background-color: #f0f0f0;
+    border: 1px solid #cccccc;
+}
+
+QMenu::item {
+    padding: 5px;
+    border: 1px solid transparent; /* 用于鼠标悬停时的边框 */
+}
+
+QMenu::item:selected {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #3570b2, stop: 1 #4a90e2);
+    color: #ffffff;
+}
+
+QMenu::separator {
+    height: 1px;
+    background-color: #cccccc;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+QMenu::icon {
+    margin-right: 5px; /* 图标与文本之间的间距 */
+}
+
+QMenu::indicator {
+    width: 13px;
+    height: 13px;
+    margin-left: 5px; /* 复选框/箭头的左边距 */
+}
+
+/* QTabWidget的样式 - 浅色主题 */
+QTabWidget {
+    font-size: 14px "Arial";
+    color: #333;
+    background-color: #f0f0f0; /* 浅灰色背景 */
+    border: 1px solid #cccccc;
+}
+
+QTabWidget::pane {
+    border: 1px solid #cccccc;
+    background-color: #ffffff;
+}
+
+QTabBar::tab {
+    background-color: #e0e0e0;
+    border: 1px solid #cccccc;
+    border-bottom-style: none; /* 去除底部边框，与tab widget的边框合并 */
+    padding: 5px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
+QTabBar::tab:selected, QTabBar::tab:hover {
+    background-color: #ffffff;
+}
+
+QTabBar::tab:selected {
+    border-bottom: 2px solid #ffffff; /* 选中标签的底部边框 */
+}
+
+QTabBar::tab:only-one {
+    border-bottom-style: solid;
+}

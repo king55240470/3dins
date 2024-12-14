@@ -371,30 +371,55 @@ QString CCuboid::getCEntityInfo()
                         .arg(QString::number(getCenter().x, 'f',  3)).arg(QString::number(getCenter().y, 'f',  3))
                         .arg(QString::number(getCenter().z, 'f',  3))
                         .arg(QString::number(getLength(), 'f',  3)).arg(QString::number(getWidth(), 'f',  3))
-                        .arg(QString::number(getHeight(), 'f',  3)).arg(QString::number(getAngleX(), 'f',  3))
-                        .arg(QString::number(getAngleY(), 'f',  3)).arg(QString::number(getAngleZ(), 'f',  3));
+                        .arg(QString::number(getHeight(), 'f',  3)).arg(QString::number(normal.x(), 'f',  3))
+                        .arg(QString::number(normal.y(), 'f',  3)).arg(QString::number(normal.z(), 'f',  3));
 
     return infoText;
 }
 
 // 长方体的draw()
-vtkSmartPointer<vtkActor> CCuboid::draw(){
-    CPosition pos(getCenter().x,getCenter().y,getCenter().z);
+vtkSmartPointer<vtkActor> CCuboid::draw() {
+    // 获取中心点
+    CPosition pos(getCenter().x, getCenter().y, getCenter().z);
     QVector4D posVec = GetRefCoord()->m_mat * QVector4D(pos.x, pos.y, pos.z, 1);
     CPosition globalPos(posVec.x(), posVec.y(), posVec.z());
 
+    // 创建长方体
     auto cuboid = vtkSmartPointer<vtkCubeSource>::New();
     cuboid->SetCenter(globalPos.x, globalPos.y, globalPos.z); // 设置长方体中心点
-    cuboid->SetXLength(getLength()); // 设置长方体长度
-    cuboid->SetYLength(getWidth());  // 设置长方体宽度
+    cuboid->SetXLength(getLength());  // 设置长方体长度
+    cuboid->SetYLength(getWidth());   // 设置长方体宽度
     cuboid->SetZLength(getHeight()); // 设置长方体高度
 
-    // 创建变换对象，用于旋转和变换方向
-    vtkSmartPointer<vtkTransform> transform = vtkSmartPointer<vtkTransform>::New();
+    // 获取法向量并归一化
+    QVector4D normal = getNormal(); // 法向量 (QVector4D)
+    QVector3D normalVec(normal.x(), normal.y(), normal.z());
+    normalVec.normalize(); // 标准化法向量
 
-    transform->RotateX(getAngleX()); // 绕X轴旋转
-    transform->RotateY(getAngleY()); // 绕Y轴旋转
-    transform->RotateZ(getAngleZ()); // 绕Z轴旋转
+    // 构造局部坐标系
+    QVector3D up(0, 0, 1); // 默认参考向量，通常是 Z 轴方向
+    if (qFuzzyCompare(normalVec, up)) {
+        up = QVector3D(1, 0, 0); // 若法向量接近 Z 轴，改用 X 轴作为参考
+    }
+    QVector3D right = QVector3D::crossProduct(up, normalVec).normalized(); // 局部 X 轴
+    QVector3D newUp = QVector3D::crossProduct(normalVec, right).normalized(); // 局部 Y 轴
+
+    // 构造旋转矩阵
+    vtkSmartPointer<vtkMatrix4x4> rotationMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+    rotationMatrix->Identity();
+    rotationMatrix->SetElement(0, 0, right.x());
+    rotationMatrix->SetElement(1, 0, right.y());
+    rotationMatrix->SetElement(2, 0, right.z());
+    rotationMatrix->SetElement(0, 1, newUp.x());
+    rotationMatrix->SetElement(1, 1, newUp.y());
+    rotationMatrix->SetElement(2, 1, newUp.z());
+    rotationMatrix->SetElement(0, 2, normalVec.x());
+    rotationMatrix->SetElement(1, 2, normalVec.y());
+    rotationMatrix->SetElement(2, 2, normalVec.z());
+
+    // 创建变换对象并设置旋转矩阵
+    vtkSmartPointer<vtkTransform> transform = vtkSmartPointer<vtkTransform>::New();
+    transform->SetMatrix(rotationMatrix);
 
     // 创建映射器
     auto mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
@@ -409,7 +434,6 @@ vtkSmartPointer<vtkActor> CCuboid::draw(){
     actor->GetProperty()->SetLineWidth(2);
 
     return actor;
-
 }
 
 int CPointCloud::pointCloudCount = 0;
@@ -916,32 +940,14 @@ void CCuboid::setHeight(double newHeight)
     height=newHeight;
 }
 
-double CCuboid::getAngleX() const
+QVector4D CCuboid::getNormal() const
 {
-    return angleX;
+    return normal;
 }
 
-void CCuboid::setAngleX(double newAnglex)
+void CCuboid::setNormal(const QVector4D &newNormal)
 {
-    angleX=newAnglex;
-}
-double CCuboid::getAngleY() const
-{
-    return angleY;
-}
-
-void CCuboid::setAngleY(double newAngleY)
-{
-    angleY=newAngleY;
-}
-double CCuboid::getAngleZ() const
-{
-    return angleZ;
-}
-
-void CCuboid::setAngleZ(double newAngleZ)
-{
-    angleZ=newAngleZ;
+    normal = newNormal;
 }
 
 
