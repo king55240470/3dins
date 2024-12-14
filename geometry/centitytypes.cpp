@@ -435,39 +435,6 @@ vtkSmartPointer<vtkActor> CCuboid::draw() {
 
     return actor;
 }
-// vtkSmartPointer<vtkActor> CCuboid::draw(){
-//     CPosition pos(getCenter().x,getCenter().y,getCenter().z);
-//     QVector4D posVec = GetRefCoord()->m_mat * QVector4D(pos.x, pos.y, pos.z, 1);
-//     CPosition globalPos(posVec.x(), posVec.y(), posVec.z());
-
-//     auto cuboid = vtkSmartPointer<vtkCubeSource>::New();
-//     cuboid->SetCenter(globalPos.x, globalPos.y, globalPos.z); // 设置长方体中心点
-//     cuboid->SetXLength(getLength()); // 设置长方体长度
-//     cuboid->SetYLength(getWidth());  // 设置长方体宽度
-//     cuboid->SetZLength(getHeight()); // 设置长方体高度
-
-//     // 创建变换对象，用于旋转和变换方向
-//     vtkSmartPointer<vtkTransform> transform = vtkSmartPointer<vtkTransform>::New();
-
-//     transform->RotateX(getAngleX()); // 绕X轴旋转
-//     transform->RotateY(getAngleY()); // 绕Y轴旋转
-//     transform->RotateZ(getAngleZ()); // 绕Z轴旋转
-
-//     // 创建映射器
-//     auto mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-//     mapper->SetInputConnection(cuboid->GetOutputPort());
-
-//     // 创建执行器
-//     auto actor = vtkSmartPointer<vtkActor>::New();
-//     actor->SetMapper(mapper);
-//     actor->GetProperty()->SetColor(0.5, 0.5, 0.5); // 设置颜色
-//     actor->SetUserTransform(transform); // 应用变换
-//     actor->GetProperty()->SetRepresentationToWireframe(); // 改为线框绘制
-//     actor->GetProperty()->SetLineWidth(2);
-
-//     return actor;
-
-// }
 
 int CPointCloud::pointCloudCount = 0;
 QString CPointCloud::getCEntityInfo()
