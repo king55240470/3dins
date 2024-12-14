@@ -70,6 +70,7 @@
 #include "pointfitting/fittingsphere.h"//拟合圆柱算法
 #include "pointfitting/fittingcone.h"//拟合圆柱算法
 #include "pointfitting/fittingpoint.h"
+#include "pointfitting/fittingline.h"
 #include "pointfitting/setdatawidget.h"
 
 
@@ -1626,7 +1627,73 @@ void ToolWidget::onFindPoint(){
     positions.clear();
     m_pMainWin->NotifySubscribe();
 }
-void ToolWidget::onFindLine(){}
+void ToolWidget::onFindLine(){
+    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+    QVector<CPointCloud*> pointClouds;
+
+    //读取选中的点
+    QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenActorAxes();
+    pcl::PointXYZRGB  point;
+    if(positions.size()==0)return ;
+    point.x=positions[0].x;
+    point.y=positions[0].y;
+    point.z=positions[0].z;
+
+    // 获取拟合用的点云指针
+    auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
+
+    // 如果没有从窗口里选中点云，则从列表中获取，列表中也没有选中则报异常
+    if(cloudptr==nullptr){
+        for(int i=0;i<entityList.size();i++){
+            CEntity* entity=entityList[i];
+            if(!entity->IsSelected())continue;
+            if(entity->GetUniqueType()==enPointCloud){
+                CPointCloud* pointCloud=(CPointCloud*)entity;
+                pointClouds.append(pointCloud);
+            }
+        }
+        if(pointClouds.size()<1){
+            WrongWidget("选中的点云数目为0");
+            return ;
+        }else if(pointClouds.size()>1){
+            WrongWidget("选中的点云数目大于1");
+            return ;
+        }
+        else
+            m_pMainWin->getPWinSetDataWidget()->setLineData(point,pointClouds[0]->m_pointCloud.makeShared());
+        return ;
+    }
+    m_pMainWin->getPWinSetDataWidget()->setLineData(point, cloudptr);
+
+    // 生成点云对象并添加到entitylist
+    auto lineCloud=m_pMainWin->getPWinSetDataWidget()->getLineCloud();
+    if(lineCloud==nullptr){
+        qDebug()<<"拟合圆柱生成错误";
+        return ;
+    }
+    auto line=m_pMainWin->getPWinSetDataWidget()->getLine();
+    if(line==nullptr){
+        return;
+    }
+    LineConstructor constructor;
+    CLine* newLine;
+    CPosition begin,end;
+    begin.x=line->getBegin().x();
+    begin.y=line->getBegin().y();
+    begin.z=line->getBegin().z();
+    end.x=line->getEnd().x();
+    end.y=line->getEnd().y();
+    end.z=line->getEnd().z();
+    newLine=constructor.createLine(begin,end);
+    if(newLine==nullptr){
+        qDebug()<<"拟合圆柱生成错误";
+        return ;
+    }
+    addToFindList(newLine);
+
+    positions.clear();
+    m_pMainWin->NotifySubscribe();
+}
 void ToolWidget::onFindCircle(){}
 void ToolWidget::onFindRectangle(){
 }
