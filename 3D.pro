@@ -46,6 +46,7 @@ SOURCES += \
     manager/pointcloudlistmgr.cpp \
     pointfitting/fittingcone.cpp \
     pointfitting/fittingcylinder.cpp \
+    pointfitting/fittingline.cpp \
     pointfitting/fittingplane.cpp \
     pointfitting/fittingpoint.cpp \
     pointfitting/fittingsphere.cpp \
@@ -93,6 +94,7 @@ HEADERS += \
     manager/pointcloudlistmgr.h \
     pointfitting/fittingcone.h \
     pointfitting/fittingcylinder.h \
+    pointfitting/fittingline.h \
     pointfitting/fittingplane.h \
     pointfitting/fittingpoint.h \
     pointfitting/fittingsphere.h \

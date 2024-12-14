@@ -97,6 +97,18 @@ void MainWindow::setupUi(){
         pWinVtkWidget->onAlign();
     });
 
+    QMenu *fittingMenu=bar->addMenu("拟合参数设置");
+    // QAction* fittingPlaneAction=fittingMenu->addAction("拟合平面");
+    // connect(fittingPlaneAction, &QAction::triggered, this, &setDataWidget::setPlaneData);
+    // QAction* fittingCylinderAction=fittingMenu->addAction("拟合圆柱");
+    // connect(fittingCylinderAction, &QAction::triggered, this, &setDataWidget::setCylinderData);
+    // QAction* fittingConeAction=fittingMenu->addAction("拟合圆锥");
+    // connect(fittingConeAction, &QAction::triggered, this, &setDataWidget::setConeData);
+    // QAction* fittingSphereAction=fittingMenu->addAction("拟合球");
+    // connect(fittingSphereAction, &QAction::triggered, this, &setDataWidget::setSphereData);
+    // QAction* fittingLineAction=fittingMenu->addAction("拟合直线");
+    // connect(fittingLineAction, &QAction::triggered, this, &setDataWidget::setLineData);
+
     // 添加竖线分隔符
     QFrame *line = new QFrame();
     line->setFrameShape(QFrame::VLine);  // 设置形状为垂直线

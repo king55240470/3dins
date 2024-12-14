@@ -16,6 +16,7 @@ class FittingPlane;
 class FittingCylinder;
 class FittingSphere;
 class FittingCone;
+class FittingLine;
 class setDataWidget : public QWidget
 {
     Q_OBJECT
@@ -45,6 +46,12 @@ public:
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr getFittingCone();
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr getConeCloud();
     FittingCone *getCone();
+
+    void setLineData(pcl::PointXYZRGB,pcl::PointCloud<pcl::PointXYZRGB>::Ptr);
+    void LineBtnClick();
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr getFittingLine();
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr getLineCloud();
+    FittingLine *getLine();
 private:
     MainWindow *m_pMainWin;
 
@@ -79,6 +86,11 @@ private:
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr fittingCone;
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr coneCloud;
     FittingCone *cone;
+
+    //拟合直线
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr fittingLine;
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr lineCloud;
+    FittingLine *line;
 
 signals:
 };
