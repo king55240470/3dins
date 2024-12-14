@@ -28,7 +28,7 @@ DataWidget::DataWidget(QWidget *parent)
     table=new QTableWidget();
     table->setColumnCount(3);
     table->setHorizontalHeaderLabels(QStringList()<<"数据项"<<"量测值"<<"状态");
-    table->setRowCount(8);
+    table->setRowCount(9);
     table->verticalHeader()->setHidden(true);//隐藏列号
     table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);//使table内部表格随边框的大小而改变
 
@@ -672,6 +672,18 @@ void DataWidget::updateinfo()
                 table->setItem(5, 0, new QTableWidgetItem("Height"));
                 table->setItem(5, 1, new QTableWidgetItem(QString::number(cuboid->getHeight(),'f',6)));
                 table->setItem(5, 2, new QTableWidgetItem(""));
+
+                table->setItem(6, 0, new QTableWidgetItem("NormalX"));
+                table->setItem(6, 1, new QTableWidgetItem(QString::number(cuboid->getNormal().x(),'f',6)));
+                table->setItem(6, 2, new QTableWidgetItem(""));
+
+                table->setItem(7, 0, new QTableWidgetItem("NormalY"));
+                table->setItem(7, 1, new QTableWidgetItem(QString::number(cuboid->getNormal().y(),'f',6)));
+                table->setItem(7, 2, new QTableWidgetItem(""));
+
+                table->setItem(8, 0, new QTableWidgetItem("NormalZ"));
+                table->setItem(8, 1, new QTableWidgetItem(QString::number(cuboid->getNormal().z(),'f',6)));
+                table->setItem(8, 2, new QTableWidgetItem(""));
             }
         }
         if(obj->m_strCName.left(5)=="工件坐标系"){
@@ -1340,6 +1352,18 @@ void DataWidget::dataModify(){
                 }
                 case 5:{
                     cuboid->height=newValue;
+                    break;
+                }
+                case 6:{
+                    cuboid->normal.setX(newValue);
+                    break;
+                }
+                case 7:{
+                    cuboid->normal.setY(newValue);
+                    break;
+                }
+                case 8:{
+                    cuboid->normal.setZ(newValue);
                     break;
                 }
                 }
