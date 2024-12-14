@@ -32,6 +32,7 @@ MainWindow::MainWindow(QWidget *parent)
     loadManager();
     LoadSetDataWidget();
     m_nRelyOnWhichCs=csRef;
+    SetUpTheme();
 }
 
 void MainWindow::setupUi(){
@@ -96,6 +97,12 @@ void MainWindow::setupUi(){
     connect(alignAction,&QAction::triggered,this,[&](){
         pWinVtkWidget->onAlign();
     });
+
+    QMenu * switchTheme = bar->addMenu("主题");
+    QAction* lightTheme = switchTheme->addAction("浅色主题");
+    connect(lightTheme, &QAction::triggered, this, &MainWindow::onConvertLighTheme);
+    QAction* deepTheme = switchTheme->addAction("深色主题");
+    connect(deepTheme, &QAction::triggered, this, &MainWindow::onConvertDeepTheme);
 
     // 添加竖线分隔符
     QFrame *line = new QFrame();
@@ -794,9 +801,9 @@ void MainWindow::on2dCoordOriginAuto(){
     {
         if(m_ObjectListMgr->getObjectList()[i]->IsSelected() == true) // 如果对象被选中
         {
-             choosenList.push_back(m_ObjectListMgr->getObjectList()[i]);
-             index=i;
-             qDebug()<<"列表里有东西";
+            choosenList.push_back(m_ObjectListMgr->getObjectList()[i]);
+            index=i;
+            qDebug()<<"列表里有东西";
         }
     }
 
@@ -989,6 +996,34 @@ void MainWindow::on2dCoordSetRightY()
     NotifySubscribe();
 }
 
+void MainWindow::onConvertDeepTheme()
+{
+    auto styleFile = QFile(":/style/deep_color_theme.qss");
+    styleFile.open(QFile::ReadOnly);
+    if(styleFile.isOpen()){
+        QString styleSheets = QLatin1String(styleFile.readAll());
+        this->setStyleSheet(styleSheets);
+        styleFile.close();
+    }
+    else {
+        qDebug() << "打开样式文件失败";
+    }
+}
+
+void MainWindow::onConvertLighTheme()
+{
+    auto styleFile = QFile(":/style/light_color_theme.qss");
+    styleFile.open(QFile::ReadOnly);
+    if(styleFile.isOpen()){
+        QString styleSheets = QLatin1String(styleFile.readAll());
+        this->setStyleSheet(styleSheets);
+        styleFile.close();
+    }
+    else {
+        qDebug() << "打开样式文件失败";
+    }
+}
+
 FileMgr *MainWindow::getpWinFileMgr(){
     return pWinFileMgr;
 }
@@ -1005,6 +1040,20 @@ PointCloudListMgr *MainWindow::getPointCloudListMgr()
 
 void MainWindow::LoadSetDataWidget(){
     pWinSetDataWidget=new setDataWidget();
+}
+
+void MainWindow::SetUpTheme()
+{
+    auto styleFile = QFile(":/style/light_color_theme.qss");
+    styleFile.open(QFile::ReadOnly);
+    if(styleFile.isOpen()){
+        QString styleSheets = QLatin1String(styleFile.readAll());
+        this->setStyleSheet(styleSheets);
+        styleFile.close();
+    }
+    else {
+        qDebug() << "打开样式文件失败";
+    }
 }
 
 setDataWidget *MainWindow::getPWinSetDataWidget(){
