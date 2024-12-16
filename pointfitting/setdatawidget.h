@@ -92,6 +92,24 @@ private:
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr lineCloud;
     FittingLine *line;
 
+public:
+    QDataStream& serialize(QDataStream& out) const{
+            out<<  rad->text().toDouble();
+            out << dis->text().toDouble();
+        return out;
+    }
+
+    QDataStream& deserialize(QDataStream& in){
+        double radValue, disValue;
+
+        in >> radValue;
+        in >> disValue;
+        rad->setText(QString::number(radValue));
+        dis->setText(QString::number(disValue));
+
+        return in;
+    }
+
 signals:
 };
 
