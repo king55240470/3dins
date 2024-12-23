@@ -100,6 +100,12 @@
 #include <vtkBMPWriter.h>
 #include <vtkWindowToImageFilter.h>
 
+#include<QTextDocumentWriter>
+#include<QPrintDialog>
+
+
+
+
 int getImagePaths(const QString& directory, QStringList &iconPaths, QStringList &iconNames);
 
 ToolWidget::ToolWidget(QWidget *parent)
@@ -710,6 +716,31 @@ void   ExtractData(QVector<CEntity *>& entitylist,QList<QList<QString>>& dataAll
         dataAll.append(inList);
     }
 }
+
+
+void insertImageIntoPdf(const QString &imagePath, const QString &pdfPath) {
+    // 创建一个新的QTextDocument
+    QTextDocument doc;
+    QTextCursor cursor(&doc);
+
+    // 在QTextDocument中插入图片
+    QTextImageFormat imageFormat;
+    imageFormat.setName(imagePath);
+    cursor.insertImage(imageFormat);
+
+    // 设置打印机以输出到PDF
+    QPrinter printer(QPrinter::HighResolution);
+    printer.setOutputFormat(QPrinter::PdfFormat);
+    printer.setOutputFileName(pdfPath);
+
+    // 打印文档到PDF文件
+    doc.print(&printer);
+}
+
+
+
+
+
 void   ToolWidget::onSavePdf(){
 
     QString path = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "", QString("Pdf(*.pdf)"));
@@ -723,15 +754,6 @@ void   ToolWidget::onSavePdf(){
     dataAll.append(header);
     ExtractData(entitylist,dataAll);
 
-    // int row = 5, col = 3;
-    // QList<QList<QString>> values;
-    // for (int i = 0; i < row; i++) {
-    //     QList<QString> inLst;
-    //     for (int j = 0; j < col; j++) {
-    //         inLst.append(QString::number(i) + QString::number(j));
-    //     }
-    //     values.append(inLst);
-    // }
 
     if (QFileInfo(path).suffix().isEmpty())
         path.append(".pdf");
@@ -779,13 +801,11 @@ void   ToolWidget::onSavePdf(){
     }
     html.append("</table><br /><br />");
 
-    //加入图片
-    //QPainter painter;
-    //painter.begin(m_pdfWriter);
-    //QPixmap pixmap("./qtLogo.png");
-    //painter.scale(10, 10);   //放大10倍
-    //painter.drawPixmap(0, 0, pixmap);
-    //painter.end();
+   // 加入图片
+    QPainter painter;
+    painter.begin(m_pdfWriter);
+
+
 
     QTextDocument textDocument;
     textDocument.setHtml(html);
@@ -1018,91 +1038,170 @@ void ToolWidget::onSaveTxt(){
 
 }
 
+
+
+
 void   ToolWidget::onSaveWord(){
     QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "", QString("word(*.doc *.docx)"));
-    if (filePath.isEmpty()){
-        return ;
+    if (filePath.isEmpty()) {
+        return;
     }
+
     QStringList headers;
-    headers << "类型" << "名称" << "数据1" << "数据2" << "数据3"<<"数据4"<<"数据5";
+    headers << "类型" << "名称" << "数据1" << "数据2" << "数据3" << "数据4" << "数据5";
     auto& entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
     int col = headers.size();
     int row = entitylist.size();
     QList<QList<QString>> dataAll;
-    ExtractData(entitylist,dataAll);
+    ExtractData(entitylist, dataAll);
 
-    // 写入内容
     // 创建一个QTextDocument对象
     QTextDocument doc;
 
-    QTextCharFormat formatTitle;
-    formatTitle.setFontPointSize(16); // 设置字体大小
-    formatTitle.setFontWeight(QFont::Bold); // 设置字体加粗
-
     // 创建一个QTextCursor对象
     QTextCursor cursor(&doc);
+
     // 标题和参数信息
-    //cursor.insertHtml(QString("<a style='text-align：center; font-weight:bold; font-size:30px;'>%1</a>").arg(title));
-    cursor.setCharFormat(formatTitle);
-    cursor.insertText("entitylist列表输出");
-    cursor.insertBlock(); // 换行
+    cursor.insertText("entitylist列表输出\n\n");
 
-    QTextCharFormat format;
-    format.setFontPointSize(10);
-    format.setFontWeight(QFont::Bold);
-
-    cursor.setCharFormat(format);
-    //cursor.insertText("");
-
-    // 插入一个表格，行头占一行
-    QTextTable *table = cursor.insertTable(row + 1, col);
-
-    //获取表格的格式
-    QTextTableFormat tableFormat = table->format();
-    //表格格式设置宽度
-    tableFormat.setWidth(QTextLength(QTextLength::FixedLength, 800));
-
-    //设置表格的columnWidthConstraints约束
-    QVector<QTextLength> colLength = tableFormat.columnWidthConstraints();
-    for (int i = 0; i < col; ++i) {
-        colLength.append(QTextLength(QTextLength::FixedLength, tableFormat.width().rawValue() / col));
+    // 插入表头
+    for (const QString& header : headers) {
+        cursor.insertText(header + "\t");
     }
-    tableFormat.setColumnWidthConstraints(colLength);
-    tableFormat.setBorder(5);
-    tableFormat.setBorderBrush(Qt::black);
+    cursor.insertBlock();
 
-    QTextTableCellFormat titleFormat;
-    titleFormat.setBackground(QColor("moccasin"));
-    titleFormat.setFontWeight(QFont::Bold);
-    // 设置表头 第一行下标为1
-    for (int i = 0; i < col; ++i) {
-        QTextTableCell cell = table->cellAt(0, i);
-        cell.firstCursorPosition().insertText(headers[i]);
-        cell.setFormat(titleFormat);
-    }
-
-    //定义单元格格式
-    QTextTableCellFormat cellFormat;
-    cellFormat.setBottomPadding(2);
-    // 遍历表格的每个单元格，将数据插入到表格中
-    for (int i = 0; i < row; ++i) {
-        for (int j = 0; j < dataAll[i].size(); ++j) {
-            // 将文本插入到表格中,第二行开始下标为2
-            QTextTableCell cell = table->cellAt(i + 1, j);
-            cell.firstCursorPosition().insertText(dataAll[i][j]);
-            cell.setFormat(cellFormat);
+    // 插入数据
+    for (const QList<QString>& rowData : dataAll) {
+        for (const QString& cellData : rowData) {
+            cursor.insertText(cellData + "\t");
         }
+        cursor.insertBlock();
     }
 
-    // 保存为Word文件
+    // vtkRenderWindow渲染窗口的代码不变
+
+    // 将QTextDocument的内容保存为纯文本文件
     QFile file(filePath);
     if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QTextStream stream(&file);
-        //stream.setCodec("UTF-8");
-        stream << doc.toHtml();
+        stream << doc.toPlainText();
         file.close();
         QMessageBox::information(nullptr, "提示", "保存成功");
-    }}
+    }
+
+    // QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "", QString("word(*.doc *.docx)"));
+    // if (filePath.isEmpty()){
+    //     return ;
+    // }
+    // QStringList headers;
+    // headers << "类型" << "名称" << "数据1" << "数据2" << "数据3"<<"数据4"<<"数据5";
+    // auto& entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
+    // int col = headers.size();
+    // int row = entitylist.size();
+    // QList<QList<QString>> dataAll;
+    // ExtractData(entitylist,dataAll);
+
+    // // 写入内容
+    // // 创建一个QTextDocument对象
+    // QTextDocument doc;
+
+    // QTextCharFormat formatTitle;
+    // formatTitle.setFontPointSize(16); // 设置字体大小
+    // formatTitle.setFontWeight(QFont::Bold); // 设置字体加粗
+
+    // // 创建一个QTextCursor对象
+    // QTextCursor cursor(&doc);
+    // // 标题和参数信息
+    // //cursor.insertHtml(QString("<a style='text-align：center; font-weight:bold; font-size:30px;'>%1</a>").arg(title));
+    // cursor.setCharFormat(formatTitle);
+    // cursor.insertText("entitylist列表输出");
+    // cursor.insertBlock(); // 换行
+
+    // QTextCharFormat format;
+    // format.setFontPointSize(10);
+    // format.setFontWeight(QFont::Bold);
+
+    // cursor.setCharFormat(format);
+    // //cursor.insertText("");
+
+    // // 插入一个表格，行头占一行
+    // QTextTable *table = cursor.insertTable(row + 1, col);
+
+    // //获取表格的格式
+    // QTextTableFormat tableFormat = table->format();
+    // //表格格式设置宽度
+    // tableFormat.setWidth(QTextLength(QTextLength::FixedLength, 800));
+
+    // //设置表格的columnWidthConstraints约束
+    // QVector<QTextLength> colLength = tableFormat.columnWidthConstraints();
+    // for (int i = 0; i < col; ++i) {
+    //     colLength.append(QTextLength(QTextLength::FixedLength, tableFormat.width().rawValue() / col));
+    // }
+    // tableFormat.setColumnWidthConstraints(colLength);
+    // tableFormat.setBorder(5);
+    // tableFormat.setBorderBrush(Qt::black);
+
+    // QTextTableCellFormat titleFormat;
+    // titleFormat.setBackground(QColor("moccasin"));
+    // titleFormat.setFontWeight(QFont::Bold);
+    // // 设置表头 第一行下标为1
+    // for (int i = 0; i < col; ++i) {
+    //     QTextTableCell cell = table->cellAt(0, i);
+    //     cell.firstCursorPosition().insertText(headers[i]);
+    //     cell.setFormat(titleFormat);
+    // }
+
+    // //定义单元格格式
+    // QTextTableCellFormat cellFormat;
+    // cellFormat.setBottomPadding(2);
+    // // 遍历表格的每个单元格，将数据插入到表格中
+    // for (int i = 0; i < row; ++i) {
+    //     for (int j = 0; j < dataAll[i].size(); ++j) {
+    //         // 将文本插入到表格中,第二行开始下标为2
+    //         QTextTableCell cell = table->cellAt(i + 1, j);
+    //         cell.firstCursorPosition().insertText(dataAll[i][j]);
+    //         cell.setFormat(cellFormat);
+    //     }
+    // }
+    // vtkSmartPointer<vtkRenderWindow> renderWindow=m_pMainWin->getPWinVtkWidget()->getRenderWindow();
+    // renderWindow->Render();
+    // //得到截图
+    // vtkNew<vtkWindowToImageFilter> windowToImageFilter;
+    // windowToImageFilter->SetInput(renderWindow);
+    // windowToImageFilter->SetScale(1);// 缩放因子，可以根据需要调整
+    // windowToImageFilter->SetInputBufferTypeToRGBA();//RGBA缓冲
+    // windowToImageFilter->ReadFrontBufferOff();//读取
+    // windowToImageFilter->Update();
+    // vtkSmartPointer<vtkImageData> imageData = windowToImageFilter->GetOutput();
+    // int extent[6];
+    // imageData->GetExtent(extent);
+    // int width = extent[1] - extent[0] + 1;
+    // int height = extent[3] - extent[2] + 1;
+
+    // // 获取图像数据的指针
+    // unsigned char* imagePointer = static_cast<unsigned char*>(imageData->GetScalarPointer());
+
+    // // 创建 QImage 对象
+    // QImage qImage(imagePointer, width, height, QImage::Format_RGBA8888);
+
+    // cursor.insertBlock();
+    // cursor.insertImage(qImage);
+
+
+    // //保存为Word文件
+    // QFile file(filePath);
+    // if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+    //     QTextStream stream(&file);
+    //     //stream.setCodec("UTF-8");
+    //     stream << doc.toHtml();
+    //     file.close();
+    //     QMessageBox::information(nullptr, "提示", "保存成功");
+    // }
+
+
+}
+
+
 
 static void WrongWidget(QString message,QString moreMessage="空");
 void   ToolWidget::onSaveImage(){
@@ -1127,6 +1226,8 @@ void   ToolWidget::onSaveImage(){
     windowToImageFilter->ReadFrontBufferOff();//读取
     windowToImageFilter->Update();
 
+
+
     vtkSmartPointer<vtkImageWriter> writer;
     //确认格式
     if (format == "png") {
@@ -1147,55 +1248,6 @@ void   ToolWidget::onSaveImage(){
     writer->Write();
 
 
-    // QString imagePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("Excel(*.png *.jpg)"));
-    // if (imagePath.isEmpty()){
-    //     return ;
-    // }
-    // QStringList headers;
-    // headers << "类型" << "名称" << "数据1" << "数据2" << "数据3" << "数据4" << "数据5";
-    // auto& entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
-    // QList<QList<QString>> dataAll;
-    // ExtractData(entitylist, dataAll);
-
-    // QTableWidget tableWidget(dataAll.size(), headers.size());
-    // tableWidget.setHorizontalHeaderLabels({"类型", "名称", "数据1", "数据2", "数据3", "数据4", "数据5"});
-
-    // // 设置水平表头自动调整大小
-    // tableWidget.horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-
-    // for (int i = 0; i < dataAll.size(); ++i) {
-    //     QStringList& inlist = dataAll[i];
-    //     for (int j = 0; j < inlist.size(); ++j) {
-    //         tableWidget.setItem(i, j, new QTableWidgetItem(inlist[j]));
-    //     }
-    // }
-
-    // // 调整表格大小以适应内容
-    // int totalWidth = 0;
-    // int totalHeight = 0;
-
-    // // 计算总宽度
-    // for (int i = 0; i < tableWidget.columnCount(); ++i) {
-    //     totalWidth += tableWidget.columnWidth(i) + 10;
-    // }
-
-    // // 计算总高度
-    // for (int i = 0; i < tableWidget.rowCount(); ++i) {
-    //     totalHeight += tableWidget.rowHeight(i) + 10;
-    // }
-
-    // tableWidget.setFixedSize(totalWidth, totalHeight);
-
-    // // 创建一个 QPixmap 对象以适应整个表格
-    // QPixmap pixmap(totalWidth, totalHeight);
-    // pixmap.fill(Qt::white);  // 设置背景为白色
-    // QPainter painter(&pixmap);
-
-    // // 将表格内容绘制到 QPixmap 上
-    // tableWidget.render(&painter);
-
-    // // 保存为图片
-    // pixmap.save(imagePath);
     QMessageBox::information(nullptr, "提示", "保存成功");
 }
 
@@ -1571,7 +1623,31 @@ void ToolWidget:: onFindPlane(){
 void ToolWidget::onFindPoint(){
 }
 void ToolWidget::onFindLine(){}
-void ToolWidget::onFindCircle(){}
+void ToolWidget::onFindCircle(){
+
+
+    // 选择图片文件
+    QString imagePath = QFileDialog::getOpenFileName(nullptr, "Select Image", "", "Images (*.png *.jpg *.jpeg *.bmp *.tif *.tiff)");
+    if (imagePath.isEmpty()) {
+        qDebug() << "No image selected!";
+        return ;
+    }
+
+    // 选择保存PDF文件的路径
+    QString pdfPath = QFileDialog::getSaveFileName(nullptr, "Save PDF", "", "PDF Files (*.pdf)");
+    if (pdfPath.isEmpty()) {
+        qDebug() << "No save path selected!";
+        return ;
+    }
+
+    // 将图片插入到PDF文件中
+    insertImageIntoPdf(imagePath, pdfPath);
+
+    qDebug() << "PDF created successfully at" << pdfPath;
+
+
+
+}
 void ToolWidget::onFindRectangle(){
 }
 void ToolWidget::onFindCylinder(){
