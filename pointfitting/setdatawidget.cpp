@@ -289,7 +289,7 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr setDataWidget::getConeCloud(){
 }
 
 
-//平面
+//直线
 void setDataWidget::setLineData(pcl::PointXYZRGB searchPoint,pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud){
     point=searchPoint;
     cloudptr=cloud;
