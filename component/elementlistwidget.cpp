@@ -39,10 +39,18 @@ ElementListWidget::ElementListWidget(QWidget *parent)
     // 设置移动(总开关)
     toolBar->setMovable(false);
     // 工具栏中添加控件
-    QPushButton * btn = new QPushButton("button1",this);
-    QPushButton * btn1 = new QPushButton("button2",this);
-    toolBar->addWidget(btn);
-    toolBar->addWidget(btn1);
+    startButton = new QPushButton("",this);
+    pauseButton = new QPushButton("",this);
+    terminateButton = new QPushButton("",this);
+    QIcon icon1(":/component/construct/start.png");
+    QIcon icon2(":/component/construct/stop.png");
+    QIcon icon3(":/component/construct/end.png");
+    startButton->setIcon(icon1);
+    pauseButton->setIcon(icon3);
+    terminateButton->setIcon(icon2);
+    toolBar->addWidget(startButton);
+    toolBar->addWidget(pauseButton);
+    toolBar->addWidget(terminateButton);
 
     // 布局
     layout->addWidget(toolBar);
@@ -60,6 +68,12 @@ ElementListWidget::ElementListWidget(QWidget *parent)
 
     connect(treeWidgetNames, &QTreeWidget::itemClicked, this, &ElementListWidget::onItemClicked);
     connect(treeWidgetNames, &QTreeWidget::itemDoubleClicked, this, &ElementListWidget::showDialog);
+
+    // 连接树部件的双击信号
+    connect(treeWidgetNames, &QTreeWidget::itemChanged, this, &ElementListWidget::isAdd);
+
+    // 设置状态机
+    setupStateMachine();
 }
 
 void ElementListWidget::CreateEllipse(CObject*obj)
@@ -169,13 +183,13 @@ void ElementListWidget::onCustomContextMenuRequested(const QPoint &pos)
     QMenu menu(this);
     QAction *action1 = menu.addAction("删除");
     QAction *action2 = menu.addAction("全部选中");
-    QAction *action3 = menu.addAction("选中所有相同项");
+    QAction *action3 = menu.addAction("遍历列表");
     QAction *action4 = menu.addAction("设置公差");
     QAction *action5 = menu.addAction("显示元素信息");
     QAction *action6 = menu.addAction("关闭元素信息");
     connect(action1, &QAction::triggered, this, &ElementListWidget::onDeleteEllipse);
     connect(action2, &QAction::triggered, this, &ElementListWidget::selectall);
-    connect(action3, &QAction::triggered, this, &ElementListWidget::selectall);
+    connect(action3, &QAction::triggered, this, &ElementListWidget::starttime);
     connect(action4, &QAction::triggered, this, &ElementListWidget::setTolerance);
     connect(action5, &QAction::triggered, this, &ElementListWidget::showInfotext);
     connect(action6, &QAction::triggered, this, &ElementListWidget::closeInfotext);
@@ -199,6 +213,7 @@ void ElementListWidget::upadteelementlist()
     eleobjlist.clear();
     for(const auto& obj :m_pMainWin->m_ObjectListMgr->getObjectList()){
         CreateEllipse(obj);
+        qDebug()<<"列表更新";
         //obj->SetSelected(false);
         QString name=obj->GetObjectCName();
         if(name.left(5)!="临时坐标系"&&name.left(5)!="工件坐标系"){
@@ -238,7 +253,6 @@ void ElementListWidget::onItemClicked()
             ShowParent(obj1);
         }
     }
-
 }
 
 void ElementListWidget::setTolerance()
@@ -374,6 +388,142 @@ void ElementListWidget::mousePressEvent(QMouseEvent *event)
     }
 }
 
+void ElementListWidget::setupStateMachine()
+{
+    // 创建状态机
+    stateMachine = new QStateMachine(this);
+
+    // 创建状态
+    stoppedState = new QState();
+    runningState = new QState();
+    pausedState = new QState();
+
+    // 配置状态间的切换
+    stoppedState->addTransition(startButton, &QPushButton::clicked, runningState);
+    runningState->addTransition(pauseButton, &QPushButton::clicked, pausedState);
+    pausedState->addTransition(startButton, &QPushButton::clicked, runningState);
+    runningState->addTransition(terminateButton, &QPushButton::clicked, stoppedState);
+    pausedState->addTransition(terminateButton, &QPushButton::clicked, stoppedState);
+
+    // 状态进入时的行为
+    connect(stoppedState, &QState::entered, [this]() {
+        startButton->setEnabled(true);
+        pauseButton->setEnabled(false);
+        terminateButton->setEnabled(false);
+    });
+
+    connect(runningState, &QState::entered, [this]() {
+        startButton->setEnabled(false);
+        pauseButton->setEnabled(true);
+        terminateButton->setEnabled(true);
+        Treelistsize=m_pMainWin->getEntityListMgr()->getEntityList().size();
+    });
+
+    connect(pausedState, &QState::entered, [this]() {
+        startButton->setEnabled(true);
+        pauseButton->setEnabled(false);
+        terminateButton->setEnabled(true);
+    });
+
+    // 添加状态到状态机
+    stateMachine->addState(stoppedState);
+    stateMachine->addState(runningState);
+    stateMachine->addState(pausedState);
+
+    // 设置初始状态
+    stateMachine->setInitialState(stoppedState);
+
+    // 启动状态机
+    stateMachine->start();
+
+}
+
+void ElementListWidget::onAddElement()
+{
+    bool isCloud=false;
+    if (stateMachine->configuration().contains(runningState)) {
+        isCloud=true;
+    }
+    if(isCloud){
+        qDebug()<<"aaaaa";
+        if(m_pMainWin->getEntityListMgr()->getEntityList()[m_pMainWin->getEntityListMgr()->getEntityList().size()-1]->GetObjectCName().left(2)=="点云"){
+            qDebug()<<"bbbbb";
+            starttime();
+            updateDistance(m_pMainWin->getEntityListMgr()->getEntityList().back());
+            qDebug()<<"通知之前";
+            m_pMainWin->NotifySubscribe();
+            qDebug()<<"通知之后";
+        }
+    }
+}
+
+void ElementListWidget::updateDistance(CEntity *entity)
+{
+    CPointCloud*could=static_cast<CPointCloud*>(entity);
+    pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree;
+    kdtree.setInputCloud(could->GetmyCould().makeShared());
+    std::vector<int> pointIdxNKNSearch(1);
+    std::vector<float> pointNKNSquaredDistance(1);
+    pcl::PointXYZRGB searchPoint;
+    QVector<CEntity*>distancelist;
+    QVector<int>index;
+    for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
+        if(m_pMainWin->getEntityListMgr()->getEntityList()[i]->GetObjectCName().left(2)=="距离"){
+            distancelist.push_back(m_pMainWin->getEntityListMgr()->getEntityList()[i]);
+            index.push_back(i);
+        }
+    }
+    qDebug()<<"aaaaa"<<distancelist.size();
+    int t=0;
+    for(auto distance:distancelist){
+        QVector<CPoint*>list;
+        for(CObject*obj:distance->parent){
+            if(obj->GetUniqueType()==enPoint){
+                CPoint*point=static_cast<CPoint*>(obj);
+                searchPoint.x=point->GetPt().x;
+                searchPoint.y=point->GetPt().y;
+                searchPoint.z=point->GetPt().z;
+                if (kdtree.nearestKSearch(searchPoint, 1, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
+                    int nearestIdx = pointIdxNKNSearch[0];
+                    pcl::PointXYZRGB nearestPoint = could->GetmyCould().points[nearestIdx];
+                    for(int i=0;i<m_pMainWin->getObjectListMgr()->getObjectList().size();i++){
+                        if(m_pMainWin->getObjectListMgr()->getObjectList()[i]==obj){
+                            CPoint*point1=static_cast<CPoint*>(m_pMainWin->getObjectListMgr()->getObjectList()[i]);
+                            CPosition pt;
+                            pt.x=nearestPoint.x;pt.y=nearestPoint.y;pt.z=nearestPoint.z;
+                            point1->SetPosition(pt);
+                            qDebug()<<"point1点"<<point1->GetPt().x;
+                            list.push_back(point1);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        //CDistance* dis = dynamic_cast<CDistance*>(distance);
+        CPosition begin=list[0]->GetPt();
+        CPosition end=list[1]->GetPt();
+        qDebug()<<"begin点"<<begin.x;
+        CDistance*dis=dynamic_cast<CDistance*>(m_pMainWin->getObjectListMgr()->getObjectList()[index[t]]);
+        dis->setbegin(begin);
+        dis->setend(end);
+        qDebug()<<"距离"<<dis->getdistancepoint();
+        t++;
+    }
+}
+
+void ElementListWidget::isAdd()
+{
+    int Nowlistsize=m_pMainWin->getEntityListMgr()->getEntityList().size();
+    if(Nowlistsize>Treelistsize){
+        Treelistsize=Nowlistsize;
+        onAddElement();
+        qDebug()<<"isAdd结束";
+    }else if(Nowlistsize<Treelistsize){
+        Treelistsize=Nowlistsize;
+    }
+}
+
 void ElementListWidget::mouseDoubleClickEvent(QMouseEvent *event)
 {
     qDebug()<<"鼠标1";
@@ -394,14 +544,30 @@ QVector<CObject*> ElementListWidget::getEleobjlist(){
     return eleobjlist;
 }
 
+void ElementListWidget::starttime()
+{
+    currentIndex=0;
+    timer = new QTimer(this);
+    connect(timer, &QTimer::timeout, this, &ElementListWidget::selectall);
+    timer->start(1000);
+}
+
 void ElementListWidget::selectall()
 {
-    int ItemCount = treeWidgetNames->topLevelItemCount();
+    /*int ItemCount = treeWidgetNames->topLevelItemCount();
     qDebug()<<ItemCount;
     for(int i=0;i<ItemCount;i++){
         QTreeWidgetItem *item = treeWidgetNames->topLevelItem(i);
         item->setSelected(true);
         m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(true);
+    }*/
+
+    if(currentIndex < treeWidgetNames->topLevelItemCount()) {
+        QTreeWidgetItem *item = treeWidgetNames->topLevelItem(currentIndex);
+        treeWidgetNames->setCurrentItem(item);
+        currentIndex++;
+    }else{
+        timer->stop();
     }
 }
 

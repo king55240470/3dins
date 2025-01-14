@@ -993,6 +993,7 @@ void CDistance::setbegin(const CPosition &newbegin)
 void CDistance::setend(const CPosition &newend)
 {
     end=newend;
+    isHavePoint = true;
 }
 
 void CDistance::setplane(const CPlane &Plane)
@@ -1111,7 +1112,16 @@ double CDistance::getdistanceline()
 
 double CDistance::getdistance()
 {
-    return distance;
+    if(isHavePoint){
+        return getdistancepoint();
+    }else if(isHaveLine){
+        return getdistanceline();
+    }else if(isHaveCircle){
+        return getdistancecircle();
+    }else if(isHavePlane){
+        return getdistanceplane();
+    }
+    return 0;
 }
 
 void CDistance::setdistance(double d)

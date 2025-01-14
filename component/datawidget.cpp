@@ -80,14 +80,16 @@ void DataWidget::updateinfo()
         return;
     }
     CObject* obj=m_pMainWin->getObjectListMgr()->getObjectList()[index];
+
         //CEntity* entity=m_pMainWin->m_EntityListMgr->m_entityList[index];
         //table->setItem(count, 0, new QTableWidgetItem(entity->m_strCName));
         label2->setText(obj->m_strCName);
         if(obj->GetUniqueType()==enPoint){
             CPoint* point = dynamic_cast<CPoint*>(obj);
+            qDebug()<<"data里的point"<<point->GetPt().x;
             CPosition position;
             //转换为全局坐标
-            QVector4D vec=point->m_pRefCoord->m_mat*QVector4D(point->m_pt.x,point->m_pt.y,point->m_pt.z,1);
+            QVector4D vec=point->m_pRefCoord->m_mat*QVector4D(point->GetPt().x,point->GetPt().y,point->GetPt().z,1);
             CPosition gloPosition(vec.x(),vec.y(),vec.z());
 
             if(m_pMainWin->m_nRelyOnWhichCs==csRef){
@@ -673,10 +675,12 @@ void DataWidget::updateinfo()
         }
         if(obj->m_strCName.left(2)=="距离"){
             CDistance* distance=dynamic_cast<CDistance*>(obj);
+            qDebug()<<"data里面的距离"<<distance->getdistance();
             CPosition position;
             position.x=distance->getUptolerance();
             position.y=distance->getUndertolerance();
             position.z=distance->getdistance();
+            qDebug()<<"data里面的距离"<<position.z;
             if (distance != nullptr){
                 table->setItem(0, 0, new QTableWidgetItem("上公差"));
                 table->setItem(0, 1, new QTableWidgetItem(QString::number(position.x,'f',6)));

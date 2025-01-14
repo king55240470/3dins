@@ -3,6 +3,7 @@ QT += printsupport
 QT += axcontainer
 QT += opengl
 LIBS += -lOpengl32
+QT += statemachine
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -110,6 +111,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 RESOURCES += \
     filemanagerwidget.qrc \
     graph.qrc \
+    start.qrc \
     toolwidget.qrc
 
 
@@ -791,14 +793,5 @@ CONFIG(debug, debug|release){
     TARGET = ../_release32/AppName
     }
 }
-DEFINES += CURL_STATICLIB
 
-INCLUDEPATH += D:\curl-8.11.0\builds\libcurl-vc14.2-x86-release-dll-ipv6-sspi-schannel\include
-LIBS += -LD:\curl-8.11.0\builds\libcurl-vc14.2-x86-release-dll-ipv6-sspi-schannel\lib
-LIBS += -llibcurl
-LIBS += -lWs2_32 -lWldap32 -lCrypt32 -lNormaliz
-
-DEFINES += CURL_STATICLIB
-INCLUDEPATH += D:\curl-8.11.0\builds\libcurl-vc14.2-x86-release-static-ipv6-sspi-schannel\include
-LIBS += -LD:\curl-8.11.0\builds\libcurl-vc14.2-x86-release-static-ipv6-sspi-schannel\lib
 
