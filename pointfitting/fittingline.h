@@ -9,6 +9,8 @@ class FittingLine
 public:
     FittingLine();
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr RANSAC(pcl::PointXYZRGB,pcl::PointCloud<pcl::PointXYZRGB>::Ptr);
+    void getCloudBounds(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr&, Eigen::Vector3f&, Eigen::Vector3f&);
+    void getLineEndpoints(const Eigen::Vector3f&, const Eigen::Vector3f&, const Eigen::Vector3f&, const Eigen::Vector3f&, Eigen::Vector3f&, Eigen::Vector3f&);
     bool isPointInLine(const pcl::PointXYZRGB&);
     void setRadius(double);
     void setDistance(double);

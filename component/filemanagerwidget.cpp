@@ -382,7 +382,9 @@ void FileManagerWidget::UpdateInfo(){
     //     }
     // }
     createContentItem();
+    qDebug()<<"文件更新";
     createIdentifyItem();
+    qDebug()<<"文件更新2";
 }
 
 

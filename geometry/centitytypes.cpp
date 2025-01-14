@@ -999,6 +999,7 @@ void CDistance::setbegin(const CPosition &newbegin)
 void CDistance::setend(const CPosition &newend)
 {
     end=newend;
+    isHavePoint = true;
 }
 
 void CDistance::setplane(const CPlane &Plane)
@@ -1058,7 +1059,7 @@ double CDistance::getdistanceplane()
                                     glbPos_begin.z - glbPos_center.z);
     // 使用点积自动判定begin与法向量正向还是反向
     double distance = QVector3D::dotProduct(direction, unitNormal.toVector3D()) / unitNormal.length();
-    return distance;
+    return abs(distance);
 }
 
 double CDistance::getdistancecircle()
@@ -1117,7 +1118,16 @@ double CDistance::getdistanceline()
 
 double CDistance::getdistance()
 {
-    return distance;
+    if(isHavePoint){
+        return getdistancepoint();
+    }else if(isHaveLine){
+        return getdistanceline();
+    }else if(isHaveCircle){
+        return getdistancecircle();
+    }else if(isHavePlane){
+        return getdistanceplane();
+    }
+    return 0;
 }
 
 void CDistance::setdistance(double d)

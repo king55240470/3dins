@@ -623,6 +623,7 @@ public:
     bool judge();
     void setProjection(CPosition pos);
     // 分别判断出了begin以外的图形是哪种
+     bool isHavePoint = false;
     bool isHavePlane = false;
     bool isHaveLine = false;
     bool isHaveCircle = false;
@@ -724,6 +725,21 @@ public:
     {
         return GetWorldPcsPos(m_pt);
     }
+    pcl::PointCloud<pcl::PointXYZRGB> GetmyCould(){
+        return m_pointCloud;
+    }
+};
+class CSS  : public CEntity
+{
+private:
+    CPosition center;
+
+
+public:
+    CSS(){
+
+    }
+
 };
 
 #endif // CENTITYTYPES_H
