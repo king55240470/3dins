@@ -114,6 +114,11 @@ void VtkWidget::setCentity(CEntity *entity)
     createText();
 }
 
+void VtkWidget::setCentityList(QVector<CEntity *> list)
+{
+    elementEntityList=list;
+}
+
 void VtkWidget::MouseDrag()
 {
 
@@ -139,7 +144,6 @@ void VtkWidget::createText()
     QByteArray byteArray = qstr.toUtf8(); // 转换 QString 到 QByteArray
     infoTextActor->SetInput(byteArray.constData());
     infoTextActor->SetPosition(renWin->GetSize()[0] - 200, renWin->GetSize()[1] - 100);
-
     // 设置交互器的鼠标移动回调
     renderer->AddActor(infoTextActor);
     createTextBox();
@@ -212,16 +216,14 @@ void VtkWidget::createTextBox()
     rectangleActor->SetPosition(a[0],a[1]);
     qDebug()<<a[0]<<a[1];
     //rectangleActor->SetVisibility(false);
-
     renderer->AddActor(rectangleActor);
 }
 
 void VtkWidget::createLine()
 {
-    if (lineActor&&iconActor)
+    if (lineActor)
     {
         renderer->RemoveActor(lineActor); // 从渲染器中移除旧的演员
-        renderer->RemoveActor(iconActor);
     }
     pngReader = vtkSmartPointer<vtkPNGReader>::New();
     double *a=rectangleActor->GetPosition();
@@ -356,6 +358,7 @@ vtkSmartPointer<vtkRenderer>& VtkWidget::getRenderer(){
 // 刷新vtk窗口
 void VtkWidget::UpdateInfo(){
     reDrawCentity();
+    qDebug()<<"图像更新";
 }
 
 void VtkWidget::reDrawCentity(){
@@ -484,6 +487,7 @@ void VtkWidget::onTopView() {
 
         // 重新设置相机并渲染
         renderer->ResetCamera();
+        //createText();
         renWin->Render();
     }
 }
@@ -501,6 +505,7 @@ void VtkWidget::onRightView(){
 
         // 重新设置相机并渲染
         renderer->ResetCamera();
+        //createText();
         renWin->Render();
     }
 }
@@ -518,6 +523,7 @@ void VtkWidget::onFrontView(){
 
         // 重新设置相机并渲染
         renderer->ResetCamera();
+        //createText();
         renWin->Render();
     }
 }
@@ -536,6 +542,7 @@ void VtkWidget::onIsometricView(){
 
         // 重新设置相机并渲染
         renderer->ResetCamera();
+        //createText();
         renWin->Render();
     }
 }
