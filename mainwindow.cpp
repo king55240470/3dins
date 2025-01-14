@@ -99,7 +99,7 @@ void MainWindow::setupUi(){
 
     QAction* openFTP=bar->addAction("FTP文件传输");
     connect(openFTP,&QAction::triggered,this,[&](){
-        pMyFtp->show();
+        //pMyFtp->show();
     });
 
     // 添加竖线分隔符

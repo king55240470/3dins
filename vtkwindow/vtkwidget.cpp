@@ -359,6 +359,7 @@ vtkSmartPointer<vtkRenderer>& VtkWidget::getRenderer(){
 // 刷新vtk窗口
 void VtkWidget::UpdateInfo(){
     reDrawCentity();
+    qDebug()<<"图像更新";
 }
 
 void VtkWidget::reDrawCentity(){
@@ -479,6 +480,7 @@ void VtkWidget::onTopView() {
 
         // 重新设置相机并渲染
         renderer->ResetCamera();
+        //createText();
         renWin->Render();
     }
 }
@@ -496,6 +498,7 @@ void VtkWidget::onRightView(){
 
         // 重新设置相机并渲染
         renderer->ResetCamera();
+        //createText();
         renWin->Render();
     }
 }
@@ -513,6 +516,7 @@ void VtkWidget::onFrontView(){
 
         // 重新设置相机并渲染
         renderer->ResetCamera();
+        //createText();
         renWin->Render();
     }
 }
@@ -531,6 +535,7 @@ void VtkWidget::onIsometricView(){
 
         // 重新设置相机并渲染
         renderer->ResetCamera();
+        //createText();
         renWin->Render();
     }
 }
