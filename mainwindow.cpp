@@ -121,6 +121,18 @@ void MainWindow::setupUi(){
         pWinVtkWidget->onAlign();
     });
 
+    // QMenu *fittingMenu=bar->addMenu("拟合参数设置");
+    // QAction* fittingPlaneAction=fittingMenu->addAction("拟合平面");
+    // connect(fittingPlaneAction, &QAction::triggered, this, &setDataWidget::setPlaneData);
+    // QAction* fittingCylinderAction=fittingMenu->addAction("拟合圆柱");
+    // connect(fittingCylinderAction, &QAction::triggered, this, &setDataWidget::setCylinderData);
+    // QAction* fittingConeAction=fittingMenu->addAction("拟合圆锥");
+    // connect(fittingConeAction, &QAction::triggered, this, &setDataWidget::setConeData);
+    // QAction* fittingSphereAction=fittingMenu->addAction("拟合球");
+    // connect(fittingSphereAction, &QAction::triggered, this, &setDataWidget::setSphereData);
+    // QAction* fittingLineAction=fittingMenu->addAction("拟合直线");
+    // connect(fittingLineAction, &QAction::triggered, this, &setDataWidget::setLineData);
+
     QMenu * switchTheme = bar->addMenu("主题");
     QAction* lightTheme = switchTheme->addAction("浅蓝色(默认)");
     connect(lightTheme, &QAction::triggered, this, &MainWindow::onConvertLighBlueTheme);
@@ -265,7 +277,7 @@ void MainWindow::openFile(){
             // in.setVersion(QDataStream::Qt_6_0);
             in>>*m_EntityListMgr;
             in>>*m_ObjectListMgr;
-            // pWinFileManagerWidget->openModelFile("output.ply", "D:/output.ply");
+            pWinSetDataWidget->deserialize(in);
             qDebug() << "加载成功,m_EntityListMgr的大小为:"<<m_EntityListMgr->getEntityList().size()<<"m_ObjectListMgr的大小为:"<<m_ObjectListMgr->getObjectList().size();
             qDebug()<<"首个Object的类型为:"<<m_ObjectListMgr->GetAt(0)->GetUniqueType();
             NotifySubscribe();
@@ -314,6 +326,7 @@ void MainWindow::saveFile(){
     if(m_EntityListMgr){
         out<<*m_EntityListMgr;
         out<<*m_ObjectListMgr;
+        pWinSetDataWidget->serialize(out);
     }else{
         qWarning("Entity manager is null, nothing to save.");
     }

@@ -20,11 +20,18 @@
 #include <QKeyEvent>
 #include <QMouseEvent>
 #include <QAction>
+#include <QStateMachine>
+#include <QState>
+#include <QFinalState>
+#include <QSignalTransition>
+#include <QPropertyAnimation>
+#include <QTimer>
 #include "toolwidget.h"
 #include "mainwindow.h"
 #include "DataWidget.h"
 #include "toolwidget.h"
 #include"vtkwindow/vtkwidget.h"
+#include"constructor/distanceconstructor.h"
 class ElementListWidget : public QWidget
 {
     Q_OBJECT
@@ -41,6 +48,7 @@ public:
     void upadteelementlist();
     QList<QTreeWidgetItem*> getSelectedItems();
     QVector<CObject*> getEleobjlist();
+    void starttime();
     void selectall();
     void showDialog();
     void selectcommonitem();
@@ -51,11 +59,17 @@ public:
     void showInfotext();
     void closeInfotext();
     void mousePressEvent(QMouseEvent *event) override;
+    void setupStateMachine();
+    void onAddElement();
+    void updateDistance(CEntity*entity);
+    void isAdd();
+
 protected:
     void mouseDoubleClickEvent(QMouseEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
     void keyReleaseEvent(QKeyEvent *event) override;
 private:
+
     QTreeWidget *treeWidgetNames;
     QTreeWidget *treeWidgetInfo;
     QLineEdit *xLineEdit;
@@ -72,7 +86,17 @@ private:
     QLineEdit* up;
     QLineEdit* down;
     QPushButton *updownBtn;
+    QPushButton *startButton;
+    QPushButton *pauseButton;
+    QPushButton *terminateButton;
     QDialog *dialog;
+    QStateMachine *stateMachine;
+    QState *stoppedState;
+    QState *runningState;
+    QState *pausedState;
+    int Treelistsize=0;
+    int currentIndex;
+    QTimer* timer;
 signals:
     void itemSelected(int index);
 };
