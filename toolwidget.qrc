@@ -30,5 +30,8 @@
         <file>component/viewangle/up.png</file>
         <file>component/construct/distance.png</file>
         <file>component/construct/pointCloud.png</file>
+        <file>component/construct/end.png</file>
+        <file>component/construct/start.png</file>
+        <file>component/construct/stop.png</file>
     </qresource>
 </RCC>
