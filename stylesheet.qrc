@@ -1,6 +1,6 @@
 <RCC>
     <qresource prefix="/">
-        <file>style/light_color_theme.qss</file>
-        <file>style/deep_color_theme.qss</file>
+        <file>style/lightblue_theme.qss</file>
+        <file>style/grey_theme.qss</file>
     </qresource>
 </RCC>
