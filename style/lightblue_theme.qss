@@ -49,8 +49,9 @@ QLabel:selected {
 QPushButton {
     font-size: 14px "微软雅黑";
     text-align: center;
-    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #4a90e2, stop: 1 #3570b2);
-    border: 1px solid #3570b2;
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+    stop: 0 rgba(74, 144, 226, 200), stop: 1 rgba(53, 112, 178, 200));
+    border: 1px solid #3570b2;;
     border-radius: 5px;
     padding: 5px;
     color: #ffffff;
