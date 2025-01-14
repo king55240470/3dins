@@ -31,6 +31,7 @@
 #include <pcl/features/fpfh.h>
 #include <pcl/registration/sample_consensus_prerejective.h>
 #include <pcl/registration/icp.h>
+#include <pcl/registration/ia_ransac.h>
 
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
