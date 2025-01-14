@@ -48,7 +48,9 @@ SOURCES += \
     manager/pointcloudlistmgr.cpp \
     pointfitting/fittingcone.cpp \
     pointfitting/fittingcylinder.cpp \
+    pointfitting/fittingline.cpp \
     pointfitting/fittingplane.cpp \
+    pointfitting/fittingpoint.cpp \
     pointfitting/fittingsphere.cpp \
     pointfitting/setdatawidget.cpp \
     vtkwindow/clickhighlightstyle.cpp \
@@ -94,7 +96,9 @@ HEADERS += \
     manager/pointcloudlistmgr.h \
     pointfitting/fittingcone.h \
     pointfitting/fittingcylinder.h \
+    pointfitting/fittingline.h \
     pointfitting/fittingplane.h \
+    pointfitting/fittingpoint.h \
     pointfitting/fittingsphere.h \
     pointfitting/setdatawidget.h \
     vtkwindow/clickhighlightstyle.h \
@@ -112,6 +116,7 @@ RESOURCES += \
     filemanagerwidget.qrc \
     graph.qrc \
     start.qrc \
+    stylesheet.qrc \
     toolwidget.qrc
 
 

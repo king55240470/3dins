@@ -69,6 +69,8 @@
 #include "pointfitting/fittingcylinder.h"//拟合圆柱算法
 #include "pointfitting/fittingsphere.h"//拟合圆柱算法
 #include "pointfitting/fittingcone.h"//拟合圆柱算法
+#include "pointfitting/fittingpoint.h"
+#include "pointfitting/fittingline.h"
 #include "pointfitting/setdatawidget.h"
 
 
@@ -712,7 +714,7 @@ void   ExtractData(QVector<CEntity *>& entitylist,QList<QList<QString>>& dataAll
 }
 void   ToolWidget::onSavePdf(){
 
-    QString path = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("Pdf(*.pdf)"));
+    QString path = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "", QString("Pdf(*.pdf)"));
     if (path.isEmpty()){
         return ;
     }
@@ -797,7 +799,7 @@ void   ToolWidget::onSavePdf(){
 }
 void   ToolWidget::onSaveExcel(){
 
-    QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("Excel(*.xlsx *.xls)"));
+    QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "", QString("Excel(*.xlsx *.xls)"));
     if (filePath.isEmpty()){
         return ;
     }
@@ -905,7 +907,7 @@ void   ToolWidget::onSaveExcel(){
 }
 
 void ToolWidget::onSaveTxt(){
-    QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("txt(*.txt )"));  
+    QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "", QString("txt(*.txt )"));
     if (filePath.isEmpty()){
         return ;
     }
@@ -1019,7 +1021,7 @@ void ToolWidget::onSaveTxt(){
 }
 
 void   ToolWidget::onSaveWord(){
-    QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "文件名", QString("word(*.doc *.docx)"));
+    QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "", QString("word(*.doc *.docx)"));
     if (filePath.isEmpty()){
         return ;
     }
@@ -1104,11 +1106,9 @@ void   ToolWidget::onSaveWord(){
         QMessageBox::information(nullptr, "提示", "保存成功");
     }}
 
-void saveScreenshot() {
-
-}
 static void WrongWidget(QString message,QString moreMessage="空");
 void   ToolWidget::onSaveImage(){
+    //得到路径名称
     QString filter = "PNG (*.png);;JPEG (*.jpg *.jpeg);;TIFF (*.tif *.tiff);;BMP (*.bmp)";
     QString fileName = QFileDialog::getSaveFileName(this, "Save Screenshot", "", filter, &filter);
 
@@ -1121,15 +1121,16 @@ void   ToolWidget::onSaveImage(){
 
     vtkSmartPointer<vtkRenderWindow> renderWindow=m_pMainWin->getPWinVtkWidget()->getRenderWindow();
     renderWindow->Render();
+    //得到截图
     vtkNew<vtkWindowToImageFilter> windowToImageFilter;
     windowToImageFilter->SetInput(renderWindow);
-    windowToImageFilter->SetScale(1);
-    windowToImageFilter->SetInputBufferTypeToRGBA();
-    windowToImageFilter->ReadFrontBufferOff();
+    windowToImageFilter->SetScale(1);// 缩放因子，可以根据需要调整
+    windowToImageFilter->SetInputBufferTypeToRGBA();//RGBA缓冲
+    windowToImageFilter->ReadFrontBufferOff();//读取
     windowToImageFilter->Update();
 
     vtkSmartPointer<vtkImageWriter> writer;
-
+    //确认格式
     if (format == "png") {
         writer = vtkSmartPointer<vtkPNGWriter>::New();
     } else if (format == "jpg" || format == "jpeg") {
@@ -1142,7 +1143,7 @@ void   ToolWidget::onSaveImage(){
         std::cerr << "Unsupported format: " << format << std::endl;
         return;
     }
-
+    //写入文件
     writer->SetFileName(fileName.toStdString().c_str());
     writer->SetInputConnection(windowToImageFilter->GetOutputPort());
     writer->Write();
@@ -1391,25 +1392,7 @@ void ToolWidget::onConstructPlane(){
     m_pMainWin->NotifySubscribe();
 }
 void ToolWidget::onConstructRectangle(){
-
-    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
-    RectangleConstructor constructor;
-    CPlane* newRectangle=(CPlane*)constructor.create(entityList);
-    if(newRectangle==nullptr){
-        if(constructor.getWrongInformation()==PointTooMuch){
-            WrongWidget("列表选中的点过多");
-        }else if(constructor.getWrongInformation()==PointTooLess){
-            WrongWidget("列表选中的点过少");
-        }else if(constructor.getWrongInformation()==PointTooClose){
-            WrongWidget("列表选中的点过近");
-        }else if(constructor.getWrongInformation()==PointDontMatch){
-            WrongWidget("四点无法构成矩形");
-        }
-        return ;
-    }
-    addToList(newRectangle);
-    m_pMainWin->NotifySubscribe();
-
+    onConstructPlane();
 }
 
 void ToolWidget::onConstructSphere(){
@@ -1588,8 +1571,129 @@ void ToolWidget:: onFindPlane(){
 }
 
 void ToolWidget::onFindPoint(){
+    FittingPoint *nearPoint=new FittingPoint();
+
+    //读取选中的点云
+    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+    QVector<CPointCloud*> pointClouds;
+
+    //读取选中的点
+    QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenActorAxes();
+    pcl::PointXYZRGB  point;
+    if(positions.size()==0)return ;
+    point.x=positions[0].x;
+    point.y=positions[0].y;
+    point.z=positions[0].z;
+
+    // 获取拟合用的点云指针
+    auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
+    nearPoint->RANSAC(point,cloudptr);
+
+    // 如果没有从窗口里选中点云，则从列表中获取，列表中也没有选中则报异常
+    if(cloudptr==nullptr){
+        for(int i=0;i<entityList.size();i++){
+            CEntity* entity=entityList[i];
+            if(!entity->IsSelected())continue;
+            if(entity->GetUniqueType()==enPointCloud){
+                CPointCloud* pointCloud=(CPointCloud*)entity;
+                pointClouds.append(pointCloud);
+            }
+        }
+        if(pointClouds.size()<1){
+            WrongWidget("选中的点云数目为0");
+            return ;
+        }else if(pointClouds.size()>1){
+            WrongWidget("选中的点云数目大于1");
+            return ;
+        }
+        else
+            nearPoint->RANSAC(point,pointClouds[0]->m_pointCloud.makeShared());
+        return ;
+    }
+
+    PointConstructor constructor;
+    CPoint* newPoint;
+    CPosition center;
+    center.x=nearPoint->getPoint()[0];
+    center.y=nearPoint->getPoint()[1];
+    center.z=nearPoint->getPoint()[2];
+    newPoint=constructor.createPoint(center);
+    if(newPoint==nullptr){
+        qDebug()<<"找到最近点生成错误";
+        return ;
+    }
+    addToFindList(newPoint);
+
+    positions.clear();
+    m_pMainWin->NotifySubscribe();
 }
-void ToolWidget::onFindLine(){}
+void ToolWidget::onFindLine(){
+    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+    QVector<CPointCloud*> pointClouds;
+
+    //读取选中的点
+    QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenActorAxes();
+    pcl::PointXYZRGB  point;
+    if(positions.size()==0)return ;
+    point.x=positions[0].x;
+    point.y=positions[0].y;
+    point.z=positions[0].z;
+
+    // 获取拟合用的点云指针
+    auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
+
+    // 如果没有从窗口里选中点云，则从列表中获取，列表中也没有选中则报异常
+    if(cloudptr==nullptr){
+        for(int i=0;i<entityList.size();i++){
+            CEntity* entity=entityList[i];
+            if(!entity->IsSelected())continue;
+            if(entity->GetUniqueType()==enPointCloud){
+                CPointCloud* pointCloud=(CPointCloud*)entity;
+                pointClouds.append(pointCloud);
+            }
+        }
+        if(pointClouds.size()<1){
+            WrongWidget("选中的点云数目为0");
+            return ;
+        }else if(pointClouds.size()>1){
+            WrongWidget("选中的点云数目大于1");
+            return ;
+        }
+        else
+            m_pMainWin->getPWinSetDataWidget()->setLineData(point,pointClouds[0]->m_pointCloud.makeShared());
+        return ;
+    }
+    m_pMainWin->getPWinSetDataWidget()->setLineData(point, cloudptr);
+
+    // 生成点云对象并添加到entitylist
+    auto lineCloud=m_pMainWin->getPWinSetDataWidget()->getLineCloud();
+    if(lineCloud==nullptr){
+        qDebug()<<"拟合圆柱生成错误";
+        return ;
+    }
+    auto line=m_pMainWin->getPWinSetDataWidget()->getLine();
+    if(line==nullptr){
+        return;
+    }
+    LineConstructor constructor;
+    CLine* newLine;
+    CPosition begin,end;
+    begin.x=line->getBegin().x();
+    begin.y=line->getBegin().y();
+    begin.z=line->getBegin().z();
+    end.x=line->getEnd().x();
+    end.y=line->getEnd().y();
+    end.z=line->getEnd().z();
+    newLine=constructor.createLine(begin,end);
+    if(newLine==nullptr){
+        qDebug()<<"拟合圆柱生成错误";
+        return ;
+    }
+    addToFindList(newLine);
+
+    positions.clear();
+    m_pMainWin->NotifySubscribe();
+}
 void ToolWidget::onFindCircle(){}
 void ToolWidget::onFindRectangle(){
 }
@@ -1696,6 +1800,7 @@ void ToolWidget::onFindCone(){
         return ;
     }
     m_pMainWin->getPWinSetDataWidget()->setConeData(point, cloudptr);
+
 
     auto coneCloud=m_pMainWin->getPWinSetDataWidget()->getConeCloud();
     if(coneCloud==nullptr){

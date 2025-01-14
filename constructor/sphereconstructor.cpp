@@ -52,8 +52,9 @@ static auto calculateSphere=[](const QVector4D& p1, const QVector4D& p2, const Q
 };
 SphereConstructor::SphereConstructor() {}
 CEntity* SphereConstructor::create(QVector<CEntity*>& entitylist){
-    Constructor::create(entitylist);
-    QVector<CPosition>positions;//存储有效点
+    // Constructor::create(entitylist);
+    // QVector<CPosition>&positions=Constructor::getPositions();//存储有效点
+    QVector<CPosition>positions;
     QVector<CPoint*>points;
     QVector<CCircle*>circles;
     CCircle* Circle=nullptr;//存储圆
@@ -69,9 +70,14 @@ CEntity* SphereConstructor::create(QVector<CEntity*>& entitylist){
             CSphere*sphere=createSphere(Circle->getCenter(),Circle->getDiameter()/2);
             sphere->parent.push_back(circles[0]);
             return sphere;
+        }else if(entity->GetUniqueType()==enPoint){
+            CPoint* point=(CPoint*)entity;
+            points.append(point);
+            positions.append(point->GetPt());
         }
         ;
     }
+    qDebug()<<positions.size();
      if(positions.size()==4){
         CSphere*sphere=createSphere(positions[0],positions[1],positions[2],positions[3]);
         sphere->parent.push_back(points[0]);

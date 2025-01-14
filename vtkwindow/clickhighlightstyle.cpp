@@ -6,7 +6,7 @@ vtkStandardNewMacro(MouseInteractorHighlightActor);
 MouseInteractorHighlightActor::MouseInteractorHighlightActor(vtkInteractorStyleTrackballCamera* parent)
 {
     vtkMenu = new QMenu(m_pMainWin); // 创建菜单
-    auto cancelSelect = new QAction("还没写");
+    auto cancelSelect = new QAction("取消选中");
     vtkMenu->addAction(cancelSelect);
 }
 
@@ -20,6 +20,12 @@ void MouseInteractorHighlightActor::OnLeftButtonDown()
     // 创建一个PropPicker对象，用于选择点击位置的actor
     vtkSmartPointer<vtkPropPicker> picker = vtkSmartPointer<vtkPropPicker>::New();
     picker->Pick(clickPos[0], clickPos[1], 0, renderer);
+
+    // 创建一个CellPicker对象，用于选择点击位置的actor
+    vtkSmartPointer<vtkCellPicker> cellPicker = vtkSmartPointer<vtkCellPicker>::New();
+    cellPicker->SetTolerance(1e-06); // 设置拾取精度
+    cellPicker->Pick(clickPos[0], clickPos[1], 0, renderer);
+
     // 获取选中的actor
     vtkActor* newPickedActor = picker->GetActor();
     double* pos = picker->GetPickPosition(); // 用于存储拾取点的世界坐标
@@ -46,9 +52,6 @@ void MouseInteractorHighlightActor::OnLeftButtonDown()
         // 生成一个用于高亮的顶点，并存入pickedActors
         auto actor = CreatHighLightPoint(pos);
 
-        vtkSmartPointer<vtkProperty> originalProperty = vtkSmartPointer<vtkProperty>::New();
-        originalProperty->DeepCopy(actor->GetProperty());
-        pickedActors.emplace_back(actor, originalProperty);// emplace_back作用等于push_back
         HighlightActor(actor);
     }
 
@@ -91,15 +94,9 @@ void MouseInteractorHighlightActor::OnRightButtonDown()
     }
     // 如果选中的是空白，则取消全部高亮，并清除选中点在chosenlist的记录
     else {
-        // 遍历PickedActors，恢复被选中的actor的属性
-        for (auto item = pickedActors.begin(); item != pickedActors.end();item++)
-        {
-            ResetActor(item->first); // 恢复actor的属性
-        }
-        DeleteHighLightPoint();
+        CancelHighlightActors();
         m_pMainWin->getChosenListMgr()->getChosenActorAxes().clear(); // 清除所有选中的点的记录
     }
-
 
     // 调用基类的右键按下事件处理方法
     vtkInteractorStyleTrackballCamera::OnRightButtonDown();
@@ -162,13 +159,27 @@ void MouseInteractorHighlightActor::DeleteHighLightPoint()
     }
 }
 
+void MouseInteractorHighlightActor::CancelHighlightActors()
+{
+    // 遍历PickedActors，恢复被选中的actor的属性
+    for (auto item = pickedActors.begin(); item != pickedActors.end();item++)
+    {
+        ResetActor(item->first); // 恢复actor的属性
+    }
+    DeleteHighLightPoint();
+    renderer->Render();
+}
+
 // 实现高亮显示actor的方法
 void MouseInteractorHighlightActor::HighlightActor(vtkActor* actor)
 {
-    // 设置actor的颜色为红色，并调整其漫反射和镜面反射属性
+    // 保存高亮前的属性
+    vtkSmartPointer<vtkProperty> originalProperty = vtkSmartPointer<vtkProperty>::New();
+    originalProperty->DeepCopy(actor->GetProperty());
+    pickedActors.emplace_back(actor, originalProperty);// emplace_back作用等于push_back
+
+    // 设置actor的颜色为红色
     actor->GetProperty()->SetColor(1.0, 0.0, 0.0);
-    // actor->GetProperty()->SetDiffuse(1.0);
-    actor->GetProperty()->SetSpecular(0.0);
 
 }
 
