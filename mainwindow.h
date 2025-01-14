@@ -28,6 +28,7 @@ class PresetElemWidget;
 class FileMgr;
 class setDataWidget;
 
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
