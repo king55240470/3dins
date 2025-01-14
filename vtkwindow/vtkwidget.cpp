@@ -16,8 +16,9 @@ VtkWidget::VtkWidget(QWidget *parent)
     vtkObject::GlobalWarningDisplayOff();// 禁用 VTK 的错误处理弹窗
     m_pMainWin = (MainWindow*) parent;
 
-    // 设置 VTK 渲染窗口到 QWidget
     QVBoxLayout *mainlayout = new QVBoxLayout(this);
+    mainlayout->setContentsMargins(0, 0, 0, 0); // 去除布局的边距
+    mainlayout->setSpacing(0); // 去除布局内部的间距
     setUpVtk(mainlayout); // 配置vtk窗口
     this->setLayout(mainlayout);
 
@@ -272,10 +273,11 @@ void VtkWidget::createLine()
         b=s->getVertex();
         pngReader->SetFileName(":/component/find/cone.jpg");
     }
-    //图片演员
+    // 用于显示图标的actor
     iconActor = vtkSmartPointer<vtkImageActor>::New();
     iconActor->SetInputData(pngReader->GetOutput());
     iconActor->SetPosition(a[0],a[1],0);
+    iconActor->SetVisibility(true);
     renderer->AddActor(iconActor);
 
     vtkSmartPointer<vtkCoordinate> coordinate = vtkSmartPointer<vtkCoordinate>::New();
@@ -630,14 +632,14 @@ void VtkWidget::onCompare()
 //FPFH(粗配准)+ICP(精配准)
 void VtkWidget::onAlign()
 {
-    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+    auto &entityList = m_pMainWin->m_EntityListMgr->getEntityList();
     auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
     QVector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> clouds;
     for(int i=0;i<entityList.size();i++){
         CEntity* entity=entityList[i];
-        if(!entity->IsSelected())continue;
+        if(!entity->IsSelected())   continue;
         if(entity->GetUniqueType()==enPointCloud){
-            auto & temp=((CPointCloud*)entity)->m_pointCloud;
+            auto &temp=((CPointCloud*)entity)->m_pointCloud;
             clouds.append(temp.makeShared());
         }
     }
@@ -652,7 +654,7 @@ void VtkWidget::onAlign()
         msgBox.exec(); // 显示对话框
         return ;
     }
-
+    // 从选中的所有点云里选择前两个，用于配准
     pcl::copyPointCloud( *clouds[0], *cloud1);
     pcl::copyPointCloud( *clouds[1], *cloud2);
 

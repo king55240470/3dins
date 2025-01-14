@@ -133,8 +133,8 @@ public:
     void on2dCoordSetRightX(); // 摆正X坐标系-+
     void on2dCoordSetRightY(); // 摆正Y坐标系
 public slots:
-    void onConvertDeepTheme(); // 深色主题
-    void onConvertLighTheme(); // 浅色主题
+    void onConvertLightGreyTheme(); // 主题1
+    void onConvertLighBlueTheme(); // 主题2
 
 };
 #endif // MAINWINDOW_H

@@ -14,8 +14,8 @@ QMainWindow {
 QLineEdit {
     background-color: #ffffff;
     border: 1px solid #bbbbbb;
-    padding: 5px;
-    border-radius: 5px;
+    /*padding: 5px;*/
+    border-radius: 3px;
     selection-background-color: #add8e6;
     selection-color: #000000;
 }
@@ -23,7 +23,6 @@ QLineEdit {
 QLineEdit:focus {
     font-size: 14px "微软雅黑";
     border: 1px solid #4a90e2;
-    box-shadow: 0 0 3px #4a90e2;
 }
 
 /* QLabel的样式 */
@@ -46,18 +45,14 @@ QLabel:selected {
     color: #000000;
 }
 
-/* 增加边框 */
-QLabel.framed {
-    border: 1px solid #cccccc;
-}
-
 /* QPushButton的样式 */
 QPushButton {
     font-size: 14px "微软雅黑";
+    text-align: center;
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #4a90e2, stop: 1 #3570b2);
     border: 1px solid #3570b2;
     border-radius: 5px;
-    padding: 10px;
+    padding: 5px;
     color: #ffffff;
 }
 
@@ -71,7 +66,7 @@ QPushButton:pressed {
 
 QToolBar {
     background-color: #f0f0f0;
-    padding: 2px; /* 工具栏内部的填充 */
+    padding: 1px; /* 工具栏内部的填充 */
     font-size: 14px; /* 字体大小 */
 }
 
@@ -84,7 +79,7 @@ QToolBar::separator {
 QTreeWidget {
     font-size: 12px "微软雅黑";
     background-color: #ffffff;
-    border: 1px solid #cccccc;
+    /*border: 1px solid #cccccc;*/
     alternate-background-color: #f0f0f0;
 }
 
@@ -133,7 +128,6 @@ QTreeView::item:selected {
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #3570b2, stop: 1 #4a90e2);
     color: #ffffff;
 }
-
 QTreeView::branch {
     background-color: transparent;
     color: #333;
@@ -215,4 +209,22 @@ QTabBar::tab:selected {
 
 QTabBar::tab:only-one {
     border-bottom-style: solid;
+}
+
+/* QSplitter的样式 */
+QSplitter::handle {
+    background-color: #cccccc;
+    border: 1px solid #bbbbbb;
+}
+
+QSplitter::handle:horizontal {
+    width: 2px;
+}
+
+QSplitter::handle:vertical {
+    height: 2px;
+}
+
+QSplitter::handle:pressed {
+    background-color: #bbbbbb;
 }
