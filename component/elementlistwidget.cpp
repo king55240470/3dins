@@ -225,11 +225,11 @@ void ElementListWidget::upadteelementlist()
 void ElementListWidget::onItemClicked()
 {
     QList<QTreeWidgetItem*> selectedItems = getSelectedItems();
+    m_pMainWin->getPWinVtkWidget()->getInteractorStyle()->CancelHighlightActors();
     if(selectedItems.size()==1){
         for(int i=0;i<m_pMainWin->getObjectListMgr()->getObjectList().size();i++){
             m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(false);
         }
-
     }
     for(QTreeWidgetItem*item:selectedItems){
         CObject *obj = item->data(0, Qt::UserRole).value<CObject*>();
@@ -241,6 +241,7 @@ void ElementListWidget::onItemClicked()
             }
         }
         m_pMainWin->getObjectListMgr()->getObjectList()[index]->SetSelected(true);
+        m_pMainWin->getPWinVtkWidget()->onHighLightActor(m_pMainWin->getEntityListMgr()->getEntityList()[index]); // 高亮列表选中的元素对应的actor
         m_pMainWin->getPWinDataWidget()->getobjindex(index);
         m_pMainWin->getPWinDataWidget()->updateinfo();
     }

@@ -38,13 +38,14 @@ int findRightAngleVertex(const QVector4D& p1, const QVector4D& p2, const QVector
     angle1 = angle1 * 180.0f / M_PI;
     angle2 = angle2 * 180.0f / M_PI;
     angle3 = angle3 * 180.0f / M_PI;
-
+    double max=95;
+    double min=85;
     // 判断哪个点的角度在75度到105度之间
-    if (angle1 >= 75.0f && angle1 <= 105.0f) {
+    if (angle1 >= min && angle1 <= max) {
         return 1; // 点p1的角度近似为直角
-    } else if (angle2 >= 75.0f && angle2 <= 105.0f) {
+    } else if (angle2 >= min && angle2 <= max) {
         return 2; // 点p2的角度近似为直角
-    } else if (angle3 >= 75.0f && angle3 <= 105.0f) {
+    } else if (angle3 >= min && angle3 <= max) {
         return 3; // 点p3的角度近似为直角
     } else {
         return 0; // 没有点的角度近似为直角

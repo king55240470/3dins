@@ -27,11 +27,8 @@ CPointCloud* PointCloudListMgr::CreateCloudFromFile(QString str)
 
 void PointCloudListMgr::DeleteFileCloud(QString filepath)
 {
-    for(auto item = getFileCloudMap().begin();item != getFileCloudMap().end();item++){
-        if(filepath == item.key()){
-            getFileCloudMap().erase(item); // 当文件窗口删除文件时，这里对应删除
-        }
-    }
+    getFileCloudMap().remove(filepath); // 当文件窗口删除文件时，这里对应删除
+
 }
 
 CPointCloud* PointCloudListMgr::CreateFittingCloud(pcl::PointCloud<pcl::PointXYZRGB> plane)
