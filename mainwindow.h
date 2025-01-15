@@ -6,6 +6,7 @@
 #include <QMenuBar>
 #include <QStatusbar>
 #include <QPushButton>
+#include <QFile>
 #include "geometry/globes.h"
 #include "geometry/centity.h"
 #include "manager/centitymgr.h"
@@ -87,7 +88,7 @@ public:
     void OnPresetSphere(CPosition posCenter, double diametre);
     void OnPresetCylinder(CPosition pos, QVector4D vec, double height, double diametre);
     void OnPresetCone(CPosition posCenter, QVector4D axis, double partH, double fullH, double angle);
-    void OnPresetCuboid(CPosition posCenter,double length,double width,double height,double angleX,double angleY,double angleZ);
+    void OnPresetCuboid(CPosition posCenter,double length,double width,double height,QVector4D normal);
 
     CObjectMgr *getObjectListMgr();
     CEntityMgr*getEntityListMgr();
@@ -120,6 +121,9 @@ public:
     PointCloudListMgr *getPointCloudListMgr(); // 获取打开的点云列表
     setDataWidget *getPWinSetDataWidget();
     void LoadSetDataWidget();
+    void SetUpTheme(); // 初始化界面主题为浅色
+
+    QMap<vtkSmartPointer<vtkActor>, CEntity*>& getactorToEntityMap(); // 管理所有centity对象生成的actor
 
 public:
     RELY_ON_CS_TYPE m_nRelyOnWhichCs;
@@ -128,7 +132,9 @@ public:
     double AxesRotateX(); // X-Y平面, 线段与X轴正方向之间的夹角
     void on2dCoordSetRightX(); // 摆正X坐标系-+
     void on2dCoordSetRightY(); // 摆正Y坐标系
-public:
-    QMap<vtkSmartPointer<vtkActor>, CEntity*>& getactorToEntityMap(); // 管理所有centity对象生成的actor
+public slots:
+    void onConvertDeepTheme(); // 深色主题
+    void onConvertLighTheme(); // 浅色主题
+
 };
 #endif // MAINWINDOW_H

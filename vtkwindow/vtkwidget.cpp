@@ -139,7 +139,6 @@ void VtkWidget::createText()
     QByteArray byteArray = qstr.toUtf8(); // 转换 QString 到 QByteArray
     infoTextActor->SetInput(byteArray.constData());
     infoTextActor->SetPosition(renWin->GetSize()[0] - 200, renWin->GetSize()[1] - 100);
-    //infoTextActor->SetInput("浮动窗口");
 
     // 设置交互器的鼠标移动回调
     renderer->AddActor(infoTextActor);
@@ -437,6 +436,14 @@ void VtkWidget::reDrawCentity(){
     renWin->Render(); // 刷新窗口
 }
 
+void VtkWidget::onHighLightActor(CEntity* entity)
+{
+    // 寻找对应的actor
+    QMap<vtkSmartPointer<vtkActor>, CEntity*>& map = m_pMainWin->getactorToEntityMap();
+    m_highlightstyle->HighlightActor(map.key(entity));
+    renWin->Render();
+}
+
 // 创建全局坐标器
 void VtkWidget::createAxes()
 {
@@ -704,9 +711,8 @@ void VtkWidget::onAlign()
         actor->GetProperty()->SetPointSize(6); // 设置点大小
         actor->GetProperty()->SetColor(0.5, 0.5, 0.5);
 
-        //renderer->Clear();
         renderer->AddActor(actor);
-        //renWin->Render();
+        renWin->Render();
 
         // 输出 RMSE
         double rmse = icp.getFitnessScore();
