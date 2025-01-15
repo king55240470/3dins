@@ -31,6 +31,7 @@
 #include <pcl/features/fpfh.h>
 #include <pcl/registration/sample_consensus_prerejective.h>
 #include <pcl/registration/icp.h>
+#include <pcl/registration/ia_ransac.h>
 
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
@@ -102,6 +103,7 @@ public:
 
     // 显示选中的图形的信息
     void setCentity(CEntity*entity);  //传入centity对象
+    void setCentityList(QVector<CEntity*>list);
     void MouseDrag();
     void OnMouseMove();
     void OnLeftButtonPress();
@@ -135,6 +137,7 @@ private:
     vtkSmartPointer<vtkOrientationMarkerWidget> axeWidget; // 创建窗口部件来封装坐标器
     vtkSmartPointer<vtkOrientationMarkerWidget> textWidget; // 浮动窗口，用于显示信息
     CEntity* elementEntity;//储存传入的entity
+    QVector<CEntity *> elementEntityList;
     bool isDragging=false;  //判断注释是否能移动
     CPosition b;//储存指向箭头的终点
     vtkSmartPointer<vtkPolyData> linePolyData;//储存线的data

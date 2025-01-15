@@ -98,7 +98,7 @@ void MainWindow::setupUi(){
         pWinVtkWidget->onAlign();
     });
 
-    QMenu *fittingMenu=bar->addMenu("拟合参数设置");
+    // QMenu *fittingMenu=bar->addMenu("拟合参数设置");
     // QAction* fittingPlaneAction=fittingMenu->addAction("拟合平面");
     // connect(fittingPlaneAction, &QAction::triggered, this, &setDataWidget::setPlaneData);
     // QAction* fittingCylinderAction=fittingMenu->addAction("拟合圆柱");
