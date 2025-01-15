@@ -1944,10 +1944,10 @@ void ToolWidget::onFindSphere(){
             return ;
         }
         else
-            m_pMainWin->getPWinSetDataWidget()->setConeData(point,pointClouds[0]->m_pointCloud.makeShared());
+            m_pMainWin->getPWinSetDataWidget()->setSphereData(point,pointClouds[0]->m_pointCloud.makeShared());
         return ;
     }
-    m_pMainWin->getPWinSetDataWidget()->setConeData(point, cloudptr);
+    m_pMainWin->getPWinSetDataWidget()->setSphereData(point, cloudptr);
 
     auto sphereCloud=m_pMainWin->getPWinSetDataWidget()->getSphereCloud();
     if(sphereCloud==nullptr){

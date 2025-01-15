@@ -3,12 +3,15 @@ QT += printsupport
 QT += axcontainer
 QT += opengl
 LIBS += -lOpengl32
+QT += statemachine
+
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++17
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
+QMAKE_PROJECT_DEPTH = 0
 SOURCES += \
     component/contralwidget.cpp \
     component/datawidget.cpp \
@@ -113,6 +116,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 RESOURCES += \
     filemanagerwidget.qrc \
     graph.qrc \
+    start.qrc \
     stylesheet.qrc \
     toolwidget.qrc
 
@@ -629,7 +633,6 @@ CONFIG(debug, debug|release){
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkViewsQt-9.1d.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkWrappingTools-9.1d.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkzlib-9.1d.lib"
-
     contains(DEFINES, WIN64) {
     TARGET = ../_debug64/AppName
     } else {
@@ -790,7 +793,6 @@ CONFIG(debug, debug|release){
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkViewsQt-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkWrappingTools-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkzlib-9.1.lib"
-
     contains(DEFINES, WIN64) {
     TARGET = ../_release64/AppName
     } else {
@@ -798,9 +800,4 @@ CONFIG(debug, debug|release){
     }
 }
 
-DEFINES += CURL_STATICLIB
-INCLUDEPATH += D:\curl-8.11.0\builds\libcurl-vc14.2-x86-release-static-ipv6-sspi-schannel\include
-LIBS += -LD:\curl-8.11.0\builds\libcurl-vc14.2-x86-release-static-ipv6-sspi-schannel\lib
 
-# INCLUDEPATH += $$PWD/../MyDll
-# LIBS += -L$$PWD/../build/Desktop_Qt_6_6_0_MSVC2019_64bit-Debug/MyDll/debug -lMyDll
