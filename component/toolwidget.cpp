@@ -69,6 +69,8 @@
 #include "pointfitting/fittingcylinder.h"//拟合圆柱算法
 #include "pointfitting/fittingsphere.h"//拟合圆柱算法
 #include "pointfitting/fittingcone.h"//拟合圆柱算法
+#include "pointfitting/fittingpoint.h"
+#include "pointfitting/fittingline.h"
 #include "pointfitting/setdatawidget.h"
 
 
@@ -1621,33 +1623,158 @@ void ToolWidget:: onFindPlane(){
 }
 
 void ToolWidget::onFindPoint(){
-}
-void ToolWidget::onFindLine(){}
-void ToolWidget::onFindCircle(){
+    FittingPoint *nearPoint=new FittingPoint();
 
+    //读取选中的点云
+    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+    QVector<CPointCloud*> pointClouds;
 
-    // 选择图片文件
-    QString imagePath = QFileDialog::getOpenFileName(nullptr, "Select Image", "", "Images (*.png *.jpg *.jpeg *.bmp *.tif *.tiff)");
-    if (imagePath.isEmpty()) {
-        qDebug() << "No image selected!";
+    //读取选中的点
+    QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenActorAxes();
+    pcl::PointXYZRGB  point;
+    if(positions.size()==0)return ;
+    point.x=positions[0].x;
+    point.y=positions[0].y;
+    point.z=positions[0].z;
+
+    // 获取拟合用的点云指针
+    auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
+    nearPoint->RANSAC(point,cloudptr);
+
+    // 如果没有从窗口里选中点云，则从列表中获取，列表中也没有选中则报异常
+    if(cloudptr==nullptr){
+        for(int i=0;i<entityList.size();i++){
+            CEntity* entity=entityList[i];
+            if(!entity->IsSelected())continue;
+            if(entity->GetUniqueType()==enPointCloud){
+                CPointCloud* pointCloud=(CPointCloud*)entity;
+                pointClouds.append(pointCloud);
+            }
+        }
+        if(pointClouds.size()<1){
+            WrongWidget("选中的点云数目为0");
+            return ;
+        }else if(pointClouds.size()>1){
+            WrongWidget("选中的点云数目大于1");
+            return ;
+        }
+        else
+            nearPoint->RANSAC(point,pointClouds[0]->m_pointCloud.makeShared());
         return ;
     }
 
-    // 选择保存PDF文件的路径
-    QString pdfPath = QFileDialog::getSaveFileName(nullptr, "Save PDF", "", "PDF Files (*.pdf)");
-    if (pdfPath.isEmpty()) {
-        qDebug() << "No save path selected!";
+    PointConstructor constructor;
+    CPoint* newPoint;
+    CPosition center;
+    center.x=nearPoint->getPoint()[0];
+    center.y=nearPoint->getPoint()[1];
+    center.z=nearPoint->getPoint()[2];
+    newPoint=constructor.createPoint(center);
+    if(newPoint==nullptr){
+        qDebug()<<"找到最近点生成错误";
         return ;
     }
+    addToFindList(newPoint);
 
-    // 将图片插入到PDF文件中
-    insertImageIntoPdf(imagePath, pdfPath);
-
-    qDebug() << "PDF created successfully at" << pdfPath;
-
-
-
+    positions.clear();
+    m_pMainWin->NotifySubscribe();
 }
+void ToolWidget::onFindLine(){
+    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+    QVector<CPointCloud*> pointClouds;
+
+    //读取选中的点
+    QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenActorAxes();
+    pcl::PointXYZRGB  point;
+    if(positions.size()==0)return ;
+    point.x=positions[0].x;
+    point.y=positions[0].y;
+    point.z=positions[0].z;
+
+    // 获取拟合用的点云指针
+    auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
+
+    // 如果没有从窗口里选中点云，则从列表中获取，列表中也没有选中则报异常
+    if(cloudptr==nullptr){
+        for(int i=0;i<entityList.size();i++){
+            CEntity* entity=entityList[i];
+            if(!entity->IsSelected())continue;
+            if(entity->GetUniqueType()==enPointCloud){
+                CPointCloud* pointCloud=(CPointCloud*)entity;
+                pointClouds.append(pointCloud);
+            }
+        }
+        if(pointClouds.size()<1){
+            WrongWidget("选中的点云数目为0");
+            return ;
+        }else if(pointClouds.size()>1){
+            WrongWidget("选中的点云数目大于1");
+            return ;
+        }
+        else
+            m_pMainWin->getPWinSetDataWidget()->setLineData(point,pointClouds[0]->m_pointCloud.makeShared());
+        return ;
+    }
+    m_pMainWin->getPWinSetDataWidget()->setLineData(point, cloudptr);
+
+    // 生成点云对象并添加到entitylist
+    auto lineCloud=m_pMainWin->getPWinSetDataWidget()->getLineCloud();
+    if(lineCloud==nullptr){
+        qDebug()<<"拟合圆柱生成错误";
+        return ;
+    }
+    auto line=m_pMainWin->getPWinSetDataWidget()->getLine();
+    if(line==nullptr){
+        return;
+    }
+    LineConstructor constructor;
+    CLine* newLine;
+    CPosition begin,end;
+    begin.x=line->getBegin().x();
+    begin.y=line->getBegin().y();
+    begin.z=line->getBegin().z();
+    end.x=line->getEnd().x();
+    end.y=line->getEnd().y();
+    end.z=line->getEnd().z();
+    newLine=constructor.createLine(begin,end);
+    if(newLine==nullptr){
+        qDebug()<<"拟合圆柱生成错误";
+        return ;
+    }
+    addToFindList(newLine);
+
+    positions.clear();
+    m_pMainWin->NotifySubscribe();
+}
+
+
+// void ToolWidget::onFindCircle(){
+
+
+//     // 选择图片文件
+//     QString imagePath = QFileDialog::getOpenFileName(nullptr, "Select Image", "", "Images (*.png *.jpg *.jpeg *.bmp *.tif *.tiff)");
+//     if (imagePath.isEmpty()) {
+//         qDebug() << "No image selected!";
+//         return ;
+//     }
+
+//     // 选择保存PDF文件的路径
+//     QString pdfPath = QFileDialog::getSaveFileName(nullptr, "Save PDF", "", "PDF Files (*.pdf)");
+//     if (pdfPath.isEmpty()) {
+//         qDebug() << "No save path selected!";
+//         return ;
+//     }
+
+//     // 将图片插入到PDF文件中
+//     insertImageIntoPdf(imagePath, pdfPath);
+
+//     qDebug() << "PDF created successfully at" << pdfPath;
+
+
+
+// }
+
+void ToolWidget::onFindCircle(){}
 void ToolWidget::onFindRectangle(){
 }
 void ToolWidget::onFindCylinder(){

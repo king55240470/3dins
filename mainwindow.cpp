@@ -32,6 +32,7 @@ MainWindow::MainWindow(QWidget *parent)
     loadManager();
     LoadSetDataWidget();
     m_nRelyOnWhichCs=csRef;
+    SetUpTheme();
 }
 
 void MainWindow::setupUi(){
@@ -96,6 +97,24 @@ void MainWindow::setupUi(){
     connect(alignAction,&QAction::triggered,this,[&](){
         pWinVtkWidget->onAlign();
     });
+
+    QMenu *fittingMenu=bar->addMenu("拟合参数设置");
+    // QAction* fittingPlaneAction=fittingMenu->addAction("拟合平面");
+    // connect(fittingPlaneAction, &QAction::triggered, this, &setDataWidget::setPlaneData);
+    // QAction* fittingCylinderAction=fittingMenu->addAction("拟合圆柱");
+    // connect(fittingCylinderAction, &QAction::triggered, this, &setDataWidget::setCylinderData);
+    // QAction* fittingConeAction=fittingMenu->addAction("拟合圆锥");
+    // connect(fittingConeAction, &QAction::triggered, this, &setDataWidget::setConeData);
+    // QAction* fittingSphereAction=fittingMenu->addAction("拟合球");
+    // connect(fittingSphereAction, &QAction::triggered, this, &setDataWidget::setSphereData);
+    // QAction* fittingLineAction=fittingMenu->addAction("拟合直线");
+    // connect(fittingLineAction, &QAction::triggered, this, &setDataWidget::setLineData);
+
+    QMenu * switchTheme = bar->addMenu("主题");
+    QAction* lightTheme = switchTheme->addAction("浅色主题");
+    connect(lightTheme, &QAction::triggered, this, &MainWindow::onConvertLighTheme);
+    QAction* deepTheme = switchTheme->addAction("深色主题");
+    connect(deepTheme, &QAction::triggered, this, &MainWindow::onConvertDeepTheme);
 
     // 添加竖线分隔符
     QFrame *line = new QFrame();
@@ -238,7 +257,7 @@ void MainWindow::openFile(){
             // in.setVersion(QDataStream::Qt_6_0);
             in>>*m_EntityListMgr;
             in>>*m_ObjectListMgr;
-            // pWinFileManagerWidget->openModelFile("output.ply", "D:/output.ply");
+            pWinSetDataWidget->deserialize(in);
             qDebug() << "加载成功,m_EntityListMgr的大小为:"<<m_EntityListMgr->getEntityList().size()<<"m_ObjectListMgr的大小为:"<<m_ObjectListMgr->getObjectList().size();
             qDebug()<<"首个Object的类型为:"<<m_ObjectListMgr->GetAt(0)->GetUniqueType();
             NotifySubscribe();
@@ -287,6 +306,7 @@ void MainWindow::saveFile(){
     if(m_EntityListMgr){
         out<<*m_EntityListMgr;
         out<<*m_ObjectListMgr;
+        pWinSetDataWidget->serialize(out);
     }else{
         qWarning("Entity manager is null, nothing to save.");
     }
@@ -603,7 +623,7 @@ void MainWindow::OnPresetCone(CPosition posCenter, QVector4D axis, double partH,
     NotifySubscribe();
 }
 
-void MainWindow::OnPresetCuboid(CPosition posCenter,double length,double width,double height,double angleX,double angleY,double angleZ)
+void MainWindow::OnPresetCuboid(CPosition posCenter,double length,double width,double height,QVector4D normal)
 {
     CCuboid *pCuboid=(CCuboid *)CreateEntity(enCuboid);
     pCuboid->Form="预制";
@@ -611,9 +631,7 @@ void MainWindow::OnPresetCuboid(CPosition posCenter,double length,double width,d
     pCuboid->setLength(length);
     pCuboid->setWidth(width);
     pCuboid->setHeight(height);
-    pCuboid->setAngleX(angleX);
-    pCuboid->setAngleY(angleY);
-    pCuboid->setAngleZ(angleZ);
+    pCuboid->setNormal(normal);
 
     pCuboid->m_CreateForm = ePreset;
     pCuboid->SetCurCoord(m_pcsListMgr->m_pPcsCurrent);
@@ -796,9 +814,9 @@ void MainWindow::on2dCoordOriginAuto(){
     {
         if(m_ObjectListMgr->getObjectList()[i]->IsSelected() == true) // 如果对象被选中
         {
-             choosenList.push_back(m_ObjectListMgr->getObjectList()[i]);
-             index=i;
-             qDebug()<<"列表里有东西";
+            choosenList.push_back(m_ObjectListMgr->getObjectList()[i]);
+            index=i;
+            qDebug()<<"列表里有东西";
         }
     }
 
@@ -991,6 +1009,34 @@ void MainWindow::on2dCoordSetRightY()
     NotifySubscribe();
 }
 
+void MainWindow::onConvertDeepTheme()
+{
+    auto styleFile = QFile(":/style/deep_color_theme.qss");
+    styleFile.open(QFile::ReadOnly);
+    if(styleFile.isOpen()){
+        QString styleSheets = QLatin1String(styleFile.readAll());
+        this->setStyleSheet(styleSheets);
+        styleFile.close();
+    }
+    else {
+        qDebug() << "打开样式文件失败";
+    }
+}
+
+void MainWindow::onConvertLighTheme()
+{
+    auto styleFile = QFile(":/style/light_color_theme.qss");
+    styleFile.open(QFile::ReadOnly);
+    if(styleFile.isOpen()){
+        QString styleSheets = QLatin1String(styleFile.readAll());
+        this->setStyleSheet(styleSheets);
+        styleFile.close();
+    }
+    else {
+        qDebug() << "打开样式文件失败";
+    }
+}
+
 FileMgr *MainWindow::getpWinFileMgr(){
     return pWinFileMgr;
 }
@@ -1007,6 +1053,20 @@ PointCloudListMgr *MainWindow::getPointCloudListMgr()
 
 void MainWindow::LoadSetDataWidget(){
     pWinSetDataWidget=new setDataWidget();
+}
+
+void MainWindow::SetUpTheme()
+{
+    auto styleFile = QFile(":/style/light_color_theme.qss");
+    styleFile.open(QFile::ReadOnly);
+    if(styleFile.isOpen()){
+        QString styleSheets = QLatin1String(styleFile.readAll());
+        this->setStyleSheet(styleSheets);
+        styleFile.close();
+    }
+    else {
+        qDebug() << "打开样式文件失败";
+    }
 }
 
 setDataWidget *MainWindow::getPWinSetDataWidget(){

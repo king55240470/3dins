@@ -104,9 +104,9 @@ public:
     QLineEdit *boxEditLength;
     QLineEdit *boxEditWidth;
     QLineEdit *boxEditHeight;
-    QLineEdit *boxEditAngleX;  // 长方体绕X轴旋转角度
-    QLineEdit *boxEditAngleY;  // 长方体绕Y轴旋转角度
-    QLineEdit *boxEditAngleZ;  // 长方体绕Z轴旋转角度
+    QLineEdit *boxEditNormalX;
+    QLineEdit *boxEditNormalY;
+    QLineEdit *boxEditNormalZ;
     QPushButton *boxBtn;
 
     //槽函数
