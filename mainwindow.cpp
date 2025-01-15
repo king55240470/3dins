@@ -21,11 +21,6 @@
 #include "manager/cpcsmgr.h"
 #include <QListWidget>
 
-// 以下参数用于随主题切换而改变渲染窗口的图形及背景颜色
-double ActorColor[3] = {0.5, 0.5, 0.5};
-double BackgroundColor[3] = {1, 1, 1};
-double HighLightColor[3] = {1, 0, 0};
-
 class PresetElemWidget;
 
 MainWindow::MainWindow(QWidget *parent)
@@ -38,6 +33,19 @@ MainWindow::MainWindow(QWidget *parent)
     LoadSetDataWidget();
     m_nRelyOnWhichCs=csRef;
     SetUpTheme();
+
+    QSettings settings(":/config/config.ini", QSettings::IniFormat);
+    settings.beginGroup("CPoint");
+    settings.setValue("x", 2);
+    settings.setValue("y", 2);
+    settings.setValue("z", 1);
+    settings.endGroup();
+    settings.sync();
+    double x;
+    settings.beginGroup("CPoint");
+    x = settings.value("x").toDouble();
+    settings.endGroup();
+    qDebug() << x;
 }
 
 void MainWindow::setupUi(){
@@ -134,10 +142,12 @@ void MainWindow::setupUi(){
     // connect(fittingLineAction, &QAction::triggered, this, &setDataWidget::setLineData);
 
     QMenu * switchTheme = bar->addMenu("主题");
-    QAction* lightTheme = switchTheme->addAction("浅蓝色(默认)");
-    connect(lightTheme, &QAction::triggered, this, &MainWindow::onConvertLighBlueTheme);
-    QAction* deepTheme = switchTheme->addAction("浅灰色");
-    connect(deepTheme, &QAction::triggered, this, &MainWindow::onConvertLightGreyTheme);
+    QAction* lightBlue = switchTheme->addAction("浅蓝色(默认)");
+    connect(lightBlue, &QAction::triggered, this, &MainWindow::onConvertLighBlueTheme);
+    QAction* lightGrey = switchTheme->addAction("浅灰色");
+    connect(lightGrey, &QAction::triggered, this, &MainWindow::onConvertLightGreyTheme);
+    QAction* darkBlue = switchTheme->addAction("科技蓝");
+    connect(darkBlue, &QAction::triggered, this, &MainWindow::onConvertDarkBlueTheme);
 
     // 添加竖线分隔符
     QFrame *line = new QFrame();
@@ -203,6 +213,7 @@ void MainWindow::setupUi(){
     spMainWindow->addWidget(spLeft);
     spMainWindow->addWidget(spMiddleup);
     spMainWindow->addWidget(spRightup);
+    spMainWindow->setContentsMargins(0, 0, 0, 0);
 
     spMainWindow->setHandleWidth(5);
 
@@ -1031,7 +1042,7 @@ void MainWindow::on2dCoordSetRightY()
 
 void MainWindow::onConvertLightGreyTheme()
 {
-    auto styleFile = QFile(":/style/grey_theme.qss");
+    auto styleFile = QFile(":/style/light_grey.qss");
     styleFile.open(QFile::ReadOnly);
     if(styleFile.isOpen()){
         QString styleSheets = QLatin1String(styleFile.readAll());
@@ -1045,7 +1056,21 @@ void MainWindow::onConvertLightGreyTheme()
 
 void MainWindow::onConvertLighBlueTheme()
 {
-    auto styleFile = QFile(":/style/lightblue_theme.qss");
+    auto styleFile = QFile(":/style/light_blue.qss");
+    styleFile.open(QFile::ReadOnly);
+    if(styleFile.isOpen()){
+        QString styleSheets = QLatin1String(styleFile.readAll());
+        this->setStyleSheet(styleSheets);
+        styleFile.close();
+    }
+    else {
+        qDebug() << "打开样式文件失败";
+    }
+}
+
+void MainWindow::onConvertDarkBlueTheme()
+{
+    auto styleFile = QFile(":/style/dark_blue.qss");
     styleFile.open(QFile::ReadOnly);
     if(styleFile.isOpen()){
         QString styleSheets = QLatin1String(styleFile.readAll());
@@ -1077,7 +1102,21 @@ void MainWindow::LoadSetDataWidget(){
 
 void MainWindow::SetUpTheme()
 {
-    onConvertLighBlueTheme();
+    // auto styleFile = QFile("E:\\QSS样式表大合集\\others\\11.qss");
+    auto styleFile = QFile(":/style/light_blue.qss");
+    styleFile.open(QFile::ReadOnly);
+    if(styleFile.isOpen()){
+        QString styleSheets = QLatin1String(styleFile.readAll());
+        this->setStyleSheet(styleSheets);
+        styleFile.close();
+    }
+    else {
+        qDebug() << "打开样式文件失败";
+    }}
+
+void MainWindow::ChangeIniFile()
+{
+
 }
 
 setDataWidget *MainWindow::getPWinSetDataWidget(){

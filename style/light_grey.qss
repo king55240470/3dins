@@ -15,7 +15,7 @@ QLineEdit {
     background-color: #ffffff; /* 白色背景 */
     border: 1px solid #dcdcdc; /* 浅灰色边框 */
     padding: 5px;
-    border-radius: 3px;
+    border-radius: 5px;
     selection-background-color: #e6e6e6; /* 浅灰色选中背景 */
     selection-color: #333; /* 深灰色选中文字 */
 }
@@ -72,38 +72,7 @@ QRadioButton::indicator:checked {
     image: url(:/light_radio_checked); /* 浅色选中图标 */
 }
 
-/* QSlider的样式 */
-QSlider {
-    background-color: #e6e6e6; /* 浅灰色背景 */
-}
 
-QSlider::groove:horizontal {
-    background: #cccccc; /* 浅灰色滑槽 */
-    height: 4px;
-    border-radius: 2px;
-}
-
-QSlider::handle:horizontal {
-    background: #ffffff; /* 白色滑块 */
-    border: 1px solid #dcdcdc; /* 浅灰色边框 */
-    width: 14px;
-    height: 14px;
-    margin-top: -6px;
-    margin-left: -7px;
-    border-radius: 7px;
-}
-
-QSlider::handle:horizontal:hover {
-    background: #f2f2f2; /* 鼠标悬停时的浅灰色滑块 */
-}
-
-QSlider::add-page:horizontal {
-    background: #e6e6e6; /* 浅灰色添加区域 */
-}
-
-QSlider::sub-page:horizontal {
-    background: #cccccc; /* 浅灰色已滑动区域 */
-}
 
 /* QToolBar的样式 */
 QToolBar {
@@ -162,7 +131,6 @@ QTreeView::item:selected {
 }
 
 QTreeView::branch {
-    background-color: transparent;
     color: #333;
 }
 
@@ -201,13 +169,46 @@ QSplitter::handle {
 }
 
 QSplitter::handle:horizontal {
-    width: 2px;
+    width: 1px;
 }
 
 QSplitter::handle:vertical {
-    height: 2px;
+    height: 1px;
 }
 
 QSplitter::handle:pressed {
     background-color: #bbbbbb;
+}
+
+/* QSlider的样式 */
+QSlider {
+    background-color: #e6e6e6; /* 浅灰色背景 */
+}
+
+QSlider::groove:horizontal {
+    background: #cccccc; /* 浅灰色滑槽 */
+    height: 4px;
+    border-radius: 2px;
+}
+
+QSlider::handle:horizontal {
+    background: #ffffff; /* 白色滑块 */
+    border: 1px solid #dcdcdc; /* 浅灰色边框 */
+    width: 14px;
+    height: 14px;
+    margin-top: -6px;
+    margin-left: -7px;
+    border-radius: 7px;
+}
+
+QSlider::handle:horizontal:hover {
+    background: #f2f2f2; /* 鼠标悬停时的浅灰色滑块 */
+}
+
+QSlider::add-page:horizontal {
+    background: #e6e6e6; /* 浅灰色添加区域 */
+}
+
+QSlider::sub-page:horizontal {
+    background: #cccccc; /* 浅灰色已滑动区域 */
 }

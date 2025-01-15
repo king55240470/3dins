@@ -120,10 +120,6 @@ void VtkWidget::setCentityList(QVector<CEntity *> list)
     elementEntityList=list;
 }
 
-void VtkWidget::MouseDrag()
-{
-
-}
 void VtkWidget::createText()
 {
     // 创建浮动信息的文本演员
@@ -211,7 +207,7 @@ void VtkWidget::createTextBox()
     // 设置矩形的属性
     rectangleActor->GetProperty()->SetColor(0.1, 0.2, 0.3); // 填充颜色
     rectangleActor->GetProperty()->SetOpacity(0.3); // 设置不透明度
-    rectangleActor->GetProperty()->SetLineWidth(5); // 线条宽度
+    rectangleActor->GetProperty()->SetLineWidth(2); // 线条宽度
     double *a;
     a=infoTextActor->GetPosition();
     rectangleActor->SetPosition(a[0],a[1]);
