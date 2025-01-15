@@ -358,7 +358,6 @@ vtkSmartPointer<vtkRenderer>& VtkWidget::getRenderer(){
 // 刷新vtk窗口
 void VtkWidget::UpdateInfo(){
     reDrawCentity();
-    qDebug()<<"图像更新";
 }
 
 void VtkWidget::reDrawCentity(){

@@ -2,6 +2,7 @@
 #include "mainwindow.h"
 #include "manager/filemgr.h"
 #include <QDebug>
+#include <functional>
 int ElementListWidget::pcscount = 0;
 ElementListWidget::ElementListWidget(QWidget *parent)
     : QWidget{parent}
@@ -10,8 +11,8 @@ ElementListWidget::ElementListWidget(QWidget *parent)
     auto *layout = new QVBoxLayout(this);
 
     // 删除选中元素的按钮
-    QPushButton *deleteButton = new QPushButton("删除选中元素", this);
-    connect(deleteButton, &QPushButton::clicked, this, &ElementListWidget::onDeleteEllipse);
+    //QPushButton *deleteButton = new QPushButton("删除选中元素", this);
+    //(deleteButton, &QPushButton::clicked, this, &ElementListWidget::onDeleteEllipse);
 
     // 元素名称列表
     treeWidgetNames = new QTreeWidget(this);
@@ -54,7 +55,7 @@ ElementListWidget::ElementListWidget(QWidget *parent)
 
     // 布局
     layout->addWidget(toolBar);
-    layout->addWidget(deleteButton);
+    //layout->addWidget(deleteButton);
     layout->addWidget(treeWidgetNames);
     layout->addWidget(treeWidgetInfo);
     connect(treeWidgetNames, &QTreeWidget::customContextMenuRequested,
@@ -63,7 +64,7 @@ ElementListWidget::ElementListWidget(QWidget *parent)
     setFocusPolicy(Qt::StrongFocus);
     treeWidgetNames->installEventFilter(this);
     treeWidgetInfo->installEventFilter(this);
-    deleteButton->installEventFilter(this);
+    //deleteButton->installEventFilter(this);
     toolBar->installEventFilter(this);
 
     connect(treeWidgetNames, &QTreeWidget::itemClicked, this, &ElementListWidget::onItemClicked);
@@ -213,7 +214,6 @@ void ElementListWidget::upadteelementlist()
     eleobjlist.clear();
     for(const auto& obj :m_pMainWin->m_ObjectListMgr->getObjectList()){
         CreateEllipse(obj);
-        qDebug()<<"列表更新";
         //obj->SetSelected(false);
         QString name=obj->GetObjectCName();
         if(name.left(5)!="临时坐标系"&&name.left(5)!="工件坐标系"){
@@ -446,14 +446,9 @@ void ElementListWidget::onAddElement()
         isCloud=true;
     }
     if(isCloud){
-        qDebug()<<"aaaaa";
         if(m_pMainWin->getEntityListMgr()->getEntityList()[m_pMainWin->getEntityListMgr()->getEntityList().size()-1]->GetObjectCName().left(2)=="点云"){
-            qDebug()<<"bbbbb";
-            starttime();
             updateDistance(m_pMainWin->getEntityListMgr()->getEntityList().back());
-            qDebug()<<"通知之前";
             m_pMainWin->NotifySubscribe();
-            qDebug()<<"通知之后";
         }
     }
 }
@@ -474,11 +469,20 @@ void ElementListWidget::updateDistance(CEntity *entity)
             index.push_back(i);
         }
     }
-    qDebug()<<"aaaaa"<<distancelist.size();
     int t=0;
+    qDebug()<<"进入距离循环之前";
+    timer = new QTimer(this);
     for(auto distance:distancelist){
-        QVector<CPoint*>list;
-        for(CObject*obj:distance->parent){
+        list.clear();
+        currentIndex=0;
+        QVector<CObject*>parent=distance->parent;
+        //auto boundFunc = std::bind(&ElementListWidget::startupdateData,distance->parent,kdtree,parentindex,could,list);
+        connect(timer, &QTimer::timeout, [this,parent,kdtree,could](){
+            startupdateData(parent,kdtree,could);
+        });
+        timer->start(1000);
+        qDebug()<<"时间开始后";
+        /*for(CObject*obj:distance->parent){
             if(obj->GetUniqueType()==enPoint){
                 CPoint*point=static_cast<CPoint*>(obj);
                 searchPoint.x=point->GetPt().x;
@@ -500,17 +504,82 @@ void ElementListWidget::updateDistance(CEntity *entity)
                     }
                 }
             }
-        }
+        }*/
         //CDistance* dis = dynamic_cast<CDistance*>(distance);
+
+    }
+}
+
+void ElementListWidget::startupdateData(QVector<CObject *> parent, pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree,CPointCloud*could)
+{
+    qDebug()<<"时间进行1秒";
+    QVector<CObject*>objlist=m_pMainWin->getObjectListMgr()->getObjectList();
+    if(currentIndex>parent.size()-1){
+        timer->stop();
+        delete timer;
+        qDebug()<<"timer停止";
+        qDebug()<<list.size();
         CPosition begin=list[0]->GetPt();
         CPosition end=list[1]->GetPt();
         qDebug()<<"begin点"<<begin.x;
-        CDistance*dis=dynamic_cast<CDistance*>(m_pMainWin->getObjectListMgr()->getObjectList()[index[t]]);
-        dis->setbegin(begin);
-        dis->setend(end);
-        qDebug()<<"距离"<<dis->getdistancepoint();
-        t++;
+        for(int i=0;i<objlist.size();i++){
+            if(objlist[i]->parent==parent){
+                CDistance*dis=dynamic_cast<CDistance*>(m_pMainWin->getObjectListMgr()->getObjectList()[i]);
+                dis->setbegin(begin);
+                dis->setend(end);
+                qDebug()<<"距离"<<dis->getdistancepoint();
+                QTreeWidgetItem *item = treeWidgetNames->topLevelItem(i);
+                treeWidgetNames->setCurrentItem(item);
+                break;
+            }
+        }
+        qDebug()<<"进行到距离改变";
+        return;
+    }else if(stateMachine->configuration().contains(stoppedState)){
+        timer->stop();
+        delete timer;
+        qDebug()<<"结束时间";
+        return;
+    }else if(stateMachine->configuration().contains(pausedState)){
+        qDebug()<<"暂停时间";
+        return;
     }
+    if(stateMachine->configuration().contains(runningState)){
+        CObject*obj=parent[currentIndex];
+        currentIndex++;
+        std::vector<int> pointIdxNKNSearch(1);
+        std::vector<float> pointNKNSquaredDistance(1);
+        pcl::PointXYZRGB searchPoint;
+        if(obj->GetUniqueType()==enPoint){
+            CPoint*point=static_cast<CPoint*>(obj);
+            searchPoint.x=point->GetPt().x;
+            searchPoint.y=point->GetPt().y;
+            searchPoint.z=point->GetPt().z;
+            if (kdtree.nearestKSearch(searchPoint, 1, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
+                int nearestIdx = pointIdxNKNSearch[0];
+                pcl::PointXYZRGB nearestPoint = could->GetmyCould().points[nearestIdx];
+                for(int i=0;i<objlist.size();i++){
+                    if(m_pMainWin->getObjectListMgr()->getObjectList()[i]==obj){
+                        CPoint*point1=static_cast<CPoint*>(objlist[i]);
+                        CPosition pt;
+                        pt.x=nearestPoint.x;pt.y=nearestPoint.y;pt.z=nearestPoint.z;
+                        point1->SetPosition(pt);
+                        qDebug()<<"point1点"<<point1->GetPt().x;
+                        list.push_back(point1);
+                        break;
+                    }
+                }
+            }
+            for(int i=0;i<objlist.size();i++){
+                if(obj==objlist[i]){
+                    QTreeWidgetItem *item = treeWidgetNames->topLevelItem(i);
+                    treeWidgetNames->setCurrentItem(item);
+                    break;
+                }
+            }
+        }
+    }
+
 }
 
 void ElementListWidget::isAdd()
@@ -519,7 +588,6 @@ void ElementListWidget::isAdd()
     if(Nowlistsize>Treelistsize){
         Treelistsize=Nowlistsize;
         onAddElement();
-        qDebug()<<"isAdd结束";
     }else if(Nowlistsize<Treelistsize){
         Treelistsize=Nowlistsize;
     }
@@ -549,7 +617,7 @@ void ElementListWidget::starttime()
 {
     currentIndex=0;
     timer = new QTimer(this);
-    connect(timer, &QTimer::timeout, this, &ElementListWidget::selectall);
+    connect(timer, &QTimer::timeout, this, &ElementListWidget::onAddElement);
     timer->start(1000);
 }
 
