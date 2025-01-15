@@ -104,7 +104,6 @@ public:
     // 显示选中的图形的信息
     void setCentity(CEntity*entity);  //传入centity对象
     void setCentityList(QVector<CEntity*>list);
-    void MouseDrag();
     void OnMouseMove();
     void OnLeftButtonPress();
     void OnLeftButtonRelease();

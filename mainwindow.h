@@ -7,6 +7,7 @@
 #include <QStatusbar>
 #include <QPushButton>
 #include <QFile>
+#include <QCoreApplication>
 #include "geometry/globes.h"
 #include "geometry/centity.h"
 #include "manager/centitymgr.h"
@@ -27,7 +28,6 @@ class LogWidget;
 class PresetElemWidget;
 class FileMgr;
 class setDataWidget;
-
 
 class MainWindow : public QMainWindow
 {
@@ -122,7 +122,14 @@ public:
     PointCloudListMgr *getPointCloudListMgr(); // 获取打开的点云列表
     setDataWidget *getPWinSetDataWidget();
     void LoadSetDataWidget();
-    void SetUpTheme(); // 初始化界面主题为浅色
+    void SetUpTheme(); // 初始化界面主题
+
+    // 以下参数用于随主题切换而改变渲染窗口的图形及背景颜色
+    static constexpr double ActorColor[3] = {0.5, 0.5, 0.5};
+    static constexpr double BackgroundColor[3] = {1, 1, 1};
+    static constexpr double HighLightColor[3] = {1, 0, 0};
+
+    void ChangeIniFile(); // 读取存储图形的配置文件并更新记录
 
     QMap<vtkSmartPointer<vtkActor>, CEntity*>& getactorToEntityMap(); // 管理所有centity对象生成的actor
 
@@ -136,6 +143,7 @@ public:
 public slots:
     void onConvertLightGreyTheme(); // 主题1
     void onConvertLighBlueTheme(); // 主题2
+    void onConvertDarkBlueTheme(); // 主题3
 
 };
 #endif // MAINWINDOW_H
