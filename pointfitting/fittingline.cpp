@@ -52,9 +52,15 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingLine::RANSAC(pcl::PointXYZRGB sear
         // 执行分割
         seg.segment(*inliers, *coefficients);
 
-        normal=Eigen::Vector3f(coefficients->values[0], coefficients->values[1], coefficients->values[2]);
+        // 计算点云的中心点
+        pcl::PCA<pcl::PointXYZRGB> pca;
+        pca.setInputCloud(cloud_subset);
+
+        // 获取PCA计算得到的主方向（直线方向）
+        normal = pca.getEigenVectors().col(0);
+        // normal=Eigen::Vector3f(coefficients->values[3], coefficients->values[4], coefficients->values[5]);
         normal.normalize();
-        onePoint=Eigen::Vector3f(coefficients->values[3], coefficients->values[4], coefficients->values[5]);
+        onePoint=Eigen::Vector3f(coefficients->values[0], coefficients->values[1], coefficients->values[2]);
 
         //获取平面上的所有点云
         for (int i=0;i<cloudptr->size();i++) {
@@ -107,8 +113,26 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingLine::RANSAC(pcl::PointXYZRGB sear
             }
         }
 
-        beginPoint=Eigen::Vector3f(min_point.x,min_point.y,min_point.z);
-        endPoint=Eigen::Vector3f(max_point.x,max_point.y,max_point.z);
+        // 计算投影到方向上的点
+        Eigen::Vector3f minProjVec(min_point.x, min_point.y, min_point.z);
+        Eigen::Vector3f maxProjVec(max_point.x, max_point.y, max_point.z);
+
+        // // 将最小投影点和最大投影点的投影向量计算并加回到方向上
+        // minProjVec = normal * minProjVec.dot(normal);
+        // maxProjVec = normal * maxProjVec.dot(normal);
+
+        // beginPoint=Eigen::Vector3f(minProjVec.x(),minProjVec.y(),minProjVec.z());
+        // endPoint=Eigen::Vector3f(maxProjVec.x(),maxProjVec.y(),maxProjVec.z());
+
+        // 计算投影值
+        float min_proj_val = (minProjVec - onePoint).dot(normal);
+        float max_proj_val = (maxProjVec - onePoint).dot(normal);
+
+        beginPoint = onePoint + min_proj_val * normal;
+        endPoint = onePoint + max_proj_val * normal;
+
+        // beginPoint=Eigen::Vector3f(min_point.x, min_point.y, min_point.z);
+        // endPoint=Eigen::Vector3f(max_point.x, max_point.y, max_point.z);
 
         // 打印调试信息
         qDebug() << "Begin Point: " << beginPoint.x() << ", " << beginPoint.y() << ", " << beginPoint.z();
@@ -128,10 +152,23 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingLine::RANSAC(pcl::PointXYZRGB sear
 }
 
 bool FittingLine::FittingLine::isPointInLine(const pcl::PointXYZRGB& point){
-    Eigen::Vector3f pointVec(point.x, point.y, point.z); // 点的坐标
-    Eigen::Vector3f pointToLine = pointVec - onePoint; // 点到直线的向量
-    double d=pointToLine.cross(normal).norm() / normal.norm(); // 计算点到直线的距离
-    return fabs(d) <= 0.1;
+    // Eigen::Vector3f pointVec(point.x, point.y, point.z); // 点的坐标
+    // Eigen::Vector3f pointToLine = pointVec - onePoint; // 点到直线的向量
+    // double d=pointToLine.cross(normal).norm() / normal.norm(); // 计算点到直线的距离
+    // return fabs(d) <= 0.1;
+    Eigen::Vector3f point2(point.x,point.y,point.z);
+
+    // 计算点与直线上的点的向量
+    Eigen::Vector3f v = point2 - onePoint;
+
+    // 计算叉积
+    Eigen::Vector3f crossProduct = v.cross(normal);
+
+    // 计算叉积的模
+    float crossProductMagnitude = crossProduct.norm();
+
+    // 如果叉积的模小于给定阈值，则认为点接近直线
+    return crossProductMagnitude <= 0.1;
 }
 
 void FittingLine::setRadius(double rad){
