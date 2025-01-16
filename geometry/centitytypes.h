@@ -649,6 +649,7 @@ public:
     int currentPointCloudId;
     bool isFileCloud = false; // 是否是文件生成的点云
     bool isComparsionCloud = false; //  是否是对比得到的点云
+    bool isAlignCloud=false;// 是否是对齐得到的点云
     static bool haveSaved;
     static bool haveOpened;
 

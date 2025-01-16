@@ -36,7 +36,7 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingLine::RANSAC(pcl::PointXYZRGB sear
     std::vector<float> pointRadiusSquaredDistance; // 用于存储找到的点到查询点的平方距离
 
     // 搜索给定半径内的点
-    if (kdtree.radiusSearch(searchPoint, radius, pointIdxRadiusSearch, pointRadiusSquaredDistance) > 3) {
+    if (kdtree.radiusSearch(searchPoint, radius, pointIdxRadiusSearch, pointRadiusSquaredDistance) > 1) {
 
         pcl::copyPointCloud(*cloudptr, pointIdxRadiusSearch, *cloud_subset);//在邻域点中实现RANSAC算法
         // 创建RANSAC分割对象
@@ -72,48 +72,44 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingLine::RANSAC(pcl::PointXYZRGB sear
             point.b = 0;
         }
 
-        // //计算起点和终点
-        // double minDistance = std::numeric_limits<float>::max();
-        // double maxDistance = std::numeric_limits<float>::lowest();
-        // pcl::PointXYZRGB closestPoint, farthestPoint;
+        // qDebug()<<"00:"<<beginPoint.x()<<beginPoint.y()<<beginPoint.z();
+        // qDebug()<<"00:"<<endPoint.x()<<endPoint.y()<<endPoint.z();
 
-        // for (const auto& point : lineCloud->points) {
-        //     Eigen::Vector3f pointVec(point.x, point.y, point.z);
-
-        //     // 计算点到直线的向量
-        //     Eigen::Vector3f pointToLine = pointVec - onePoint;
-        //     // 计算投影比例
-        //     float t = pointToLine.dot(normal) / normal.squaredNorm();
-        //     // 计算投影点
-        //     Eigen::Vector3f projection = onePoint + t * normal;
-
-        //     double d=(projection - pointVec).norm();
-
-        //     // 更新最小和最大距离
-        //     if (d < minDistance) {
-        //         minDistance = d;
-        //         closestPoint = point;
-        //     }
-        //     if (d > maxDistance) {
-        //         maxDistance = d;
-        //         farthestPoint = point;
-        //     }
-        // }
+        // qDebug()<<"00:"<<beginPoint.x()<<beginPoint.y()<<beginPoint.z();
+        // qDebug()<<"00:"<<endPoint.x()<<endPoint.y()<<endPoint.z();
 
         // 获取点云的最小和最大边界
-        Eigen::Vector3f min_point, max_point;
-        getCloudBounds(lineCloud, min_point, max_point);
+        pcl::PointXYZRGB min_pt, max_pt;
+        pcl::getMinMax3D(*lineCloud, min_pt, max_pt);
 
-        // 获取直线的起点和终点
-        qDebug()<<"00:"<<beginPoint.x()<<beginPoint.y()<<beginPoint.z();
-        qDebug()<<"00:"<<endPoint.x()<<endPoint.y()<<endPoint.z();
-        getLineEndpoints(onePoint, normal, min_point, max_point, beginPoint, endPoint);
-        qDebug()<<"00:"<<beginPoint.x()<<beginPoint.y()<<beginPoint.z();
-        qDebug()<<"00:"<<beginPoint.x()<<beginPoint.y()<<beginPoint.z();
+        Eigen::Vector3f min_point(min_pt.x, min_pt.y, min_pt.z);
+        Eigen::Vector3f max_point(max_pt.x, max_pt.y, max_pt.z);
 
-        // 返回距离最小的点作为起点，最大距离的点作为终点
-        // beginPoint = Eigen::Vector3f(closestPoint.x,closestPoint.y,closestPoint.z);
-        // endPoint = Eigen::Vector3f(farthestPoint.x,farthestPoint.y,farthestPoint.z);
+        // 计算直线与边界的交点
+        // 直线方程：P(t) = P0 + t * V，其中P0是一个点，V是方向向量
+        // 求与边界的交点，计算t_min和t_max
+
+        // 计算各个方向上的t值
+        float t_min_x = (min_point.x() - onePoint.x()) / normal.x();
+        float t_max_x = (max_point.x() - onePoint.x()) / normal.x();
+
+        float t_min_y = (min_point.y() - onePoint.y()) / normal.y();
+        float t_max_y = (max_point.y() - onePoint.y()) / normal.y();
+
+        float t_min_z = (min_point.z() - onePoint.z()) / normal.z();
+        float t_max_z = (max_point.z() - onePoint.z()) / normal.z();
+
+        // 获取每个轴上的最小和最大t
+        float t_min = std::min({t_min_x, t_min_y, t_min_z});
+        float t_max = std::max({t_max_x, t_max_y, t_max_z});
+
+        // 计算起点和终点
+        beginPoint = onePoint + t_min * normal;
+        endPoint = onePoint + t_max * normal;
+
+        // 打印调试信息
+        qDebug() << "Begin Point: " << beginPoint.x() << ", " << beginPoint.y() << ", " << beginPoint.z();
+        qDebug() << "End Point: " << endPoint.x() << ", " << endPoint.y() << ", " << endPoint.z();
 
         return lineCloud;
 
@@ -126,37 +122,6 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingLine::RANSAC(pcl::PointXYZRGB sear
         PCL_ERROR("Couldn't find more points within radius\n");
         return nullptr;
     }
-}
-
-// 获取点云的边界（最小点和最大点）
-void FittingLine::getCloudBounds(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud, Eigen::Vector3f& min_point, Eigen::Vector3f& max_point) {
-    pcl::PointXYZRGB min_pt, max_pt;
-    pcl::getMinMax3D(*cloud, min_pt, max_pt);  // 获取点云的最小和最大点
-    min_point = Eigen::Vector3f(min_pt.x, min_pt.y, min_pt.z);
-    max_point = Eigen::Vector3f(max_pt.x, max_pt.y, max_pt.z);
-}
-
-// 获取直线的起点和终点
-void FittingLine::getLineEndpoints(const Eigen::Vector3f& linePoint, const Eigen::Vector3f& direction, const Eigen::Vector3f& min_point, const Eigen::Vector3f& max_point, Eigen::Vector3f& startPoint, Eigen::Vector3f& endPoint) {
-        // 计算x轴的交点
-        float t_min_x = (min_point.x() - linePoint.x()) / direction.x();
-        float t_max_x = (max_point.x() - linePoint.x()) / direction.x();
-
-        // 计算y轴的交点
-        float t_min_y = (min_point.y() - linePoint.y()) / direction.y();
-        float t_max_y = (max_point.y() - linePoint.y()) / direction.y();
-
-        // 计算z轴的交点
-        float t_min_z = (min_point.z() - linePoint.z()) / direction.z();
-        float t_max_z = (max_point.z() - linePoint.z()) / direction.z();
-
-        // 获取每个轴的最小最大 t
-        float t_min = std::min({t_min_x, t_min_y, t_min_z});
-        float t_max = std::max({t_max_x, t_max_y, t_max_z});
-
-        // 计算起点和终点
-        startPoint = linePoint + direction * t_min;
-        endPoint = linePoint + direction * t_max;
 }
 
 bool FittingLine::FittingLine::isPointInLine(const pcl::PointXYZRGB& point){

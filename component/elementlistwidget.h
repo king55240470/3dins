@@ -62,6 +62,7 @@ public:
     void setupStateMachine();
     void onAddElement();
     void updateDistance(CEntity*entity);
+    void startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree, CPointCloud*could, QVector<CEntity*>distancelist);
     void isAdd();
 
 protected:
@@ -96,7 +97,9 @@ private:
     QState *pausedState;
     int Treelistsize=0;
     int currentIndex;
-    QTimer* timer;
+    int distancelistIndex;
+    QTimer* timer=nullptr;
+    QVector<CPoint*>list;
 signals:
     void itemSelected(int index);
 };
