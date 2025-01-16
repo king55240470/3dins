@@ -94,6 +94,7 @@ CEntity* PlaneConstructor::create(QVector<CEntity*>& entitylist){
     return nullptr;
 }
 CPlane* PlaneConstructor::createPlane(CPosition p1,CPosition p2,CPosition p3){
+    qDebug()<<"用的是CPosition";
     CPosition A=p1;
     CPosition B=p2;
     CPosition C=p3;
