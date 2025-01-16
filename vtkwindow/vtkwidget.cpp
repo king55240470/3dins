@@ -16,8 +16,9 @@ VtkWidget::VtkWidget(QWidget *parent)
     vtkObject::GlobalWarningDisplayOff();// 禁用 VTK 的错误处理弹窗
     m_pMainWin = (MainWindow*) parent;
 
-    // 设置 VTK 渲染窗口到 QWidget
     QVBoxLayout *mainlayout = new QVBoxLayout(this);
+    mainlayout->setContentsMargins(0, 0, 0, 0); // 去除布局的边距
+    mainlayout->setSpacing(0); // 去除布局内部的间距
     setUpVtk(mainlayout); // 配置vtk窗口
     this->setLayout(mainlayout);
 
@@ -119,10 +120,6 @@ void VtkWidget::setCentityList(QVector<CEntity *> list)
     elementEntityList=list;
 }
 
-void VtkWidget::MouseDrag()
-{
-
-}
 void VtkWidget::createText()
 {
     // 创建浮动信息的文本演员
@@ -210,7 +207,7 @@ void VtkWidget::createTextBox()
     // 设置矩形的属性
     rectangleActor->GetProperty()->SetColor(0.1, 0.2, 0.3); // 填充颜色
     rectangleActor->GetProperty()->SetOpacity(0.3); // 设置不透明度
-    rectangleActor->GetProperty()->SetLineWidth(5); // 线条宽度
+    rectangleActor->GetProperty()->SetLineWidth(2); // 线条宽度
     double *a;
     a=infoTextActor->GetPosition();
     rectangleActor->SetPosition(a[0],a[1]);
@@ -274,10 +271,11 @@ void VtkWidget::createLine()
         b=s->getVertex();
         pngReader->SetFileName(":/component/find/cone.jpg");
     }
-    //图片演员
+    // 用于显示图标的actor
     iconActor = vtkSmartPointer<vtkImageActor>::New();
     iconActor->SetInputData(pngReader->GetOutput());
     iconActor->SetPosition(a[0],a[1],0);
+    iconActor->SetVisibility(true);
     renderer->AddActor(iconActor);
 
     vtkSmartPointer<vtkCoordinate> coordinate = vtkSmartPointer<vtkCoordinate>::New();
