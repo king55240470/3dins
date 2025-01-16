@@ -169,25 +169,26 @@ QTabWidget#MainTabWidget QTabBar::tab {
 
 
  QTabBar::tab {
-     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                                  stop: 0 #292F31, stop: 1 #0C131E);
+    padding: 5px;
  }
 QTabBar::tab:selected{
-     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                                  stop: 0 #113845,  stop: 1.0 #15A8FF);
  }
 QTabBar::tab:hover {
-     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                                  stop: 0 #113845,  stop: 1.0 #0E6F80);
  }
 
 QTabBar::tab:selected {
-     border-color: #32435E;
-     border-right-color: #32435E; /* same as pane color */
+    border-color: #32435E;
+    border-right-color: #32435E; /* same as pane color */
  }
 
 QTabBar::tab:!selected {
-     margin-left: 3px; /* make non-selected tabs look smaller */
+    margin-left: 3px; /* make non-selected tabs look smaller */
 }
 
 QTabBar:tab:first:selected {
@@ -769,13 +770,14 @@ QSizeGrip { /*在MainWindow右下角*/
 
 
 QTreeWidget{
+    font-size: 14px "微软雅黑";
     background:#18202E;
     border-style: outset;
-    border-width: 0px;
+    border-width: 1px;
     border-color: #11223F;
-    padding: 1px;
+    padding: 5px;
 }
-
+/*
 QTreeWidget::branch:has-siblings:!adjoins-item {
      border-image: url(qss/vline.png) 0;
  }
@@ -798,7 +800,7 @@ QTreeWidget::branch:has-siblings:!adjoins-item {
  QTreeWidget::branch:open:has-children:has-siblings  {
          border-image: none;
          image: url(qss/branch-open.png);
- }
+ }*/
 
 
  QTreeWidget::item {
@@ -806,10 +808,10 @@ QTreeWidget::branch:has-siblings:!adjoins-item {
       border-color: transparent;
       padding: 5px;
  }
-  QTreeWidget::item:hover {
+QTreeWidget::item:hover {
      background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #598892, stop: 1 #189BAB);
      border: 1px solid #bfcde4;
-     padding: 3px;
+     padding: 5px;
  }
 
 QTreeWidget::item:selected {
