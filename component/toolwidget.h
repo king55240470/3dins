@@ -102,8 +102,6 @@ public slots:
     void onSaveWord();
     void onSaveImage();
 
-
-
 private:
     void clearToolBar(QToolBar *toolbar);
     //新的工具栏类

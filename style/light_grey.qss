@@ -1,6 +1,6 @@
 /* 设置整个应用的背景和字体 */
 QWidget {
-    font-size: 14px "Arial";
+    font-size: 14px "微软雅黑";
     color: #333; /* 深灰色字体 */
     background-color: #f2f2f2; /* 浅灰色背景 */
 }
@@ -87,7 +87,7 @@ QToolBar::separator {
 
 /* QTreeWidget的样式 */
 QTreeWidget {
-    font-size: 14px "Arial";
+    font-size: 14px "微软雅黑";
     background-color: #ffffff; /* 白色背景 */
     border: 1px solid #dcdcdc; /* 浅灰色边框 */
     alternate-background-color: #f2f2f2; /* 交替行的浅灰色背景 */

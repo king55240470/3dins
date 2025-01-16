@@ -1,4 +1,5 @@
 #include "centitytypes.h"
+#include "mainwindow.h"
 
 #include <vtkPoints.h>
 #include <vtkPolyDataMapper.h>
@@ -18,7 +19,6 @@
 #include <vtkPolygon.h>
 #include <vtkMath.h>
 #include <vtkCubeSource.h>
-
 
 // 定义 getActorToPointCloud 和 actorToPointCloud;
 QMap<vtkActor*, pcl::PointCloud<pcl::PointXYZRGB>> CPointCloud::actorToPointCloud;
@@ -59,7 +59,8 @@ vtkSmartPointer<vtkActor> CPoint::draw(){
     vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
     actor->GetProperty()->SetPointSize(5); // 设置点的大小
-    actor->GetProperty()->SetColor(0, 0, 0);
+    actor->GetProperty()->SetColor(MainWindow::ActorColor[0], MainWindow::ActorColor[1]
+                                   ,MainWindow::ActorColor[2]);
 
     return actor;
 }
@@ -105,7 +106,7 @@ vtkSmartPointer<vtkActor> CLine::draw(){
     // 创建执行器
     auto actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
-    actor->GetProperty()->SetColor(0.0, 0.0, 0.0);
+    actor->GetProperty()->SetColor(0, 0, 0);
     actor->GetProperty()->SetLineWidth(3);
 
     // 添加到渲染窗口中
@@ -246,7 +247,8 @@ vtkSmartPointer<vtkActor> CPlane::draw() {
     // 创建一个 vtkActor 来表示多边形
     vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
-    actor->GetProperty()->SetColor(0.5, 0.5, 0.5);
+    actor->GetProperty()->SetColor(MainWindow::ActorColor[0], MainWindow::ActorColor[1]
+                                   ,MainWindow::ActorColor[2]);
 
     return actor;
 }
@@ -272,7 +274,8 @@ vtkSmartPointer<vtkActor> CSphere::draw(){
     // 创建执行器
     auto actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
-    actor->GetProperty()->SetColor(0.5, 0.5, 0.5);
+    actor->GetProperty()->SetColor(MainWindow::ActorColor[0], MainWindow::ActorColor[1]
+                                   ,MainWindow::ActorColor[2]);
 
     return actor;
 }
@@ -319,7 +322,8 @@ vtkSmartPointer<vtkActor> CCylinder::draw(){
     // 创建执行器
     auto actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
-    actor->GetProperty()->SetColor(0.5, 0.5, 0.5);
+    actor->GetProperty()->SetColor(MainWindow::ActorColor[0], MainWindow::ActorColor[1]
+                                   ,MainWindow::ActorColor[2]);
     actor->SetUserTransform(transform); // 应用变换
 
     return actor;
@@ -360,7 +364,8 @@ vtkSmartPointer<vtkActor> CCone::draw(){
     // 创建执行器
     auto actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
-    actor->GetProperty()->SetColor(0.5, 0.5, 0.5);
+    actor->GetProperty()->SetColor(MainWindow::ActorColor[0], MainWindow::ActorColor[1]
+                                   ,MainWindow::ActorColor[2]);
 
     return actor;
 }
@@ -462,9 +467,9 @@ vtkSmartPointer<vtkActor> CPointCloud::draw(){
         if(isComparsionCloud)
             colors->SetTuple3(i, m_pointCloud.points[i].r, m_pointCloud.points[i].g, m_pointCloud.points[i].b);
         else{
-            m_pointCloud.points[i].r = 120;
-            m_pointCloud.points[i].g = 120;
-            m_pointCloud.points[i].b = 120;
+            m_pointCloud.points[i].r = MainWindow::ActorColor[0] * 255;
+            m_pointCloud.points[i].g = MainWindow::ActorColor[1] * 255;
+            m_pointCloud.points[i].b = MainWindow::ActorColor[2] * 255;
             colors->SetTuple3(i, m_pointCloud.points[i].r, m_pointCloud.points[i].g, m_pointCloud.points[i].b);
         }
     }
@@ -488,7 +493,8 @@ vtkSmartPointer<vtkActor> CPointCloud::draw(){
     actor->SetMapper(mapper);
     actor->GetProperty()->SetPointSize(5); // 设置点大小
     if(isFileCloud){ // 如果是文件点云则统一设置成灰色
-        actor->GetProperty()->SetColor(0.5, 0.5, 0.5);
+        actor->GetProperty()->SetColor(MainWindow::ActorColor[0], MainWindow::ActorColor[1]
+                                       ,MainWindow::ActorColor[2]);
     }
 
     return actor;
@@ -502,8 +508,8 @@ vtkSmartPointer<vtkActor> CDistance::draw(){
         actor = pointToPlane();
     else if(isHaveLine)
         actor = pointToLine();
-    else {
-        actor = pointToCircle();
+    else if(isPointToPoint){
+        actor = pointToPoint();
     }
 
     return actor;
@@ -524,11 +530,19 @@ vtkSmartPointer<vtkActor> CDistance::pointToPlane()
     // 计算点到平面的距离
     double distance = getdistanceplane();
 
-    // 计算glbPos_begin在平面上的落点
+    // 计算glPos_begin在平面上的落点
     CPosition projection;
-    projection.x = glbPos_begin.x - distance * plane_normal.x();
-    projection.y = glbPos_begin.y - distance * plane_normal.y();
-    projection.z = glbPos_begin.z - distance * plane_normal.z();
+    if (fabs(plane_normal.z()) > 1e-10) { // 检查z分量是否足够大，以避免除以0
+        double factor = -distance / plane_normal.z();
+        projection.x = glbPos_begin.x + factor * plane_normal.x();
+        projection.y = glbPos_begin.y + factor * plane_normal.y();
+        projection.z = glbPos_begin.z + factor * plane_normal.z();
+    } else {
+        // 如果z分量接近0，则假设平面在xy平面上，直接使用xy坐标
+        projection.x = glbPos_begin.x - distance * plane_normal.x();
+        projection.y = glbPos_begin.y - distance * plane_normal.y();
+        projection.z = glbPos_begin.z; // 保持z坐标不变
+    }
 
     // 创建点集，并插入定义线的两个点
     auto points = vtkSmartPointer<vtkPoints>::New();
@@ -552,7 +566,7 @@ vtkSmartPointer<vtkActor> CDistance::pointToPlane()
     // 创建执行器
     auto actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
-    actor->GetProperty()->SetColor(0.0, 0.0, 0.0);
+    actor->GetProperty()->SetColor(MainWindow::ActorColor);
     actor->GetProperty()->SetLineWidth(3);
 
     return actor;
@@ -606,6 +620,7 @@ vtkSmartPointer<vtkActor> CDistance::pointToLine()
     //Projection.x=projection.x();
     //Projection.y=projection.y();
     //Projection.z=projection.z();
+
     // 创建点集，并插入定义线的两个点
     auto points = vtkSmartPointer<vtkPoints>::New();
     points->InsertNextPoint(glbPos_begin.x, glbPos_begin.y, glbPos_begin.z);
@@ -628,7 +643,7 @@ vtkSmartPointer<vtkActor> CDistance::pointToLine()
     // 创建执行器
     auto actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
-    actor->GetProperty()->SetColor(0.0, 0.0, 0.0);
+    actor->GetProperty()->SetColor(MainWindow::ActorColor);
     actor->GetProperty()->SetLineWidth(3);
 
     return actor;
@@ -638,6 +653,45 @@ vtkSmartPointer<vtkActor> CDistance::pointToLine()
 vtkSmartPointer<vtkActor> CDistance::pointToCircle()
 {
     return 0;
+}
+
+// 绘制点到点的距离
+vtkSmartPointer<vtkActor> CDistance::pointToPoint()
+{
+    // 将begin、end转为全局坐标
+    CPosition pos_begin(begin.x, begin.y, begin.z);
+    QVector4D posVec_begin = GetRefCoord()->m_mat * QVector4D(pos_begin.x, pos_begin.y, pos_begin.z, 1);
+    CPosition glbPos_begin(posVec_begin.x(), posVec_begin.y(), posVec_begin.z());
+
+    CPosition pos_end(end.x, end.y, end.z);
+    QVector4D posVec_end = GetRefCoord()->m_mat * QVector4D(pos_end.x, pos_end.y, pos_end.z, 1);
+    CPosition glbPos_end(posVec_end.x(), posVec_end.y(), posVec_end.z());
+
+    // 创建点集，并插入定义线的两个点
+    auto points = vtkSmartPointer<vtkPoints>::New();
+    points->InsertNextPoint(glbPos_begin.x, glbPos_begin.y, glbPos_begin.z);
+    points->InsertNextPoint(glbPos_end.x, glbPos_end.y, glbPos_end.z);
+
+    // 创建线源
+    auto lines = vtkSmartPointer<vtkCellArray>::New();
+    vtkIdType line[2] = {0, 1}; // 索引从0开始
+    lines->InsertNextCell(2, line); // 插入一条包含两个顶点的线
+
+    // 创建几何图形容器并设置点和线
+    vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
+    polyData->SetPoints(points);
+    polyData->SetLines(lines);
+
+    // 创建映射器
+    auto mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    mapper->SetInputData(polyData);
+
+    // 创建执行器
+    auto actor = vtkSmartPointer<vtkActor>::New();
+    actor->SetMapper(mapper);
+    actor->GetProperty()->SetColor(MainWindow::ActorColor);
+    actor->GetProperty()->SetLineWidth(3);
+    return actor;
 }
 
 
@@ -1033,7 +1087,7 @@ CPosition CDistance::getProjection()
 
 double CDistance::getdistancepoint()
 {
-    return sqrt(pow(begin.x - end.x,  3) + pow(begin.y - end.y,  3) + pow(begin.z - end.z,  3));
+    return sqrt(pow(begin.x - end.x,  2) + pow(begin.y - end.y,  2) + pow(begin.z - end.z,  2));
 }
 
 double CDistance::getdistanceplane()

@@ -130,7 +130,7 @@ vtkActor* MouseInteractorHighlightActor::CreatHighLightPoint(double pos[3])
     // 创建执行器，添加mapper
     vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
-    actor->GetProperty()->SetPointSize(7); // 设置点的大小
+    actor->GetProperty()->SetPointSize(6); // 设置点的大小
     point_actors.push_back(actor); // 存入point_actors
 
     renderer->AddActor(actor);
@@ -178,9 +178,9 @@ void MouseInteractorHighlightActor::HighlightActor(vtkActor* actor)
     originalProperty->DeepCopy(actor->GetProperty());
     pickedActors.emplace_back(actor, originalProperty);// emplace_back作用等于push_back
 
-    // 设置actor的颜色为红色
-    actor->GetProperty()->SetColor(1.0, 0.0, 0.0);
-
+    // 让actor高亮
+    actor->GetProperty()->SetColor(MainWindow::HighLightColor[0], MainWindow::HighLightColor[1],
+    MainWindow::HighLightColor[2]);
 }
 
 // 实现恢复actor属性的方法
