@@ -1552,10 +1552,10 @@ void ToolWidget:: onFindPlane(){
         return;
     }
 
-    PointConstructor p_constructor;
-    CPoint *newPoint;
-    newPoint=p_constructor.createPoint(point.x,point.y,point.z);
-    addToFindList(newPoint);
+    // PointConstructor p_constructor;
+    // CPoint *newPoint;
+    // newPoint=p_constructor.createPoint(point.x,point.y,point.z);
+    // addToFindList(newPoint);
 
     PlaneConstructor constructor;
     CPlane* newPlane;
@@ -1618,10 +1618,10 @@ void ToolWidget::onFindPoint(){
         return ;
     }
 
-    PointConstructor p_constructor;
-    CPoint *Point;
-    Point=p_constructor.createPoint(point.x,point.y,point.z);
-    addToFindList(Point);
+    // PointConstructor p_constructor;
+    // CPoint *Point;
+    // Point=p_constructor.createPoint(point.x,point.y,point.z);
+    // addToFindList(Point);
 
     PointConstructor constructor;
     CPoint* newPoint;
@@ -1688,10 +1688,10 @@ void ToolWidget::onFindLine(){
         return;
     }
 
-    PointConstructor p_constructor;
-    CPoint *newPoint;
-    newPoint=p_constructor.createPoint(point.x,point.y,point.z);
-    addToFindList(newPoint);
+    // PointConstructor p_constructor;
+    // CPoint *newPoint;
+    // newPoint=p_constructor.createPoint(point.x,point.y,point.z);
+    // addToFindList(newPoint);
 
     LineConstructor constructor;
     CLine* newLine;
@@ -1761,10 +1761,10 @@ void ToolWidget::onFindCircle(){
         return;
     }
 
-    PointConstructor p_constructor;
-    CPoint *newPoint;
-    newPoint=p_constructor.createPoint(point.x,point.y,point.z);
-    addToFindList(newPoint);
+    // PointConstructor p_constructor;
+    // CPoint *newPoint;
+    // newPoint=p_constructor.createPoint(point.x,point.y,point.z);
+    // addToFindList(newPoint);
 
     CircleConstructor constructor;
     CCircle* newCircle;
@@ -1832,10 +1832,10 @@ void ToolWidget::onFindRectangle(){
         return;
     }
 
-    PointConstructor p_constructor;
-    CPoint *newPoint;
-    newPoint=p_constructor.createPoint(point.x,point.y,point.z);
-    addToFindList(newPoint);
+    // PointConstructor p_constructor;
+    // CPoint *newPoint;
+    // newPoint=p_constructor.createPoint(point.x,point.y,point.z);
+    // addToFindList(newPoint);
 
     RectangleConstructor constructor;
     CPlane* newPlane;
@@ -1904,10 +1904,10 @@ void ToolWidget::onFindCylinder(){
         return;
     }
 
-    PointConstructor p_constructor;
-    CPoint *newPoint;
-    newPoint=p_constructor.createPoint(point.x,point.y,point.z);
-    addToFindList(newPoint);
+    // PointConstructor p_constructor;
+    // CPoint *newPoint;
+    // newPoint=p_constructor.createPoint(point.x,point.y,point.z);
+    // addToFindList(newPoint);
 
     CylinderConstructor constructor;
     CCylinder* newCylinder;
@@ -1976,10 +1976,10 @@ void ToolWidget::onFindCone(){
         return;
     }
 
-    PointConstructor p_constructor;
-    CPoint *newPoint;
-    newPoint=p_constructor.createPoint(point.x,point.y,point.z);
-    addToFindList(newPoint);
+    // PointConstructor p_constructor;
+    // CPoint *newPoint;
+    // newPoint=p_constructor.createPoint(point.x,point.y,point.z);
+    // addToFindList(newPoint);
 
     ConeConstructor constructor;
     CCone* newCone;
@@ -2049,10 +2049,10 @@ void ToolWidget::onFindSphere(){
         return;
     }
 
-    PointConstructor p_constructor;
-    CPoint *newPoint;
-    newPoint=p_constructor.createPoint(point.x,point.y,point.z);
-    addToFindList(newPoint);
+    // PointConstructor p_constructor;
+    // CPoint *newPoint;
+    // newPoint=p_constructor.createPoint(point.x,point.y,point.z);
+    // addToFindList(newPoint);
 
     SphereConstructor constructor;
     CSphere* newSphere;
