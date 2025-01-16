@@ -2,12 +2,17 @@
 #include "mainwindow.h"
 #include "manager/filemgr.h"
 #include <QDebug>
+#include <QPainter>
+#include <QPixmap>
+
 int ElementListWidget::pcscount = 0;
 ElementListWidget::ElementListWidget(QWidget *parent)
     : QWidget{parent}
 {
     m_pMainWin=(MainWindow*)parent;
     auto *layout = new QVBoxLayout(this);
+    layout->setContentsMargins(0, 0, 0, 0); // 去除布局的边距
+    layout->setSpacing(0); // 去除布局内部的间距
 
     // 删除选中元素的按钮
     QPushButton *deleteButton = new QPushButton("删除选中元素", this);
