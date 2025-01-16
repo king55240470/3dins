@@ -633,7 +633,7 @@ void VtkWidget::onCompare()
     m_pMainWin->NotifySubscribe();
 }
 
-//FPFH+ICP
+//ICP
 void VtkWidget::onAlign()
 {
     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
@@ -646,8 +646,6 @@ void VtkWidget::onAlign()
         if (entity->GetUniqueType() == enPointCloud) {
             auto& temp = ((CPointCloud*)entity)->m_pointCloud;
             clouds.append(temp.makeShared());
-            //删除选中点云
-
         }
     }
 
@@ -746,7 +744,6 @@ void VtkWidget::onAlign()
     icp.align(icpFinalCloud, initialTransformation);  // 使用FPFH的变换矩阵作为初始对齐
 
     if (icp.hasConverged()) {
-        //XYZ转RGB
         pcl::copyPointCloud(icpFinalCloud, *alignedCloud);
 
         // 显示对齐后的点云
