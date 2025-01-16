@@ -455,75 +455,52 @@ void ElementListWidget::onAddElement()
 
 void ElementListWidget::updateDistance(CEntity *entity)
 {
+    qDebug()<<"进入updateDistance";
+    if(timer){
+        timer->stop();
+        delete timer;
+        timer=nullptr;
+    }
+    qDebug()<<"判断时间是否存在后";
     CPointCloud*could=static_cast<CPointCloud*>(entity);
     pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree;
     kdtree.setInputCloud(could->GetmyCould().makeShared());
-    std::vector<int> pointIdxNKNSearch(1);
-    std::vector<float> pointNKNSquaredDistance(1);
-    pcl::PointXYZRGB searchPoint;
     QVector<CEntity*>distancelist;
-    QVector<int>index;
     for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
         if(m_pMainWin->getEntityListMgr()->getEntityList()[i]->GetObjectCName().left(2)=="距离"){
             distancelist.push_back(m_pMainWin->getEntityListMgr()->getEntityList()[i]);
-            index.push_back(i);
         }
     }
-    int t=0;
-    qDebug()<<"进入距离循环之前";
+    qDebug()<<"进入时间开启之前";
     timer = new QTimer(this);
-    for(auto distance:distancelist){
-        list.clear();
-        currentIndex=0;
-        QVector<CObject*>parent=distance->parent;
-        //auto boundFunc = std::bind(&ElementListWidget::startupdateData,distance->parent,kdtree,parentindex,could,list);
-        connect(timer, &QTimer::timeout, [this,parent,kdtree,could](){
-            startupdateData(parent,kdtree,could);
-        });
-        timer->start(1000);
-        qDebug()<<"时间开始后";
-        /*for(CObject*obj:distance->parent){
-            if(obj->GetUniqueType()==enPoint){
-                CPoint*point=static_cast<CPoint*>(obj);
-                searchPoint.x=point->GetPt().x;
-                searchPoint.y=point->GetPt().y;
-                searchPoint.z=point->GetPt().z;
-                if (kdtree.nearestKSearch(searchPoint, 1, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
-                    int nearestIdx = pointIdxNKNSearch[0];
-                    pcl::PointXYZRGB nearestPoint = could->GetmyCould().points[nearestIdx];
-                    for(int i=0;i<m_pMainWin->getObjectListMgr()->getObjectList().size();i++){
-                        if(m_pMainWin->getObjectListMgr()->getObjectList()[i]==obj){
-                            CPoint*point1=static_cast<CPoint*>(m_pMainWin->getObjectListMgr()->getObjectList()[i]);
-                            CPosition pt;
-                            pt.x=nearestPoint.x;pt.y=nearestPoint.y;pt.z=nearestPoint.z;
-                            point1->SetPosition(pt);
-                            qDebug()<<"point1点"<<point1->GetPt().x;
-                            list.push_back(point1);
-                            break;
-                        }
-                    }
-                }
-            }
-        }*/
-        //CDistance* dis = dynamic_cast<CDistance*>(distance);
+    list.clear();
+    currentIndex=0;
+    connect(timer, &QTimer::timeout, [this,kdtree,could,distancelist](){
+        startupdateData(kdtree,could,distancelist);
+    });
+    timer->start(1000);
+    qDebug()<<"时间开始后";
+    distancelistIndex=0;
 
-    }
 }
 
-void ElementListWidget::startupdateData(QVector<CObject *> parent, pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree,CPointCloud*could)
+void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree,CPointCloud*could,QVector<CEntity*>distancelist)
 {
     qDebug()<<"时间进行1秒";
     QVector<CObject*>objlist=m_pMainWin->getObjectListMgr()->getObjectList();
-    if(currentIndex>parent.size()-1){
+    if(distancelistIndex>distancelist.size()-1){
         timer->stop();
         delete timer;
-        qDebug()<<"timer停止";
+        timer=nullptr;
+        return;
+    }
+    if(currentIndex>distancelist[distancelistIndex]->parent.size()-1){
         qDebug()<<list.size();
         CPosition begin=list[0]->GetPt();
         CPosition end=list[1]->GetPt();
         qDebug()<<"begin点"<<begin.x;
         for(int i=0;i<objlist.size();i++){
-            if(objlist[i]->parent==parent){
+            if(objlist[i]->parent==distancelist[distancelistIndex]->parent){
                 CDistance*dis=dynamic_cast<CDistance*>(m_pMainWin->getObjectListMgr()->getObjectList()[i]);
                 dis->setbegin(begin);
                 dis->setend(end);
@@ -534,10 +511,14 @@ void ElementListWidget::startupdateData(QVector<CObject *> parent, pcl::KdTreeFL
             }
         }
         qDebug()<<"进行到距离改变";
+        distancelistIndex++;
+        currentIndex=0;
+        list.clear();
         return;
     }else if(stateMachine->configuration().contains(stoppedState)){
         timer->stop();
         delete timer;
+        timer=nullptr;
         qDebug()<<"结束时间";
         return;
     }else if(stateMachine->configuration().contains(pausedState)){
@@ -545,7 +526,7 @@ void ElementListWidget::startupdateData(QVector<CObject *> parent, pcl::KdTreeFL
         return;
     }
     if(stateMachine->configuration().contains(runningState)){
-        CObject*obj=parent[currentIndex];
+        CObject*obj=distancelist[distancelistIndex]->parent[currentIndex];
         currentIndex++;
         std::vector<int> pointIdxNKNSearch(1);
         std::vector<float> pointNKNSquaredDistance(1);
@@ -579,7 +560,6 @@ void ElementListWidget::startupdateData(QVector<CObject *> parent, pcl::KdTreeFL
             }
         }
     }
-
 }
 
 void ElementListWidget::isAdd()
