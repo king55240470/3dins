@@ -33,6 +33,19 @@ MainWindow::MainWindow(QWidget *parent)
     LoadSetDataWidget();
     m_nRelyOnWhichCs=csRef;
     SetUpTheme();
+
+    QSettings settings(":/config/config.ini", QSettings::IniFormat);
+    settings.beginGroup("CPoint");
+    settings.setValue("x", 2);
+    settings.setValue("y", 2);
+    settings.setValue("z", 1);
+    settings.endGroup();
+    settings.sync();
+    double x;
+    settings.beginGroup("CPoint");
+    x = settings.value("x").toDouble();
+    settings.endGroup();
+    qDebug() << x;
 }
 
 void MainWindow::setupUi(){
@@ -55,35 +68,53 @@ void MainWindow::setupUi(){
     bar->addAction(contralAction);
 
     QMenu *presetMenu=bar->addMenu("预置元素");
+    // 创建图标
+    QIcon pointIcon(":/component/construct/point.jpg");
+    QIcon lineIcon(":/component/construct/line.jpg");
+    QIcon circleIcon(":/component/construct/circle.jpg");
+    QIcon planeIcon(":/component/construct/plan.jpg");
+    QIcon sphereIcon(":/component/construct/sphere.jpg");
+    QIcon cylinderIcon(":/component/construct/cylinder.jpg");
+    QIcon coneIcon(":/component/construct/cone.jpg");
+    QIcon boxIcon(":/component/viewangle/isometric.png");
+
     QAction* pointAction =presetMenu->addAction("点");
+    pointAction->setIcon(pointIcon);
     connect(pointAction,&QAction::triggered,this,[&](){
         showPresetElemWidget(0);
     });
     QAction* lineAction =presetMenu->addAction("线");
+    lineAction->setIcon(lineIcon);
     connect(lineAction,&QAction::triggered,this,[&](){
         showPresetElemWidget(1);
     });
     QAction* circleAction =presetMenu->addAction("圆");
+    circleAction->setIcon(circleIcon);
     connect(circleAction,&QAction::triggered,this,[&](){
         showPresetElemWidget(2);
     });
     QAction* planeAction =presetMenu->addAction("平面");
+    planeAction->setIcon(planeIcon);
     connect(planeAction,&QAction::triggered,this,[&](){
         showPresetElemWidget(3);
     });
     QAction* sphereAction =presetMenu->addAction("球");
+    sphereAction->setIcon(sphereIcon);
     connect(sphereAction,&QAction::triggered,this,[&](){
         showPresetElemWidget(4);
     });
     QAction* cylinderAction =presetMenu->addAction("圆柱");
+    cylinderAction->setIcon(cylinderIcon);
     connect(cylinderAction,&QAction::triggered,this,[&](){
         showPresetElemWidget(5);
     });
     QAction* coneAction =presetMenu->addAction("圆锥");
+    coneAction->setIcon(coneIcon);
     connect(coneAction,&QAction::triggered,this,[&](){
         showPresetElemWidget(6);
     });
     QAction* boxAction =presetMenu->addAction("长方体");
+    boxAction->setIcon(boxIcon);
     connect(boxAction,&QAction::triggered,this,[&](){
         showPresetElemWidget(7);
     });
@@ -111,10 +142,12 @@ void MainWindow::setupUi(){
     // connect(fittingLineAction, &QAction::triggered, this, &setDataWidget::setLineData);
 
     QMenu * switchTheme = bar->addMenu("主题");
-    QAction* lightTheme = switchTheme->addAction("浅色主题");
-    connect(lightTheme, &QAction::triggered, this, &MainWindow::onConvertLighTheme);
-    QAction* deepTheme = switchTheme->addAction("深色主题");
-    connect(deepTheme, &QAction::triggered, this, &MainWindow::onConvertDeepTheme);
+    QAction* lightBlue = switchTheme->addAction("浅蓝色(默认)");
+    connect(lightBlue, &QAction::triggered, this, &MainWindow::onConvertLighBlueTheme);
+    QAction* lightGrey = switchTheme->addAction("浅灰色");
+    connect(lightGrey, &QAction::triggered, this, &MainWindow::onConvertLightGreyTheme);
+    QAction* darkBlue = switchTheme->addAction("科技蓝");
+    connect(darkBlue, &QAction::triggered, this, &MainWindow::onConvertDarkBlueTheme);
 
     // 添加竖线分隔符
     QFrame *line = new QFrame();
@@ -131,10 +164,9 @@ void MainWindow::setupUi(){
     // QLabel *label2=new QLabel("右侧状态栏",this);
     // stbar->addPermanentWidget(label2);
     switchRefCsBtn = new QPushButton("参考依赖坐标系");
-    switchRefCsBtn->setFixedWidth(100);
+    // switchRefCsBtn->setFixedWidth(100);
     switchRefCsBtn->setObjectName("statusSwitchRef");
     switchRefCsBtn->setFlat(true); // 设置按钮为平面样式
-    switchRefCsBtn->setStyleSheet("text-align: center;border: none;margin-right: 20px;"); // 去掉边框，更像标签
     switchRefCsBtn->installEventFilter(this);  // 为按钮安装事件过滤器
     stbar->addPermanentWidget(switchRefCsBtn);
 
@@ -143,7 +175,6 @@ void MainWindow::setupUi(){
     switchCsBtn = new QPushButton("机械坐标系");
     switchCsBtn->setFixedWidth(100);
     switchCsBtn->setFlat(true); // 设置按钮为平面样式
-    switchCsBtn->setStyleSheet("text-align: center;border: none;margin-right: 20px;"); // 去掉边框，更像标签
     switchCsBtn->installEventFilter(this);  // 为按钮安装事件过滤器
     switchCsBtn->setObjectName("statusSwitchCs");
     stbar->addPermanentWidget(switchCsBtn);
@@ -182,8 +213,8 @@ void MainWindow::setupUi(){
     spMainWindow->addWidget(spLeft);
     spMainWindow->addWidget(spMiddleup);
     spMainWindow->addWidget(spRightup);
+    spMainWindow->setContentsMargins(0, 0, 0, 0);
 
-    spMainWindow->setStyleSheet("QSplitter::handle{background-color:#cccccc}");
     spMainWindow->setHandleWidth(5);
 
     setCentralWidget(spMainWindow);
@@ -1009,9 +1040,9 @@ void MainWindow::on2dCoordSetRightY()
     NotifySubscribe();
 }
 
-void MainWindow::onConvertDeepTheme()
+void MainWindow::onConvertLightGreyTheme()
 {
-    auto styleFile = QFile(":/style/deep_color_theme.qss");
+    auto styleFile = QFile(":/style/light_grey.qss");
     styleFile.open(QFile::ReadOnly);
     if(styleFile.isOpen()){
         QString styleSheets = QLatin1String(styleFile.readAll());
@@ -1023,9 +1054,23 @@ void MainWindow::onConvertDeepTheme()
     }
 }
 
-void MainWindow::onConvertLighTheme()
+void MainWindow::onConvertLighBlueTheme()
 {
-    auto styleFile = QFile(":/style/light_color_theme.qss");
+    auto styleFile = QFile(":/style/light_blue.qss");
+    styleFile.open(QFile::ReadOnly);
+    if(styleFile.isOpen()){
+        QString styleSheets = QLatin1String(styleFile.readAll());
+        this->setStyleSheet(styleSheets);
+        styleFile.close();
+    }
+    else {
+        qDebug() << "打开样式文件失败";
+    }
+}
+
+void MainWindow::onConvertDarkBlueTheme()
+{
+    auto styleFile = QFile(":/style/dark_blue.qss");
     styleFile.open(QFile::ReadOnly);
     if(styleFile.isOpen()){
         QString styleSheets = QLatin1String(styleFile.readAll());
@@ -1057,7 +1102,8 @@ void MainWindow::LoadSetDataWidget(){
 
 void MainWindow::SetUpTheme()
 {
-    auto styleFile = QFile(":/style/light_color_theme.qss");
+    // auto styleFile = QFile("E:\\QSS样式表大合集\\others\\11.qss");
+    auto styleFile = QFile(":/style/light_blue.qss");
     styleFile.open(QFile::ReadOnly);
     if(styleFile.isOpen()){
         QString styleSheets = QLatin1String(styleFile.readAll());
@@ -1066,7 +1112,11 @@ void MainWindow::SetUpTheme()
     }
     else {
         qDebug() << "打开样式文件失败";
-    }
+    }}
+
+void MainWindow::ChangeIniFile()
+{
+
 }
 
 setDataWidget *MainWindow::getPWinSetDataWidget(){

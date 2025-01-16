@@ -66,7 +66,8 @@ vtkSmartPointer<vtkActor> CPoint::draw(){
 
 QString CPoint::getCEntityInfo()
 {
-    QString infoText = QString("Information:\nX:%1\nY:%2\nZ:%3").arg(QString::number(m_pt.x, 'f',  3)).arg(QString::number(m_pt.y, 'f',  3)).arg(QString::number(m_pt.z, 'f',  3));
+    QString infoText = QString("Information:\nX:%1\nY:%2\nZ:%3").arg(QString::number(m_pt.x, 'f',  3))
+    .arg(QString::number(m_pt.y, 'f',  3)).arg(QString::number(m_pt.z, 'f',  3));
     return infoText;
 }
 
