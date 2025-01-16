@@ -131,11 +131,11 @@ void VtkWidget::createText()
 
     infoTextActor->GetTextProperty()->SetFontSize(16);
     infoTextActor->GetTextProperty()->SetFontFamilyToTimes();
-    infoTextActor->GetTextProperty()->SetColor(1, 0, 0);
+    infoTextActor->GetTextProperty()->SetColor(1, 1, 0);
     infoTextActor->GetTextProperty()->SetJustificationToLeft(); // 左对齐
     infoTextActor->GetTextProperty()->SetBold(1); // 设置粗体
     infoTextActor->GetTextProperty()->SetShadow(true);
-    infoTextActor->GetTextProperty()->SetShadowOffset(2, 2); // 设置阴影偏移量
+    infoTextActor->GetTextProperty()->SetShadowOffset(1, 1); // 设置阴影偏移量
 
     QString qstr = elementEntity->getCEntityInfo();
     QByteArray byteArray = qstr.toUtf8(); // 转换 QString 到 QByteArray

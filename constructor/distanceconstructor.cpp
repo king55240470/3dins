@@ -97,6 +97,7 @@ CDistance *DistanceConstructor::createDistance(CPoint *p1, CPoint *point)
     newdistance->setbegin(pt1);
     newdistance->setend(pt2);
     newdistance->setdistance(newdistance->getdistancepoint());
+    newdistance->isPointToPoint = true;
     return newdistance;
 }
 
@@ -121,6 +122,7 @@ CDistance *DistanceConstructor::createDistance(CPoint *p1, CLine *line)
     newdistance->setbegin(pt1);
     newdistance->setline(*line);
     newdistance->setdistance(newdistance->getdistanceline());
+    newdistance->isPlaneToPlane = true;
     return newdistance;
 }
 
