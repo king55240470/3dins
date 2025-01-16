@@ -17,6 +17,7 @@ class FittingCylinder;
 class FittingSphere;
 class FittingCone;
 class FittingLine;
+class FittingCircle;
 class setDataWidget : public QWidget
 {
     Q_OBJECT
@@ -52,6 +53,12 @@ public:
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr getFittingLine();
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr getLineCloud();
     FittingLine *getLine();
+
+    void setCircleData(pcl::PointXYZRGB,pcl::PointCloud<pcl::PointXYZRGB>::Ptr);
+    void CircleBtnClick();
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr getFittingCircle();
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr getCircleCloud();
+    FittingCircle *getCircle();
 private:
     MainWindow *m_pMainWin;
 
@@ -91,6 +98,11 @@ private:
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr fittingLine;
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr lineCloud;
     FittingLine *line;
+
+    //拟合圆
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr fittingCircle;
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr circleCloud;
+    FittingCircle *circle;
 
 public:
     QDataStream& serialize(QDataStream& out) const{
