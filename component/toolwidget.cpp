@@ -71,6 +71,7 @@
 #include "pointfitting/fittingcone.h"//拟合圆柱算法
 #include "pointfitting/fittingpoint.h"
 #include "pointfitting/fittingline.h"
+#include "pointfitting/fittingcircle.h"
 #include "pointfitting/setdatawidget.h"
 
 
@@ -1694,8 +1695,136 @@ void ToolWidget::onFindLine(){
     positions.clear();
     m_pMainWin->NotifySubscribe();
 }
-void ToolWidget::onFindCircle(){}
+void ToolWidget::onFindCircle(){
+    //读取选中的点云
+    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+    QVector<CPointCloud*> pointClouds;
+
+    //读取选中的点
+    QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenActorAxes();
+    pcl::PointXYZRGB  point;
+    if(positions.size()==0)return ;
+    point.x=positions.last().x;
+    point.y=positions.last().y;
+    point.z=positions.last().z;
+
+    // 获取拟合用的点云指针
+    auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
+
+    // 如果没有从窗口里选中点云，则从列表中获取，列表中也没有选中则报异常
+    if(cloudptr==nullptr){
+        for(int i=0;i<entityList.size();i++){
+            CEntity* entity=entityList[i];
+            if(!entity->IsSelected())continue;
+            if(entity->GetUniqueType()==enPointCloud){
+                CPointCloud* pointCloud=(CPointCloud*)entity;
+                pointClouds.append(pointCloud);
+            }
+        }
+        if(pointClouds.size()<1){
+            WrongWidget("选中的点云数目为0");
+            return ;
+        }else if(pointClouds.size()>1){
+            WrongWidget("选中的点云数目大于1");
+            return ;
+        }
+        else
+            m_pMainWin->getPWinSetDataWidget()->setCircleData(point,pointClouds[0]->m_pointCloud.makeShared());
+        return ;
+    }
+    m_pMainWin->getPWinSetDataWidget()->setCircleData(point, cloudptr);
+
+    auto circleCloud=m_pMainWin->getPWinSetDataWidget()->getCircleCloud();
+    if(circleCloud==nullptr){
+        qDebug()<<"拟合圆生成错误";
+        return ;
+    }
+    auto circle=m_pMainWin->getPWinSetDataWidget()->getCircle();
+    if(circle==nullptr){
+        return;
+    }
+    CircleConstructor constructor;
+    CCircle* newCircle;
+    CPosition center;
+    center.x=circle->getCenter()[0];
+    center.y=circle->getCenter()[1];
+    center.z=circle->getCenter()[2];
+    double radius=circle->getRad();
+    newCircle=constructor.createCircle(center,radius);
+    if(newCircle==nullptr){
+        qDebug()<<"拟合圆生成错误";
+        return ;
+    }
+    addToFindList(newCircle);
+
+    positions.clear();
+    m_pMainWin->NotifySubscribe();
+}
 void ToolWidget::onFindRectangle(){
+    //读取选中的点云
+    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+    QVector<CPointCloud*> pointClouds;
+
+    //读取选中的点
+    QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenActorAxes();
+    pcl::PointXYZRGB  point;
+    if(positions.size()==0)return ;
+    point.x=positions[0].x;
+    point.y=positions[0].y;
+    point.z=positions[0].z;
+
+    // 获取拟合用的点云指针
+    auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
+    m_pMainWin->getPWinSetDataWidget()->setPlaneData(point,cloudptr);
+
+    // 如果没有从窗口里选中点云，则从列表中获取，列表中也没有选中则报异常
+    if(cloudptr==nullptr){
+        for(int i=0;i<entityList.size();i++){
+            CEntity* entity=entityList[i];
+            if(!entity->IsSelected())continue;
+            if(entity->GetUniqueType()==enPointCloud){
+                CPointCloud* pointCloud=(CPointCloud*)entity;
+                pointClouds.append(pointCloud);
+            }
+        }
+        if(pointClouds.size()<1){
+            WrongWidget("选中的点云数目为0");
+            return ;
+        }else if(pointClouds.size()>1){
+            WrongWidget("选中的点云数目大于1");
+            return ;
+        }
+        else
+            m_pMainWin->getPWinSetDataWidget()->setPlaneData(point,pointClouds[0]->m_pointCloud.makeShared());
+        return ;
+    }
+
+    auto planeCloud=m_pMainWin->getPWinSetDataWidget()->getPlaneCloud();
+    if(planeCloud==nullptr){
+        qDebug()<<"拟合矩形生成错误";
+        return ;
+    }
+    auto plane=m_pMainWin->getPWinSetDataWidget()->getPlane();
+    if(plane==nullptr){
+        return;
+    }
+    RectangleConstructor constructor;
+    CPlane* newPlane;
+    CPosition center;
+    center.x=plane->getCenter()[0];
+    center.y=plane->getCenter()[1];
+    center.z=plane->getCenter()[2];
+    QVector4D normal(plane->getNormal().x(),plane->getNormal().y(),plane->getNormal().z(),0);
+    QVector4D direction(plane->getLength_Direction().x(),plane->getLength_Direction().y(),plane->getLength_Direction().z(),0);
+    newPlane=constructor.createRectangle(center,normal,direction,plane->getLength(),plane->getWidth());
+    if(newPlane==nullptr){
+        qDebug()<<"拟合矩形生成错误";
+        return ;
+    }
+    addToFindList(newPlane);
+
+    positions.clear();
+    m_pMainWin->NotifySubscribe();
 }
 void ToolWidget::onFindCylinder(){
     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();

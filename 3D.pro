@@ -47,6 +47,7 @@ SOURCES += \
     manager/cpcsmgr.cpp \
     manager/filemgr.cpp \
     manager/pointcloudlistmgr.cpp \
+    pointfitting/fittingcircle.cpp \
     pointfitting/fittingcone.cpp \
     pointfitting/fittingcylinder.cpp \
     pointfitting/fittingline.cpp \
@@ -95,6 +96,7 @@ HEADERS += \
     manager/cpcsmgr.h \
     manager/filemgr.h \
     manager/pointcloudlistmgr.h \
+    pointfitting/fittingcircle.h \
     pointfitting/fittingcone.h \
     pointfitting/fittingcylinder.h \
     pointfitting/fittingline.h \
@@ -116,6 +118,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 RESOURCES += \
     filemanagerwidget.qrc \
     graph.qrc \
+    inifile.qrc \
     start.qrc \
     stylesheet.qrc \
     toolwidget.qrc
