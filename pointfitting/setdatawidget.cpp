@@ -5,6 +5,7 @@
 #include "pointfitting/fittingsphere.h"
 #include "pointfitting/fittingcone.h"
 #include "pointfitting/fittingline.h"
+#include "pointfitting/fittingcircle.h"
 
 class VtkWidget;
 
@@ -36,6 +37,10 @@ setDataWidget::setDataWidget(QWidget *parent)
     fittingLine.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
     lineCloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
     line=nullptr;
+
+    fittingCircle.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
+    circleCloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
+    circle=nullptr;
 
     rad = new QLineEdit();
     dis = new QLineEdit();
@@ -347,4 +352,65 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr setDataWidget::getFittingLine(){
 
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr setDataWidget::getLineCloud(){
     return lineCloud;
+}
+
+
+//圆
+void setDataWidget::setCircleData(pcl::PointXYZRGB searchPoint,pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud){
+    point=searchPoint;
+    cloudptr=cloud;
+    dialog = new QDialog(this);
+    dialog->resize(400,150);
+    dialog->setWindowTitle("设置邻域和阈值");
+    layout = new QGridLayout(dialog);
+    lab1 = new QLabel("请输入邻域：");
+    lab2 = new QLabel("请输入距离阈值：");
+    // rad = new QLineEdit();
+    // rad->setText("1");
+    // dis = new QLineEdit();
+    // dis->setText("0.01");
+    btn = new QPushButton("确定");
+    layout->addWidget(lab1,0,0,1,1);
+    layout->addWidget(rad,0,1,1,2);
+    layout->addWidget(lab2,1,0,1,1);
+    layout->addWidget(dis,1,1,1,2);
+    layout->addWidget(btn,2,2,1,1);
+    dialog->setLayout(layout);
+    dialog->show();
+    connect(btn,&QPushButton::clicked,this,&setDataWidget::CircleBtnClick);
+    dialog->exec();
+}
+
+void setDataWidget::CircleBtnClick(){
+    dialog->close();
+    if(dis->text().toDouble()<=0||rad->text().toDouble()<=0){
+        QMessageBox *messagebox=new QMessageBox();
+        messagebox->setText("输入大于0的数");
+        messagebox->setIcon(QMessageBox::Warning);
+        messagebox->show();
+        messagebox->exec();
+        return;
+    }
+    circle=new FittingCircle();
+    circle->setRadius(rad->text().toDouble());  // 设置半径
+    circle->setDistance(dis->text().toDouble());  // 设置距离阈值
+    circleCloud= circle->RANSAC(point,cloudptr);
+    if(circleCloud==nullptr){
+        qDebug()<<"出现了点云空指针";
+        return;
+    }
+    qDebug()<<circleCloud->size();
+    pcl::copyPointCloud(*circleCloud, *fittingCircle);
+}
+
+pcl::PointCloud<pcl::PointXYZRGB>::Ptr setDataWidget::getFittingCircle(){
+    return fittingCircle;
+}
+
+pcl::PointCloud<pcl::PointXYZRGB>::Ptr setDataWidget::getCircleCloud(){
+    return circleCloud;
+}
+
+FittingCircle *setDataWidget::getCircle(){
+    return circle;
 }
