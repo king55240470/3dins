@@ -127,6 +127,7 @@ private:
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud1; // 对比用的两个点云
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud2;
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr comparisonCloud;
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr alignedCloud;
 
     vtkSmartPointer<vtkTextActor> infoTextActor;// 浮动信息文本演员
     vtkSmartPointer<vtkActor2D> rectangleActor; // 背景和边框
