@@ -73,6 +73,7 @@ CDistance* DistanceConstructor::createDistance(CPlane* plane1, CPlane* plane2){
     distance+=fabs(newdistance->getdistanceplane());//从第二个平面中心到第一个平面
     distance/=2;//取平均值
     newdistance->setdistance(distance);
+    newdistance->isPlaneToPlane = true;
     return newdistance;
 }
 CDistance *DistanceConstructor::createDistance(CPoint* p1, CPlane* plane)
@@ -84,6 +85,7 @@ CDistance *DistanceConstructor::createDistance(CPoint* p1, CPlane* plane)
     newdistance->setbegin(pt1);
     newdistance->setplane(*plane);
     newdistance->setdistance(newdistance->getdistanceplane());
+    newdistance->isPointToPlane = true;
     return newdistance;
 }
 
@@ -122,7 +124,7 @@ CDistance *DistanceConstructor::createDistance(CPoint *p1, CLine *line)
     newdistance->setbegin(pt1);
     newdistance->setline(*line);
     newdistance->setdistance(newdistance->getdistanceline());
-    newdistance->isPlaneToPlane = true;
+    newdistance->isPointToLine = true;
     return newdistance;
 }
 
