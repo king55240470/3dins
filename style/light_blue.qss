@@ -1,5 +1,5 @@
 QWidget {
-    font-size: 14px "Arial";
+    font-size: 14px "微软雅黑";
     color: #333;
     background-color: #f0f0f0; /* 浅灰色背景 */
 }
@@ -76,7 +76,7 @@ QToolBar::separator {
 
 /* QTreeWidget的样式 */
 QTreeWidget {
-    font-size: 12px "微软雅黑";
+    font-size: 14px "微软雅黑";
     background-color: #ffffff;
     /*border: 1px solid #cccccc;*/
     alternate-background-color: #f0f0f0;
@@ -153,7 +153,7 @@ QMenu:hover {
 
 QMenu::item {
     padding: 5px;
-    border: 1px solid transparent; /* 用于鼠标悬停时的边框 */
+    border: 1px solid #d3d3d3 ; /* 用于鼠标悬停时的边框 */
 }
 
 QMenu::item:selected {

@@ -628,12 +628,14 @@ public:
     bool isHaveLine = false;
     bool isHaveCircle = false;
     bool isPlaneToPlane = false;
+    bool isPointToPoint = false;
 
     // CDistance的draw()，这里要分别写几个显示不同的距离
     vtkSmartPointer<vtkActor> draw() override;
     vtkSmartPointer<vtkActor> pointToPlane();
     vtkSmartPointer<vtkActor> pointToLine();
     vtkSmartPointer<vtkActor> pointToCircle();
+    vtkSmartPointer<vtkActor> pointToPoint();
 };
 
 class CPointCloud : public CEntity
