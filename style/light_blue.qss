@@ -47,19 +47,21 @@ QLabel:selected {
 QPushButton {
     font-size: 14px "微软雅黑";
     text-align: center;
-    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #4a90e2, stop: 1 #3570b2);
+    background-color: #ffffff;
     border: 1px solid #3570b2;
     border-radius: 5px;
     padding: 10px;
-    color: #ffffff;
+    color: #000000;
 }
 
 QPushButton:hover {
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #5fa7ea, stop: 1 #3b7cb5);
+    color: #ffffff;
 }
 
 QPushButton:pressed {
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #3570b2, stop: 1 #4a90e2);
+    color: #ffffff;
 }
 
 QToolBar {
