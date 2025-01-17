@@ -32,6 +32,7 @@
 #include "toolwidget.h"
 #include"vtkwindow/vtkwidget.h"
 #include"constructor/distanceconstructor.h"
+#include"constructor/planeconstructor.h"
 class ElementListWidget : public QWidget
 {
     Q_OBJECT
@@ -99,7 +100,7 @@ private:
     int currentIndex;
     int distancelistIndex;
     QTimer* timer=nullptr;
-    QVector<CPoint*>list;
+    QVector<CEntity*>list;
 signals:
     void itemSelected(int index);
 };

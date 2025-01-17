@@ -498,14 +498,28 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
     }
     if(currentIndex>distancelist[distancelistIndex]->parent.size()-1){
         qDebug()<<list.size();
-        CPosition begin=list[0]->GetPt();
-        CPosition end=list[1]->GetPt();
-        qDebug()<<"begin点"<<begin.x;
+        QVector<CPoint *>position;
+        QVector<CPlane*>plane;
+        for(int i=0;i<list.size();i++){
+            if(list[i]->GetUniqueType()==enPoint){
+                position.push_back((CPoint*)list[i]);
+            }else if(list[i]->GetUniqueType()==enPlane){
+                plane.push_back((CPlane*)list[i]);
+            }
+        }
         for(int i=0;i<objlist.size();i++){
             if(objlist[i]->parent==distancelist[distancelistIndex]->parent){
                 CDistance*dis=dynamic_cast<CDistance*>(m_pMainWin->getObjectListMgr()->getObjectList()[i]);
-                dis->setbegin(begin);
-                dis->setend(end);
+                if(position.size()==2){
+                    dis->setbegin(position[0]->GetPt());
+                    dis->setend(position[1]->GetPt());
+                }else if(plane.size()==1){
+                    dis->setbegin(position[0]->GetPt());
+                    dis->setplane(*plane[0]);
+                }else if(plane.size()==2){
+                    dis->setplane(*plane[0]);
+                    dis->setplane(*plane[1]);
+                }
                 qDebug()<<"距离"<<dis->getdistancepoint();
                 QTreeWidgetItem *item = treeWidgetNames->topLevelItem(i);
                 treeWidgetNames->setCurrentItem(item);
@@ -553,12 +567,37 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
                     }
                 }
             }
-            for(int i=0;i<objlist.size();i++){
-                if(obj==objlist[i]){
-                    QTreeWidgetItem *item = treeWidgetNames->topLevelItem(i);
-                    treeWidgetNames->setCurrentItem(item);
-                    break;
+        }else if(obj->GetUniqueType()==enPlane){
+            QVector<CObject*>planelist=obj->parent;
+            CPlane*plane=static_cast<CPlane*>(obj);
+            if(planelist.size()==3){
+                QVector<CPosition>positionlist;
+                for(CObject*planePt:planelist){
+                    CPoint*point=static_cast<CPoint*>(planePt);
+                    searchPoint.x=point->GetPt().x;
+                    searchPoint.y=point->GetPt().y;
+                    searchPoint.z=point->GetPt().z;
+                    if (kdtree.nearestKSearch(searchPoint, 1, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
+                        int nearestIdx = pointIdxNKNSearch[0];
+                        pcl::PointXYZRGB nearestPoint = could->GetmyCould().points[nearestIdx];
+                        CPosition pt;
+                        pt.x=nearestPoint.x;
+                        pt.y=nearestPoint.y;
+                        pt.z=nearestPoint.z;
+                        positionlist.push_back(pt);
+                    }
                 }
+                PlaneConstructor constructor;
+                CPlane*plane1=constructor.createPlane(positionlist[0],positionlist[0],positionlist[0]);
+                plane=plane1;
+                list.push_back(plane);
+            }
+        }
+        for(int i=0;i<objlist.size();i++){
+            if(obj==objlist[i]){
+                QTreeWidgetItem *item = treeWidgetNames->topLevelItem(i);
+                treeWidgetNames->setCurrentItem(item);
+                break;
             }
         }
     }
