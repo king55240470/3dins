@@ -575,7 +575,7 @@ class CDistance : public CEntity{
         circle.serialize(out);
         line.serialize(out);
         out<< distance << Projection;
-        out <<isHavePlane <<isHaveLine <<isHaveCircle;
+        out <<isPointToPlane <<isPointToLine <<isPointToCircle;
         return out;
     }
 
@@ -587,7 +587,7 @@ class CDistance : public CEntity{
         circle.deserialize(in);
         line.deserialize(in);
         in>>distance >>Projection;
-        in>> isHavePlane >>isHaveLine >>isHaveCircle;
+        in>> isPointToPlane >>isPointToLine >>isPointToCircle;
         return in;
     }
 public:
@@ -622,20 +622,20 @@ public:
     void setdistance(double d);
     bool judge();
     void setProjection(CPosition pos);
-    // 分别判断出了begin以外的图形是哪种
-     bool isHavePoint = false;
-    bool isHavePlane = false;
-    bool isHaveLine = false;
-    bool isHaveCircle = false;
-    bool isPlaneToPlane = false;
+    // 判断是哪种构造方式
     bool isPointToPoint = false;
+    bool isPointToPlane = false;
+    bool isPointToLine = false;
+    bool isPointToCircle = false;
+    bool isPlaneToPlane = false;
 
-    // CDistance的draw()，这里要分别写几个显示不同的距离
+    // CDistance的draw()，这里模块化为不同的绘制函数
     vtkSmartPointer<vtkActor> draw() override;
     vtkSmartPointer<vtkActor> pointToPlane();
     vtkSmartPointer<vtkActor> pointToLine();
     vtkSmartPointer<vtkActor> pointToCircle();
     vtkSmartPointer<vtkActor> pointToPoint();
+    vtkSmartPointer<vtkActor> planeToPlane();
 };
 
 class CPointCloud : public CEntity

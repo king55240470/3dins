@@ -19,6 +19,7 @@
 #include <vtkPolygon.h>
 #include <vtkMath.h>
 #include <vtkCubeSource.h>
+#include <vtkDistancePolyDataFilter.h>
 
 // 定义 getActorToPointCloud 和 actorToPointCloud;
 QMap<vtkActor*, pcl::PointCloud<pcl::PointXYZRGB>> CPointCloud::actorToPointCloud;
@@ -504,12 +505,15 @@ vtkSmartPointer<vtkActor> CPointCloud::draw(){
 vtkSmartPointer<vtkActor> CDistance::draw(){
     vtkSmartPointer<vtkActor> actor;
 
-    if(isHavePlane)
+    if(isPointToPlane)
         actor = pointToPlane();
-    else if(isHaveLine)
+    else if(isPointToLine)
         actor = pointToLine();
     else if(isPointToPoint){
         actor = pointToPoint();
+    }
+    else if(isPlaneToPlane){
+        actor = planeToPlane();
     }
 
     return actor;
@@ -692,6 +696,11 @@ vtkSmartPointer<vtkActor> CDistance::pointToPoint()
     actor->GetProperty()->SetColor(MainWindow::ActorColor);
     actor->GetProperty()->SetLineWidth(3);
     return actor;
+}
+
+vtkSmartPointer<vtkActor> CDistance::planeToPlane()
+{
+    return nullptr;
 }
 
 
@@ -1013,12 +1022,15 @@ QString CDistance::getCEntityInfo()
     QString underTol_str;
     QString q;
     // 判断是哪种距离
-    if(isHavePlane)
+    if(isPointToPlane)
         type_str = QString("pointToPlane distance: %1\n").arg(QString::number(getdistanceplane(), 'f',  3));
-    else if(isHaveLine)
+    else if(isPointToLine)
         type_str = QString("pointToLine distance: %1\n").arg(QString::number(getdistanceline(), 'f',  3));
-    else {
+    else if(isPointToCircle){
         type_str = QString("pointToCircle distance: %1\n").arg(QString::number(getdistancecircle(), 'f',  3));
+    }
+    else if(isPointToPoint){
+        type_str = QString("pointToPoint distance: %1\n").arg(QString::number(getdistancepoint(), 'f',  3));
     }
     upTol_str = QString("upTolerance: %1\n").arg(QString::number(getUptolerance(), 'f',  3));
     underTol_str = QString("underTolerance: %1\n").arg(QString::number(getUndertolerance(), 'f',  3));
@@ -1054,25 +1066,25 @@ void CDistance::setbegin(const CPosition &newbegin)
 void CDistance::setend(const CPosition &newend)
 {
     end=newend;
-    isHavePoint = true;
+    isPointToPoint = true;
 }
 
 void CDistance::setplane(const CPlane &Plane)
 {
     plane=Plane;
-    isHavePlane = true;
+    isPointToPlane = true;
 }
 
 void CDistance::setcircle(const CCircle &Circle)
 {
     circle=Circle;
-    isHaveCircle = true;
+    isPointToCircle = true;
 }
 
 void CDistance::setline(const CLine &Line)
 {
     line=Line;
-    isHaveLine = true;
+    isPointToLine = true;
 }
 
 CPosition CDistance::getbegin()
@@ -1114,7 +1126,7 @@ double CDistance::getdistanceplane()
                                     glbPos_begin.z - glbPos_center.z);
     // 使用点积自动判定begin与法向量正向还是反向
     double distance = QVector3D::dotProduct(direction, unitNormal.toVector3D()) / unitNormal.length();
-    return abs(distance);
+    return distance;
 }
 
 double CDistance::getdistancecircle()
@@ -1173,13 +1185,13 @@ double CDistance::getdistanceline()
 
 double CDistance::getdistance()
 {
-    if(isHavePoint){
+    if(isPointToPoint){
         return getdistancepoint();
-    }else if(isHaveLine){
+    }else if(isPointToLine){
         return getdistanceline();
-    }else if(isHaveCircle){
+    }else if(isPointToCircle){
         return getdistancecircle();
-    }else if(isHavePlane){
+    }else if(isPointToPlane){
         return getdistanceplane();
     }
     return 0;

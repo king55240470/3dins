@@ -120,7 +120,7 @@ void MainWindow::setupUi(){
         pWinVtkWidget->onAlign();
     });
 
-    QMenu* dateOperation=bar->addMenu("配置");
+    QMenu* dateOperation=bar->addMenu("配置文件");
     QAction* storeAction=dateOperation->addAction("数据记录");
     connect(storeAction,&QAction::triggered,this,&MainWindow::SaveIniFile);
 
@@ -168,9 +168,9 @@ void MainWindow::setupUi(){
     stbar->addPermanentWidget(line);
 
     switchCsBtn = new QPushButton("机械坐标系");
-    switchCsBtn->setFixedWidth(100);
-    switchCsBtn->setFlat(true); // 设置按钮为平面样式
-    switchCsBtn->installEventFilter(this);  // 为按钮安装事件过滤器
+    // switchCsBtn->setFixedWidth(100);
+    // switchCsBtn->setFlat(true); // 设置按钮为平面样式
+    // switchCsBtn->installEventFilter(this);  // 为按钮安装事件过滤器
     switchCsBtn->setObjectName("statusSwitchCs");
     stbar->addPermanentWidget(switchCsBtn);
 
