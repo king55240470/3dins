@@ -704,6 +704,7 @@ public:
     void setQualified(bool value);
 
     bool judge();
+    double getAngle() const;
 
     vtkSmartPointer<vtkActor> draw() override;
 };

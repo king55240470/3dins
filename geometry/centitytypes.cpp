@@ -1361,6 +1361,16 @@ QString CAngle::getCEntityInfo() {
     return infoText;
 }
 
+double CAngle::getAngle() const {
+    QVector3D vec1(line1.end.x - line1.begin.x, line1.end.y - line1.begin.y, line1.end.z - line1.begin.z);
+    QVector3D vec2(line2.end.x - line2.begin.x, line2.end.y - line2.begin.y, line2.end.z - line2.begin.z);
+    double dotProduct = QVector3D::dotProduct(vec1, vec2);
+    double magnitude1 = vec1.length();
+    double magnitude2 = vec2.length();
+    double angleRad = acos(dotProduct / (magnitude1 * magnitude2));
+    return qRadiansToDegrees(angleRad);
+}
+
 
 
 
