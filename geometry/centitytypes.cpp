@@ -770,6 +770,8 @@ int CCylinder::cylinderCount=0;
 int CCone::coneCount=0;
 int CDistance::currentCdistacneId=0;
 int CCuboid::cuboidCount=0;
+int CAngle::currentCAngleId=0;
+
 void CCircle::SetDiameter(double d)
 {
     m_d = d;
@@ -1345,6 +1347,18 @@ bool CAngle::judge()
         qualified=true;
     }
     return qualified;
+}
+
+QString CAngle::getCEntityInfo() {
+    QString infoText = QString("Angle Information:\nVertex: (%1, %2, %3)\nLine1 End: (%4, %5, %6)\nLine2 End: (%7, %8, %9)\nAngle Value: %10\nUp Tolerance: %11\nUnder Tolerance: %12\nQualified: %13")
+        .arg(QString::number(vertex.x, 'f', 3)).arg(QString::number(vertex.y, 'f', 3)).arg(QString::number(vertex.z, 'f', 3))
+        .arg(QString::number(line1.getEnd().x, 'f', 3)).arg(QString::number(line1.getEnd().y, 'f', 3)).arg(QString::number(line1.getEnd().z, 'f', 3))
+        .arg(QString::number(line2.getEnd().x, 'f', 3)).arg(QString::number(line2.getEnd().y, 'f', 3)).arg(QString::number(line2.getEnd().z, 'f', 3))
+        .arg(QString::number(angleValue, 'f', 3))
+        .arg(QString::number(uptolerance, 'f', 3))
+        .arg(QString::number(undertolerance, 'f', 3))
+        .arg(qualified ? "Yes" : "No");
+    return infoText;
 }
 
 
