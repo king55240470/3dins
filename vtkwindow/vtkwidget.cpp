@@ -1,11 +1,21 @@
 #include "vtkwindow/vtkwidget.h"
-#include <vtkInteractorStyle.h>
-#include <vtkEventQtSlotConnect.h>
 #include <QFileDialog>  // 用于文件对话框
 #include <QOpenGLContext>
 #include <qopenglfunctions.h>
 #include <QMessageBox>
 
+#include <vtkInteractorStyle.h>
+#include <vtkEventQtSlotConnect.h>
+#include <vtkImageActor.h>
+#include <vtkImageMapToColors.h>
+#include <vtkImageData.h>
+#include <vtkTexture.h>
+#include <vtkTextureMapToPlane.h>
+#include <vtkTransformPolyDataFilter.h>
+#include <vtkWindowToImageFilter.h>
+#include <vtkPNGWriter.h>
+#include <vtkImageMapper3D.h>
+#include <vtkImageProperty.h>
 
 VtkWidget::VtkWidget(QWidget *parent)
     : QWidget(parent),
@@ -346,6 +356,55 @@ void VtkWidget::closeText()
     renWin->Render();
 }
 
+void VtkWidget::ShowColorTemperature()
+{
+    // 创建颜色条的图像
+    int width = 50;
+    int height = 10;
+    vtkSmartPointer<vtkImageData> imageData = vtkSmartPointer<vtkImageData>::New();
+    imageData->SetDimensions(width, height, 1);
+    imageData->AllocateScalars(VTK_UNSIGNED_CHAR, 3);
+
+    // 填充颜色条数据
+    for (int x = 0; x < width; ++x)
+    {
+        float normalizedPosition = static_cast<float>(x) / (width - 1);
+        float value = minDistance + normalizedPosition * (maxDistance - minDistance);
+            int r = static_cast<int>(255 * (value - minDistance) / (maxDistance - minDistance));
+        int b = 255 - r;
+        int y = height / 2; // 中间行
+        imageData->SetScalarComponentFromFloat(x, y, 0, 0, r / 255.0);
+        imageData->SetScalarComponentFromFloat(x, y, 0, 1, 0.0);
+        imageData->SetScalarComponentFromFloat(x, y, 0, 2, b / 255.0);
+    }
+
+    // 创建纹理并映射到图像演员
+    vtkSmartPointer<vtkTexture> texture = vtkSmartPointer<vtkTexture>::New();
+    texture->SetInputData(imageData);
+    vtkSmartPointer<vtkImageMapToColors> colorMap = vtkSmartPointer<vtkImageMapToColors>::New();
+    colorMap->SetInputConnection(texture->GetOutputPort());
+    colorMap->SetLookupTable(nullptr); // 使用图像本身的颜色
+    // auto imageMapper = vtkSmartPointer<vtkImageMapper3D>::New();
+    // imageMapper->SetInputData(imageData);
+    vtkSmartPointer<vtkImageActor> imageActor = vtkSmartPointer<vtkImageActor>::New();
+    imageActor->GetMapper()->SetInputConnection(colorMap->GetOutputPort());
+
+    // 获取渲染窗口的尺寸
+    int windowWidth = renWin->GetSize()[0];
+    int windowHeight = renWin->GetSize()[1];
+
+    // 计算颜色条在右下角的位置
+    double colorBarX = windowWidth - width - 10; // 留出一些边距
+    double colorBarY = windowHeight - height - 10; // 同样留出一些边距
+
+    // 设置图像演员的位置和其他属性
+    imageActor->SetPosition(colorBarX, colorBarY, 0);
+    imageActor->GetProperty()->SetOpacity(0.8);
+
+    renderer->AddActor(imageActor);
+    renderer->Render();
+}
+
 vtkSmartPointer<vtkRenderWindow> VtkWidget::getRenderWindow(){
     return renWin;
 }
@@ -593,8 +652,8 @@ void VtkWidget::onCompare()
     comparisonCloud->resize(cloud1->size());
 
     // 初始化最大和最小距离变量
-    float maxDistance = std::numeric_limits<float>::min();
-    float minDistance = std::numeric_limits<float>::max();
+    maxDistance = std::numeric_limits<float>::min();
+    minDistance = std::numeric_limits<float>::max();
 
     // 用于存储最近邻搜索的结果
     std::vector<int> pointIdxNKNSearch(1);
