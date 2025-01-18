@@ -157,6 +157,9 @@ QDataStream& operator>>(QDataStream& in, CObjectMgr& mgr){
         case enPointCloud:
             object=new CPointCloud();
             break;
+        case enAngle:
+            object=new CAngle();
+            break;
         default:
             object = new CObject();
             break;
