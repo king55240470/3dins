@@ -493,65 +493,6 @@ int ToolWidget::getViewAngleActionNum(){
 
 void ToolWidget::connectActionWithF(){
 
-    // connect(m_find.m_actionList[m_find.m_nameList.indexOf("点")],&QAction::triggered,this,&   ToolWidget::onFindPoint);
-    // connect(m_find.m_actionList[m_find.m_nameList.indexOf("线")],&QAction::triggered,this,&   ToolWidget::onFindLine);
-    // connect(m_find.m_actionList[m_find.m_nameList.indexOf("圆")],&QAction::triggered,this,&   ToolWidget::onFindCircle);
-    // connect(m_find.m_actionList[m_find.m_nameList.indexOf("平面")],&QAction::triggered,this,&  ToolWidget:: onFindPlane);
-    // connect(m_find.m_actionList[m_find.m_nameList.indexOf("矩形")],&QAction::triggered,this,&   ToolWidget::onFindRectangle);
-    // connect(m_find.m_actionList[m_find.m_nameList.indexOf("圆柱")],&QAction::triggered,this,&   ToolWidget::onFindCylinder);
-    // connect(m_find.m_actionList[m_find.m_nameList.indexOf("圆锥")],&QAction::triggered,this,&   ToolWidget::onFindCone);
-    // connect(m_find.m_actionList[m_find.m_nameList.indexOf("球形")],&QAction::triggered,this,&   ToolWidget::onFindSphere);
-
-    // //构造
-    // connect(m_construct.m_actionList[m_construct.m_nameList.indexOf("点")],&QAction::triggered,this,& ToolWidget::onConstructPoint);
-    // connect(m_construct.m_actionList[m_construct.m_nameList.indexOf("线")],&QAction::triggered,this,&ToolWidget::onConstructLine);
-    // connect(m_construct.m_actionList[m_construct.m_nameList.indexOf("圆")],&QAction::triggered,this,&ToolWidget::onConstructCircle);
-    // connect(m_construct.m_actionList[m_construct.m_nameList.indexOf("平面")],&QAction::triggered,this,& ToolWidget::onConstructPlane);
-    // connect(m_construct.m_actionList[m_construct.m_nameList.indexOf("矩形")],&QAction::triggered,this,& ToolWidget::onConstructRectangle);
-    // connect(m_construct.m_actionList[m_construct.m_nameList.indexOf("圆柱")],&QAction::triggered,this,&  ToolWidget::onConstructCylinder);
-    // connect(m_construct.m_actionList[m_construct.m_nameList.indexOf("圆锥")],&QAction::triggered,this,&  ToolWidget::onConstructCone);
-    // connect(m_construct.m_actionList[m_construct.m_nameList.indexOf("球形")],&QAction::triggered,this,&  ToolWidget::onConstructSphere);
-    // connect(m_construct.m_actionList[m_construct.m_nameList.indexOf("距离")],&QAction::triggered,this,&  ToolWidget::onConstructDistance);
-
-    // //保存
-    // connect(m_save.m_actionList[m_save.m_nameList.indexOf("excel")],&QAction::triggered,this,&  ToolWidget::onSaveExcel);
-    // connect(m_save.m_actionList[m_save.m_nameList.indexOf("word")],&QAction::triggered,this,&  ToolWidget::onSaveWord);
-    // connect(m_save.m_actionList[m_save.m_nameList.indexOf("txt")],&QAction::triggered,this,&  ToolWidget::onSaveTxt);
-    // connect(m_save.m_actionList[m_save.m_nameList.indexOf("pdf")],&QAction::triggered,this,&  ToolWidget::onSavePdf);
-    // connect(m_save.m_actionList[m_save.m_nameList.indexOf("image")],&QAction::triggered,this,&  ToolWidget::onSaveImage);
-
-    // // connect(save_actions_[save_action_name_list_.indexOf("txt")],&QAction::triggered,this,&  ToolWidget::onSaveTxt);
-
-
-    // //坐标系
-    // connect(m_coord.m_actionList[m_coord.m_nameList.indexOf("创建坐标系")],&QAction::triggered,this,[&](){
-    //     m_pMainWin->on2dCoordOriginAuto(); //创建临时坐标系
-    // });
-    // connect(m_coord.m_actionList[m_coord.m_nameList.indexOf("旋转坐标系")],&QAction::triggered,this,[&](){
-    //     //tool_widget::onSpinCoord();
-    //     m_pMainWin->on2dCoordSetRightX(); // x轴摆正
-    // });
-    // connect(m_coord.m_actionList[m_coord.m_nameList.indexOf("保存坐标系")],&QAction::triggered,this,[&](bool){
-    //     //tool_widget::onSaveCoord();
-    //     m_pMainWin->on2dCoordSave();
-    // });
-    // //视角
-    // connect(m_viewAngle.m_actionList[m_viewAngle.m_nameList.indexOf("主视角")],&QAction::triggered,this,[&](){
-    //     //tool_widget::onFrontViewAngle();
-    //     m_pMainWin->onFrontViewClicked();
-    // });
-    // connect(m_viewAngle.m_actionList[m_viewAngle.m_nameList.indexOf("俯视角")],&QAction::triggered,this, [&](){
-    //     //tool_widget::onUpViewAngle();
-    //     m_pMainWin->onTopViewClicked();
-    // });
-    // connect(m_viewAngle.m_actionList[m_viewAngle.m_nameList.indexOf("侧视角")],&QAction::triggered,[&](){
-    //     //tool_widget::onRightViewAngle();
-    //     m_pMainWin->onRightViewClicked();
-    // });
-    // connect(m_viewAngle.m_actionList[m_viewAngle.m_nameList.indexOf("立体视角")],&QAction::triggered,[&](){
-    //     //tool_widget::onIsometricViewAngle();
-    //     m_pMainWin->onIsometricViewClicked();
-    // });
 
 
     //识别
@@ -1209,7 +1150,21 @@ static void WrongWidget(QString message,QString moreMessage="空");
 void   ToolWidget::onSaveImage(){
     //得到路径名称
     QString filter = "PNG (*.png);;JPEG (*.jpg *.jpeg);;TIFF (*.tif *.tiff);;BMP (*.bmp)";
+
     QString fileName = QFileDialog::getSaveFileName(this, "Save Screenshot", "", filter, &filter);
+
+    QFileInfo fileInfo(fileName);
+
+    QString filePath = fileInfo.absolutePath(); // 文件的路径
+
+    QString baseName = fileInfo.baseName();//文件的基本名
+
+    QString suffix = fileInfo.suffix();//文件的后缀
+
+    // 生成三个新的文件名
+    QString fileNameFront =filePath+"/"+ baseName + "_Front." + suffix;
+    QString fileNameTop =filePath+"/"+ baseName + "_Top." + suffix;
+    QString fileNameRight =filePath+ "/"+baseName + "_Right." + suffix;
 
     if (fileName.isEmpty()) {
         WrongWidget("输入路径错误!");
@@ -1217,18 +1172,9 @@ void   ToolWidget::onSaveImage(){
     }
     QString selectedFilter = QFileInfo(fileName).suffix();
     std::string format=selectedFilter.toStdString();
-
+    {
     vtkSmartPointer<vtkRenderWindow> renderWindow=m_pMainWin->getPWinVtkWidget()->getRenderWindow();
-    renderWindow->Render();
-    //得到截图
-    vtkNew<vtkWindowToImageFilter> windowToImageFilter;
-    windowToImageFilter->SetInput(renderWindow);
-    windowToImageFilter->SetScale(1);// 缩放因子，可以根据需要调整
-    windowToImageFilter->SetInputBufferTypeToRGBA();//RGBA缓冲
-    windowToImageFilter->ReadFrontBufferOff();//读取
-    windowToImageFilter->Update();
-
-
+     vtkNew<vtkWindowToImageFilter> windowToImageFilter;
 
     vtkSmartPointer<vtkImageWriter> writer;
     //确认格式
@@ -1244,10 +1190,92 @@ void   ToolWidget::onSaveImage(){
         std::cerr << "Unsupported format: " << format << std::endl;
         return;
     }
-    //写入文件
-    writer->SetFileName(fileName.toStdString().c_str());
+    m_pMainWin->onRightViewClicked();
+    renderWindow->Render();
+    //得到截图
+
+    windowToImageFilter->SetInput(renderWindow);
+    windowToImageFilter->SetScale(1);// 缩放因子，可以根据需要调整
+    windowToImageFilter->SetInputBufferTypeToRGBA();//RGBA缓冲
+    windowToImageFilter->ReadFrontBufferOff();//读取
+    windowToImageFilter->Update();
+
+
+    writer->SetFileName(fileNameRight.toStdString().c_str());
     writer->SetInputConnection(windowToImageFilter->GetOutputPort());
     writer->Write();
+    }
+    //写入文件
+
+    //侧视角
+
+    {
+        vtkSmartPointer<vtkRenderWindow> renderWindow=m_pMainWin->getPWinVtkWidget()->getRenderWindow();
+        vtkNew<vtkWindowToImageFilter> windowToImageFilter;
+
+        vtkSmartPointer<vtkImageWriter> writer;
+        //确认格式
+        if (format == "png") {
+            writer = vtkSmartPointer<vtkPNGWriter>::New();
+        } else if (format == "jpg" || format == "jpeg") {
+            writer = vtkSmartPointer<vtkJPEGWriter>::New();
+        } else if (format == "tiff" || format == "tif") {
+            writer = vtkSmartPointer<vtkTIFFWriter>::New();
+        } else if (format == "bmp") {
+            writer = vtkSmartPointer<vtkBMPWriter>::New();
+        } else {
+            std::cerr << "Unsupported format: " << format << std::endl;
+            return;
+        }
+    //俯视角
+    m_pMainWin->onTopViewClicked();
+    renderWindow->Render();
+    //得到截图
+
+    windowToImageFilter->SetInput(renderWindow);
+    windowToImageFilter->SetScale(1);// 缩放因子，可以根据需要调整
+    windowToImageFilter->SetInputBufferTypeToRGBA();//RGBA缓冲
+    windowToImageFilter->ReadFrontBufferOff();//读取
+    windowToImageFilter->Update();
+
+
+    writer->SetFileName(fileNameTop.toStdString().c_str());
+    writer->SetInputConnection(windowToImageFilter->GetOutputPort());
+    writer->Write();
+    }
+    {
+        vtkSmartPointer<vtkRenderWindow> renderWindow=m_pMainWin->getPWinVtkWidget()->getRenderWindow();
+        vtkNew<vtkWindowToImageFilter> windowToImageFilter;
+
+        vtkSmartPointer<vtkImageWriter> writer;
+        //确认格式
+        if (format == "png") {
+            writer = vtkSmartPointer<vtkPNGWriter>::New();
+        } else if (format == "jpg" || format == "jpeg") {
+            writer = vtkSmartPointer<vtkJPEGWriter>::New();
+        } else if (format == "tiff" || format == "tif") {
+            writer = vtkSmartPointer<vtkTIFFWriter>::New();
+        } else if (format == "bmp") {
+            writer = vtkSmartPointer<vtkBMPWriter>::New();
+        } else {
+            std::cerr << "Unsupported format: " << format << std::endl;
+            return;
+        }
+    //主视角
+    m_pMainWin->onFrontViewClicked();
+    renderWindow->Render();
+    //得到截图
+
+    windowToImageFilter->SetInput(renderWindow);
+    windowToImageFilter->SetScale(1);// 缩放因子，可以根据需要调整
+    windowToImageFilter->SetInputBufferTypeToRGBA();//RGBA缓冲
+    windowToImageFilter->ReadFrontBufferOff();//读取
+    windowToImageFilter->Update();
+
+    writer->SetFileName(fileNameFront.toStdString().c_str());
+    writer->SetInputConnection(windowToImageFilter->GetOutputPort());
+    writer->Write();
+    }
 
 
     QMessageBox::information(nullptr, "提示", "保存成功");
