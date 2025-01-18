@@ -124,10 +124,11 @@ PresetElemWidget::PresetElemWidget(QWidget *parent)
     QWidget *thirdTab = new QWidget();
 
     // 创建网格布局
-    QGroupBox *groupBox = new QGroupBox("请输入圆心的坐标:");
     QGridLayout *thirdLayout = new QGridLayout(thirdTab);
 
-    // 创建标签和文本框
+    // 创建左边的输入框
+    QGroupBox *cgroupBoxLeft = new QGroupBox("请输入圆心的坐标:");
+    QGridLayout *cgroupLeftLayout = new QGridLayout();
     QLabel *circleLabelX = new QLabel("X:");
     circleEditX = new QLineEdit();
     circleEditX->setText("0");
@@ -144,19 +145,43 @@ PresetElemWidget::PresetElemWidget(QWidget *parent)
     circleEditD = new QLineEdit();
     circleEditD->setText("1");
     circleEditD->setMaximumWidth(150);
+    cgroupLeftLayout->addWidget(circleLabelX, 0, 0);
+    cgroupLeftLayout->addWidget(circleEditX, 0, 1);
+    cgroupLeftLayout->addWidget(circleLabelY, 1, 0);
+    cgroupLeftLayout->addWidget(circleEditY, 1, 1);
+    cgroupLeftLayout->addWidget(circleLabelZ, 2, 0);
+    cgroupLeftLayout->addWidget(circleEditZ, 2, 1);
+    cgroupLeftLayout->addWidget(circleLabelDiameter, 3, 0);
+    cgroupLeftLayout->addWidget(circleEditD, 3, 1);
+    cgroupBoxLeft->setLayout(cgroupLeftLayout);
 
-    circleBtn=new QPushButton("预置（圆）");
+    // 创建右边的输入框
+    QGroupBox *cgroupBoxRight = new QGroupBox("请输入圆法线方向:");
+    QGridLayout *cgroupRightLayout = new QGridLayout();
+    QLabel *circleNormalLabelX = new QLabel("法线分量 Nx:");
+    circleNormalX = new QLineEdit();
+    circleNormalX->setText("0");
+    QLabel *circleNormalLabelY = new QLabel("法线分量 Ny:");
+    circleNormalY = new QLineEdit();
+    circleNormalY->setText("0");
+    QLabel *circleNormalLabelZ = new QLabel("法线分量 Nz:");
+    circleNormalZ = new QLineEdit();
+    circleNormalZ->setText("1");
+    cgroupRightLayout->addWidget(circleNormalLabelX, 0, 0);
+    cgroupRightLayout->addWidget(circleNormalX, 0, 1);
+    cgroupRightLayout->addWidget(circleNormalLabelY, 1, 0);
+    cgroupRightLayout->addWidget(circleNormalY, 1, 1);
+    cgroupRightLayout->addWidget(circleNormalLabelZ, 2, 0);
+    cgroupRightLayout->addWidget(circleNormalZ, 2, 1);
+    cgroupBoxRight->setLayout(cgroupRightLayout);
 
-    // 将标签和文本框添加到布局中
-    thirdLayout->addWidget(circleLabelX, 0, 0);
-    thirdLayout->addWidget(circleEditX, 0, 1);
-    thirdLayout->addWidget(circleLabelY, 1, 0);
-    thirdLayout->addWidget(circleEditY, 1, 1);
-    thirdLayout->addWidget(circleLabelZ, 2, 0);
-    thirdLayout->addWidget(circleEditZ, 2, 1);
-    thirdLayout->addWidget(circleLabelDiameter, 3, 0);
-    thirdLayout->addWidget(circleEditD, 3, 1);
-    thirdLayout->addWidget(circleBtn,4, 0, 1, 2);
+    // 将左右两边的输入框添加到布局中
+    thirdLayout->addWidget(cgroupBoxLeft, 0, 0);
+    thirdLayout->addWidget(cgroupBoxRight, 0, 1);
+
+    // 添加按钮
+    circleBtn = new QPushButton("预置（圆）");
+    thirdLayout->addWidget(circleBtn, 1, 0, 1, 2);
 
     connect(circleBtn, &QPushButton::clicked, this, &PresetElemWidget::btnCircleClicked);
 
@@ -532,10 +557,27 @@ void PresetElemWidget::btnCircleClicked()
         return;
     }
 
+    QVector4D vecNormal;
+    vecNormal.setX(circleNormalX->text().toDouble(&ok));
+    if (!ok) {
+        QMessageBox::critical(this, "输入错误", "圆-法线坐标X需要是双精度浮点类型数。");
+        return;
+    }
+    vecNormal.setY(circleNormalY->text().toDouble(&ok));
+    if (!ok) {
+        QMessageBox::critical(this, "输入错误", "圆-法线坐标Y需要是双精度浮点类型数。");
+        return;
+    }
+    vecNormal.setZ(circleNormalZ->text().toDouble(&ok));
+    if (!ok) {
+        QMessageBox::critical(this, "输入错误", "圆-法线坐标Z需要是双精度浮点类型数。");
+        return;
+    }
+
     // m_pMainWin->OnPresetCircle(mypt, d);
     qDebug()<<"clicked";
 
-    m_pMainWin->OnPresetCircle(mypt, d);
+    m_pMainWin->OnPresetCircle(mypt, d,vecNormal);
     // qDebug()<<"clicked";
 
 }

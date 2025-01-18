@@ -177,18 +177,19 @@ public:
     CPosition m_pt;
 
     double m_d;//直径
+    QVector4D normal;
     static int circleCount;
     int currentCircleId;
     QDataStream& serialize(QDataStream& out) const override {
         CEntity::serialize(out);  // 先序列化基类部分
-        out << m_pt << m_d << circleCount << currentCircleId;  // 序列化CCircle特有部分
+        out << m_pt << m_d <<normal<< circleCount << currentCircleId;  // 序列化CCircle特有部分
         out <<constructPt1<<constructPt2<<constructPt3;
         return out;
     }
 
     QDataStream& deserialize(QDataStream& in) override {
         CEntity::deserialize(in);  // 先反序列化基类部分
-        in >> m_pt >> m_d >> circleCount >> currentCircleId;  // 反序列化CCircle特有部分
+        in >> m_pt >> m_d  >>normal>>circleCount >> currentCircleId;  // 反序列化CCircle特有部分
         in>>constructPt1>>constructPt2>>constructPt3;
         return in;
     }
@@ -200,6 +201,7 @@ public:
         m_pt.y=0;
         m_pt.z=0;
         m_d =0 ;
+        normal=QVector4D(0,0,0,1);
         currentCircleId = ++circleCount;
         m_strAutoName = QString("圆%1").arg(currentCircleId);
         m_strCName = QString("圆%1").arg(currentCircleId);
@@ -208,6 +210,8 @@ public:
     void SetCenter(CPosition pt);
     CPosition getCenter();
     double getDiameter();
+    QVector4D getNormal() const;
+    void setNormal(const QVector4D &newNormal);
     int GetUniqueType() override{
         return enCircle;
     }
@@ -219,7 +223,7 @@ public:
     // void ChangePosBeforChangeRefCoord(CPcs *pNewRefCoord)override;
     CPosition GetObjectCenterPoint() ;
 
-    void SetNominal() ;
+    //void SetNominal() ;
     void ChangePosBeforChangeRefCoord(CPcs *pNewRefCoord){
         bool bInv=false;
         QVector4D posVec =pNewRefCoord->m_mat.inverted(&bInv) * m_pRefCoord->m_mat * QVector4D(m_pt.x, m_pt.y, m_pt.z, 1);
