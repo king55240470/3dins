@@ -308,6 +308,18 @@ void DataWidget::updateinfo()
                 table->setItem(3, 0, new QTableWidgetItem("D"));
                 table->setItem(3, 1, new QTableWidgetItem(QString::number(circle->getDiameter(),'f',6)));
                 table->setItem(3, 2, new QTableWidgetItem(""));
+
+                table->setItem(4, 0, new QTableWidgetItem("NormalVector_x"));
+                table->setItem(4, 1, new QTableWidgetItem(QString::number(circle->getNormal().x(),'f',6)));
+                table->setItem(4, 2, new QTableWidgetItem(""));
+
+                table->setItem(5, 0, new QTableWidgetItem("NormalVector_y"));
+                table->setItem(5, 1, new QTableWidgetItem(QString::number(circle->getNormal().y(),'f',6)));
+                table->setItem(5, 2, new QTableWidgetItem(""));
+
+                table->setItem(6, 0, new QTableWidgetItem("NormalVector_z"));
+                table->setItem(6, 1, new QTableWidgetItem(QString::number(circle->getNormal().z(),'f',6)));
+                table->setItem(6, 2, new QTableWidgetItem(""));
             }
         }
         if(obj->GetUniqueType()==enPlane){

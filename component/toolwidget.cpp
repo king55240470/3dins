@@ -1577,7 +1577,6 @@ void ToolWidget::onFindPoint(){
     //读取选中的点云
     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
     QVector<CPointCloud*> pointClouds;
-
     //读取选中的点
     QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenActorAxes();
     pcl::PointXYZRGB  point;
@@ -1597,7 +1596,7 @@ void ToolWidget::onFindPoint(){
             if(!entity->IsSelected())continue;
             if(entity->GetUniqueType()==enPointCloud){
                 CPointCloud* pointCloud=(CPointCloud*)entity;
-                pointClouds.append(pointCloud);
+                pointClouds.push_back(pointCloud);
             }
         }
         if(pointClouds.size()<1){
@@ -1611,7 +1610,7 @@ void ToolWidget::onFindPoint(){
             nearPoint->RANSAC(point,pointClouds[0]->m_pointCloud.makeShared());
         return ;
     }
-
+    qDebug()<<pointClouds.size()<<"hhhhh";
     PointConstructor constructor;
     CPoint* newPoint;
     CPosition center;
@@ -1623,8 +1622,6 @@ void ToolWidget::onFindPoint(){
         qDebug()<<"找到最近点生成错误";
         return ;
     }
-    addToFindList(newPoint);
-
     positions.clear();
     m_pMainWin->NotifySubscribe();
 }

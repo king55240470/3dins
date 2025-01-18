@@ -73,7 +73,7 @@ ElementListWidget::ElementListWidget(QWidget *parent)
     connect(treeWidgetNames, &QTreeWidget::itemDoubleClicked, this, &ElementListWidget::showDialog);
 
     // 连接树部件的双击信号
-    connect(treeWidgetNames, &QTreeWidget::itemChanged, this, &ElementListWidget::isAdd);
+    //connect(treeWidgetNames, &QTreeWidget::itemChanged, this, &ElementListWidget::isAdd);
 
     // 设置状态机
     setupStateMachine();
@@ -351,6 +351,21 @@ void ElementListWidget::ShowParent(CObject*obj)
         infoItem->setText(1,obj->Form);
         return;
     }
+    if(obj->GetUniqueType()==enPointCloud){
+        QTreeWidgetItem *infoItem = new QTreeWidgetItem(treeWidgetInfo);
+        CPointCloud*cloud=(CPointCloud*)obj;
+        if(cloud->isFileCloud){
+            infoItem->setText(0,obj->m_strCName);
+            infoItem->setText(1,"文件生成的点云");
+        }else if(cloud->isComparsionCloud){
+            infoItem->setText(0,obj->m_strCName);
+            infoItem->setText(1,"对比得到的点云");
+        }else if(cloud->isAlignCloud){
+            infoItem->setText(0,obj->m_strCName);
+            infoItem->setText(1,"对齐得到的点云");
+        }
+        return;
+    }
     for(CObject*obj1:obj->parent){
         QTreeWidgetItem *infoItem = new QTreeWidgetItem(treeWidgetInfo);
         infoItem->setText(0,obj1->m_strCName);
@@ -443,19 +458,13 @@ void ElementListWidget::setupStateMachine()
 
 void ElementListWidget::onAddElement()
 {
-    bool isCloud=false;
     if (stateMachine->configuration().contains(runningState)) {
-        isCloud=true;
-    }
-    if(isCloud){
-        if(m_pMainWin->getEntityListMgr()->getEntityList()[m_pMainWin->getEntityListMgr()->getEntityList().size()-1]->GetObjectCName().left(2)=="点云"){
-            updateDistance(m_pMainWin->getEntityListMgr()->getEntityList().back());
-            m_pMainWin->NotifySubscribe();
-        }
+        updateDistance();
+        m_pMainWin->NotifySubscribe();
     }
 }
 
-void ElementListWidget::updateDistance(CEntity *entity)
+void ElementListWidget::updateDistance()
 {
     qDebug()<<"进入updateDistance";
     if(timer){
@@ -464,21 +473,25 @@ void ElementListWidget::updateDistance(CEntity *entity)
         timer=nullptr;
     }
     qDebug()<<"判断时间是否存在后";
-    CPointCloud*could=static_cast<CPointCloud*>(entity);
+    //CPointCloud*could=static_cast<CPointCloud*>(entity);
     pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree;
-    kdtree.setInputCloud(could->GetmyCould().makeShared());
+    //kdtree.setInputCloud(could->GetmyCould().makeShared());
+    kdtree.setInputCloud(m_pMainWin->getpWinFileMgr()->cloudptr);
     QVector<CEntity*>distancelist;
     for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
         if(m_pMainWin->getEntityListMgr()->getEntityList()[i]->GetObjectCName().left(2)=="距离"){
             distancelist.push_back(m_pMainWin->getEntityListMgr()->getEntityList()[i]);
         }
     }
+    if(distancelist.size()==0){
+        return;
+    }
     qDebug()<<"进入时间开启之前";
     timer = new QTimer(this);
     list.clear();
     currentIndex=0;
-    connect(timer, &QTimer::timeout, [this,kdtree,could,distancelist](){
-        startupdateData(kdtree,could,distancelist);
+    connect(timer, &QTimer::timeout, [this,kdtree,distancelist](){
+        startupdateData(kdtree,distancelist);
     });
     timer->start(1000);
     qDebug()<<"时间开始后";
@@ -486,7 +499,7 @@ void ElementListWidget::updateDistance(CEntity *entity)
 
 }
 
-void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree,CPointCloud*could,QVector<CEntity*>distancelist)
+void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree,QVector<CEntity*>distancelist)
 {
     qDebug()<<"时间进行1秒";
     QVector<CObject*>objlist=m_pMainWin->getObjectListMgr()->getObjectList();
@@ -554,7 +567,8 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
             searchPoint.z=point->GetPt().z;
             if (kdtree.nearestKSearch(searchPoint, 1, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
                 int nearestIdx = pointIdxNKNSearch[0];
-                pcl::PointXYZRGB nearestPoint = could->GetmyCould().points[nearestIdx];
+                //pcl::PointXYZRGB nearestPoint = could->GetmyCould().points[nearestIdx];
+                pcl::PointXYZRGB nearestPoint=m_pMainWin->getpWinFileMgr()->cloudptr->points[nearestIdx];
                 for(int i=0;i<objlist.size();i++){
                     if(m_pMainWin->getObjectListMgr()->getObjectList()[i]==obj){
                         CPoint*point1=static_cast<CPoint*>(objlist[i]);
@@ -579,7 +593,7 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
                     searchPoint.z=point->GetPt().z;
                     if (kdtree.nearestKSearch(searchPoint, 1, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
                         int nearestIdx = pointIdxNKNSearch[0];
-                        pcl::PointXYZRGB nearestPoint = could->GetmyCould().points[nearestIdx];
+                        pcl::PointXYZRGB nearestPoint = m_pMainWin->getpWinFileMgr()->cloudptr->points[nearestIdx];
                         CPosition pt;
                         pt.x=nearestPoint.x;
                         pt.y=nearestPoint.y;
@@ -606,6 +620,7 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
 void ElementListWidget::isAdd()
 {
     int Nowlistsize=m_pMainWin->getEntityListMgr()->getEntityList().size();
+    int Nowlistsizes=m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().size();
     if(Nowlistsize>Treelistsize){
         Treelistsize=Nowlistsize;
         onAddElement();
