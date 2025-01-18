@@ -406,6 +406,7 @@ Makefile: 3D.pro C:\Qt\6.6.0\msvc2019_64\mkspecs\win32-msvc\qmake.conf C:\Qt\6.6
 		C:\Qt\6.6.0\msvc2019_64\lib\Qt6PrintSupport.prl \
 		C:\Qt\6.6.0\msvc2019_64\lib\Qt6AxContainer.prl \
 		C:\Qt\6.6.0\msvc2019_64\lib\Qt6Widgets.prl \
+		C:\Qt\6.6.0\msvc2019_64\lib\Qt6StateMachine.prl \
 		C:\Qt\6.6.0\msvc2019_64\lib\Qt6Gui.prl \
 		C:\Qt\6.6.0\msvc2019_64\lib\Qt6Core.prl \
 		C:\Qt\6.6.0\msvc2019_64\lib\Qt6EntryPoint.prl \
@@ -419,6 +420,7 @@ Makefile: 3D.pro C:\Qt\6.6.0\msvc2019_64\mkspecs\win32-msvc\qmake.conf C:\Qt\6.6
 		C:\Qt\6.6.0\msvc2019_64\lib\Qt6PrintSupportd.prl \
 		C:\Qt\6.6.0\msvc2019_64\lib\Qt6AxContainerd.prl \
 		C:\Qt\6.6.0\msvc2019_64\lib\Qt6Widgetsd.prl \
+		C:\Qt\6.6.0\msvc2019_64\lib\Qt6StateMachined.prl \
 		C:\Qt\6.6.0\msvc2019_64\lib\Qt6Guid.prl \
 		C:\Qt\6.6.0\msvc2019_64\lib\Qt6Cored.prl \
 		C:\Qt\6.6.0\msvc2019_64\lib\Qt6EntryPointd.prl
@@ -745,6 +747,7 @@ C:\Qt\6.6.0\msvc2019_64\lib\Qt6OpenGL.prl:
 C:\Qt\6.6.0\msvc2019_64\lib\Qt6PrintSupport.prl:
 C:\Qt\6.6.0\msvc2019_64\lib\Qt6AxContainer.prl:
 C:\Qt\6.6.0\msvc2019_64\lib\Qt6Widgets.prl:
+C:\Qt\6.6.0\msvc2019_64\lib\Qt6StateMachine.prl:
 C:\Qt\6.6.0\msvc2019_64\lib\Qt6Gui.prl:
 C:\Qt\6.6.0\msvc2019_64\lib\Qt6Core.prl:
 C:\Qt\6.6.0\msvc2019_64\lib\Qt6EntryPoint.prl:
@@ -758,6 +761,7 @@ C:\Qt\6.6.0\msvc2019_64\lib\Qt6OpenGLd.prl:
 C:\Qt\6.6.0\msvc2019_64\lib\Qt6PrintSupportd.prl:
 C:\Qt\6.6.0\msvc2019_64\lib\Qt6AxContainerd.prl:
 C:\Qt\6.6.0\msvc2019_64\lib\Qt6Widgetsd.prl:
+C:\Qt\6.6.0\msvc2019_64\lib\Qt6StateMachined.prl:
 C:\Qt\6.6.0\msvc2019_64\lib\Qt6Guid.prl:
 C:\Qt\6.6.0\msvc2019_64\lib\Qt6Cored.prl:
 C:\Qt\6.6.0\msvc2019_64\lib\Qt6EntryPointd.prl:
