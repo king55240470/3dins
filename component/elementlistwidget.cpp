@@ -227,6 +227,10 @@ void ElementListWidget::upadteelementlist()
 void ElementListWidget::onItemClicked()
 {
     QList<QTreeWidgetItem*> selectedItems = getSelectedItems();
+    // 用于判断是否隐藏构建的元素
+    QMap<QString, bool> contentMap = m_pMainWin->getpWinFileMgr()->getContentItemMap();
+    QMap<QString, bool> identifyItemmap = m_pMainWin->getpWinFileMgr()->getIdentifyItemMap();
+
     m_pMainWin->getPWinVtkWidget()->getInteractorStyle()->CancelHighlightActors();
     if(selectedItems.size()==1){
         for(int i=0;i<m_pMainWin->getObjectListMgr()->getObjectList().size();i++){

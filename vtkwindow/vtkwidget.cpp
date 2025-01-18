@@ -131,6 +131,11 @@ void VtkWidget::setCentityList(QVector<CEntity *> list)
     elementEntityList=list;
 }
 
+vtkSmartPointer<vtkTextActor> &VtkWidget::getInfoText()
+{
+    return infoTextActor;
+}
+
 void VtkWidget::createText()
 {
     // 创建浮动信息的文本演员
@@ -146,7 +151,6 @@ void VtkWidget::createText()
     infoTextActor->GetTextProperty()->SetJustificationToLeft(); // 左对齐
     infoTextActor->GetTextProperty()->SetBold(1); // 设置粗体
     infoTextActor->GetTextProperty()->SetShadow(true);
-    infoTextActor->GetTextProperty()->SetShadowOffset(1, 1); // 设置阴影偏移量
 
     QString qstr = elementEntity->getCEntityInfo();
     QByteArray byteArray = qstr.toUtf8(); // 转换 QString 到 QByteArray
@@ -384,10 +388,13 @@ void VtkWidget::ShowColorTemperature()
     vtkSmartPointer<vtkImageMapToColors> colorMap = vtkSmartPointer<vtkImageMapToColors>::New();
     colorMap->SetInputConnection(texture->GetOutputPort());
     colorMap->SetLookupTable(nullptr); // 使用图像本身的颜色
-    // auto imageMapper = vtkSmartPointer<vtkImageMapper3D>::New();
-    // imageMapper->SetInputData(imageData);
     vtkSmartPointer<vtkImageActor> imageActor = vtkSmartPointer<vtkImageActor>::New();
     imageActor->GetMapper()->SetInputConnection(colorMap->GetOutputPort());
+
+    // auto imageMapper = vtkSmartPointer<vtkImageMapper3D>::New();
+    // imageMapper->SetInputData(imageData);
+    // vtkSmartPointer<vtkImageActor> imageActor = vtkSmartPointer<vtkImageActor>::New();
+    // imageActor->SetMapper(imageMapper);
 
     // 获取渲染窗口的尺寸
     int windowWidth = renWin->GetSize()[0];
@@ -460,6 +467,9 @@ void VtkWidget::reDrawCentity(){
                     actorToEntity.insert(actor,entitylist[i]);
                     getRenderer()->AddActor(actor);
                     break;
+                }
+                else{ // 如果隐藏，则删除高亮前的记录
+                    // m_highlightstyle->getPickedActors().erase()
                 }
             }
         }
@@ -683,6 +693,8 @@ void VtkWidget::onCompare()
             point.b = b;
         }
     }
+
+    ShowColorTemperature();
 
     // 由RGB点云生成cpointcloud对象，并存入entitylist
     auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateCompareCloud(*comparisonCloud);
