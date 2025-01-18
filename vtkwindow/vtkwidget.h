@@ -6,6 +6,7 @@
 #include "mousedragcommand.h"
 #include "manager/filemgr.h"
 #include "component/toolwidget.h"
+
 #include <QWidget>
 #include <QVTKOpenGLWidget.h>
 #include <QVTKOpenGLNativeWidget.h>
@@ -20,9 +21,6 @@
 
 #include <pcl/common/common.h>
 #include <pcl/io/ply_io.h>
-#include <pcl/io/pcd_io.h>
-#include <cmath>
-#include <limits>
 #include <pcl/common/distances.h>  // PCL距离计算函数
 #include <pcl/visualization/pcl_visualizer.h>  // PCL可视化库
 #include <pcl/registration/icp.h>
@@ -105,6 +103,7 @@ public:
     // 显示选中的图形的信息
     void setCentity(CEntity*entity);  //传入centity对象
     void setCentityList(QVector<CEntity*>list);
+    vtkSmartPointer<vtkTextActor>& getInfoText();
     void OnMouseMove();
     void OnLeftButtonPress();
     void OnLeftButtonRelease();
@@ -114,6 +113,8 @@ public:
     void Linechange();
     void closeText();
     void GetScreenCoordinates(vtkRenderer* renderer, double pt[3], double screenCoord[2]);
+
+    void ShowColorTemperature();
 private:
     QVTKOpenGLNativeWidget* vtkWidget; // vtk窗口
     MainWindow *m_pMainWin = nullptr; // mainwindow指针
@@ -135,8 +136,8 @@ private:
     vtkSmartPointer<vtkActor2D> lineActor;//指向线条
     vtkSmartPointer<vtkPNGReader> pngReader; //储存图片信息
     vtkSmartPointer<vtkImageActor> iconActor; //图片演员
-    vtkSmartPointer<vtkOrientationMarkerWidget> axeWidget; // 创建窗口部件来封装坐标器
-    vtkSmartPointer<vtkOrientationMarkerWidget> textWidget; // 浮动窗口，用于显示信息
+    vtkSmartPointer<vtkOrientationMarkerWidget> axeWidget; // 显示坐标器的浮动窗口
+    vtkSmartPointer<vtkOrientationMarkerWidget> textWidget; // 显示图形信息的浮动窗口
     CEntity* elementEntity;//储存传入的entity
     QVector<CEntity *> elementEntityList;
     bool isDragging=false;  //判断注释是否能移动
@@ -144,6 +145,9 @@ private:
     vtkSmartPointer<vtkPolyData> linePolyData;//储存线的data
     vtkSmartPointer<vtkPolyDataMapper2D> lineMapper;//指向线的mapper
     QVector<vtkSmartPointer<vtkActor2D>> directLines; // 存储所有的指向线段
+    // vtkSmartPointer<vtkOrientationMarkerWidget> colorBar; // 显示色温条的浮动窗口
+    float maxDistance; // 色温图最大值（纯红）
+    float minDistance; // 色温图最小值（纯蓝）
 public slots:
 
 };

@@ -547,16 +547,15 @@ vtkSmartPointer<vtkActor> CDistance::pointToPlane()
 
     // 计算glPos_begin在平面上的落点
     CPosition projection;
-    if (fabs(plane_normal.z()) > 1e-10) { // 检查z分量是否足够大，以避免除以0
-        double factor = -distance / plane_normal.z();
-        projection.x = glbPos_begin.x + factor * plane_normal.x();
-        projection.y = glbPos_begin.y + factor * plane_normal.y();
-        projection.z = glbPos_begin.z + factor * plane_normal.z();
+    if (fabs(plane_normal.z()) > 1e-6) { // 检查z分量是否足够大，以避免除以0
+        projection.x = glbPos_begin.x - distance * plane_normal.x();
+        projection.y = glbPos_begin.y - distance * plane_normal.y();
+        projection.z = glbPos_begin.z - distance * plane_normal.z();
     } else {
         // 如果z分量接近0，则假设平面在xy平面上，直接使用xy坐标
         projection.x = glbPos_begin.x - distance * plane_normal.x();
         projection.y = glbPos_begin.y - distance * plane_normal.y();
-        projection.z = glbPos_begin.z; // 保持z坐标不变
+        projection.z = glbPos_begin.z; // 使用平面的z坐标
     }
 
     // 创建点集，并插入定义线的两个点
@@ -714,6 +713,52 @@ vtkSmartPointer<vtkActor> CDistance::planeToPlane()
     return nullptr;
 }
 
+//角度绘制
+vtkSmartPointer<vtkActor> CAngle::draw() {
+    // 获取顶点和两条线的端点
+    CPosition pos_vertex(vertex.x, vertex.y, vertex.z);
+    QVector4D posVec_vertex = GetRefCoord()->m_mat * QVector4D(pos_vertex.x, pos_vertex.y, pos_vertex.z, 1);
+    CPosition globalPos_vertex(posVec_vertex.x(), posVec_vertex.y(), posVec_vertex.z());
+
+    CPosition pos_line1_end(line1.getEnd().x, line1.getEnd().y, line1.getEnd().z);
+    QVector4D posVec_line1_end = GetRefCoord()->m_mat * QVector4D(pos_line1_end.x, pos_line1_end.y, pos_line1_end.z, 1);
+    CPosition globalPos_line1_end(posVec_line1_end.x(), posVec_line1_end.y(), posVec_line1_end.z());
+
+    CPosition pos_line2_end(line2.getEnd().x, line2.getEnd().y, line2.getEnd().z);
+    QVector4D posVec_line2_end = GetRefCoord()->m_mat * QVector4D(pos_line2_end.x, pos_line2_end.y, pos_line2_end.z, 1);
+    CPosition globalPos_line2_end(posVec_line2_end.x(), posVec_line2_end.y(), posVec_line2_end.z());
+
+    // 创建点集，并插入定义角度的三个点
+    auto points = vtkSmartPointer<vtkPoints>::New();
+    points->InsertNextPoint(globalPos_vertex.x, globalPos_vertex.y, globalPos_vertex.z);
+    points->InsertNextPoint(globalPos_line1_end.x, globalPos_line1_end.y, globalPos_line1_end.z);
+    points->InsertNextPoint(globalPos_line2_end.x, globalPos_line2_end.y, globalPos_line2_end.z);
+
+    // 创建线源
+    auto lines = vtkSmartPointer<vtkCellArray>::New();
+    vtkIdType line1[2] = {0, 1}; // 顶点到线1端点
+    vtkIdType line2[2] = {0, 2}; // 顶点到线2端点
+    lines->InsertNextCell(2, line1);
+    lines->InsertNextCell(2, line2);
+
+    // 创建几何图形容器并设置点和线
+    vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
+    polyData->SetPoints(points);
+    polyData->SetLines(lines);
+
+    // 创建映射器
+    auto mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    mapper->SetInputData(polyData);
+
+    // 创建执行器
+    auto actor = vtkSmartPointer<vtkActor>::New();
+    actor->SetMapper(mapper);
+    actor->GetProperty()->SetColor(MainWindow::ActorColor);
+    actor->GetProperty()->SetLineWidth(3);
+
+    return actor;
+}
+
 
 int CLine::lineCount=0;
 int CLine::currentLineId=0;
@@ -725,6 +770,8 @@ int CCylinder::cylinderCount=0;
 int CCone::coneCount=0;
 int CDistance::currentCdistacneId=0;
 int CCuboid::cuboidCount=0;
+int CAngle::currentCAngleId=0;
+
 void CCircle::SetDiameter(double d)
 {
     m_d = d;
@@ -1237,6 +1284,83 @@ void CDistance::setProjection(CPosition pos)
 {
     Projection=pos;
 }
+
+double CAngle::getAngleValue() const {
+    return angleValue;
+}
+
+void CAngle::setAngleValue(double value) {
+    angleValue = value;
+}
+
+double CAngle::getUptolerance() const {
+    return uptolerance;
+}
+
+void CAngle::setUptolerance(double value) {
+    uptolerance = value;
+}
+
+double CAngle::getUndertolerance() const {
+    return undertolerance;
+}
+
+void CAngle::setUndertolerance(double value) {
+    undertolerance = value;
+}
+
+CPosition CAngle::getVertex() const {
+    return vertex;
+}
+
+void CAngle::setVertex(const CPosition &value) {
+    vertex = value;
+}
+
+CLine CAngle::getLine1() const {
+    return line1;
+}
+
+void CAngle::setLine1(const CLine &value) {
+    line1 = value;
+}
+
+CLine CAngle::getLine2() const {
+    return line2;
+}
+
+void CAngle::setLine2(const CLine &value) {
+    line2 = value;
+}
+
+bool CAngle::isQualified() const {
+    return qualified;
+}
+
+void CAngle::setQualified(bool value) {
+    qualified = value;
+}
+
+bool CAngle::judge()
+{
+    if(angleValue<=uptolerance&&angleValue>=undertolerance){
+        qualified=true;
+    }
+    return qualified;
+}
+
+QString CAngle::getCEntityInfo() {
+    QString infoText = QString("Angle Information:\nVertex: (%1, %2, %3)\nLine1 End: (%4, %5, %6)\nLine2 End: (%7, %8, %9)\nAngle Value: %10\nUp Tolerance: %11\nUnder Tolerance: %12\nQualified: %13")
+        .arg(QString::number(vertex.x, 'f', 3)).arg(QString::number(vertex.y, 'f', 3)).arg(QString::number(vertex.z, 'f', 3))
+        .arg(QString::number(line1.getEnd().x, 'f', 3)).arg(QString::number(line1.getEnd().y, 'f', 3)).arg(QString::number(line1.getEnd().z, 'f', 3))
+        .arg(QString::number(line2.getEnd().x, 'f', 3)).arg(QString::number(line2.getEnd().y, 'f', 3)).arg(QString::number(line2.getEnd().z, 'f', 3))
+        .arg(QString::number(angleValue, 'f', 3))
+        .arg(QString::number(uptolerance, 'f', 3))
+        .arg(QString::number(undertolerance, 'f', 3))
+        .arg(qualified ? "Yes" : "No");
+    return infoText;
+}
+
 
 
 

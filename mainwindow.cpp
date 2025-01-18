@@ -1057,6 +1057,7 @@ void MainWindow::onConvertLightGreyTheme()
     MainWindow::HighLightColor[1] = 1;
     MainWindow::HighLightColor[2] = 0;
     pWinVtkWidget->getRenderer()->SetBackground(1, 1, 1);
+    pWinVtkWidget->getInfoText()->GetTextProperty()->SetColor(1, 0, 0);
 
     NotifySubscribe();
 }
