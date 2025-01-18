@@ -530,8 +530,11 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
                     dis->setbegin(position[0]->GetPt());
                     dis->setplane(*plane[0]);
                 }else if(plane.size()==2){
-                    dis->setplane(*plane[0]);
-                    dis->setplane(*plane[1]);
+                    DistanceConstructor Constructor;
+                    CDistance *diss=Constructor.createDistance(plane[0],plane[1]);
+                    dis=diss;
+                    //dis->setplane(*plane[0]);
+                    //dis->setplane(*plane[1]);
                 }
                 qDebug()<<"距离"<<dis->getdistancepoint();
                 QTreeWidgetItem *item = treeWidgetNames->topLevelItem(i);
@@ -543,6 +546,9 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
         distancelistIndex++;
         currentIndex=0;
         list.clear();
+        m_pMainWin->getPWinToolWidget()->setauto(true);
+        m_pMainWin->getPWinToolWidget()->onSaveTxt();
+        m_pMainWin->getPWinToolWidget()->setauto(false);
         return;
     }else if(stateMachine->configuration().contains(stoppedState)){
         timer->stop();

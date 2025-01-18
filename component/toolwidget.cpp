@@ -908,13 +908,38 @@ void   ToolWidget::onSaveExcel(){
 }
 
 void ToolWidget::onSaveTxt(){
-    QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "", QString("txt(*.txt )"));
-    if (filePath.isEmpty()){
-        return ;
+    QString filePath;
+    if(IsAuto){
+        QString desktopPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
+        if (desktopPath.isEmpty()) {
+            qWarning() << "无法获取桌面路径";
+            return;
+        }
+
+        // 生成文件名
+        QString fileName = "Entities_List";
+        auto& entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
+        for (int i = 0; i < entitylist.size(); i++) {
+            CEntity* entity = entitylist[i];
+            if (i > 0) {
+                fileName += "_";
+            }
+            fileName += entity->m_strAutoName;
+        }
+        fileName += ".txt";
+
+        // 完整的文件路径
+        filePath = desktopPath + "/" + fileName;
+    }else{
+        filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "", QString("txt(*.txt )"));
+        if (filePath.isEmpty()){
+            return ;
+        }
+
+        if (QFileInfo(filePath).suffix().isEmpty())
+            filePath.append(".txt");
     }
 
-    if (QFileInfo(filePath).suffix().isEmpty())
-        filePath.append(".txt");
 
     // 创建 QFile 对象
     QFile file(filePath);
@@ -1200,6 +1225,11 @@ void   ToolWidget::onSaveImage(){
     // // 保存为图片
     // pixmap.save(imagePath);
     QMessageBox::information(nullptr, "提示", "保存成功");
+}
+
+void ToolWidget::setauto(bool Auto)
+{
+    IsAuto=Auto;
 }
 
 
@@ -1622,6 +1652,7 @@ void ToolWidget::onFindPoint(){
         qDebug()<<"找到最近点生成错误";
         return ;
     }
+    addToFindList(newPoint);
     positions.clear();
     m_pMainWin->NotifySubscribe();
 }
