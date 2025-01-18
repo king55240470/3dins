@@ -12,8 +12,9 @@ QMainWindow {
 /* QLineEdit的样式 */
 QLineEdit {
     background-color: #ffffff;
-    border: 2px solid #bbbbbb;
-    /*padding: 5px;*/
+    border: 1px solid #262626;
+    border-color: transparent;
+    padding: 2px;
     border-radius: 5px;
     selection-background-color: #add8e6;
     selection-color: #000000;
@@ -21,7 +22,7 @@ QLineEdit {
 
 QLineEdit:focus {
     font-size: 14px "微软雅黑";
-    border: 1px solid #4a90e2;
+    border: 2px solid #4a90e2;
 }
 
 /* QLabel的样式 */
@@ -32,35 +33,35 @@ QLabel {
     border-radius: 5px;
 }
 
-/* 鼠标悬停在QLabel上时的样式 */
 QLabel:hover {
-    background-color: rgb(200, 200, 200);
+    background-color: rgb(207, 220, 235);
     border-color: transparent;
 }
 
-/* QLabel被选中时的样式 */
 QLabel:selected {
-    background-color: #add8e6;
-    color: #000000;
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #3570b2, stop: 1 #4a90e2);
+    color: #ffffff;
 }
 
 /* QPushButton的样式 */
 QPushButton {
     font-size: 14px "微软雅黑";
     text-align: center;
-    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #4a90e2, stop: 1 #3570b2);
+    background-color: #ffffff;
     border: 1px solid #3570b2;
     border-radius: 5px;
     padding: 10px;
-    color: #ffffff;
+    color: #000000;
 }
 
 QPushButton:hover {
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #5fa7ea, stop: 1 #3b7cb5);
+    color: #ffffff;
 }
 
 QPushButton:pressed {
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #3570b2, stop: 1 #4a90e2);
+    color: #ffffff;
 }
 
 QToolBar {
@@ -70,8 +71,8 @@ QToolBar {
 }
 
 QToolBar::separator {
-    width: 1px; /* 分隔线的宽度 */
-    background: #bbbbbb; /* 分隔线的颜色 */
+    width: 1px;
+    background: #bbbbbb;
 }
 
 /* QTreeWidget的样式 */
@@ -149,6 +150,7 @@ QMenu {
 
 QMenu:hover {
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #3570b2, stop: 1 #4a90e2);
+    color: #ffffff;
 }
 
 QMenu::item {
@@ -180,7 +182,7 @@ QMenu::indicator {
 
 /* QTabWidget的样式 - 浅色主题 */
 QTabWidget {
-    font-size: 14px "Arial";
+    font-size: 14px "微软雅黑";
     color: #333;
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #3570b2, stop: 1 #4a90e2);
     border: 1px solid #cccccc;
@@ -201,7 +203,8 @@ QTabBar::tab {
 }
 
 QTabBar::tab:selected, QTabBar::tab:hover {
-    background-color: #ffffff;
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #3570b2, stop: 1 #4a90e2);
+    color: #ffffff;
 }
 
 QTabBar::tab:selected {
@@ -233,7 +236,7 @@ QSplitter::handle:pressed {
 /* QSlider的样式 */
 QSlider {
     border: 1px solid #bbbbbb;
-    background-color: #f0f0f0;
+    background-color: #262626;
 }
 
 QSlider::groove:horizontal {
@@ -252,8 +255,8 @@ QSlider::groove:vertical {
 
 /* QSlider的滑块按钮 */
 QSlider::handle:horizontal {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #4a90e2, stop: 1 #3570b2);
-    border: 1px solid #3570b2;
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #3570b2, stop: 1 #4a90e2);
+    border: 1px solid #262626;
     width: 18px; /* 滑块按钮的宽度 */
     margin: -2px 0; /* 调整滑块按钮的位置 */
     border-radius: 5px;
@@ -261,7 +264,7 @@ QSlider::handle:horizontal {
 
 QSlider::handle:vertical {
     background: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, stop: 0 #4a90e2, stop: 1 #3570b2);
-    border: 1px solid #3570b2;
+    border: 1px solid #262626;
     height: 18px; /* 滑块按钮的高度 */
     margin: 0 -2px; /* 调整滑块按钮的位置 */
     border-radius: 5px;
@@ -269,7 +272,7 @@ QSlider::handle:vertical {
 
 /* QSlider在悬停时的滑块按钮 */
 QSlider::handle:hover {
-    border: 1px solid #4a90e2;
+    border: 1px solid #262626;
 }
 
 /* QSlider在按下时的滑块按钮 */

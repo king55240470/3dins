@@ -51,6 +51,9 @@ public:
     QLineEdit* circleEditY;
     QLineEdit* circleEditZ;
     QLineEdit* circleEditD; //直径
+    QLineEdit *circleNormalX;
+    QLineEdit *circleNormalY;
+    QLineEdit *circleNormalZ;
     QPushButton* circleBtn;
 
     //预置平面
