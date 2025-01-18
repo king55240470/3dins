@@ -84,7 +84,7 @@ public:
     //预置
     void OnPresetPoint(CPosition pt);
     void OnPresetLine(CPosition ptStart, CPosition ptEnd);
-    void OnPresetCircle(CPosition pt, double diameter);
+    void OnPresetCircle(CPosition pt, double diameter,QVector4D normal);
     void OnPresetPlane(CPosition posCenter, QVector4D normal, QVector4D direction, double length, double width);
     void OnPresetSphere(CPosition posCenter, double diametre);
     void OnPresetCylinder(CPosition pos, QVector4D vec, double height, double diametre);

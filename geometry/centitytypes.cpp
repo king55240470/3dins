@@ -122,25 +122,36 @@ vtkSmartPointer<vtkActor> CCircle::draw(){
     QVector4D posVec = GetRefCoord()->m_mat * QVector4D(pos.x, pos.y, pos.z, 1);
     CPosition globalPos(posVec.x(), posVec.y(), posVec.z());
 
+    // 获取法向量并单位化
+    QVector4D normalVec = getNormal();
+    normalVec.normalize();
+
     // 创建圆上的点集
     auto points = vtkSmartPointer<vtkPoints>::New();
     const int numPoints = 100; // 圆的点数，更多点数会更平滑
-    const double radius = getDiameter()/2; // 圆的半径
+    const double radius = getDiameter() / 2; // 圆的半径
     auto center = globalPos;
-    for (int i = 0; i < numPoints; ++i)
-    {
-        double theta =  2.0 * vtkMath::Pi() * static_cast<double>(i) / static_cast<double>(numPoints);
-        double x = center.x + radius * cos(theta); // 加上中心x坐标
-        double y = center.y + radius * sin(theta); // 加上中心y坐标
-        double z = center.z;
-        points->InsertNextPoint(x, y, z); // Z坐标设为0
+
+    // 创建一个与法向量正交的向量
+    QVector3D v1(1, 0, 0);
+    if (fabs(QVector3D::dotProduct(v1, normalVec.toVector3D())) > 0.99) {
+        v1 = QVector3D(0, 1, 0);
+    }
+    QVector3D v2 = QVector3D::crossProduct(normalVec.toVector3D(), v1).normalized();
+    v1 = QVector3D::crossProduct(v2, normalVec.toVector3D()).normalized();
+
+    for (int i = 0; i < numPoints; ++i) {
+        double theta = 2.0 * vtkMath::Pi() * static_cast<double>(i) / static_cast<double>(numPoints);
+        double x = center.x + radius * (v1.x() * cos(theta) + v2.x() * sin(theta));
+        double y = center.y + radius * (v1.y() * cos(theta) + v2.y() * sin(theta));
+        double z = center.z + radius * (v1.z() * cos(theta) + v2.z() * sin(theta));
+        points->InsertNextPoint(x, y, z);
     }
 
     // 创建一个线源来表示圆的线（多段线）
     auto lines = vtkSmartPointer<vtkCellArray>::New();
     vtkIdType pointIds[2];
-    for (int i = 0; i < numPoints - 1; ++i)
-    {
+    for (int i = 0; i < numPoints - 1; ++i) {
         pointIds[0] = i;
         pointIds[1] = i + 1;
         lines->InsertNextCell(2, pointIds);
@@ -735,6 +746,17 @@ double CCircle::getDiameter()
 {
     return m_d;
 }
+
+QVector4D CCircle::getNormal() const
+{
+    return normal;
+}
+
+void CCircle::setNormal(const QVector4D &newNormal)
+{
+    normal = newNormal;
+}
+
 int CCircle::getId()
 {
     return currentCircleId;

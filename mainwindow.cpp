@@ -512,7 +512,7 @@ void MainWindow::OnPresetLine(CPosition ptStart, CPosition ptEnd)
     NotifySubscribe();
 }
 
-void MainWindow::OnPresetCircle(CPosition pt, double diameter)
+void MainWindow::OnPresetCircle(CPosition pt, double diameter,QVector4D normal)
 {
     //CPosition pt(1,1,1);
     //double diameter = 1.5;
@@ -521,6 +521,7 @@ void MainWindow::OnPresetCircle(CPosition pt, double diameter)
     pCircle->Form="预制";
     pCircle->SetCenter(pt);
     pCircle->SetDiameter(diameter);
+    pCircle->setNormal(normal);
     pCircle->m_CreateForm = ePreset;
     pCircle->m_pRefCoord = m_pcsListMgr->m_pPcsCurrent;
     pCircle->m_pCurCoord = m_pcsListMgr->m_pPcsCurrent;
