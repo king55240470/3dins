@@ -120,7 +120,7 @@ void MainWindow::setupUi(){
         pWinVtkWidget->onAlign();
     });
 
-    QMenu* dateOperation=bar->addMenu("配置");
+    QMenu* dateOperation=bar->addMenu("配置文件");
     QAction* storeAction=dateOperation->addAction("数据记录");
     connect(storeAction,&QAction::triggered,this,&MainWindow::SaveIniFile);
 
@@ -168,9 +168,9 @@ void MainWindow::setupUi(){
     stbar->addPermanentWidget(line);
 
     switchCsBtn = new QPushButton("机械坐标系");
-    switchCsBtn->setFixedWidth(100);
-    switchCsBtn->setFlat(true); // 设置按钮为平面样式
-    switchCsBtn->installEventFilter(this);  // 为按钮安装事件过滤器
+    // switchCsBtn->setFixedWidth(100);
+    // switchCsBtn->setFlat(true); // 设置按钮为平面样式
+    // switchCsBtn->installEventFilter(this);  // 为按钮安装事件过滤器
     switchCsBtn->setObjectName("statusSwitchCs");
     stbar->addPermanentWidget(switchCsBtn);
 
@@ -513,7 +513,7 @@ void MainWindow::OnPresetLine(CPosition ptStart, CPosition ptEnd)
     NotifySubscribe();
 }
 
-void MainWindow::OnPresetCircle(CPosition pt, double diameter)
+void MainWindow::OnPresetCircle(CPosition pt, double diameter,QVector4D normal)
 {
     //CPosition pt(1,1,1);
     //double diameter = 1.5;
@@ -522,6 +522,7 @@ void MainWindow::OnPresetCircle(CPosition pt, double diameter)
     pCircle->Form="预制";
     pCircle->SetCenter(pt);
     pCircle->SetDiameter(diameter);
+    pCircle->setNormal(normal);
     pCircle->m_CreateForm = ePreset;
     pCircle->m_pRefCoord = m_pcsListMgr->m_pPcsCurrent;
     pCircle->m_pCurCoord = m_pcsListMgr->m_pPcsCurrent;

@@ -632,7 +632,7 @@ void VtkWidget::onCompare()
     m_pMainWin->NotifySubscribe();
 }
 
-//ICP
+//FPFH+ICP
 void VtkWidget::onAlign()
 {
     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
@@ -645,6 +645,8 @@ void VtkWidget::onAlign()
         if (entity->GetUniqueType() == enPointCloud) {
             auto& temp = ((CPointCloud*)entity)->m_pointCloud;
             clouds.append(temp.makeShared());
+            //删除选中点云
+
         }
     }
 
@@ -729,9 +731,9 @@ void VtkWidget::onAlign()
         return;
     }
 
-    Eigen::Matrix4f initialTransformation = sac_ia.getFinalTransformation();
+    auto initialTransformation = std::make_shared<Eigen::Matrix4f>(sac_ia.getFinalTransformation());
 
-    // **步骤3：ICP精配准**
+    // ICP精配准
     pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
     icp.setInputSource(downsampledCloud1);
     icp.setInputTarget(downsampledCloud2);
@@ -740,7 +742,19 @@ void VtkWidget::onAlign()
     icp.setMaxCorrespondenceDistance(0.05);  // 设置最大对应点距离
 
     pcl::PointCloud<pcl::PointXYZ> icpFinalCloud;
-    icp.align(icpFinalCloud, initialTransformation);  // 使用FPFH的变换矩阵作为初始对齐
+    icp.align(icpFinalCloud, *initialTransformation);  // 使用FPFH的变换矩阵作为初始对齐
+
+    if (!icp.hasConverged()) {
+        // Retry with adjusted parameters
+        icp.setMaxCorrespondenceDistance(0.1);  // 增加最大对应点距离
+        icp.setMaximumIterations(100);  // 增加最大迭代次数
+        icp.align(icpFinalCloud, *initialTransformation);
+
+        if (!icp.hasConverged()) {
+            QMessageBox::critical(this, "Error", "ICP 配准未收敛！");
+            return;
+        }
+    }
 
     if (icp.hasConverged()) {
         pcl::copyPointCloud(icpFinalCloud, *alignedCloud);
