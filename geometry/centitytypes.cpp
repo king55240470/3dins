@@ -547,16 +547,15 @@ vtkSmartPointer<vtkActor> CDistance::pointToPlane()
 
     // 计算glPos_begin在平面上的落点
     CPosition projection;
-    if (fabs(plane_normal.z()) > 1e-10) { // 检查z分量是否足够大，以避免除以0
-        double factor = -distance / plane_normal.z();
-        projection.x = glbPos_begin.x + factor * plane_normal.x();
-        projection.y = glbPos_begin.y + factor * plane_normal.y();
-        projection.z = glbPos_begin.z + factor * plane_normal.z();
+    if (fabs(plane_normal.z()) > 1e-6) { // 检查z分量是否足够大，以避免除以0
+        projection.x = glbPos_begin.x - distance * plane_normal.x();
+        projection.y = glbPos_begin.y - distance * plane_normal.y();
+        projection.z = glbPos_begin.z - distance * plane_normal.z();
     } else {
         // 如果z分量接近0，则假设平面在xy平面上，直接使用xy坐标
         projection.x = glbPos_begin.x - distance * plane_normal.x();
         projection.y = glbPos_begin.y - distance * plane_normal.y();
-        projection.z = glbPos_begin.z; // 保持z坐标不变
+        projection.z = glbPos_begin.z; // 使用平面的z坐标
     }
 
     // 创建点集，并插入定义线的两个点
