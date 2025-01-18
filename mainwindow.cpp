@@ -272,6 +272,7 @@ void MainWindow::openFile(){
             pWinFileManagerWidget->openModelFile(fileName, filePath);
         } else if (filePath.endsWith("pcd")) {
             pWinFileManagerWidget->openMeasuredFile(fileName, filePath);
+            pWinElementListWidget->onAddElement();
         }else if(filePath.endsWith("qins")){
             QFile file(filePath);
             if (!file.open(QIODevice::ReadOnly)) {
