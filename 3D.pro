@@ -47,6 +47,7 @@ SOURCES += \
     manager/cpcsmgr.cpp \
     manager/filemgr.cpp \
     manager/pointcloudlistmgr.cpp \
+    pointfitting/fittingcircle.cpp \
     pointfitting/fittingcone.cpp \
     pointfitting/fittingcylinder.cpp \
     pointfitting/fittingline.cpp \
@@ -55,6 +56,7 @@ SOURCES += \
     pointfitting/fittingsphere.cpp \
     pointfitting/setdatawidget.cpp \
     vtkwindow/clickhighlightstyle.cpp \
+    vtkwindow/colorbarwidget.cpp \
     vtkwindow/mousedragcommand.cpp \
     vtkwindow/vtkpresetwidget.cpp \
     vtkwindow/vtkwidget.cpp \
@@ -95,6 +97,7 @@ HEADERS += \
     manager/cpcsmgr.h \
     manager/filemgr.h \
     manager/pointcloudlistmgr.h \
+    pointfitting/fittingcircle.h \
     pointfitting/fittingcone.h \
     pointfitting/fittingcylinder.h \
     pointfitting/fittingline.h \
@@ -103,6 +106,7 @@ HEADERS += \
     pointfitting/fittingsphere.h \
     pointfitting/setdatawidget.h \
     vtkwindow/clickhighlightstyle.h \
+    vtkwindow/colorbarwidget.h \
     vtkwindow/mousedragcommand.h \
     vtkwindow/vtkpresetwidget.h \
     vtkwindow/vtkwidget.h \
@@ -116,6 +120,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 RESOURCES += \
     filemanagerwidget.qrc \
     graph.qrc \
+    inifile.qrc \
     start.qrc \
     stylesheet.qrc \
     toolwidget.qrc

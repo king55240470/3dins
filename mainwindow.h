@@ -7,6 +7,7 @@
 #include <QStatusbar>
 #include <QPushButton>
 #include <QFile>
+#include <QCoreApplication>
 #include "geometry/globes.h"
 #include "geometry/centity.h"
 #include "manager/centitymgr.h"
@@ -27,7 +28,6 @@ class LogWidget;
 class PresetElemWidget;
 class FileMgr;
 class setDataWidget;
-
 
 class MainWindow : public QMainWindow
 {
@@ -84,7 +84,7 @@ public:
     //预置
     void OnPresetPoint(CPosition pt);
     void OnPresetLine(CPosition ptStart, CPosition ptEnd);
-    void OnPresetCircle(CPosition pt, double diameter);
+    void OnPresetCircle(CPosition pt, double diameter,QVector4D normal);
     void OnPresetPlane(CPosition posCenter, QVector4D normal, QVector4D direction, double length, double width);
     void OnPresetSphere(CPosition posCenter, double diametre);
     void OnPresetCylinder(CPosition pos, QVector4D vec, double height, double diametre);
@@ -122,7 +122,13 @@ public:
     PointCloudListMgr *getPointCloudListMgr(); // 获取打开的点云列表
     setDataWidget *getPWinSetDataWidget();
     void LoadSetDataWidget();
-    void SetUpTheme(); // 初始化界面主题为浅色
+    void SetUpTheme(); // 初始化界面主题
+
+    // 以下参数用于随主题切换而改变渲染窗口的图形及背景颜色
+    static double ActorColor[3];
+    static double HighLightColor[3];
+
+    void SaveIniFile(); // 读取存储图形的配置文件并更新记录
 
     QMap<vtkSmartPointer<vtkActor>, CEntity*>& getactorToEntityMap(); // 管理所有centity对象生成的actor
 
@@ -134,8 +140,9 @@ public:
     void on2dCoordSetRightX(); // 摆正X坐标系-+
     void on2dCoordSetRightY(); // 摆正Y坐标系
 public slots:
-    void onConvertDeepTheme(); // 深色主题
-    void onConvertLighTheme(); // 浅色主题
+    void onConvertLightGreyTheme(); // 主题1
+    void onConvertLighBlueTheme(); // 主题2
+    void onConvertDarkBlueTheme(); // 主题3
 
 };
 #endif // MAINWINDOW_H

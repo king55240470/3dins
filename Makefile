@@ -413,6 +413,7 @@ Makefile: 3D.pro C:\Qt\6.6.0\msvc2019_64\mkspecs\win32-msvc\qmake.conf C:\Qt\6.6
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\features\build_pass.prf \
 		filemanagerwidget.qrc \
 		graph.qrc \
+		inifile.qrc \
 		stylesheet.qrc \
 		toolwidget.qrc \
 		C:\Qt\6.6.0\msvc2019_64\lib\Qt6OpenGLWidgetsd.prl \
@@ -754,6 +755,7 @@ C:\Qt\6.6.0\msvc2019_64\lib\Qt6EntryPoint.prl:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\features\build_pass.prf:
 filemanagerwidget.qrc:
 graph.qrc:
+inifile.qrc:
 stylesheet.qrc:
 toolwidget.qrc:
 C:\Qt\6.6.0\msvc2019_64\lib\Qt6OpenGLWidgetsd.prl:
