@@ -1,0 +1,237 @@
+/* 设置整个应用的背景和字体 */
+QWidget {
+    font-size: 14px "微软雅黑";
+    color: #333; /* 深灰色字体 */
+    background-color: #f2f2f2; /* 浅灰色背景 */
+}
+
+/* QMainWindow的样式 */
+QMainWindow {
+    background-color: #f2f2f2;
+}
+
+/* QLineEdit的样式 */
+QLineEdit {
+    background-color: #ffffff; /* 白色背景 */
+    border: 1px solid #dcdcdc; /* 浅灰色边框 */
+    padding: 5px;
+    border-radius: 5px;
+    selection-background-color: #e6e6e6; /* 浅灰色选中背景 */
+    selection-color: #333; /* 深灰色选中文字 */
+}
+
+QLineEdit:focus {
+    border: 1px solid #6d8db1;
+    color: #333;
+}
+
+/* QLabel的样式 */
+QLabel {
+    font-size: 14px "微软雅黑";
+    background-color: transparent;
+    color: #333;
+    border-radius: 5px;
+}
+
+/* QPushButton的样式 */
+QPushButton {
+    font-size: 14px "微软雅黑";
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #e6e6e6, stop: 1 #cccccc); /* 浅灰色渐变背景 */
+    border: 1px solid #cccccc; /* 浅灰色边框 */
+    border-radius: 5px;
+    padding: 10px;
+    color: #333;
+}
+
+QPushButton:hover {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #dcdcdc, stop: 1 #bcbcbc); /* 更浅的灰色渐变背景 */
+}
+
+QPushButton:pressed {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #cccccc, stop: 1 #e6e6e6); /* 按下时的渐变背景 */
+}
+
+/* QTabWidget的样式 */
+QTabWidget {
+    font-size: 14px "微软雅黑";
+    color: #333; /* 标签文字颜色 */
+    background-color: #f2f2f2; /* 标签页背景 */
+    border: 1px solid #dcdcdc; /* 标签页边框 */
+}
+
+/* 标签页的样式 */
+QTabBar::tab {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                 stop: 0 #e6e6e6, stop: 1 #cccccc);
+    border: 1px solid #dcdcdc; /* 标签边框 */
+    border-top-left-radius: 5px; /* 标签左上边圆角 */
+    border-top-right-radius: 5px; /* 标签右边圆角 */
+    padding: 5px; /* 标签内边距 */
+    min-width: 80px; /* 标签最小宽度 */
+}
+
+QTabBar::tab:selected {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                 stop: 0 #f2f2f2, stop: 1 #ffffff);
+    border-bottom-color: #f2f2f2; /* 选中标签底部边框颜色 */
+}
+
+QTabBar::tab:hover {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                 stop: 0 #dcdcdc, stop: 1 #bcbcbc);
+}
+
+QTabBar::tab:!selected {
+    margin-top: 2px; /* 非选中标签上边距 */
+}
+
+/* 标签页内容的样式 */
+QTabWidget::pane {
+    border-top: 1px solid #dcdcdc; /* 标签页顶部边框 */
+    background-color: #ffffff; /* 标签页内容背景 */
+    padding: 10px; /* 标签页内容内边距 */
+}
+
+/* QTabBar的指示器样式 */
+QTabBar::indicator {
+    width: 0px; /* 关闭指示器宽度 */
+}
+
+/* QToolBar的样式 */
+QToolBar {
+    background-color: #f2f2f2;
+    padding: 2px;
+    font-size: 14px;
+}
+
+QToolBar::separator {
+    background: #cccccc;
+}
+
+/* QTreeWidget的样式 */
+QTreeWidget {
+    font-size: 14px "微软雅黑";
+    background-color: #ffffff; /* 白色背景 */
+    border: 1px solid #dcdcdc; /* 浅灰色边框 */
+    alternate-background-color: #f2f2f2; /* 交替行的浅灰色背景 */
+}
+
+QTreeWidget::item {
+    padding: 5px;
+}
+
+QTreeWidget::item:selected {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #cccccc, stop: 1 #bcbcbc); /* 选中项的浅灰色渐变背景 */
+    color: #333;
+}
+
+/* QHeaderView的头部样式 */
+QHeaderView {
+    background-color: #cccccc; /* 浅灰色背景 */
+}
+
+QHeaderView::section {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #e6e6e6, stop: 1 #cccccc); /* 浅灰色渐变背景 */
+    border: 1px solid #dcdcdc; /* 浅灰色边框 */
+    padding: 5px; /* 单元格内边距 */
+}
+
+/* QTreeView的样式 */
+QTreeView {
+    background-color: #ffffff; /* 白色背景 */
+    border: 1px solid #dcdcdc; /* 浅灰色边框 */
+    alternate-background-color: #f2f2f2; /* 交替行的浅灰色背景 */
+    show-decoration-selected: 1; /* 确保选中时显示装饰 */
+}
+
+QTreeView::item {
+    padding: 3px;
+}
+
+QTreeView::item:selected {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #cccccc, stop: 1 #bcbcbc); /* 选中项的浅灰色渐变背景 */
+    color: #333;
+}
+
+QTreeView::branch {
+    color: #333;
+}
+
+/* QStandardItem的样式 */
+QStandardItem {
+    background-color: transparent;
+    color: #333;
+}
+
+QStandardItem:selected {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #cccccc, stop: 1 #bcbcbc); /* 选中项的浅灰色渐变背景 */
+    color: #333;
+}
+
+/* QMenu的样式 */
+QMenu {
+    background-color: #ffffff; /* 白色背景 */
+    border: 1px solid #dcdcdc; /* 浅灰色边框 */
+}
+
+QMenu::item:selected {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #cccccc, stop: 1 #bcbcbc); /* 选中项的浅灰色渐变背景 */
+    color: #333;
+}
+
+/* QMenu的分割线样式 */
+QMenu::separator {
+    height: 1px;
+    background-color: #dcdcdc;
+}
+
+/* QSplitter的样式 */
+QSplitter::handle {
+    background-color: #cccccc;
+    border: 1px solid #bbbbbb;
+}
+
+QSplitter::handle:horizontal {
+    width: 1px;
+}
+
+QSplitter::handle:vertical {
+    height: 1px;
+}
+
+QSplitter::handle:pressed {
+    background-color: #bbbbbb;
+}
+
+/* QSlider的样式 */
+QSlider {
+    background-color: #e6e6e6; /* 浅灰色背景 */
+}
+
+QSlider::groove:horizontal {
+    background: #cccccc; /* 浅灰色滑槽 */
+    height: 4px;
+    border-radius: 2px;
+}
+
+QSlider::handle:horizontal {
+    background: #ffffff; /* 白色滑块 */
+    border: 1px solid #dcdcdc; /* 浅灰色边框 */
+    width: 14px;
+    height: 14px;
+    margin-top: -6px;
+    margin-left: -7px;
+    border-radius: 7px;
+}
+
+QSlider::handle:horizontal:hover {
+    background: #f2f2f2; /* 鼠标悬停时的浅灰色滑块 */
+}
+
+QSlider::add-page:horizontal {
+    background: #e6e6e6; /* 浅灰色添加区域 */
+}
+
+QSlider::sub-page:horizontal {
+    background: #cccccc; /* 浅灰色已滑动区域 */
+}
