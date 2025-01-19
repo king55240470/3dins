@@ -133,7 +133,7 @@ ToolWidget::ToolWidget(QWidget *parent)
 
 
     save_action_iconpath_list_<<":/component/save/excel.png"<< ":/component/save/pdf.jpg"<< ":/component/save/txt.jpg"<< ":/component/save/word.jpg"<<":/component/save/image.jpg";
-    construct_action_iconpath_list_<<":/component/construct/point.jpg"<<":/component/construct/line.jpg"<<":/component/construct/circle.jpg"<<   ":/component/construct/plan.jpg"<<  ":/component/construct/rectangle.jpg"<<":/component/construct/cylinder.jpg"<< ":/component/construct/cone.jpg"<< ":/component/construct/sphere.jpg"<<":/component/construct/distance.png"<<":/component/construct/pointCloud.png";
+    construct_action_iconpath_list_<<":/component/construct/point.jpg"<<":/component/construct/line.jpg"<<":/component/construct/circle.jpg"<<   ":/component/construct/plan.jpg"<<  ":/component/construct/rectangle.jpg"<<":/component/construct/cylinder.jpg"<< ":/component/construct/cone.jpg"<< ":/component/construct/sphere.jpg"<<":/component/construct/distance.png"<<":/component/construct/pointCloud.png"<<":/component/construct/angle.png";
     find_action_iconpath_list_<<":/component/construct/point.jpg"<<":/component/construct/line.jpg"<<":/component/construct/circle.jpg"<<   ":/component/construct/plan.jpg"<<  ":/component/construct/rectangle.jpg"<<":/component/construct/cylinder.jpg"<< ":/component/construct/cone.jpg"<< ":/component/construct/sphere.jpg";
     coord_action_iconpath_list_<<":/component/coord/create.png"<<  ":/component/coord/spin.jpg"<<":/component/coord/save.png";
     view_angle_action_iconpath_list_<<":/component/viewangle/front.png"<<":/component/viewangle/up.png"<<":/component/viewangle/right.png"<<":/component/viewangle/isometric.png";
@@ -143,7 +143,7 @@ ToolWidget::ToolWidget(QWidget *parent)
 
 
     save_action_name_list_<<"excel"<< "pdf"<< "txt"<< "word"<<"image";
-    construct_action_name_list_<<"点"<<"线"<<"圆"<<"平面"<<"矩形"<<"圆柱"<<"圆锥"<<"球形"<<"距离"<<"点云";
+    construct_action_name_list_<<"点"<<"线"<<"圆"<<"平面"<<"矩形"<<"圆柱"<<"圆锥"<<"球形"<<"距离"<<"点云"<<"角度";
     find_action_name_list_<<"点"<<"线"<<"圆"<<"平面"<<"矩形"<<"圆柱"<<"圆锥"<<"球形";;
     coord_action_name_list_<<"创建坐标系"<<"旋转坐标系"<<"保存坐标系";
     view_angle_action_name_list_<<"主视角"<<"俯视角"<<"侧视角"<<"立体视角";
@@ -516,6 +516,7 @@ void ToolWidget::connectActionWithF(){
     connect(construct_actions_[construct_action_name_list_.indexOf("球形")],&QAction::triggered,this,&  ToolWidget::onConstructSphere);
     connect(construct_actions_[construct_action_name_list_.indexOf("距离")],&QAction::triggered,this,&  ToolWidget::onConstructDistance);
     connect(construct_actions_[construct_action_name_list_.indexOf("点云")],&QAction::triggered,this,&  ToolWidget::onConstructPointCloud);
+    connect(construct_actions_[construct_action_name_list_.indexOf("角度")],&QAction::triggered,this,&  ToolWidget::onConstructAngle);
 
     //保存
     connect(save_actions_[save_action_name_list_.indexOf("excel")],&QAction::triggered,this,&  ToolWidget::onSaveExcel);
@@ -1581,6 +1582,9 @@ void ToolWidget::onConstructPointCloud(){
 
     m_pMainWin->NotifySubscribe();
 }
+void ToolWidget::onConstructAngle(){
+
+}
 
 void ToolWidget:: onFindPlane(){
     //读取选中的点云
@@ -1649,6 +1653,8 @@ void ToolWidget:: onFindPlane(){
     m_pMainWin->NotifySubscribe();
 
 }
+
+
 
 void ToolWidget::onFindPoint(){
     FittingPoint *nearPoint=new FittingPoint();
