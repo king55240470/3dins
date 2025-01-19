@@ -33,5 +33,6 @@
         <file>component/construct/end.png</file>
         <file>component/construct/start.png</file>
         <file>component/construct/stop.png</file>
+        <file>component/construct/angle.png</file>
     </qresource>
 </RCC>

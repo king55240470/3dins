@@ -86,6 +86,7 @@ public slots:
     void onConstructSphere();
     void onConstructDistance();
     void onConstructPointCloud();
+    void onConstructAngle();
     //识别
     void onFindPlane();
     void onFindPoint();
