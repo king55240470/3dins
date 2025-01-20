@@ -84,7 +84,7 @@ public:
     //预置
     void OnPresetPoint(CPosition pt);
     void OnPresetLine(CPosition ptStart, CPosition ptEnd);
-    void OnPresetCircle(CPosition pt, double diameter);
+    void OnPresetCircle(CPosition pt, double diameter,QVector4D normal);
     void OnPresetPlane(CPosition posCenter, QVector4D normal, QVector4D direction, double length, double width);
     void OnPresetSphere(CPosition posCenter, double diametre);
     void OnPresetCylinder(CPosition pos, QVector4D vec, double height, double diametre);
@@ -126,11 +126,10 @@ public:
     void SetUpTheme(); // 初始化界面主题
 
     // 以下参数用于随主题切换而改变渲染窗口的图形及背景颜色
-    static constexpr double ActorColor[3] = {0.5, 0.5, 0.5};
-    static constexpr double BackgroundColor[3] = {1, 1, 1};
-    static constexpr double HighLightColor[3] = {1, 0, 0};
+    static double ActorColor[3];
+    static double HighLightColor[3];
 
-    void ChangeIniFile(); // 读取存储图形的配置文件并更新记录
+    void SaveIniFile(); // 读取存储图形的配置文件并更新记录
 
     QMap<vtkSmartPointer<vtkActor>, CEntity*>& getactorToEntityMap(); // 管理所有centity对象生成的actor
 

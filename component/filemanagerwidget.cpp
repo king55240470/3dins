@@ -71,6 +71,7 @@ void FileManagerWidget::openModelFile(QString fileName,QString filePath){
     //在modelFileMap中添加添加新文件，并分配新的cloud
     m_pMainWin->getpWinFileMgr()->getModelFileMap().insert(filePath, true);
     auto cloud = m_pMainWin->getPointCloudListMgr()->CreateCloudFromFile(filePath);
+    cloud->isModelCloud=true;
     m_pMainWin->getPWinToolWidget()->addToList(cloud);
 
     // 给拟合的临时点云指针赋值
@@ -96,6 +97,7 @@ void FileManagerWidget::openMeasuredFile(QString fileName,QString filePath){
     //在measuredFileMap中添加新文件，并分配新的cloud
     m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().insert(filePath, true);
     auto cloud = m_pMainWin->getPointCloudListMgr()->CreateCloudFromFile(filePath);
+    cloud->isMeasureCloud=true;
     m_pMainWin->getPWinToolWidget()->addToList(cloud);
 
     // 给拟合的临时点云指针赋值
@@ -384,9 +386,7 @@ void FileManagerWidget::UpdateInfo(){
     //     }
     // }
     createContentItem();
-    qDebug()<<"文件更新";
     createIdentifyItem();
-    qDebug()<<"文件更新2";
 }
 
 

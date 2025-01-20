@@ -56,6 +56,7 @@ SOURCES += \
     pointfitting/fittingsphere.cpp \
     pointfitting/setdatawidget.cpp \
     vtkwindow/clickhighlightstyle.cpp \
+    vtkwindow/colorbarwidget.cpp \
     vtkwindow/mousedragcommand.cpp \
     vtkwindow/vtkpresetwidget.cpp \
     vtkwindow/vtkwidget.cpp \
@@ -105,6 +106,7 @@ HEADERS += \
     pointfitting/fittingsphere.h \
     pointfitting/setdatawidget.h \
     vtkwindow/clickhighlightstyle.h \
+    vtkwindow/colorbarwidget.h \
     vtkwindow/mousedragcommand.h \
     vtkwindow/vtkpresetwidget.h \
     vtkwindow/vtkwidget.h \

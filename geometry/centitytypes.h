@@ -177,18 +177,19 @@ public:
     CPosition m_pt;
 
     double m_d;//直径
+    QVector4D normal;
     static int circleCount;
     int currentCircleId;
     QDataStream& serialize(QDataStream& out) const override {
         CEntity::serialize(out);  // 先序列化基类部分
-        out << m_pt << m_d << circleCount << currentCircleId;  // 序列化CCircle特有部分
+        out << m_pt << m_d <<normal<< circleCount << currentCircleId;  // 序列化CCircle特有部分
         out <<constructPt1<<constructPt2<<constructPt3;
         return out;
     }
 
     QDataStream& deserialize(QDataStream& in) override {
         CEntity::deserialize(in);  // 先反序列化基类部分
-        in >> m_pt >> m_d >> circleCount >> currentCircleId;  // 反序列化CCircle特有部分
+        in >> m_pt >> m_d  >>normal>>circleCount >> currentCircleId;  // 反序列化CCircle特有部分
         in>>constructPt1>>constructPt2>>constructPt3;
         return in;
     }
@@ -200,6 +201,7 @@ public:
         m_pt.y=0;
         m_pt.z=0;
         m_d =0 ;
+        normal=QVector4D(0,0,0,1);
         currentCircleId = ++circleCount;
         m_strAutoName = QString("圆%1").arg(currentCircleId);
         m_strCName = QString("圆%1").arg(currentCircleId);
@@ -208,6 +210,8 @@ public:
     void SetCenter(CPosition pt);
     CPosition getCenter();
     double getDiameter();
+    QVector4D getNormal() const;
+    void setNormal(const QVector4D &newNormal);
     int GetUniqueType() override{
         return enCircle;
     }
@@ -219,7 +223,7 @@ public:
     // void ChangePosBeforChangeRefCoord(CPcs *pNewRefCoord)override;
     CPosition GetObjectCenterPoint() ;
 
-    void SetNominal() ;
+    //void SetNominal() ;
     void ChangePosBeforChangeRefCoord(CPcs *pNewRefCoord){
         bool bInv=false;
         QVector4D posVec =pNewRefCoord->m_mat.inverted(&bInv) * m_pRefCoord->m_mat * QVector4D(m_pt.x, m_pt.y, m_pt.z, 1);
@@ -575,7 +579,7 @@ class CDistance : public CEntity{
         circle.serialize(out);
         line.serialize(out);
         out<< distance << Projection;
-        out <<isHavePlane <<isHaveLine <<isHaveCircle;
+        out <<isPointToPlane <<isPointToLine <<isPointToCircle;
         return out;
     }
 
@@ -587,7 +591,7 @@ class CDistance : public CEntity{
         circle.deserialize(in);
         line.deserialize(in);
         in>>distance >>Projection;
-        in>> isHavePlane >>isHaveLine >>isHaveCircle;
+        in>> isPointToPlane >>isPointToLine >>isPointToCircle;
         return in;
     }
 public:
@@ -622,18 +626,87 @@ public:
     void setdistance(double d);
     bool judge();
     void setProjection(CPosition pos);
-    // 分别判断出了begin以外的图形是哪种
-     bool isHavePoint = false;
-    bool isHavePlane = false;
-    bool isHaveLine = false;
-    bool isHaveCircle = false;
+    // 判断是哪种构造方式
+    bool isPointToPoint = false;
+    bool isPointToPlane = false;
+    bool isPointToLine = false;
+    bool isPointToCircle = false;
     bool isPlaneToPlane = false;
 
-    // CDistance的draw()，这里要分别写几个显示不同的距离
+    // CDistance的draw()，这里模块化为不同的绘制函数
     vtkSmartPointer<vtkActor> draw() override;
     vtkSmartPointer<vtkActor> pointToPlane();
     vtkSmartPointer<vtkActor> pointToLine();
     vtkSmartPointer<vtkActor> pointToCircle();
+    vtkSmartPointer<vtkActor> pointToPoint();
+    vtkSmartPointer<vtkActor> planeToPlane();
+};
+
+class CAngle : public CEntity {
+    static int currentCAngleId;
+    double angleValue;
+    double uptolerance;
+    double undertolerance;
+    CPosition vertex;
+    CLine line1;
+    CLine line2;
+    bool qualified = false;
+
+    QDataStream& serialize(QDataStream& out) const override {
+        CEntity::serialize(out);  // 先序列化基类部分
+        out << currentCAngleId << angleValue << uptolerance << undertolerance << vertex;
+        line1.serialize(out);
+        line2.serialize(out);
+        out << qualified;
+        return out;
+    }
+
+    QDataStream& deserialize(QDataStream& in) override {
+        CEntity::deserialize(in);  // 先反序列化基类部分
+        in >> currentCAngleId >> angleValue >> uptolerance >> undertolerance >> vertex;
+        line1.deserialize(in);
+        line2.deserialize(in);
+        in >> qualified;
+        return in;
+    }
+
+public:
+    CAngle() {
+        angleValue = 0.0;
+        uptolerance = 0.0;
+        undertolerance = 0.0;
+        m_strAutoName = QString("角度%1").arg(currentCAngleId);
+        m_strCName = QString("角度%1").arg(currentCAngleId);
+        currentCAngleId++;
+    }
+
+    QString getCEntityInfo() override; // 获取图形的信息，在浮动窗口显示
+
+    int GetUniqueType() override {
+        return enAngle;
+    }
+
+    double getAngleValue() const;
+    void setAngleValue(double value);
+    double getUptolerance() const;
+    void setUptolerance(double value);
+    double getUndertolerance() const;
+    void setUndertolerance(double value);
+    CPosition getVertex() const;
+    void setVertex(const CPosition &value);
+
+    CLine getLine1() const;
+    void setLine1(const CLine &value);
+    CLine getLine2() const;
+    void setLine2(const CLine &value);
+
+    bool isQualified() const;
+    void setQualified(bool value);
+
+    bool judge();
+    double getAngle() const;
+
+    vtkSmartPointer<vtkActor> draw() override;
 };
 
 class CPointCloud : public CEntity
@@ -647,6 +720,9 @@ public:
     int currentPointCloudId;
     bool isFileCloud = false; // 是否是文件生成的点云
     bool isComparsionCloud = false; //  是否是对比得到的点云
+    bool isAlignCloud=false;// 是否是对齐得到的点云
+    bool isModelCloud=false;// 是否是模型点云
+    bool isMeasureCloud=false; // 是否是实测点云
     static bool haveSaved;
     static bool haveOpened;
 

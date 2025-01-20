@@ -1,8 +1,7 @@
 
 *{
-  font-size: 14px;
+  font-size: 14px "微软雅黑";
   color:white;
-  font-family:"Arial";
 }
 
 CallWidget QLineEdit#telEdt
@@ -131,7 +130,7 @@ DailForm QToolButton#delToolBtn{
 QLineEdit,QTextEdit {
     border: 1px solid #32435E;
     border-radius: 3px;
-    /* padding: 0 8px; */
+    padding: 3px;
     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                                  stop: 0 #080B10,
                                  stop: 1.0 #212C3F);
@@ -169,25 +168,26 @@ QTabWidget#MainTabWidget QTabBar::tab {
 
 
  QTabBar::tab {
-     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                                  stop: 0 #292F31, stop: 1 #0C131E);
+    padding: 5px;
  }
 QTabBar::tab:selected{
-     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                                  stop: 0 #113845,  stop: 1.0 #15A8FF);
  }
 QTabBar::tab:hover {
-     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                                  stop: 0 #113845,  stop: 1.0 #0E6F80);
  }
 
 QTabBar::tab:selected {
-     border-color: #32435E;
-     border-right-color: #32435E; /* same as pane color */
+    border-color: #32435E;
+    border-right-color: #32435E; /* same as pane color */
  }
 
 QTabBar::tab:!selected {
-     margin-left: 3px; /* make non-selected tabs look smaller */
+    margin-left: 3px; /* make non-selected tabs look smaller */
 }
 
 QTabBar:tab:first:selected {
@@ -342,19 +342,19 @@ QCheckBox {
 
   QMenu {
      background-color: #030406;
-     border-width:0px;
+     border-width:1px;
      margin: 5px;
  }
 
  QMenu::item {
      background-color: #1D2838;
-     padding: 2px 25px 2px 20px;
+     padding: 5px ;
      border-color:transparent;
      color:#858E94;
  }
  QMenu::item:!enabled {
      background-color:  #1D2838;
-     padding: 2px 25px 2px 20px;
+     padding: 5px ;
      border-color:transparent;
      color:#76746C;
  }
@@ -365,6 +365,7 @@ QCheckBox {
      background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                                  stop: 0 #1E293A,
                                  stop: 1.0 #2C547E);
+     padding: 5px ;
      color:#E6FFFF;
  }
 
@@ -381,8 +382,8 @@ QCheckBox {
  QMenu::separator {
      height: 1px;
      background: #1D99A9;
-     /*margin-left: 10px;*/
-     /*margin-right: 5px;*/
+     margin-left: 5px;
+     margin-right: 5px;
  }
 
  QMenu::indicator {
@@ -431,7 +432,7 @@ QCheckBox {
 
  QMenuBar::item {
      spacing: 3px; /* spacing between menu bar items */
-     padding: 3px 4px;
+     padding: 5px 4px;
      background: #10151E;
      border-radius: 4px;
      font:#BBDDFF;
@@ -747,7 +748,7 @@ QSizeGrip { /*在MainWindow右下角*/
      background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
                                        stop:0 #353B43, stop:1 #151A20);
      color: white;
-     padding: 4px;
+     padding: 5px;
      border: 1px solid #447684;
  }
 
@@ -769,13 +770,13 @@ QSizeGrip { /*在MainWindow右下角*/
 
 
 QTreeWidget{
+    font-size: 14px "微软雅黑";
     background:#18202E;
     border-style: outset;
-    border-width: 0px;
     border-color: #11223F;
-    padding: 1px;
+    padding: 5px;
 }
-
+/*
 QTreeWidget::branch:has-siblings:!adjoins-item {
      border-image: url(qss/vline.png) 0;
  }
@@ -798,7 +799,7 @@ QTreeWidget::branch:has-siblings:!adjoins-item {
  QTreeWidget::branch:open:has-children:has-siblings  {
          border-image: none;
          image: url(qss/branch-open.png);
- }
+ }*/
 
 
  QTreeWidget::item {
@@ -806,15 +807,15 @@ QTreeWidget::branch:has-siblings:!adjoins-item {
       border-color: transparent;
       padding: 5px;
  }
-  QTreeWidget::item:hover {
+QTreeWidget::item:hover {
      background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #598892, stop: 1 #189BAB);
      border: 1px solid #bfcde4;
-     padding: 3px;
+     padding: 5px;
  }
 
 QTreeWidget::item:selected {
      /*border: 0px solid #33CCFF;*/
-     border:none;
+     /*border:none; */
      background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                                  stop: 0 #6A848C,  stop: 1.0 #0F9EAF);
      padding:5px;

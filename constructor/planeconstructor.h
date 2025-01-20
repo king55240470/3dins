@@ -11,6 +11,7 @@ public:
     CEntity* create(QVector<CEntity*>& entitylist)override;
     CPlane* createPlane(CPosition p1,CPosition p2,CPosition p3);
     CPlane* createPlane(CPoint p1,CPoint p2,CPoint p3);
+    CPlane* createPlane(CPlane* pl1,CPlane*pl2,double weight1_pl1=0.5);
     CPlane* createPlane(CPosition posCenter, QVector4D normal, QVector4D direction, double length, double width);
 };
 
