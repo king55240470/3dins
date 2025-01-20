@@ -70,12 +70,17 @@ PlaneConstructor::PlaneConstructor() {}
 CEntity* PlaneConstructor::create(QVector<CEntity*>& entitylist){
     //Constructor::create(entitylist);
     QVector<CPoint*>points;
+    QVector<CPlane*>planes;
     for(int i=0;i<entitylist.size();i++){
         CEntity* entity=entitylist[i];
         if(!entity->IsSelected())continue;
         if(entity->GetUniqueType()==enPoint){
             CPoint * point=(CPoint*)entity;
             points.push_back(point);
+        }
+        if(entity->GetUniqueType()==enPlane){
+            CPlane* plane=(CPlane*)entity;
+            planes.push_back(plane);
         }
     }
     //QVector<CPosition>&positions=Constructor::getPositions();//存储有效点
@@ -84,6 +89,12 @@ CEntity* PlaneConstructor::create(QVector<CEntity*>& entitylist){
         plane->parent.push_back(points[0]);
         plane->parent.push_back(points[1]);
         plane->parent.push_back(points[2]);
+        return plane;
+    }
+    if(planes.size()==2){
+        CPlane* plane=createPlane(planes[0],planes[1]);
+        plane->parent.push_back(planes[0]);
+        plane->parent.push_back(planes[1]);
         return plane;
     }
     if(points.size()<3){
@@ -222,4 +233,22 @@ CPlane* PlaneConstructor::createPlane(CPosition posCenter, QVector4D normal, QVe
     newplane->setLength(length);
     newplane->setWidth(width);
     return newplane;
+}
+CPlane* PlaneConstructor::createPlane(CPlane* pl1,CPlane*pl2,double weight_pl1){
+
+    CPosition center;
+   //根据权重
+   center.x=pl1->getCenter().x*weight_pl1+pl2->getCenter().x*(1-weight_pl1);
+   center.y=pl1->getCenter().y*weight_pl1+pl2->getCenter().y*(1-weight_pl1);
+   center.z=pl1->getCenter().z*weight_pl1+pl2->getCenter().z*(1-weight_pl1);
+   //向量
+   QVector4D normal=pl1->normal*weight_pl1+pl2->normal*(1-weight_pl1);
+   //长边
+   QVector4D direction=crossProduct(pl1->dir_long_edge*weight_pl1+pl2->dir_long_edge*(1-weight_pl1),normal);
+
+   double length=pl1->length*weight_pl1+pl2->length*(1-weight_pl1);
+
+   double width =pl1->width*weight_pl1+pl2->width*(1-weight_pl1);
+
+   return createPlane(center,normal,direction,length,width);
 }
