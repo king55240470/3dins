@@ -6,16 +6,6 @@
 
 #include <vtkInteractorStyle.h>
 #include <vtkEventQtSlotConnect.h>
-#include <vtkImageActor.h>
-#include <vtkImageMapToColors.h>
-#include <vtkImageData.h>
-#include <vtkTexture.h>
-#include <vtkTextureMapToPlane.h>
-#include <vtkTransformPolyDataFilter.h>
-#include <vtkWindowToImageFilter.h>
-#include <vtkPNGWriter.h>
-#include <vtkImageMapper3D.h>
-#include <vtkImageProperty.h>
 
 VtkWidget::VtkWidget(QWidget *parent)
     : QWidget(parent),
@@ -360,55 +350,79 @@ void VtkWidget::closeText()
     renWin->Render();
 }
 
-void VtkWidget::ShowColorTemperature()
+void VtkWidget::ShowColorBar()
 {
-    // 创建颜色条的图像
-    int width = 50;
-    int height = 10;
-    vtkSmartPointer<vtkImageData> imageData = vtkSmartPointer<vtkImageData>::New();
-    imageData->SetDimensions(width, height, 1);
-    imageData->AllocateScalars(VTK_UNSIGNED_CHAR, 3);
+    // 创建一个 PolyData 对象来存储色温尺的几何信息
+    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+    vtkSmartPointer<vtkCellArray> lines = vtkSmartPointer<vtkCellArray>::New();
+    vtkSmartPointer<vtkUnsignedCharArray> colors = vtkSmartPointer<vtkUnsignedCharArray>::New();
+    colors->SetNumberOfComponents(3); // RGB
 
-    // 填充颜色条数据
-    for (int x = 0; x < width; ++x)
+    // 定义色温尺的起点和终点
+    int barHeight = 20; // 色温尺的高度
+    int barWidth = 200; // 色温尺的宽度
+    points->InsertNextPoint(10, 10, 0); // 起点
+    points->InsertNextPoint(10 + barWidth, 10, 0); // 终点
+
+    // 插入线段
+    vtkIdType pointIds[2] = {0, 1};
+    lines->InsertNextCell(2, pointIds);
+
+    // 创建颜色渐变
+    for (int i = 0; i <= barWidth; ++i) // 使用 <= 来确保包括最后一个点
     {
-        float normalizedPosition = static_cast<float>(x) / (width - 1);
-        float value = minDistance + normalizedPosition * (maxDistance - minDistance);
-            int r = static_cast<int>(255 * (value - minDistance) / (maxDistance - minDistance));
-        int b = 255 - r;
-        int y = height / 2; // 中间行
-        imageData->SetScalarComponentFromFloat(x, y, 0, 0, r / 255.0);
-        imageData->SetScalarComponentFromFloat(x, y, 0, 1, 0.0);
-        imageData->SetScalarComponentFromFloat(x, y, 0, 2, b / 255.0);
+        float ratio = static_cast<float>(i) / barWidth;
+        int r = static_cast<int>(255 * ratio);         // 红色分量从0到255
+        int b = 255 - r;                                // 蓝色分量从255到0
+        int g = 0;                                      // 绿色分量始终为0
+        colors->InsertNextTuple3(r, g, b); // 红蓝渐变，绿色为0
     }
 
-    // 创建纹理并映射到图像演员
-    vtkSmartPointer<vtkTexture> texture = vtkSmartPointer<vtkTexture>::New();
-    texture->SetInputData(imageData);
-    vtkSmartPointer<vtkImageMapToColors> colorMap = vtkSmartPointer<vtkImageMapToColors>::New();
-    colorMap->SetInputConnection(texture->GetOutputPort());
-    colorMap->SetLookupTable(nullptr); // 使用图像本身的颜色
-    vtkSmartPointer<vtkImageActor> imageActor = vtkSmartPointer<vtkImageActor>::New();
-    imageActor->GetMapper()->SetInputConnection(colorMap->GetOutputPort());
+    // 创建用于显示颜色条的多边形 PolyData
+    vtkSmartPointer<vtkPolyData> colorBarPolyData = vtkSmartPointer<vtkPolyData>::New();
+    vtkSmartPointer<vtkPoints> colorBarPoints = vtkSmartPointer<vtkPoints>::New();
+    vtkSmartPointer<vtkCellArray> colorBarPolys = vtkSmartPointer<vtkCellArray>::New();
 
-    // auto imageMapper = vtkSmartPointer<vtkImageMapper3D>::New();
-    // imageMapper->SetInputData(imageData);
-    // vtkSmartPointer<vtkImageActor> imageActor = vtkSmartPointer<vtkImageActor>::New();
-    // imageActor->SetMapper(imageMapper);
+    colorBarPoints->InsertNextPoint(10, 10, 0);
+    colorBarPoints->InsertNextPoint(10 + barWidth, 10, 0);
+    colorBarPoints->InsertNextPoint(10 + barWidth, 10 + barHeight, 0);
+    colorBarPoints->InsertNextPoint(10, 10 + barHeight, 0);
 
-    // 获取渲染窗口的尺寸
-    int windowWidth = renWin->GetSize()[0];
-    int windowHeight = renWin->GetSize()[1];
+    vtkIdType polyIds[4] = {0, 1, 2, 3};
+    colorBarPolys->InsertNextCell(4, polyIds);
 
-    // 计算颜色条在右下角的位置
-    double colorBarX = windowWidth - width - 10; // 留出一些边距
-    double colorBarY = windowHeight - height - 10; // 同样留出一些边距
+    colorBarPolyData->SetPoints(colorBarPoints);
+    colorBarPolyData->SetPolys(colorBarPolys);
 
-    // 设置图像演员的位置和其他属性
-    imageActor->SetPosition(colorBarX, colorBarY, 0);
-    imageActor->GetProperty()->SetOpacity(0.8);
+    // 创建一个颜色数组用于多边形
+    vtkSmartPointer<vtkUnsignedCharArray> colorBarColors = vtkSmartPointer<vtkUnsignedCharArray>::New();
+    colorBarColors->SetNumberOfComponents(3);
+    colorBarColors->SetNumberOfTuples(barWidth + 1); // +1 是为了包括最后一个点的颜色
 
-    renderer->AddActor(imageActor);
+    // 填充颜色数组，这里我们使用插值来确保颜色渐变平滑
+    for (int i = 0; i <= barWidth; ++i)
+    {
+        float ratio = static_cast<float>(i) / barWidth;
+        int r = static_cast<int>(255 * ratio);
+        int b = 255 - r;
+        int g = 0;
+        colorBarColors->SetTuple3(i, r, g, b);
+    }
+
+    // 将颜色数据绑定到多边形上
+    colorBarPolyData->GetPointData()->SetScalars(colors);
+
+    // 创建 Mapper
+    vtkSmartPointer<vtkPolyDataMapper2D> colorBarMapper = vtkSmartPointer<vtkPolyDataMapper2D>::New();
+    colorBarMapper->SetInputData(colorBarPolyData);
+
+    // 创建 Actor2D
+    vtkSmartPointer<vtkActor2D> colorBarActor = vtkSmartPointer<vtkActor2D>::New();
+    colorBarActor->SetMapper(colorBarMapper);
+
+    renderer->AddActor2D(colorBarActor);
+
+    // 刷新渲染窗口
     renderer->Render();
 }
 
@@ -693,8 +707,6 @@ void VtkWidget::onCompare()
             point.b = b;
         }
     }
-
-    ShowColorTemperature();
 
     // 由RGB点云生成cpointcloud对象，并存入entitylist
     auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateCompareCloud(*comparisonCloud);
