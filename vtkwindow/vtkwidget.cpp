@@ -138,7 +138,7 @@ void VtkWidget::createText()
 
     infoTextActor->GetTextProperty()->SetFontSize(16);
     infoTextActor->GetTextProperty()->SetFontFamilyToTimes();
-    infoTextActor->GetTextProperty()->SetColor(1, 1, 0);
+    infoTextActor->GetTextProperty()->SetColor(MainWindow::InfoTextColor);
     infoTextActor->GetTextProperty()->SetJustificationToLeft(); // 左对齐
     infoTextActor->GetTextProperty()->SetBold(1); // 设置粗体
     infoTextActor->GetTextProperty()->SetShadow(true);
@@ -212,7 +212,7 @@ void VtkWidget::createTextBox()
     rectangleActor->SetMapper(rectangleMapper);
     // 设置矩形的属性
     rectangleActor->GetProperty()->SetColor(0.1, 0.2, 0.3); // 填充颜色
-    rectangleActor->GetProperty()->SetOpacity(0.3); // 设置不透明度
+    rectangleActor->GetProperty()->SetOpacity(0.2); // 设置不透明度
     rectangleActor->GetProperty()->SetLineWidth(2); // 线条宽度
     double *a;
     a=infoTextActor->GetPosition();
@@ -310,7 +310,7 @@ void VtkWidget::createLine()
     // 创建2D线actor
     lineActor=vtkSmartPointer<vtkActor2D>::New();
     lineActor->SetMapper(lineMapper);
-    lineActor->GetProperty()->SetColor(1, 0, 0); // 设置线的颜色为红色
+    lineActor->GetProperty()->SetColor(MainWindow::InfoTextColor);
     lineActor->GetProperty()->SetLineWidth(2);
     renderer->AddActor(lineActor);
     renderer->AddActor(iconActor);
