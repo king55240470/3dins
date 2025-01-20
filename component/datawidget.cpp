@@ -308,6 +308,18 @@ void DataWidget::updateinfo()
                 table->setItem(3, 0, new QTableWidgetItem("D"));
                 table->setItem(3, 1, new QTableWidgetItem(QString::number(circle->getDiameter(),'f',6)));
                 table->setItem(3, 2, new QTableWidgetItem(""));
+
+                table->setItem(4, 0, new QTableWidgetItem("NormalVector_x"));
+                table->setItem(4, 1, new QTableWidgetItem(QString::number(circle->getNormal().x(),'f',6)));
+                table->setItem(4, 2, new QTableWidgetItem(""));
+
+                table->setItem(5, 0, new QTableWidgetItem("NormalVector_y"));
+                table->setItem(5, 1, new QTableWidgetItem(QString::number(circle->getNormal().y(),'f',6)));
+                table->setItem(5, 2, new QTableWidgetItem(""));
+
+                table->setItem(6, 0, new QTableWidgetItem("NormalVector_z"));
+                table->setItem(6, 1, new QTableWidgetItem(QString::number(circle->getNormal().z(),'f',6)));
+                table->setItem(6, 2, new QTableWidgetItem(""));
             }
         }
         if(obj->GetUniqueType()==enPlane){
@@ -708,6 +720,7 @@ void DataWidget::updateinfo()
                 table->setItem(2, 2, new QTableWidgetItem(""));
             }
         }
+
         if(obj->m_strCName.left(2)=="距离"){
             CDistance* distance=dynamic_cast<CDistance*>(obj);
             qDebug()<<"data里面的距离"<<distance->getdistance();
@@ -735,6 +748,36 @@ void DataWidget::updateinfo()
                 }else{
                     table->setItem(3, 1, new QTableWidgetItem(QString("不合格")));
                 }
+            }
+        }
+        
+        if(obj->m_strCName.left(2)=="角度"){
+            CAngle* angle=dynamic_cast<CAngle*>(obj);
+            qDebug()<<"data里面的角度"<<angle->getAngleValue();
+            CPosition position;
+            position.x=angle->getUptolerance();
+            position.y=angle->getUndertolerance();
+            position.z=angle->getAngleValue();
+            qDebug()<<"data里面的角度"<<position.z;
+            if (angle != nullptr){
+            table->setItem(0, 0, new QTableWidgetItem("上公差"));
+            table->setItem(0, 1, new QTableWidgetItem(QString::number(position.x,'f',6)));
+            table->setItem(0, 2, new QTableWidgetItem("")); // 可选择设置状态
+
+            table->setItem(1, 0, new QTableWidgetItem("下公差"));
+            table->setItem(1, 1, new QTableWidgetItem(QString::number(position.y,'f',6)));
+            table->setItem(1, 2, new QTableWidgetItem("")); // 可选择设置状态
+
+            table->setItem(2, 0, new QTableWidgetItem("角度"));
+            table->setItem(2, 1, new QTableWidgetItem(QString::number(position.z,'f',6)));
+            table->setItem(2, 2, new QTableWidgetItem(""));
+
+            table->setItem(3, 0, new QTableWidgetItem("是否合格"));
+            if(angle->judge()==true){
+                table->setItem(3, 1, new QTableWidgetItem(QString("合格")));
+            }else{
+                table->setItem(3, 1, new QTableWidgetItem(QString("不合格")));
+            }
             }
         }
 

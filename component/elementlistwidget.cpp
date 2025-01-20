@@ -2,9 +2,7 @@
 #include "mainwindow.h"
 #include "manager/filemgr.h"
 #include <QDebug>
-#include <QPainter>
-#include <QPixmap>
-
+#include <functional>
 int ElementListWidget::pcscount = 0;
 ElementListWidget::ElementListWidget(QWidget *parent)
     : QWidget{parent}
@@ -15,8 +13,8 @@ ElementListWidget::ElementListWidget(QWidget *parent)
     layout->setSpacing(0); // 去除布局内部的间距
 
     // 删除选中元素的按钮
-    QPushButton *deleteButton = new QPushButton("删除选中元素", this);
-    connect(deleteButton, &QPushButton::clicked, this, &ElementListWidget::onDeleteEllipse);
+    //QPushButton *deleteButton = new QPushButton("删除选中元素", this);
+    //(deleteButton, &QPushButton::clicked, this, &ElementListWidget::onDeleteEllipse);
 
     // 元素名称列表
     treeWidgetNames = new QTreeWidget(this);
@@ -59,7 +57,7 @@ ElementListWidget::ElementListWidget(QWidget *parent)
 
     // 布局
     layout->addWidget(toolBar);
-    layout->addWidget(deleteButton);
+    //layout->addWidget(deleteButton);
     layout->addWidget(treeWidgetNames);
     layout->addWidget(treeWidgetInfo);
     connect(treeWidgetNames, &QTreeWidget::customContextMenuRequested,
@@ -68,14 +66,14 @@ ElementListWidget::ElementListWidget(QWidget *parent)
     setFocusPolicy(Qt::StrongFocus);
     treeWidgetNames->installEventFilter(this);
     treeWidgetInfo->installEventFilter(this);
-    deleteButton->installEventFilter(this);
+    //deleteButton->installEventFilter(this);
     toolBar->installEventFilter(this);
 
     connect(treeWidgetNames, &QTreeWidget::itemClicked, this, &ElementListWidget::onItemClicked);
     connect(treeWidgetNames, &QTreeWidget::itemDoubleClicked, this, &ElementListWidget::showDialog);
 
     // 连接树部件的双击信号
-    connect(treeWidgetNames, &QTreeWidget::itemChanged, this, &ElementListWidget::isAdd);
+    //connect(treeWidgetNames, &QTreeWidget::itemChanged, this, &ElementListWidget::isAdd);
 
     // 设置状态机
     setupStateMachine();
@@ -218,7 +216,6 @@ void ElementListWidget::upadteelementlist()
     eleobjlist.clear();
     for(const auto& obj :m_pMainWin->m_ObjectListMgr->getObjectList()){
         CreateEllipse(obj);
-        qDebug()<<"列表更新";
         //obj->SetSelected(false);
         QString name=obj->GetObjectCName();
         if(name.left(5)!="临时坐标系"&&name.left(5)!="工件坐标系"){
@@ -230,6 +227,10 @@ void ElementListWidget::upadteelementlist()
 void ElementListWidget::onItemClicked()
 {
     QList<QTreeWidgetItem*> selectedItems = getSelectedItems();
+    // 用于判断是否隐藏构建的元素
+    QMap<QString, bool> contentMap = m_pMainWin->getpWinFileMgr()->getContentItemMap();
+    QMap<QString, bool> identifyItemmap = m_pMainWin->getpWinFileMgr()->getIdentifyItemMap();
+
     m_pMainWin->getPWinVtkWidget()->getInteractorStyle()->CancelHighlightActors();
     if(selectedItems.size()==1){
         for(int i=0;i<m_pMainWin->getObjectListMgr()->getObjectList().size();i++){
@@ -354,6 +355,21 @@ void ElementListWidget::ShowParent(CObject*obj)
         infoItem->setText(1,obj->Form);
         return;
     }
+    if(obj->GetUniqueType()==enPointCloud){
+        QTreeWidgetItem *infoItem = new QTreeWidgetItem(treeWidgetInfo);
+        CPointCloud*cloud=(CPointCloud*)obj;
+        if(cloud->isFileCloud){
+            infoItem->setText(0,obj->m_strCName);
+            infoItem->setText(1,"文件生成的点云");
+        }else if(cloud->isComparsionCloud){
+            infoItem->setText(0,obj->m_strCName);
+            infoItem->setText(1,"对比得到的点云");
+        }else if(cloud->isAlignCloud){
+            infoItem->setText(0,obj->m_strCName);
+            infoItem->setText(1,"对齐得到的点云");
+        }
+        return;
+    }
     for(CObject*obj1:obj->parent){
         QTreeWidgetItem *infoItem = new QTreeWidgetItem(treeWidgetInfo);
         infoItem->setText(0,obj1->m_strCName);
@@ -446,85 +462,201 @@ void ElementListWidget::setupStateMachine()
 
 void ElementListWidget::onAddElement()
 {
-    bool isCloud=false;
     if (stateMachine->configuration().contains(runningState)) {
-        isCloud=true;
+        updateDistance();
+        CompareCloud();
+        m_pMainWin->NotifySubscribe();
     }
-    if(isCloud){
-        qDebug()<<"aaaaa";
-        if(m_pMainWin->getEntityListMgr()->getEntityList()[m_pMainWin->getEntityListMgr()->getEntityList().size()-1]->GetObjectCName().left(2)=="点云"){
-            qDebug()<<"bbbbb";
-            starttime();
-            updateDistance(m_pMainWin->getEntityListMgr()->getEntityList().back());
-            qDebug()<<"通知之前";
-            m_pMainWin->NotifySubscribe();
-            qDebug()<<"通知之后";
+}
+
+void ElementListWidget::CompareCloud()
+{
+    for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
+        CPointCloud*could=(CPointCloud*)m_pMainWin->getEntityListMgr()->getEntityList()[i];
+        if(could->isModelCloud){
+            m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
+            break;
+        }else{
+            return;
+        }
+    }
+    for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
+        CPointCloud*could=(CPointCloud*)m_pMainWin->getEntityListMgr()->getEntityList()[i];
+        if(could->isMeasureCloud){
+            m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
+            m_pMainWin->getPWinToolWidget()->setauto(true);
+            m_pMainWin->getPWinVtkWidget()->onCompare();
+            m_pMainWin->getPWinToolWidget()->setauto(false);
         }
     }
 }
 
-void ElementListWidget::updateDistance(CEntity *entity)
+void ElementListWidget::updateDistance()
 {
-    CPointCloud*could=static_cast<CPointCloud*>(entity);
+    qDebug()<<"进入updateDistance";
+    if(timer){
+        timer->stop();
+        delete timer;
+        timer=nullptr;
+    }
+    qDebug()<<"判断时间是否存在后";
+    //CPointCloud*could=static_cast<CPointCloud*>(entity);
     pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree;
-    kdtree.setInputCloud(could->GetmyCould().makeShared());
-    std::vector<int> pointIdxNKNSearch(1);
-    std::vector<float> pointNKNSquaredDistance(1);
-    pcl::PointXYZRGB searchPoint;
+    //kdtree.setInputCloud(could->GetmyCould().makeShared());
+    kdtree.setInputCloud(m_pMainWin->getpWinFileMgr()->cloudptr);
     QVector<CEntity*>distancelist;
-    QVector<int>index;
     for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
         if(m_pMainWin->getEntityListMgr()->getEntityList()[i]->GetObjectCName().left(2)=="距离"){
             distancelist.push_back(m_pMainWin->getEntityListMgr()->getEntityList()[i]);
-            index.push_back(i);
         }
     }
-    qDebug()<<"aaaaa"<<distancelist.size();
-    int t=0;
-    for(auto distance:distancelist){
-        QVector<CPoint*>list;
-        for(CObject*obj:distance->parent){
-            if(obj->GetUniqueType()==enPoint){
-                CPoint*point=static_cast<CPoint*>(obj);
-                searchPoint.x=point->GetPt().x;
-                searchPoint.y=point->GetPt().y;
-                searchPoint.z=point->GetPt().z;
-                if (kdtree.nearestKSearch(searchPoint, 1, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
-                    int nearestIdx = pointIdxNKNSearch[0];
-                    pcl::PointXYZRGB nearestPoint = could->GetmyCould().points[nearestIdx];
-                    for(int i=0;i<m_pMainWin->getObjectListMgr()->getObjectList().size();i++){
-                        if(m_pMainWin->getObjectListMgr()->getObjectList()[i]==obj){
-                            CPoint*point1=static_cast<CPoint*>(m_pMainWin->getObjectListMgr()->getObjectList()[i]);
-                            CPosition pt;
-                            pt.x=nearestPoint.x;pt.y=nearestPoint.y;pt.z=nearestPoint.z;
-                            point1->SetPosition(pt);
-                            qDebug()<<"point1点"<<point1->GetPt().x;
-                            list.push_back(point1);
-                            break;
-                        }
+    if(distancelist.size()==0){
+        return;
+    }
+    qDebug()<<"进入时间开启之前";
+    timer = new QTimer(this);
+    list.clear();
+    currentIndex=0;
+    connect(timer, &QTimer::timeout, [this,kdtree,distancelist](){
+        startupdateData(kdtree,distancelist);
+    });
+    timer->start(1000);
+    qDebug()<<"时间开始后";
+    distancelistIndex=0;
+
+}
+
+void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree,QVector<CEntity*>distancelist)
+{
+    qDebug()<<"时间进行1秒";
+    QVector<CObject*>objlist=m_pMainWin->getObjectListMgr()->getObjectList();
+    if(distancelistIndex>distancelist.size()-1){
+        timer->stop();
+        delete timer;
+        timer=nullptr;
+        return;
+    }
+    if(currentIndex>distancelist[distancelistIndex]->parent.size()-1){
+        qDebug()<<list.size();
+        QVector<CPoint *>position;
+        QVector<CPlane*>plane;
+        for(int i=0;i<list.size();i++){
+            if(list[i]->GetUniqueType()==enPoint){
+                position.push_back((CPoint*)list[i]);
+            }else if(list[i]->GetUniqueType()==enPlane){
+                plane.push_back((CPlane*)list[i]);
+            }
+        }
+        for(int i=0;i<objlist.size();i++){
+            if(objlist[i]->parent==distancelist[distancelistIndex]->parent){
+                CDistance*dis=dynamic_cast<CDistance*>(m_pMainWin->getObjectListMgr()->getObjectList()[i]);
+                if(position.size()==2){
+                    dis->setbegin(position[0]->GetPt());
+                    dis->setend(position[1]->GetPt());
+                }else if(plane.size()==1){
+                    dis->setbegin(position[0]->GetPt());
+                    dis->setplane(*plane[0]);
+                }else if(plane.size()==2){
+                    DistanceConstructor Constructor;
+                    CDistance *diss=Constructor.createDistance(plane[0],plane[1]);
+                    dis=diss;
+                    //dis->setplane(*plane[0]);
+                    //dis->setplane(*plane[1]);
+                }
+                qDebug()<<"距离"<<dis->getdistancepoint();
+                QTreeWidgetItem *item = treeWidgetNames->topLevelItem(i);
+                treeWidgetNames->setCurrentItem(item);
+                break;
+            }
+        }
+        qDebug()<<"进行到距离改变";
+        distancelistIndex++;
+        currentIndex=0;
+        list.clear();
+        m_pMainWin->getPWinToolWidget()->setauto(true);
+        m_pMainWin->getPWinToolWidget()->onSaveTxt();
+        m_pMainWin->getPWinToolWidget()->setauto(false);
+        return;
+    }else if(stateMachine->configuration().contains(stoppedState)){
+        timer->stop();
+        delete timer;
+        timer=nullptr;
+        qDebug()<<"结束时间";
+        return;
+    }else if(stateMachine->configuration().contains(pausedState)){
+        qDebug()<<"暂停时间";
+        return;
+    }
+    if(stateMachine->configuration().contains(runningState)){
+        CObject*obj=distancelist[distancelistIndex]->parent[currentIndex];
+        currentIndex++;
+        std::vector<int> pointIdxNKNSearch(1);
+        std::vector<float> pointNKNSquaredDistance(1);
+        pcl::PointXYZRGB searchPoint;
+        if(obj->GetUniqueType()==enPoint){
+            CPoint*point=static_cast<CPoint*>(obj);
+            searchPoint.x=point->GetPt().x;
+            searchPoint.y=point->GetPt().y;
+            searchPoint.z=point->GetPt().z;
+            if (kdtree.nearestKSearch(searchPoint, 1, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
+                int nearestIdx = pointIdxNKNSearch[0];
+                //pcl::PointXYZRGB nearestPoint = could->GetmyCould().points[nearestIdx];
+                pcl::PointXYZRGB nearestPoint=m_pMainWin->getpWinFileMgr()->cloudptr->points[nearestIdx];
+                for(int i=0;i<objlist.size();i++){
+                    if(m_pMainWin->getObjectListMgr()->getObjectList()[i]==obj){
+                        CPoint*point1=static_cast<CPoint*>(objlist[i]);
+                        CPosition pt;
+                        pt.x=nearestPoint.x;pt.y=nearestPoint.y;pt.z=nearestPoint.z;
+                        point1->SetPosition(pt);
+                        qDebug()<<"point1点"<<point1->GetPt().x;
+                        list.push_back(point1);
+                        break;
                     }
                 }
             }
+        }else if(obj->GetUniqueType()==enPlane){
+            QVector<CObject*>planelist=obj->parent;
+            CPlane*plane=static_cast<CPlane*>(obj);
+            if(planelist.size()==3){
+                QVector<CPosition>positionlist;
+                for(CObject*planePt:planelist){
+                    CPoint*point=static_cast<CPoint*>(planePt);
+                    searchPoint.x=point->GetPt().x;
+                    searchPoint.y=point->GetPt().y;
+                    searchPoint.z=point->GetPt().z;
+                    if (kdtree.nearestKSearch(searchPoint, 1, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
+                        int nearestIdx = pointIdxNKNSearch[0];
+                        pcl::PointXYZRGB nearestPoint = m_pMainWin->getpWinFileMgr()->cloudptr->points[nearestIdx];
+                        CPosition pt;
+                        pt.x=nearestPoint.x;
+                        pt.y=nearestPoint.y;
+                        pt.z=nearestPoint.z;
+                        positionlist.push_back(pt);
+                    }
+                }
+                PlaneConstructor constructor;
+                CPlane*plane1=constructor.createPlane(positionlist[0],positionlist[0],positionlist[0]);
+                plane=plane1;
+                list.push_back(plane);
+            }
         }
-        //CDistance* dis = dynamic_cast<CDistance*>(distance);
-        CPosition begin=list[0]->GetPt();
-        CPosition end=list[1]->GetPt();
-        qDebug()<<"begin点"<<begin.x;
-        CDistance*dis=dynamic_cast<CDistance*>(m_pMainWin->getObjectListMgr()->getObjectList()[index[t]]);
-        dis->setbegin(begin);
-        dis->setend(end);
-        qDebug()<<"距离"<<dis->getdistancepoint();
-        t++;
+        for(int i=0;i<objlist.size();i++){
+            if(obj==objlist[i]){
+                QTreeWidgetItem *item = treeWidgetNames->topLevelItem(i);
+                treeWidgetNames->setCurrentItem(item);
+                break;
+            }
+        }
     }
 }
 
 void ElementListWidget::isAdd()
 {
     int Nowlistsize=m_pMainWin->getEntityListMgr()->getEntityList().size();
+    int Nowlistsizes=m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().size();
     if(Nowlistsize>Treelistsize){
         Treelistsize=Nowlistsize;
         onAddElement();
-        qDebug()<<"isAdd结束";
     }else if(Nowlistsize<Treelistsize){
         Treelistsize=Nowlistsize;
     }
@@ -554,7 +686,7 @@ void ElementListWidget::starttime()
 {
     currentIndex=0;
     timer = new QTimer(this);
-    connect(timer, &QTimer::timeout, this, &ElementListWidget::selectall);
+    connect(timer, &QTimer::timeout, this, &ElementListWidget::onAddElement);
     timer->start(1000);
 }
 

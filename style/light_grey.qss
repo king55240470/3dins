@@ -1,6 +1,6 @@
 /* 设置整个应用的背景和字体 */
 QWidget {
-    font-size: 14px "Arial";
+    font-size: 14px "微软雅黑";
     color: #333; /* 深灰色字体 */
     background-color: #f2f2f2; /* 浅灰色背景 */
 }
@@ -51,28 +51,51 @@ QPushButton:pressed {
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #cccccc, stop: 1 #e6e6e6); /* 按下时的渐变背景 */
 }
 
-/* QRadioButton的样式 */
-QRadioButton {
-    color: #333;
-    background-color: transparent;
-    spacing: 5px;
-    padding: 5px;
+/* QTabWidget的样式 */
+QTabWidget {
+    font-size: 14px "微软雅黑";
+    color: #333; /* 标签文字颜色 */
+    background-color: #f2f2f2; /* 标签页背景 */
+    border: 1px solid #dcdcdc; /* 标签页边框 */
 }
 
-QRadioButton::indicator {
-    width: 13px;
-    height: 13px;
+/* 标签页的样式 */
+QTabBar::tab {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                 stop: 0 #e6e6e6, stop: 1 #cccccc);
+    border: 1px solid #dcdcdc; /* 标签边框 */
+    border-top-left-radius: 5px; /* 标签左上边圆角 */
+    border-top-right-radius: 5px; /* 标签右边圆角 */
+    padding: 5px; /* 标签内边距 */
+    min-width: 80px; /* 标签最小宽度 */
 }
 
-QRadioButton::indicator:unchecked {
-    image: url(:/light_radio_unchecked); /* 浅色未选中图标 */
+QTabBar::tab:selected {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                 stop: 0 #f2f2f2, stop: 1 #ffffff);
+    border-bottom-color: #f2f2f2; /* 选中标签底部边框颜色 */
 }
 
-QRadioButton::indicator:checked {
-    image: url(:/light_radio_checked); /* 浅色选中图标 */
+QTabBar::tab:hover {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                 stop: 0 #dcdcdc, stop: 1 #bcbcbc);
 }
 
+QTabBar::tab:!selected {
+    margin-top: 2px; /* 非选中标签上边距 */
+}
 
+/* 标签页内容的样式 */
+QTabWidget::pane {
+    border-top: 1px solid #dcdcdc; /* 标签页顶部边框 */
+    background-color: #ffffff; /* 标签页内容背景 */
+    padding: 10px; /* 标签页内容内边距 */
+}
+
+/* QTabBar的指示器样式 */
+QTabBar::indicator {
+    width: 0px; /* 关闭指示器宽度 */
+}
 
 /* QToolBar的样式 */
 QToolBar {
@@ -87,7 +110,7 @@ QToolBar::separator {
 
 /* QTreeWidget的样式 */
 QTreeWidget {
-    font-size: 14px "Arial";
+    font-size: 14px "微软雅黑";
     background-color: #ffffff; /* 白色背景 */
     border: 1px solid #dcdcdc; /* 浅灰色边框 */
     alternate-background-color: #f2f2f2; /* 交替行的浅灰色背景 */

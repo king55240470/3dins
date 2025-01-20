@@ -23,6 +23,9 @@
 
 class PresetElemWidget;
 
+double MainWindow::ActorColor[3] = {0.5, 0.5, 0.5};
+double MainWindow::HighLightColor[3] = {1, 0, 0};
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
@@ -34,18 +37,6 @@ MainWindow::MainWindow(QWidget *parent)
     m_nRelyOnWhichCs=csRef;
     SetUpTheme();
 
-    QSettings settings(":/config/config.ini", QSettings::IniFormat);
-    settings.beginGroup("CPoint");
-    settings.setValue("x", 2);
-    settings.setValue("y", 2);
-    settings.setValue("z", 1);
-    settings.endGroup();
-    settings.sync();
-    double x;
-    settings.beginGroup("CPoint");
-    x = settings.value("x").toDouble();
-    settings.endGroup();
-    qDebug() << x;
 }
 
 void MainWindow::setupUi(){
@@ -129,6 +120,10 @@ void MainWindow::setupUi(){
         pWinVtkWidget->onAlign();
     });
 
+    QMenu* dateOperation=bar->addMenu("配置文件");
+    QAction* storeAction=dateOperation->addAction("数据记录");
+    connect(storeAction,&QAction::triggered,this,&MainWindow::SaveIniFile);
+
     // QMenu *fittingMenu=bar->addMenu("拟合参数设置");
     // QAction* fittingPlaneAction=fittingMenu->addAction("拟合平面");
     // connect(fittingPlaneAction, &QAction::triggered, this, &setDataWidget::setPlaneData);
@@ -173,9 +168,9 @@ void MainWindow::setupUi(){
     stbar->addPermanentWidget(line);
 
     switchCsBtn = new QPushButton("机械坐标系");
-    switchCsBtn->setFixedWidth(100);
-    switchCsBtn->setFlat(true); // 设置按钮为平面样式
-    switchCsBtn->installEventFilter(this);  // 为按钮安装事件过滤器
+    // switchCsBtn->setFixedWidth(100);
+    // switchCsBtn->setFlat(true); // 设置按钮为平面样式
+    // switchCsBtn->installEventFilter(this);  // 为按钮安装事件过滤器
     switchCsBtn->setObjectName("statusSwitchCs");
     stbar->addPermanentWidget(switchCsBtn);
 
@@ -275,10 +270,11 @@ void MainWindow::openFile(){
         // 根据文件扩展名进行判断
         if (filePath.endsWith("ply")) {
             pWinFileManagerWidget->openModelFile(fileName, filePath);
-            pWinVtkPresetWidget->setWidget(fileName+"文件已打开");
+            //pWinVtkPresetWidget->setWidget(fileName+"文件已打开");
         } else if (filePath.endsWith("pcd")) {
             pWinFileManagerWidget->openMeasuredFile(fileName, filePath);
-            pWinVtkPresetWidget->setWidget(fileName+"文件已打开");
+            //pWinVtkPresetWidget->setWidget(fileName+"文件已打开");
+            pWinElementListWidget->onAddElement();
         }else if(filePath.endsWith("qins")){
             QFile file(filePath);
             if (!file.open(QIODevice::ReadOnly)) {
@@ -519,7 +515,7 @@ void MainWindow::OnPresetLine(CPosition ptStart, CPosition ptEnd)
     NotifySubscribe();
 }
 
-void MainWindow::OnPresetCircle(CPosition pt, double diameter)
+void MainWindow::OnPresetCircle(CPosition pt, double diameter,QVector4D normal)
 {
     //CPosition pt(1,1,1);
     //double diameter = 1.5;
@@ -528,6 +524,7 @@ void MainWindow::OnPresetCircle(CPosition pt, double diameter)
     pCircle->Form="预制";
     pCircle->SetCenter(pt);
     pCircle->SetDiameter(diameter);
+    pCircle->setNormal(normal);
     pCircle->m_CreateForm = ePreset;
     pCircle->m_pRefCoord = m_pcsListMgr->m_pPcsCurrent;
     pCircle->m_pCurCoord = m_pcsListMgr->m_pPcsCurrent;
@@ -1054,6 +1051,16 @@ void MainWindow::onConvertLightGreyTheme()
     else {
         qDebug() << "打开样式文件失败";
     }
+    // 调整渲染颜色以适应主题
+    MainWindow::ActorColor[0] = 0.5;
+    MainWindow::ActorColor[1] = 0.5;
+    MainWindow::ActorColor[2] = 0.5;
+    MainWindow::HighLightColor[0] = 1;
+    MainWindow::HighLightColor[1] = 1;
+    MainWindow::HighLightColor[2] = 0;
+    pWinVtkWidget->getRenderer()->SetBackground(1, 1, 1);
+    pWinVtkWidget->getInfoText()->GetTextProperty()->SetColor(1, 0, 0);
+    pWinVtkWidget->getRenderer()->Render();
 }
 
 void MainWindow::onConvertLighBlueTheme()
@@ -1068,6 +1075,16 @@ void MainWindow::onConvertLighBlueTheme()
     else {
         qDebug() << "打开样式文件失败";
     }
+    // 调整渲染颜色以适应主题
+    MainWindow::ActorColor[0] = 1;
+    MainWindow::ActorColor[1] = 1;
+    MainWindow::ActorColor[2] = 1;
+    MainWindow::HighLightColor[0] = 1;
+    MainWindow::HighLightColor[1] = 0;
+    MainWindow::HighLightColor[2] = 0;
+
+    pWinVtkWidget->getRenderer()->SetBackground(0.2, 0.3, 0.5);
+    pWinVtkWidget->getRenderer()->Render();
 }
 
 void MainWindow::onConvertDarkBlueTheme()
@@ -1082,6 +1099,16 @@ void MainWindow::onConvertDarkBlueTheme()
     else {
         qDebug() << "打开样式文件失败";
     }
+    // 调整渲染颜色以适应主题
+    MainWindow::ActorColor[0] = 1;
+    MainWindow::ActorColor[1] = 1;
+    MainWindow::ActorColor[2] = 1;
+    MainWindow::HighLightColor[0] = 1;
+    MainWindow::HighLightColor[1] = 0;
+    MainWindow::HighLightColor[2] = 0;
+
+    pWinVtkWidget->getRenderer()->SetBackground(0.1, 0.2, 0.3);
+    pWinVtkWidget->getRenderer()->Render();
 }
 
 FileMgr *MainWindow::getpWinFileMgr(){
@@ -1114,10 +1141,33 @@ void MainWindow::SetUpTheme()
     }
     else {
         qDebug() << "打开样式文件失败";
-    }}
+    }
+    // 调整渲染颜色以适应主题
+    MainWindow::ActorColor[0] = 1;
+    MainWindow::ActorColor[1] = 1;
+    MainWindow::ActorColor[2] = 1;
+    MainWindow::HighLightColor[0] = 1;
+    MainWindow::HighLightColor[1] = 0;
+    MainWindow::HighLightColor[2] = 0;
 
-void MainWindow::ChangeIniFile()
+    pWinVtkWidget->getRenderer()->SetBackground(0.1, 0.2, 0.4);
+    NotifySubscribe();
+}
+
+void MainWindow::SaveIniFile()
 {
+    QSettings settings("E:/config.ini", QSettings::IniFormat);
+    settings.beginGroup("CPoint");
+    settings.setValue("x", 2);
+    settings.setValue("y", 2);
+    settings.setValue("z", 1);
+    settings.endGroup();
+    settings.sync();
+    double x;
+    settings.beginGroup("CPoint");
+    x = settings.value("x").toDouble();
+    settings.endGroup();
+    qDebug() << x;
 
 }
 

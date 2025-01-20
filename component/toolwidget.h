@@ -6,6 +6,7 @@
 #include <QVBoxLayout>
 #include"toolaction.h"
 #include <mainwindow.h>
+#include <QStandardPaths>
 #include"geometry/globes.h"
 #include"geometry/centitytypes.h"
 //槽函数
@@ -86,6 +87,7 @@ public slots:
     void onConstructSphere();
     void onConstructDistance();
     void onConstructPointCloud();
+    void onConstructAngle();
     //识别
     void onFindPlane();
     void onFindPoint();
@@ -101,8 +103,8 @@ public slots:
     void onSaveTxt();
     void onSaveWord();
     void onSaveImage();
-
-
+    //设置是否自动化
+    void setauto(bool Auto);
 
 private:
     void clearToolBar(QToolBar *toolbar);
@@ -151,5 +153,8 @@ private:
     //存储构建的元素
     QVector<CEntity*> constructEntityList;
     QVector<CEntity*> identifyEntityList;
+
+    //是否自动化保存内容
+    bool IsAuto=false;
 };
 #endif // TOOLWIDGET_H

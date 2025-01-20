@@ -1,17 +1,19 @@
 #include "vtkwindow/vtkwidget.h"
-#include <vtkInteractorStyle.h>
-#include <vtkEventQtSlotConnect.h>
 #include <QFileDialog>  // 用于文件对话框
 #include <QOpenGLContext>
 #include <qopenglfunctions.h>
 #include <QMessageBox>
+
+#include <vtkInteractorStyle.h>
+#include <vtkEventQtSlotConnect.h>
 
 
 VtkWidget::VtkWidget(QWidget *parent)
     : QWidget(parent),
     cloud1(new pcl::PointCloud<pcl::PointXYZ>()),  // 初始化第一个点云对象
     cloud2(new pcl::PointCloud<pcl::PointXYZ>()), // 初始化第二个点云对象
-    comparisonCloud(new pcl::PointCloud<pcl::PointXYZRGB>()) // 初始化比较好的点云对象
+    comparisonCloud(new pcl::PointCloud<pcl::PointXYZRGB>()), // 初始化比较好的点云对象
+    alignedCloud(new pcl::PointCloud<pcl::PointXYZRGB>())
 {
     vtkObject::GlobalWarningDisplayOff();// 禁用 VTK 的错误处理弹窗
     m_pMainWin = (MainWindow*) parent;
@@ -120,6 +122,11 @@ void VtkWidget::setCentityList(QVector<CEntity *> list)
     elementEntityList=list;
 }
 
+vtkSmartPointer<vtkTextActor> &VtkWidget::getInfoText()
+{
+    return infoTextActor;
+}
+
 void VtkWidget::createText()
 {
     // 创建浮动信息的文本演员
@@ -131,11 +138,10 @@ void VtkWidget::createText()
 
     infoTextActor->GetTextProperty()->SetFontSize(16);
     infoTextActor->GetTextProperty()->SetFontFamilyToTimes();
-    infoTextActor->GetTextProperty()->SetColor(1, 0, 0);
+    infoTextActor->GetTextProperty()->SetColor(1, 1, 0);
     infoTextActor->GetTextProperty()->SetJustificationToLeft(); // 左对齐
     infoTextActor->GetTextProperty()->SetBold(1); // 设置粗体
     infoTextActor->GetTextProperty()->SetShadow(true);
-    infoTextActor->GetTextProperty()->SetShadowOffset(2, 2); // 设置阴影偏移量
 
     QString qstr = elementEntity->getCEntityInfo();
     QByteArray byteArray = qstr.toUtf8(); // 转换 QString 到 QByteArray
@@ -345,6 +351,67 @@ void VtkWidget::closeText()
     renWin->Render();
 }
 
+void VtkWidget::ShowColorBar(){
+    // 创建一个 PolyData 对象来存储色温尺的几何信息
+    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+    vtkSmartPointer<vtkCellArray> lines = vtkSmartPointer<vtkCellArray>::New();
+    vtkSmartPointer<vtkUnsignedCharArray> colors = vtkSmartPointer<vtkUnsignedCharArray>::New();
+    colors->SetNumberOfComponents(3); // RGB
+
+    // 定义色温尺的起点和终点
+    int barHeight = 20; // 色温尺的高度
+    int barWidth = 200; // 色温尺的宽度
+    auto Width = renWin->GetSize()[0];
+    points->InsertNextPoint(Width-barWidth-10, 10, 0); // 起点
+    points->InsertNextPoint(Width-barWidth, 10, 0); // 终点
+
+    // 插入线段
+    vtkIdType pointIds[2] = {0, 1};
+    lines->InsertNextCell(2, pointIds);
+
+    // 为每个顶点设置颜色
+    colors->InsertTuple3(0, 0, 0, 255); // 左下角
+    colors->InsertTuple3(1, 255, 0, 0); // 右下角
+    colors->InsertTuple3(2, 255, 0, 0); // 右上角
+    colors->InsertTuple3(3, 0, 0, 255); // 左上角
+
+    // 创建 PolyData
+    vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
+    polyData->SetPoints(points);
+    polyData->SetLines(lines);
+
+    // 将颜色数据绑定到线段上（通过绘制多边形来模拟颜色条）
+    vtkSmartPointer<vtkPolyData> colorBarPolyData = vtkSmartPointer<vtkPolyData>::New();
+    vtkSmartPointer<vtkPoints> colorBarPoints = vtkSmartPointer<vtkPoints>::New();
+    vtkSmartPointer<vtkCellArray> colorBarPolys = vtkSmartPointer<vtkCellArray>::New();
+
+    colorBarPoints->InsertNextPoint(Width - barWidth - 10, 10, 0);
+    colorBarPoints->InsertNextPoint(Width - 10, 10, 0);
+    colorBarPoints->InsertNextPoint(Width - 10, 10 + barHeight, 0);
+    colorBarPoints->InsertNextPoint(Width - barWidth - 10, 10 + barHeight, 0);
+
+    vtkIdType polyIds[4] = {0, 1, 2, 3};
+    colorBarPolys->InsertNextCell(4, polyIds);
+
+    colorBarPolyData->SetPoints(colorBarPoints);
+    colorBarPolyData->SetPolys(colorBarPolys);
+    colorBarPolyData->GetPointData()->SetScalars(colors); // 设置颜色数据
+
+    // 创建 Mapper
+    vtkSmartPointer<vtkPolyDataMapper2D> colorBarMapper = vtkSmartPointer<vtkPolyDataMapper2D>::New();
+    colorBarMapper->SetInputData(colorBarPolyData);
+
+    // 创建 Actor2D
+    vtkSmartPointer<vtkActor2D> colorBarActor = vtkSmartPointer<vtkActor2D>::New();
+    colorBarActor->SetMapper(colorBarMapper);
+
+    // 获取渲染器并添加 Actor2D
+    renderer->AddActor2D(colorBarActor);
+
+    // 刷新渲染窗口
+    renderer->Render();
+}
+
 vtkSmartPointer<vtkRenderWindow> VtkWidget::getRenderWindow(){
     return renWin;
 }
@@ -356,7 +423,6 @@ vtkSmartPointer<vtkRenderer>& VtkWidget::getRenderer(){
 // 刷新vtk窗口
 void VtkWidget::UpdateInfo(){
     reDrawCentity();
-    qDebug()<<"图像更新";
 }
 
 void VtkWidget::reDrawCentity(){
@@ -401,6 +467,9 @@ void VtkWidget::reDrawCentity(){
                     actorToEntity.insert(actor,entitylist[i]);
                     getRenderer()->AddActor(actor);
                     break;
+                }
+                else{ // 如果隐藏，则删除高亮前的记录
+                    // m_highlightstyle->getPickedActors().erase()
                 }
             }
         }
@@ -630,9 +699,10 @@ void VtkWidget::onCompare()
     cloudEntity->isComparsionCloud = true;
     m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
     m_pMainWin->NotifySubscribe();
+    ShowColorBar();
 }
 
-//ICP
+//FPFH+ICP
 void VtkWidget::onAlign()
 {
     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
@@ -645,6 +715,8 @@ void VtkWidget::onAlign()
         if (entity->GetUniqueType() == enPointCloud) {
             auto& temp = ((CPointCloud*)entity)->m_pointCloud;
             clouds.append(temp.makeShared());
+            //删除选中点云
+
         }
     }
 
@@ -660,13 +732,17 @@ void VtkWidget::onAlign()
         return;
     }
 
-    // 转换点云到 PointXYZ 格式
-    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud1(new pcl::PointCloud<pcl::PointXYZ>());
-    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud2(new pcl::PointCloud<pcl::PointXYZ>());
-    pcl::copyPointCloud(*clouds[0], *cloud1);
-    pcl::copyPointCloud(*clouds[1], *cloud2);
+    pcl::copyPointCloud( *clouds[0], *cloud1);
+    pcl::copyPointCloud( *clouds[1], *cloud2);
 
-    // **下采样**：提高效率
+    for(int i = 0;i < 2;i++)
+        // 检查点云是否为空
+        if (cloud1->empty() || cloud2->empty()) {
+            QMessageBox::warning(this, "Warning", "其中一个或两个点云为空!");
+            return;
+        }
+
+    // 下采样：提高效率
     pcl::PointCloud<pcl::PointXYZ>::Ptr downsampledCloud1(new pcl::PointCloud<pcl::PointXYZ>());
     pcl::PointCloud<pcl::PointXYZ>::Ptr downsampledCloud2(new pcl::PointCloud<pcl::PointXYZ>());
     pcl::VoxelGrid<pcl::PointXYZ> voxelGrid;
@@ -676,49 +752,87 @@ void VtkWidget::onAlign()
     voxelGrid.setInputCloud(cloud2);
     voxelGrid.filter(*downsampledCloud2);
 
-    // **ICP 配准**
+    // FPFH特征提取
+    pcl::PointCloud<pcl::FPFHSignature33>::Ptr fpfh1(new pcl::PointCloud<pcl::FPFHSignature33>());
+    pcl::PointCloud<pcl::FPFHSignature33>::Ptr fpfh2(new pcl::PointCloud<pcl::FPFHSignature33>());
+
+    pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>());
+
+    pcl::FPFHEstimation<pcl::PointXYZ, pcl::Normal, pcl::FPFHSignature33> fpfh;
+    fpfh.setSearchMethod(tree);
+
+    // 计算法线
+    pcl::PointCloud<pcl::Normal>::Ptr normals1(new pcl::PointCloud<pcl::Normal>());
+    pcl::PointCloud<pcl::Normal>::Ptr normals2(new pcl::PointCloud<pcl::Normal>());
+    pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> ne;
+    ne.setSearchMethod(tree);
+    ne.setRadiusSearch(0.05);  // 设置法线估计的半径
+
+    ne.setInputCloud(downsampledCloud1);
+    ne.compute(*normals1);
+    ne.setInputCloud(downsampledCloud2);
+    ne.compute(*normals2);
+
+    // 计算FPFH特征
+    fpfh.setRadiusSearch(0.1);  // 设置特征计算的半径
+    fpfh.setInputCloud(downsampledCloud1);
+    fpfh.setInputNormals(normals1);
+    fpfh.compute(*fpfh1);
+
+    fpfh.setInputCloud(downsampledCloud2);
+    fpfh.setInputNormals(normals2);
+    fpfh.compute(*fpfh2);
+
+    // SAC-IA粗配准
+    pcl::SampleConsensusInitialAlignment<pcl::PointXYZ, pcl::PointXYZ, pcl::FPFHSignature33> sac_ia;
+    sac_ia.setInputSource(downsampledCloud1);
+    sac_ia.setInputTarget(downsampledCloud2);
+    sac_ia.setSourceFeatures(fpfh1);
+    sac_ia.setTargetFeatures(fpfh2);
+    sac_ia.setMaximumIterations(500);  // 设置最大迭代次数
+    sac_ia.setMinSampleDistance(0.05);  // 设置最小采样距离
+    sac_ia.setMaxCorrespondenceDistance(0.1);  // 设置最大对应点距离
+
+    pcl::PointCloud<pcl::PointXYZ> sacAlignedCloud;
+    sac_ia.align(sacAlignedCloud);  // 粗配准
+
+    if (!sac_ia.hasConverged()) {
+        QMessageBox::critical(this, "Error", "FPFH粗配准未收敛！");
+        return;
+    }
+
+    auto initialTransformation = std::make_shared<Eigen::Matrix4f>(sac_ia.getFinalTransformation());
+
+    // ICP精配准
     pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
-    icp.setInputSource(downsampledCloud1);  // 要对齐的点云
-    icp.setInputTarget(downsampledCloud2);  // 参考点云
+    icp.setInputSource(downsampledCloud1);
+    icp.setInputTarget(downsampledCloud2);
     icp.setMaximumIterations(50);  // 设置最大迭代次数
     icp.setTransformationEpsilon(1e-8);  // 设置变换容差
     icp.setMaxCorrespondenceDistance(0.05);  // 设置最大对应点距离
 
     pcl::PointCloud<pcl::PointXYZ> icpFinalCloud;
-    icp.align(icpFinalCloud);  // 执行配准
+    icp.align(icpFinalCloud, *initialTransformation);  // 使用FPFH的变换矩阵作为初始对齐
 
-    // 检查 ICP 是否成功收敛
+    if (!icp.hasConverged()) {
+        // Retry with adjusted parameters
+        icp.setMaxCorrespondenceDistance(0.1);  // 增加最大对应点距离
+        icp.setMaximumIterations(100);  // 增加最大迭代次数
+        icp.align(icpFinalCloud, *initialTransformation);
+
+        if (!icp.hasConverged()) {
+            QMessageBox::critical(this, "Error", "ICP 配准未收敛！");
+            return;
+        }
+    }
+
     if (icp.hasConverged()) {
-        // **变换原始点云到对齐后的点云**
-        pcl::PointCloud<pcl::PointXYZ>::Ptr alignedCloud(new pcl::PointCloud<pcl::PointXYZ>());
-        pcl::transformPointCloud(*cloud1, *alignedCloud, icp.getFinalTransformation());
+        pcl::copyPointCloud(icpFinalCloud, *alignedCloud);
 
         // 显示对齐后的点云
-        vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-        points->SetNumberOfPoints(alignedCloud->points.size());
-        for (size_t i = 0; i < alignedCloud->points.size(); ++i) {
-            points->SetPoint(i, alignedCloud->points[i].x, alignedCloud->points[i].y, alignedCloud->points[i].z);
-        }
-
-        vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
-        polyData->SetPoints(points);
-
-        vtkSmartPointer<vtkVertexGlyphFilter> glyphFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
-        glyphFilter->SetInputData(polyData);
-        glyphFilter->Update();
-
-        polyData = glyphFilter->GetOutput();
-
-        vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-        mapper->SetInputData(polyData);
-
-        vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
-        actor->SetMapper(mapper);
-        actor->GetProperty()->SetPointSize(6);  // 设置点大小
-        actor->GetProperty()->SetColor(0.5, 0.5, 0.5);
-
-        renderer->AddActor(actor);
-        renWin->Render();
+        auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateAlignCloud(*alignedCloud);
+        m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
+        m_pMainWin->NotifySubscribe();
 
         // 输出 RMSE（均方根误差）
         double rmse = icp.getFitnessScore();
@@ -728,146 +842,4 @@ void VtkWidget::onAlign()
     }
 }
 
-//FPFH(粗配准)+ICP(精配准)
-// void VtkWidget::onAlign()
-// {
-//     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
-//     auto cloudptr = m_pMainWin->getpWinFileMgr()->cloudptr;
-//     QVector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> clouds;
-//     for (int i = 0; i < entityList.size(); i++) {
-//         CEntity* entity = entityList[i];
-//         if (!entity->IsSelected()) continue;
-//         if (entity->GetUniqueType() == enPointCloud) {
-//             auto& temp = ((CPointCloud*)entity)->m_pointCloud;
-//             clouds.append(temp.makeShared());
-//         }
-//     }
-
-//     if (clouds.size() != 2) {
-//         QString message = "点云数目异常(只允许两个点云数据)";
-//         QMessageBox msgBox;
-//         msgBox.setWindowTitle("错误");
-//         msgBox.setText(message);
-//         msgBox.setIcon(QMessageBox::Critical);
-//         msgBox.setStandardButtons(QMessageBox::Ok);
-//         msgBox.exec();
-//         return;
-//     }
-
-//     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud1(new pcl::PointCloud<pcl::PointXYZ>());
-//     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud2(new pcl::PointCloud<pcl::PointXYZ>());
-//     pcl::copyPointCloud(*clouds[0], *cloud1);
-//     pcl::copyPointCloud(*clouds[1], *cloud2);
-
-//     // **下采样**：提高计算效率
-//     pcl::PointCloud<pcl::PointXYZ>::Ptr downsampledCloud1(new pcl::PointCloud<pcl::PointXYZ>());
-//     pcl::PointCloud<pcl::PointXYZ>::Ptr downsampledCloud2(new pcl::PointCloud<pcl::PointXYZ>());
-//     pcl::VoxelGrid<pcl::PointXYZ> voxelGrid;
-//     voxelGrid.setLeafSize(0.05f, 0.05f, 0.05f);  // 设置叶子大小为 5cm
-//     voxelGrid.setInputCloud(cloud1);
-//     voxelGrid.filter(*downsampledCloud1);
-//     voxelGrid.setInputCloud(cloud2);
-//     voxelGrid.filter(*downsampledCloud2);
-
-//     // **步骤1：FPFH特征提取**
-//     pcl::PointCloud<pcl::FPFHSignature33>::Ptr fpfh1(new pcl::PointCloud<pcl::FPFHSignature33>());
-//     pcl::PointCloud<pcl::FPFHSignature33>::Ptr fpfh2(new pcl::PointCloud<pcl::FPFHSignature33>());
-
-//     pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>());
-
-//     pcl::FPFHEstimation<pcl::PointXYZ, pcl::Normal, pcl::FPFHSignature33> fpfh;
-//     fpfh.setSearchMethod(tree);
-
-//     // 计算法线
-//     pcl::PointCloud<pcl::Normal>::Ptr normals1(new pcl::PointCloud<pcl::Normal>());
-//     pcl::PointCloud<pcl::Normal>::Ptr normals2(new pcl::PointCloud<pcl::Normal>());
-//     pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> ne;
-//     ne.setSearchMethod(tree);
-//     ne.setRadiusSearch(0.05);  // 设置法线估计的半径
-
-//     ne.setInputCloud(downsampledCloud1);
-//     ne.compute(*normals1);
-//     ne.setInputCloud(downsampledCloud2);
-//     ne.compute(*normals2);
-
-//     // 计算FPFH特征
-//     fpfh.setRadiusSearch(0.1);  // 设置特征计算的半径
-//     fpfh.setInputCloud(downsampledCloud1);
-//     fpfh.setInputNormals(normals1);
-//     fpfh.compute(*fpfh1);
-
-//     fpfh.setInputCloud(downsampledCloud2);
-//     fpfh.setInputNormals(normals2);
-//     fpfh.compute(*fpfh2);
-
-//     // **步骤2：SAC-IA粗配准**
-//     pcl::SampleConsensusInitialAlignment<pcl::PointXYZ, pcl::PointXYZ, pcl::FPFHSignature33> sac_ia;
-//     sac_ia.setInputSource(downsampledCloud1);
-//     sac_ia.setInputTarget(downsampledCloud2);
-//     sac_ia.setSourceFeatures(fpfh1);
-//     sac_ia.setTargetFeatures(fpfh2);
-//     sac_ia.setMaximumIterations(500);  // 设置最大迭代次数
-//     sac_ia.setMinSampleDistance(0.05);  // 设置最小采样距离
-//     sac_ia.setMaxCorrespondenceDistance(0.1);  // 设置最大对应点距离
-
-//     pcl::PointCloud<pcl::PointXYZ> sacAlignedCloud;
-//     sac_ia.align(sacAlignedCloud);  // 粗配准
-
-//     if (!sac_ia.hasConverged()) {
-//         QMessageBox::critical(this, "Error", "FPFH粗配准未收敛！");
-//         return;
-//     }
-
-//     Eigen::Matrix4f initialTransformation = sac_ia.getFinalTransformation();
-
-//     // **步骤3：ICP精配准**
-//     pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
-//     icp.setInputSource(downsampledCloud1);
-//     icp.setInputTarget(downsampledCloud2);
-//     icp.setMaximumIterations(15);  // 设置最大迭代次数
-//     icp.setTransformationEpsilon(1e-6);  // 设置变换容差
-//     icp.setMaxCorrespondenceDistance(0.1);  // 设置最大对应点距离
-
-//     pcl::PointCloud<pcl::PointXYZ> icpFinalCloud;
-//     icp.align(icpFinalCloud, initialTransformation);  // 使用FPFH的变换矩阵作为初始对齐
-
-//     if (icp.hasConverged()) {
-//         // 精配准结果
-//         pcl::PointCloud<pcl::PointXYZ>::Ptr alignedCloud(new pcl::PointCloud<pcl::PointXYZ>());
-//         pcl::transformPointCloud(*cloud1, *alignedCloud, icp.getFinalTransformation());
-
-//         // 显示对齐后的点云
-//         vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-//         points->SetNumberOfPoints(alignedCloud->points.size());
-//         for (size_t i = 0; i < alignedCloud->points.size(); ++i) {
-//             points->SetPoint(i, alignedCloud->points[i].x, alignedCloud->points[i].y, alignedCloud->points[i].z);
-//         }
-
-//         vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
-//         polyData->SetPoints(points);
-
-//         vtkSmartPointer<vtkVertexGlyphFilter> glyphFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
-//         glyphFilter->SetInputData(polyData);
-//         glyphFilter->Update();
-
-//         polyData = glyphFilter->GetOutput();
-
-//         vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-//         mapper->SetInputData(polyData);
-
-//         vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
-//         actor->SetMapper(mapper);
-//         actor->GetProperty()->SetPointSize(6);
-//         actor->GetProperty()->SetColor(0.5, 0.5, 0.5);
-
-//         renderer->AddActor(actor);
-//         renWin->Render();
-
-//         // 输出 RMSE
-//         double rmse = icp.getFitnessScore();
-//         QMessageBox::information(this, "Alignment Result", QString("Fine alignment RMSE: %1").arg(rmse));
-//     } else {
-//         QMessageBox::critical(this, "Error", "ICP精配准未收敛！");
-//     }
-// }
 
