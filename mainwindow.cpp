@@ -1058,8 +1058,7 @@ void MainWindow::onConvertLightGreyTheme()
     MainWindow::HighLightColor[2] = 0;
     pWinVtkWidget->getRenderer()->SetBackground(1, 1, 1);
     pWinVtkWidget->getInfoText()->GetTextProperty()->SetColor(1, 0, 0);
-
-    NotifySubscribe();
+    pWinVtkWidget->getRenderer()->Render();
 }
 
 void MainWindow::onConvertLighBlueTheme()
@@ -1083,7 +1082,7 @@ void MainWindow::onConvertLighBlueTheme()
     MainWindow::HighLightColor[2] = 0;
 
     pWinVtkWidget->getRenderer()->SetBackground(0.2, 0.3, 0.5);
-    NotifySubscribe();
+    pWinVtkWidget->getRenderer()->Render();
 }
 
 void MainWindow::onConvertDarkBlueTheme()
@@ -1107,7 +1106,7 @@ void MainWindow::onConvertDarkBlueTheme()
     MainWindow::HighLightColor[2] = 0;
 
     pWinVtkWidget->getRenderer()->SetBackground(0.1, 0.2, 0.3);
-    NotifySubscribe();
+    pWinVtkWidget->getRenderer()->Render();
 }
 
 FileMgr *MainWindow::getpWinFileMgr(){
