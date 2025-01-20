@@ -65,6 +65,17 @@
 #include <vtkPNGReader.h>
 #include <vtkImageMapper.h>
 #include <vtkJPEGReader.h>
+#include <vtkImageActor.h>
+#include <vtkImageMapToColors.h>
+#include <vtkImageData.h>
+#include <vtkTexture.h>
+#include <vtkTextureMapToPlane.h>
+#include <vtkTransformPolyDataFilter.h>
+#include <vtkWindowToImageFilter.h>
+#include <vtkPNGWriter.h>
+#include <vtkImageMapper3D.h>
+#include <vtkImageProperty.h>
+#include <vtkImageViewer2.h>
 VTK_MODULE_INIT(vtkRenderingOpenGL2);
 VTK_MODULE_INIT(vtkInteractionStyle);
 VTK_MODULE_INIT(vtkRenderingVolumeOpenGL2);
@@ -114,7 +125,7 @@ public:
     void closeText();
     void GetScreenCoordinates(vtkRenderer* renderer, double pt[3], double screenCoord[2]);
 
-    void ShowColorTemperature();
+    void ShowColorBar();
 private:
     QVTKOpenGLNativeWidget* vtkWidget; // vtk窗口
     MainWindow *m_pMainWin = nullptr; // mainwindow指针
@@ -145,9 +156,7 @@ private:
     vtkSmartPointer<vtkPolyData> linePolyData;//储存线的data
     vtkSmartPointer<vtkPolyDataMapper2D> lineMapper;//指向线的mapper
     QVector<vtkSmartPointer<vtkActor2D>> directLines; // 存储所有的指向线段
-    // vtkSmartPointer<vtkOrientationMarkerWidget> colorBar; // 显示色温条的浮动窗口
-    float maxDistance; // 色温图最大值（纯红）
-    float minDistance; // 色温图最小值（纯蓝）
+
 public slots:
 
 };

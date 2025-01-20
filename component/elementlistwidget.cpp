@@ -464,7 +464,30 @@ void ElementListWidget::onAddElement()
 {
     if (stateMachine->configuration().contains(runningState)) {
         updateDistance();
+        CompareCloud();
         m_pMainWin->NotifySubscribe();
+    }
+}
+
+void ElementListWidget::CompareCloud()
+{
+    for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
+        CPointCloud*could=(CPointCloud*)m_pMainWin->getEntityListMgr()->getEntityList()[i];
+        if(could->isModelCloud){
+            m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
+            break;
+        }else{
+            return;
+        }
+    }
+    for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
+        CPointCloud*could=(CPointCloud*)m_pMainWin->getEntityListMgr()->getEntityList()[i];
+        if(could->isMeasureCloud){
+            m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
+            m_pMainWin->getPWinToolWidget()->setauto(true);
+            m_pMainWin->getPWinVtkWidget()->onCompare();
+            m_pMainWin->getPWinToolWidget()->setauto(false);
+        }
     }
 }
 
@@ -534,8 +557,11 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
                     dis->setbegin(position[0]->GetPt());
                     dis->setplane(*plane[0]);
                 }else if(plane.size()==2){
-                    dis->setplane(*plane[0]);
-                    dis->setplane(*plane[1]);
+                    DistanceConstructor Constructor;
+                    CDistance *diss=Constructor.createDistance(plane[0],plane[1]);
+                    dis=diss;
+                    //dis->setplane(*plane[0]);
+                    //dis->setplane(*plane[1]);
                 }
                 qDebug()<<"距离"<<dis->getdistancepoint();
                 QTreeWidgetItem *item = treeWidgetNames->topLevelItem(i);
@@ -547,6 +573,9 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
         distancelistIndex++;
         currentIndex=0;
         list.clear();
+        m_pMainWin->getPWinToolWidget()->setauto(true);
+        m_pMainWin->getPWinToolWidget()->onSaveTxt();
+        m_pMainWin->getPWinToolWidget()->setauto(false);
         return;
     }else if(stateMachine->configuration().contains(stoppedState)){
         timer->stop();

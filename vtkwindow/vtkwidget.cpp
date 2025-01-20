@@ -6,16 +6,7 @@
 
 #include <vtkInteractorStyle.h>
 #include <vtkEventQtSlotConnect.h>
-#include <vtkImageActor.h>
-#include <vtkImageMapToColors.h>
-#include <vtkImageData.h>
-#include <vtkTexture.h>
-#include <vtkTextureMapToPlane.h>
-#include <vtkTransformPolyDataFilter.h>
-#include <vtkWindowToImageFilter.h>
-#include <vtkPNGWriter.h>
-#include <vtkImageMapper3D.h>
-#include <vtkImageProperty.h>
+
 
 VtkWidget::VtkWidget(QWidget *parent)
     : QWidget(parent),
@@ -147,7 +138,7 @@ void VtkWidget::createText()
 
     infoTextActor->GetTextProperty()->SetFontSize(16);
     infoTextActor->GetTextProperty()->SetFontFamilyToTimes();
-    infoTextActor->GetTextProperty()->SetColor(1, 1, 0);
+    infoTextActor->GetTextProperty()->SetColor(MainWindow::InfoTextColor);
     infoTextActor->GetTextProperty()->SetJustificationToLeft(); // 左对齐
     infoTextActor->GetTextProperty()->SetBold(1); // 设置粗体
     infoTextActor->GetTextProperty()->SetShadow(true);
@@ -221,7 +212,7 @@ void VtkWidget::createTextBox()
     rectangleActor->SetMapper(rectangleMapper);
     // 设置矩形的属性
     rectangleActor->GetProperty()->SetColor(0.1, 0.2, 0.3); // 填充颜色
-    rectangleActor->GetProperty()->SetOpacity(0.3); // 设置不透明度
+    rectangleActor->GetProperty()->SetOpacity(0.2); // 设置不透明度
     rectangleActor->GetProperty()->SetLineWidth(2); // 线条宽度
     double *a;
     a=infoTextActor->GetPosition();
@@ -319,7 +310,7 @@ void VtkWidget::createLine()
     // 创建2D线actor
     lineActor=vtkSmartPointer<vtkActor2D>::New();
     lineActor->SetMapper(lineMapper);
-    lineActor->GetProperty()->SetColor(1, 0, 0); // 设置线的颜色为红色
+    lineActor->GetProperty()->SetColor(MainWindow::InfoTextColor);
     lineActor->GetProperty()->SetLineWidth(2);
     renderer->AddActor(lineActor);
     renderer->AddActor(iconActor);
@@ -360,55 +351,64 @@ void VtkWidget::closeText()
     renWin->Render();
 }
 
-void VtkWidget::ShowColorTemperature()
-{
-    // 创建颜色条的图像
-    int width = 50;
-    int height = 10;
-    vtkSmartPointer<vtkImageData> imageData = vtkSmartPointer<vtkImageData>::New();
-    imageData->SetDimensions(width, height, 1);
-    imageData->AllocateScalars(VTK_UNSIGNED_CHAR, 3);
+void VtkWidget::ShowColorBar(){
+    // 创建一个 PolyData 对象来存储色温尺的几何信息
+    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+    vtkSmartPointer<vtkCellArray> lines = vtkSmartPointer<vtkCellArray>::New();
+    vtkSmartPointer<vtkUnsignedCharArray> colors = vtkSmartPointer<vtkUnsignedCharArray>::New();
+    colors->SetNumberOfComponents(3); // RGB
 
-    // 填充颜色条数据
-    for (int x = 0; x < width; ++x)
-    {
-        float normalizedPosition = static_cast<float>(x) / (width - 1);
-        float value = minDistance + normalizedPosition * (maxDistance - minDistance);
-            int r = static_cast<int>(255 * (value - minDistance) / (maxDistance - minDistance));
-        int b = 255 - r;
-        int y = height / 2; // 中间行
-        imageData->SetScalarComponentFromFloat(x, y, 0, 0, r / 255.0);
-        imageData->SetScalarComponentFromFloat(x, y, 0, 1, 0.0);
-        imageData->SetScalarComponentFromFloat(x, y, 0, 2, b / 255.0);
-    }
+    // 定义色温尺的起点和终点
+    int barHeight = 20; // 色温尺的高度
+    int barWidth = 200; // 色温尺的宽度
+    auto Width = renWin->GetSize()[0];
+    points->InsertNextPoint(Width-barWidth-10, 10, 0); // 起点
+    points->InsertNextPoint(Width-barWidth, 10, 0); // 终点
 
-    // 创建纹理并映射到图像演员
-    vtkSmartPointer<vtkTexture> texture = vtkSmartPointer<vtkTexture>::New();
-    texture->SetInputData(imageData);
-    vtkSmartPointer<vtkImageMapToColors> colorMap = vtkSmartPointer<vtkImageMapToColors>::New();
-    colorMap->SetInputConnection(texture->GetOutputPort());
-    colorMap->SetLookupTable(nullptr); // 使用图像本身的颜色
-    vtkSmartPointer<vtkImageActor> imageActor = vtkSmartPointer<vtkImageActor>::New();
-    imageActor->GetMapper()->SetInputConnection(colorMap->GetOutputPort());
+    // 插入线段
+    vtkIdType pointIds[2] = {0, 1};
+    lines->InsertNextCell(2, pointIds);
 
-    // auto imageMapper = vtkSmartPointer<vtkImageMapper3D>::New();
-    // imageMapper->SetInputData(imageData);
-    // vtkSmartPointer<vtkImageActor> imageActor = vtkSmartPointer<vtkImageActor>::New();
-    // imageActor->SetMapper(imageMapper);
+    // 为每个顶点设置颜色
+    colors->InsertTuple3(0, 0, 0, 255); // 左下角
+    colors->InsertTuple3(1, 255, 0, 0); // 右下角
+    colors->InsertTuple3(2, 255, 0, 0); // 右上角
+    colors->InsertTuple3(3, 0, 0, 255); // 左上角
 
-    // 获取渲染窗口的尺寸
-    int windowWidth = renWin->GetSize()[0];
-    int windowHeight = renWin->GetSize()[1];
+    // 创建 PolyData
+    vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
+    polyData->SetPoints(points);
+    polyData->SetLines(lines);
 
-    // 计算颜色条在右下角的位置
-    double colorBarX = windowWidth - width - 10; // 留出一些边距
-    double colorBarY = windowHeight - height - 10; // 同样留出一些边距
+    // 将颜色数据绑定到线段上（通过绘制多边形来模拟颜色条）
+    vtkSmartPointer<vtkPolyData> colorBarPolyData = vtkSmartPointer<vtkPolyData>::New();
+    vtkSmartPointer<vtkPoints> colorBarPoints = vtkSmartPointer<vtkPoints>::New();
+    vtkSmartPointer<vtkCellArray> colorBarPolys = vtkSmartPointer<vtkCellArray>::New();
 
-    // 设置图像演员的位置和其他属性
-    imageActor->SetPosition(colorBarX, colorBarY, 0);
-    imageActor->GetProperty()->SetOpacity(0.8);
+    colorBarPoints->InsertNextPoint(Width - barWidth - 10, 10, 0);
+    colorBarPoints->InsertNextPoint(Width - 10, 10, 0);
+    colorBarPoints->InsertNextPoint(Width - 10, 10 + barHeight, 0);
+    colorBarPoints->InsertNextPoint(Width - barWidth - 10, 10 + barHeight, 0);
 
-    renderer->AddActor(imageActor);
+    vtkIdType polyIds[4] = {0, 1, 2, 3};
+    colorBarPolys->InsertNextCell(4, polyIds);
+
+    colorBarPolyData->SetPoints(colorBarPoints);
+    colorBarPolyData->SetPolys(colorBarPolys);
+    colorBarPolyData->GetPointData()->SetScalars(colors); // 设置颜色数据
+
+    // 创建 Mapper
+    vtkSmartPointer<vtkPolyDataMapper2D> colorBarMapper = vtkSmartPointer<vtkPolyDataMapper2D>::New();
+    colorBarMapper->SetInputData(colorBarPolyData);
+
+    // 创建 Actor2D
+    vtkSmartPointer<vtkActor2D> colorBarActor = vtkSmartPointer<vtkActor2D>::New();
+    colorBarActor->SetMapper(colorBarMapper);
+
+    // 获取渲染器并添加 Actor2D
+    renderer->AddActor2D(colorBarActor);
+
+    // 刷新渲染窗口
     renderer->Render();
 }
 
@@ -662,8 +662,8 @@ void VtkWidget::onCompare()
     comparisonCloud->resize(cloud1->size());
 
     // 初始化最大和最小距离变量
-    maxDistance = std::numeric_limits<float>::min();
-    minDistance = std::numeric_limits<float>::max();
+    float maxDistance = std::numeric_limits<float>::min();
+    float minDistance = std::numeric_limits<float>::max();
 
     // 用于存储最近邻搜索的结果
     std::vector<int> pointIdxNKNSearch(1);
@@ -694,8 +694,6 @@ void VtkWidget::onCompare()
         }
     }
 
-    ShowColorTemperature();
-
     // 由RGB点云生成cpointcloud对象，并存入entitylist
     auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateCompareCloud(*comparisonCloud);
     cloudEntity->isComparsionCloud = true;
@@ -715,6 +713,9 @@ void VtkWidget::onCompare()
     //存储在toolwidget中以便在输出报告中使用
     QVector<QString>& PathList=m_pMainWin->getPWinToolWidget()->getImagePaths();
     PathList.append(path);
+
+    ShowColorBar();
+
 }
 
 //FPFH+ICP

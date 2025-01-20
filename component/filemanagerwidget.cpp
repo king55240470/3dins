@@ -33,7 +33,7 @@ FileManagerWidget::FileManagerWidget(QWidget *parent)
 
     rootItem = model->invisibleRootItem();
 
-    modelFile=new QStandardItem("打开的模型文件");
+    modelFile=new QStandardItem("打开的标准模型文件");
     rootItem->appendRow(modelFile);
 
     measuredFile = new QStandardItem("打开的实测文件");
@@ -46,6 +46,8 @@ FileManagerWidget::FileManagerWidget(QWidget *parent)
     rootItem->appendRow(identifyItem);
 
     filetree->setModel(model);
+
+    filetree->expandAll();  // 展开所有项
 
     layout->addWidget(filetree);
     layout->setContentsMargins(0, 0, 0, 0);//消除边距
@@ -69,6 +71,7 @@ void FileManagerWidget::openModelFile(QString fileName,QString filePath){
     //在modelFileMap中添加添加新文件，并分配新的cloud
     m_pMainWin->getpWinFileMgr()->getModelFileMap().insert(filePath, true);
     auto cloud = m_pMainWin->getPointCloudListMgr()->CreateCloudFromFile(filePath);
+    cloud->isModelCloud=true;
     m_pMainWin->getPWinToolWidget()->addToList(cloud);
 
     // 给拟合的临时点云指针赋值
@@ -94,6 +97,7 @@ void FileManagerWidget::openMeasuredFile(QString fileName,QString filePath){
     //在measuredFileMap中添加新文件，并分配新的cloud
     m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().insert(filePath, true);
     auto cloud = m_pMainWin->getPointCloudListMgr()->CreateCloudFromFile(filePath);
+    cloud->isMeasureCloud=true;
     m_pMainWin->getPWinToolWidget()->addToList(cloud);
 
     // 给拟合的临时点云指针赋值
