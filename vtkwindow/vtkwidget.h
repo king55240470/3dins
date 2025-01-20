@@ -114,7 +114,7 @@ public:
     void closeText();
     void GetScreenCoordinates(vtkRenderer* renderer, double pt[3], double screenCoord[2]);
 
-    void ShowColorTemperature();
+    void ShowColorTemperature(float maxDistance, float minDistance);
 private:
     QVTKOpenGLNativeWidget* vtkWidget; // vtk窗口
     MainWindow *m_pMainWin = nullptr; // mainwindow指针
@@ -146,8 +146,6 @@ private:
     vtkSmartPointer<vtkPolyDataMapper2D> lineMapper;//指向线的mapper
     QVector<vtkSmartPointer<vtkActor2D>> directLines; // 存储所有的指向线段
     // vtkSmartPointer<vtkOrientationMarkerWidget> colorBar; // 显示色温条的浮动窗口
-    float maxDistance; // 色温图最大值（纯红）
-    float minDistance; // 色温图最小值（纯蓝）
 public slots:
 
 };

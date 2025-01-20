@@ -103,6 +103,12 @@
 #include <vtkBMPWriter.h>
 #include <vtkWindowToImageFilter.h>
 
+#include<QTextDocumentWriter>
+#include<QPrintDialog>
+
+
+
+
 int getImagePaths(const QString& directory, QStringList &iconPaths, QStringList &iconNames);
 
 ToolWidget::ToolWidget(QWidget *parent)
@@ -128,7 +134,7 @@ ToolWidget::ToolWidget(QWidget *parent)
 
 
     save_action_iconpath_list_<<":/component/save/excel.png"<< ":/component/save/pdf.jpg"<< ":/component/save/txt.jpg"<< ":/component/save/word.jpg"<<":/component/save/image.jpg";
-    construct_action_iconpath_list_<<":/component/construct/point.jpg"<<":/component/construct/line.jpg"<<":/component/construct/circle.jpg"<<   ":/component/construct/plan.jpg"<<  ":/component/construct/rectangle.jpg"<<":/component/construct/cylinder.jpg"<< ":/component/construct/cone.jpg"<< ":/component/construct/sphere.jpg"<<":/component/construct/distance.png"<<":/component/construct/pointCloud.png";
+    construct_action_iconpath_list_<<":/component/construct/point.jpg"<<":/component/construct/line.jpg"<<":/component/construct/circle.jpg"<<   ":/component/construct/plan.jpg"<<  ":/component/construct/rectangle.jpg"<<":/component/construct/cylinder.jpg"<< ":/component/construct/cone.jpg"<< ":/component/construct/sphere.jpg"<<":/component/construct/distance.png"<<":/component/construct/pointCloud.png"<<":/component/construct/angle.png";
     find_action_iconpath_list_<<":/component/construct/point.jpg"<<":/component/construct/line.jpg"<<":/component/construct/circle.jpg"<<   ":/component/construct/plan.jpg"<<  ":/component/construct/rectangle.jpg"<<":/component/construct/cylinder.jpg"<< ":/component/construct/cone.jpg"<< ":/component/construct/sphere.jpg";
     coord_action_iconpath_list_<<":/component/coord/create.png"<<  ":/component/coord/spin.jpg"<<":/component/coord/save.png";
     view_angle_action_iconpath_list_<<":/component/viewangle/front.png"<<":/component/viewangle/up.png"<<":/component/viewangle/right.png"<<":/component/viewangle/isometric.png";
@@ -138,7 +144,7 @@ ToolWidget::ToolWidget(QWidget *parent)
 
 
     save_action_name_list_<<"excel"<< "pdf"<< "txt"<< "word"<<"image";
-    construct_action_name_list_<<"点"<<"线"<<"圆"<<"平面"<<"矩形"<<"圆柱"<<"圆锥"<<"球形"<<"距离"<<"点云";
+    construct_action_name_list_<<"点"<<"线"<<"圆"<<"平面"<<"矩形"<<"圆柱"<<"圆锥"<<"球形"<<"距离"<<"点云"<<"角度";
     find_action_name_list_<<"点"<<"线"<<"圆"<<"平面"<<"矩形"<<"圆柱"<<"圆锥"<<"球形";;
     coord_action_name_list_<<"创建坐标系"<<"旋转坐标系"<<"保存坐标系";
     view_angle_action_name_list_<<"主视角"<<"俯视角"<<"侧视角"<<"立体视角";
@@ -488,65 +494,6 @@ int ToolWidget::getViewAngleActionNum(){
 
 void ToolWidget::connectActionWithF(){
 
-    // connect(m_find.m_actionList[m_find.m_nameList.indexOf("点")],&QAction::triggered,this,&   ToolWidget::onFindPoint);
-    // connect(m_find.m_actionList[m_find.m_nameList.indexOf("线")],&QAction::triggered,this,&   ToolWidget::onFindLine);
-    // connect(m_find.m_actionList[m_find.m_nameList.indexOf("圆")],&QAction::triggered,this,&   ToolWidget::onFindCircle);
-    // connect(m_find.m_actionList[m_find.m_nameList.indexOf("平面")],&QAction::triggered,this,&  ToolWidget:: onFindPlane);
-    // connect(m_find.m_actionList[m_find.m_nameList.indexOf("矩形")],&QAction::triggered,this,&   ToolWidget::onFindRectangle);
-    // connect(m_find.m_actionList[m_find.m_nameList.indexOf("圆柱")],&QAction::triggered,this,&   ToolWidget::onFindCylinder);
-    // connect(m_find.m_actionList[m_find.m_nameList.indexOf("圆锥")],&QAction::triggered,this,&   ToolWidget::onFindCone);
-    // connect(m_find.m_actionList[m_find.m_nameList.indexOf("球形")],&QAction::triggered,this,&   ToolWidget::onFindSphere);
-
-    // //构造
-    // connect(m_construct.m_actionList[m_construct.m_nameList.indexOf("点")],&QAction::triggered,this,& ToolWidget::onConstructPoint);
-    // connect(m_construct.m_actionList[m_construct.m_nameList.indexOf("线")],&QAction::triggered,this,&ToolWidget::onConstructLine);
-    // connect(m_construct.m_actionList[m_construct.m_nameList.indexOf("圆")],&QAction::triggered,this,&ToolWidget::onConstructCircle);
-    // connect(m_construct.m_actionList[m_construct.m_nameList.indexOf("平面")],&QAction::triggered,this,& ToolWidget::onConstructPlane);
-    // connect(m_construct.m_actionList[m_construct.m_nameList.indexOf("矩形")],&QAction::triggered,this,& ToolWidget::onConstructRectangle);
-    // connect(m_construct.m_actionList[m_construct.m_nameList.indexOf("圆柱")],&QAction::triggered,this,&  ToolWidget::onConstructCylinder);
-    // connect(m_construct.m_actionList[m_construct.m_nameList.indexOf("圆锥")],&QAction::triggered,this,&  ToolWidget::onConstructCone);
-    // connect(m_construct.m_actionList[m_construct.m_nameList.indexOf("球形")],&QAction::triggered,this,&  ToolWidget::onConstructSphere);
-    // connect(m_construct.m_actionList[m_construct.m_nameList.indexOf("距离")],&QAction::triggered,this,&  ToolWidget::onConstructDistance);
-
-    // //保存
-    // connect(m_save.m_actionList[m_save.m_nameList.indexOf("excel")],&QAction::triggered,this,&  ToolWidget::onSaveExcel);
-    // connect(m_save.m_actionList[m_save.m_nameList.indexOf("word")],&QAction::triggered,this,&  ToolWidget::onSaveWord);
-    // connect(m_save.m_actionList[m_save.m_nameList.indexOf("txt")],&QAction::triggered,this,&  ToolWidget::onSaveTxt);
-    // connect(m_save.m_actionList[m_save.m_nameList.indexOf("pdf")],&QAction::triggered,this,&  ToolWidget::onSavePdf);
-    // connect(m_save.m_actionList[m_save.m_nameList.indexOf("image")],&QAction::triggered,this,&  ToolWidget::onSaveImage);
-
-    // // connect(save_actions_[save_action_name_list_.indexOf("txt")],&QAction::triggered,this,&  ToolWidget::onSaveTxt);
-
-
-    // //坐标系
-    // connect(m_coord.m_actionList[m_coord.m_nameList.indexOf("创建坐标系")],&QAction::triggered,this,[&](){
-    //     m_pMainWin->on2dCoordOriginAuto(); //创建临时坐标系
-    // });
-    // connect(m_coord.m_actionList[m_coord.m_nameList.indexOf("旋转坐标系")],&QAction::triggered,this,[&](){
-    //     //tool_widget::onSpinCoord();
-    //     m_pMainWin->on2dCoordSetRightX(); // x轴摆正
-    // });
-    // connect(m_coord.m_actionList[m_coord.m_nameList.indexOf("保存坐标系")],&QAction::triggered,this,[&](bool){
-    //     //tool_widget::onSaveCoord();
-    //     m_pMainWin->on2dCoordSave();
-    // });
-    // //视角
-    // connect(m_viewAngle.m_actionList[m_viewAngle.m_nameList.indexOf("主视角")],&QAction::triggered,this,[&](){
-    //     //tool_widget::onFrontViewAngle();
-    //     m_pMainWin->onFrontViewClicked();
-    // });
-    // connect(m_viewAngle.m_actionList[m_viewAngle.m_nameList.indexOf("俯视角")],&QAction::triggered,this, [&](){
-    //     //tool_widget::onUpViewAngle();
-    //     m_pMainWin->onTopViewClicked();
-    // });
-    // connect(m_viewAngle.m_actionList[m_viewAngle.m_nameList.indexOf("侧视角")],&QAction::triggered,[&](){
-    //     //tool_widget::onRightViewAngle();
-    //     m_pMainWin->onRightViewClicked();
-    // });
-    // connect(m_viewAngle.m_actionList[m_viewAngle.m_nameList.indexOf("立体视角")],&QAction::triggered,[&](){
-    //     //tool_widget::onIsometricViewAngle();
-    //     m_pMainWin->onIsometricViewClicked();
-    // });
 
 
     //识别
@@ -570,6 +517,7 @@ void ToolWidget::connectActionWithF(){
     connect(construct_actions_[construct_action_name_list_.indexOf("球形")],&QAction::triggered,this,&  ToolWidget::onConstructSphere);
     connect(construct_actions_[construct_action_name_list_.indexOf("距离")],&QAction::triggered,this,&  ToolWidget::onConstructDistance);
     connect(construct_actions_[construct_action_name_list_.indexOf("点云")],&QAction::triggered,this,&  ToolWidget::onConstructPointCloud);
+    connect(construct_actions_[construct_action_name_list_.indexOf("角度")],&QAction::triggered,this,&  ToolWidget::onConstructAngle);
 
     //保存
     connect(save_actions_[save_action_name_list_.indexOf("excel")],&QAction::triggered,this,&  ToolWidget::onSaveExcel);
@@ -713,6 +661,31 @@ void   ExtractData(QVector<CEntity *>& entitylist,QList<QList<QString>>& dataAll
         dataAll.append(inList);
     }
 }
+
+
+void insertImageIntoPdf(const QString &imagePath, const QString &pdfPath) {
+    // 创建一个新的QTextDocument
+    QTextDocument doc;
+    QTextCursor cursor(&doc);
+
+    // 在QTextDocument中插入图片
+    QTextImageFormat imageFormat;
+    imageFormat.setName(imagePath);
+    cursor.insertImage(imageFormat);
+
+    // 设置打印机以输出到PDF
+    QPrinter printer(QPrinter::HighResolution);
+    printer.setOutputFormat(QPrinter::PdfFormat);
+    printer.setOutputFileName(pdfPath);
+
+    // 打印文档到PDF文件
+    doc.print(&printer);
+}
+
+
+
+
+
 void   ToolWidget::onSavePdf(){
 
     QString path = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "", QString("Pdf(*.pdf)"));
@@ -726,15 +699,6 @@ void   ToolWidget::onSavePdf(){
     dataAll.append(header);
     ExtractData(entitylist,dataAll);
 
-    // int row = 5, col = 3;
-    // QList<QList<QString>> values;
-    // for (int i = 0; i < row; i++) {
-    //     QList<QString> inLst;
-    //     for (int j = 0; j < col; j++) {
-    //         inLst.append(QString::number(i) + QString::number(j));
-    //     }
-    //     values.append(inLst);
-    // }
 
     if (QFileInfo(path).suffix().isEmpty())
         path.append(".pdf");
@@ -782,13 +746,11 @@ void   ToolWidget::onSavePdf(){
     }
     html.append("</table><br /><br />");
 
-    //加入图片
-    //QPainter painter;
-    //painter.begin(m_pdfWriter);
-    //QPixmap pixmap("./qtLogo.png");
-    //painter.scale(10, 10);   //放大10倍
-    //painter.drawPixmap(0, 0, pixmap);
-    //painter.end();
+   // 加入图片
+    QPainter painter;
+    painter.begin(m_pdfWriter);
+
+
 
     QTextDocument textDocument;
     textDocument.setHtml(html);
@@ -1046,97 +1008,190 @@ void ToolWidget::onSaveTxt(){
 
 }
 
+
+
+
 void   ToolWidget::onSaveWord(){
     QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "", QString("word(*.doc *.docx)"));
-    if (filePath.isEmpty()){
-        return ;
+    if (filePath.isEmpty()) {
+        return;
     }
+
     QStringList headers;
-    headers << "类型" << "名称" << "数据1" << "数据2" << "数据3"<<"数据4"<<"数据5";
+    headers << "类型" << "名称" << "数据1" << "数据2" << "数据3" << "数据4" << "数据5";
     auto& entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
     int col = headers.size();
     int row = entitylist.size();
     QList<QList<QString>> dataAll;
-    ExtractData(entitylist,dataAll);
+    ExtractData(entitylist, dataAll);
 
-    // 写入内容
     // 创建一个QTextDocument对象
     QTextDocument doc;
 
-    QTextCharFormat formatTitle;
-    formatTitle.setFontPointSize(16); // 设置字体大小
-    formatTitle.setFontWeight(QFont::Bold); // 设置字体加粗
-
     // 创建一个QTextCursor对象
     QTextCursor cursor(&doc);
+
     // 标题和参数信息
-    //cursor.insertHtml(QString("<a style='text-align：center; font-weight:bold; font-size:30px;'>%1</a>").arg(title));
-    cursor.setCharFormat(formatTitle);
-    cursor.insertText("entitylist列表输出");
-    cursor.insertBlock(); // 换行
+    cursor.insertText("entitylist列表输出\n\n");
 
-    QTextCharFormat format;
-    format.setFontPointSize(10);
-    format.setFontWeight(QFont::Bold);
-
-    cursor.setCharFormat(format);
-    //cursor.insertText("");
-
-    // 插入一个表格，行头占一行
-    QTextTable *table = cursor.insertTable(row + 1, col);
-
-    //获取表格的格式
-    QTextTableFormat tableFormat = table->format();
-    //表格格式设置宽度
-    tableFormat.setWidth(QTextLength(QTextLength::FixedLength, 800));
-
-    //设置表格的columnWidthConstraints约束
-    QVector<QTextLength> colLength = tableFormat.columnWidthConstraints();
-    for (int i = 0; i < col; ++i) {
-        colLength.append(QTextLength(QTextLength::FixedLength, tableFormat.width().rawValue() / col));
+    // 插入表头
+    for (const QString& header : headers) {
+        cursor.insertText(header + "\t");
     }
-    tableFormat.setColumnWidthConstraints(colLength);
-    tableFormat.setBorder(5);
-    tableFormat.setBorderBrush(Qt::black);
+    cursor.insertBlock();
 
-    QTextTableCellFormat titleFormat;
-    titleFormat.setBackground(QColor("moccasin"));
-    titleFormat.setFontWeight(QFont::Bold);
-    // 设置表头 第一行下标为1
-    for (int i = 0; i < col; ++i) {
-        QTextTableCell cell = table->cellAt(0, i);
-        cell.firstCursorPosition().insertText(headers[i]);
-        cell.setFormat(titleFormat);
-    }
-
-    //定义单元格格式
-    QTextTableCellFormat cellFormat;
-    cellFormat.setBottomPadding(2);
-    // 遍历表格的每个单元格，将数据插入到表格中
-    for (int i = 0; i < row; ++i) {
-        for (int j = 0; j < dataAll[i].size(); ++j) {
-            // 将文本插入到表格中,第二行开始下标为2
-            QTextTableCell cell = table->cellAt(i + 1, j);
-            cell.firstCursorPosition().insertText(dataAll[i][j]);
-            cell.setFormat(cellFormat);
+    // 插入数据
+    for (const QList<QString>& rowData : dataAll) {
+        for (const QString& cellData : rowData) {
+            cursor.insertText(cellData + "\t");
         }
+        cursor.insertBlock();
     }
 
-    // 保存为Word文件
+    // vtkRenderWindow渲染窗口的代码不变
+
+    // 将QTextDocument的内容保存为纯文本文件
     QFile file(filePath);
     if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QTextStream stream(&file);
-        //stream.setCodec("UTF-8");
-        stream << doc.toHtml();
+        stream << doc.toPlainText();
         file.close();
         QMessageBox::information(nullptr, "提示", "保存成功");
-    }}
+    }
+
+    // QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "", QString("word(*.doc *.docx)"));
+    // if (filePath.isEmpty()){
+    //     return ;
+    // }
+    // QStringList headers;
+    // headers << "类型" << "名称" << "数据1" << "数据2" << "数据3"<<"数据4"<<"数据5";
+    // auto& entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
+    // int col = headers.size();
+    // int row = entitylist.size();
+    // QList<QList<QString>> dataAll;
+    // ExtractData(entitylist,dataAll);
+
+    // // 写入内容
+    // // 创建一个QTextDocument对象
+    // QTextDocument doc;
+
+    // QTextCharFormat formatTitle;
+    // formatTitle.setFontPointSize(16); // 设置字体大小
+    // formatTitle.setFontWeight(QFont::Bold); // 设置字体加粗
+
+    // // 创建一个QTextCursor对象
+    // QTextCursor cursor(&doc);
+    // // 标题和参数信息
+    // //cursor.insertHtml(QString("<a style='text-align：center; font-weight:bold; font-size:30px;'>%1</a>").arg(title));
+    // cursor.setCharFormat(formatTitle);
+    // cursor.insertText("entitylist列表输出");
+    // cursor.insertBlock(); // 换行
+
+    // QTextCharFormat format;
+    // format.setFontPointSize(10);
+    // format.setFontWeight(QFont::Bold);
+
+    // cursor.setCharFormat(format);
+    // //cursor.insertText("");
+
+    // // 插入一个表格，行头占一行
+    // QTextTable *table = cursor.insertTable(row + 1, col);
+
+    // //获取表格的格式
+    // QTextTableFormat tableFormat = table->format();
+    // //表格格式设置宽度
+    // tableFormat.setWidth(QTextLength(QTextLength::FixedLength, 800));
+
+    // //设置表格的columnWidthConstraints约束
+    // QVector<QTextLength> colLength = tableFormat.columnWidthConstraints();
+    // for (int i = 0; i < col; ++i) {
+    //     colLength.append(QTextLength(QTextLength::FixedLength, tableFormat.width().rawValue() / col));
+    // }
+    // tableFormat.setColumnWidthConstraints(colLength);
+    // tableFormat.setBorder(5);
+    // tableFormat.setBorderBrush(Qt::black);
+
+    // QTextTableCellFormat titleFormat;
+    // titleFormat.setBackground(QColor("moccasin"));
+    // titleFormat.setFontWeight(QFont::Bold);
+    // // 设置表头 第一行下标为1
+    // for (int i = 0; i < col; ++i) {
+    //     QTextTableCell cell = table->cellAt(0, i);
+    //     cell.firstCursorPosition().insertText(headers[i]);
+    //     cell.setFormat(titleFormat);
+    // }
+
+    // //定义单元格格式
+    // QTextTableCellFormat cellFormat;
+    // cellFormat.setBottomPadding(2);
+    // // 遍历表格的每个单元格，将数据插入到表格中
+    // for (int i = 0; i < row; ++i) {
+    //     for (int j = 0; j < dataAll[i].size(); ++j) {
+    //         // 将文本插入到表格中,第二行开始下标为2
+    //         QTextTableCell cell = table->cellAt(i + 1, j);
+    //         cell.firstCursorPosition().insertText(dataAll[i][j]);
+    //         cell.setFormat(cellFormat);
+    //     }
+    // }
+    // vtkSmartPointer<vtkRenderWindow> renderWindow=m_pMainWin->getPWinVtkWidget()->getRenderWindow();
+    // renderWindow->Render();
+    // //得到截图
+    // vtkNew<vtkWindowToImageFilter> windowToImageFilter;
+    // windowToImageFilter->SetInput(renderWindow);
+    // windowToImageFilter->SetScale(1);// 缩放因子，可以根据需要调整
+    // windowToImageFilter->SetInputBufferTypeToRGBA();//RGBA缓冲
+    // windowToImageFilter->ReadFrontBufferOff();//读取
+    // windowToImageFilter->Update();
+    // vtkSmartPointer<vtkImageData> imageData = windowToImageFilter->GetOutput();
+    // int extent[6];
+    // imageData->GetExtent(extent);
+    // int width = extent[1] - extent[0] + 1;
+    // int height = extent[3] - extent[2] + 1;
+
+    // // 获取图像数据的指针
+    // unsigned char* imagePointer = static_cast<unsigned char*>(imageData->GetScalarPointer());
+
+    // // 创建 QImage 对象
+    // QImage qImage(imagePointer, width, height, QImage::Format_RGBA8888);
+
+    // cursor.insertBlock();
+    // cursor.insertImage(qImage);
+
+
+    // //保存为Word文件
+    // QFile file(filePath);
+    // if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+    //     QTextStream stream(&file);
+    //     //stream.setCodec("UTF-8");
+    //     stream << doc.toHtml();
+    //     file.close();
+    //     QMessageBox::information(nullptr, "提示", "保存成功");
+    // }
+
+
+}
+
+
 
 static void WrongWidget(QString message,QString moreMessage="空");
 void   ToolWidget::onSaveImage(){
     //得到路径名称
     QString filter = "PNG (*.png);;JPEG (*.jpg *.jpeg);;TIFF (*.tif *.tiff);;BMP (*.bmp)";
+
     QString fileName = QFileDialog::getSaveFileName(this, "Save Screenshot", "", filter, &filter);
+
+    QFileInfo fileInfo(fileName);
+
+    QString filePath = fileInfo.absolutePath(); // 文件的路径
+
+    QString baseName = fileInfo.baseName();//文件的基本名
+
+    QString suffix = fileInfo.suffix();//文件的后缀
+
+    // 生成三个新的文件名
+    QString fileNameFront =filePath+"/"+ baseName + "_Front." + suffix;
+    QString fileNameTop =filePath+"/"+ baseName + "_Top." + suffix;
+    QString fileNameRight =filePath+ "/"+baseName + "_Right." + suffix;
 
     if (fileName.isEmpty()) {
         WrongWidget("输入路径错误!");
@@ -1144,16 +1199,9 @@ void   ToolWidget::onSaveImage(){
     }
     QString selectedFilter = QFileInfo(fileName).suffix();
     std::string format=selectedFilter.toStdString();
-
+    {
     vtkSmartPointer<vtkRenderWindow> renderWindow=m_pMainWin->getPWinVtkWidget()->getRenderWindow();
-    renderWindow->Render();
-    //得到截图
-    vtkNew<vtkWindowToImageFilter> windowToImageFilter;
-    windowToImageFilter->SetInput(renderWindow);
-    windowToImageFilter->SetScale(1);// 缩放因子，可以根据需要调整
-    windowToImageFilter->SetInputBufferTypeToRGBA();//RGBA缓冲
-    windowToImageFilter->ReadFrontBufferOff();//读取
-    windowToImageFilter->Update();
+     vtkNew<vtkWindowToImageFilter> windowToImageFilter;
 
     vtkSmartPointer<vtkImageWriter> writer;
     //确认格式
@@ -1169,61 +1217,94 @@ void   ToolWidget::onSaveImage(){
         std::cerr << "Unsupported format: " << format << std::endl;
         return;
     }
-    //写入文件
-    writer->SetFileName(fileName.toStdString().c_str());
+    m_pMainWin->onRightViewClicked();
+    renderWindow->Render();
+    //得到截图
+
+    windowToImageFilter->SetInput(renderWindow);
+    windowToImageFilter->SetScale(1);// 缩放因子，可以根据需要调整
+    windowToImageFilter->SetInputBufferTypeToRGBA();//RGBA缓冲
+    windowToImageFilter->ReadFrontBufferOff();//读取
+    windowToImageFilter->Update();
+
+
+    writer->SetFileName(fileNameRight.toStdString().c_str());
     writer->SetInputConnection(windowToImageFilter->GetOutputPort());
     writer->Write();
+    }
+    //写入文件
+
+    //侧视角
+
+    {
+        vtkSmartPointer<vtkRenderWindow> renderWindow=m_pMainWin->getPWinVtkWidget()->getRenderWindow();
+        vtkNew<vtkWindowToImageFilter> windowToImageFilter;
+
+        vtkSmartPointer<vtkImageWriter> writer;
+        //确认格式
+        if (format == "png") {
+            writer = vtkSmartPointer<vtkPNGWriter>::New();
+        } else if (format == "jpg" || format == "jpeg") {
+            writer = vtkSmartPointer<vtkJPEGWriter>::New();
+        } else if (format == "tiff" || format == "tif") {
+            writer = vtkSmartPointer<vtkTIFFWriter>::New();
+        } else if (format == "bmp") {
+            writer = vtkSmartPointer<vtkBMPWriter>::New();
+        } else {
+            std::cerr << "Unsupported format: " << format << std::endl;
+            return;
+        }
+    //俯视角
+    m_pMainWin->onTopViewClicked();
+    renderWindow->Render();
+    //得到截图
+
+    windowToImageFilter->SetInput(renderWindow);
+    windowToImageFilter->SetScale(1);// 缩放因子，可以根据需要调整
+    windowToImageFilter->SetInputBufferTypeToRGBA();//RGBA缓冲
+    windowToImageFilter->ReadFrontBufferOff();//读取
+    windowToImageFilter->Update();
 
 
-    // QString imagePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("Excel(*.png *.jpg)"));
-    // if (imagePath.isEmpty()){
-    //     return ;
-    // }
-    // QStringList headers;
-    // headers << "类型" << "名称" << "数据1" << "数据2" << "数据3" << "数据4" << "数据5";
-    // auto& entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
-    // QList<QList<QString>> dataAll;
-    // ExtractData(entitylist, dataAll);
+    writer->SetFileName(fileNameTop.toStdString().c_str());
+    writer->SetInputConnection(windowToImageFilter->GetOutputPort());
+    writer->Write();
+    }
+    {
+        vtkSmartPointer<vtkRenderWindow> renderWindow=m_pMainWin->getPWinVtkWidget()->getRenderWindow();
+        vtkNew<vtkWindowToImageFilter> windowToImageFilter;
 
-    // QTableWidget tableWidget(dataAll.size(), headers.size());
-    // tableWidget.setHorizontalHeaderLabels({"类型", "名称", "数据1", "数据2", "数据3", "数据4", "数据5"});
+        vtkSmartPointer<vtkImageWriter> writer;
+        //确认格式
+        if (format == "png") {
+            writer = vtkSmartPointer<vtkPNGWriter>::New();
+        } else if (format == "jpg" || format == "jpeg") {
+            writer = vtkSmartPointer<vtkJPEGWriter>::New();
+        } else if (format == "tiff" || format == "tif") {
+            writer = vtkSmartPointer<vtkTIFFWriter>::New();
+        } else if (format == "bmp") {
+            writer = vtkSmartPointer<vtkBMPWriter>::New();
+        } else {
+            std::cerr << "Unsupported format: " << format << std::endl;
+            return;
+        }
+    //主视角
+    m_pMainWin->onFrontViewClicked();
+    renderWindow->Render();
+    //得到截图
 
-    // // 设置水平表头自动调整大小
-    // tableWidget.horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    windowToImageFilter->SetInput(renderWindow);
+    windowToImageFilter->SetScale(1);// 缩放因子，可以根据需要调整
+    windowToImageFilter->SetInputBufferTypeToRGBA();//RGBA缓冲
+    windowToImageFilter->ReadFrontBufferOff();//读取
+    windowToImageFilter->Update();
 
-    // for (int i = 0; i < dataAll.size(); ++i) {
-    //     QStringList& inlist = dataAll[i];
-    //     for (int j = 0; j < inlist.size(); ++j) {
-    //         tableWidget.setItem(i, j, new QTableWidgetItem(inlist[j]));
-    //     }
-    // }
+    writer->SetFileName(fileNameFront.toStdString().c_str());
+    writer->SetInputConnection(windowToImageFilter->GetOutputPort());
+    writer->Write();
+    }
 
-    // // 调整表格大小以适应内容
-    // int totalWidth = 0;
-    // int totalHeight = 0;
 
-    // // 计算总宽度
-    // for (int i = 0; i < tableWidget.columnCount(); ++i) {
-    //     totalWidth += tableWidget.columnWidth(i) + 10;
-    // }
-
-    // // 计算总高度
-    // for (int i = 0; i < tableWidget.rowCount(); ++i) {
-    //     totalHeight += tableWidget.rowHeight(i) + 10;
-    // }
-
-    // tableWidget.setFixedSize(totalWidth, totalHeight);
-
-    // // 创建一个 QPixmap 对象以适应整个表格
-    // QPixmap pixmap(totalWidth, totalHeight);
-    // pixmap.fill(Qt::white);  // 设置背景为白色
-    // QPainter painter(&pixmap);
-
-    // // 将表格内容绘制到 QPixmap 上
-    // tableWidget.render(&painter);
-
-    // // 保存为图片
-    // pixmap.save(imagePath);
     QMessageBox::information(nullptr, "提示", "保存成功");
 }
 
@@ -1532,6 +1613,9 @@ void ToolWidget::onConstructPointCloud(){
 
     m_pMainWin->NotifySubscribe();
 }
+void ToolWidget::onConstructAngle(){
+
+}
 
 void ToolWidget:: onFindPlane(){
     //读取选中的点云
@@ -1600,6 +1684,8 @@ void ToolWidget:: onFindPlane(){
     m_pMainWin->NotifySubscribe();
 
 }
+
+
 
 void ToolWidget::onFindPoint(){
     FittingPoint *nearPoint=new FittingPoint();
@@ -1723,6 +1809,36 @@ void ToolWidget::onFindLine(){
     positions.clear();
     m_pMainWin->NotifySubscribe();
 }
+
+
+
+// void ToolWidget::onFindCircle(){
+
+
+//     // 选择图片文件
+//     QString imagePath = QFileDialog::getOpenFileName(nullptr, "Select Image", "", "Images (*.png *.jpg *.jpeg *.bmp *.tif *.tiff)");
+//     if (imagePath.isEmpty()) {
+//         qDebug() << "No image selected!";
+//         return ;
+//     }
+
+//     // 选择保存PDF文件的路径
+//     QString pdfPath = QFileDialog::getSaveFileName(nullptr, "Save PDF", "", "PDF Files (*.pdf)");
+//     if (pdfPath.isEmpty()) {
+//         qDebug() << "No save path selected!";
+//         return ;
+//     }
+
+//     // 将图片插入到PDF文件中
+//     insertImageIntoPdf(imagePath, pdfPath);
+
+//     qDebug() << "PDF created successfully at" << pdfPath;
+
+
+
+// }
+
+
 void ToolWidget::onFindCircle(){
     //读取选中的点云
     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
@@ -1788,6 +1904,7 @@ void ToolWidget::onFindCircle(){
     positions.clear();
     m_pMainWin->NotifySubscribe();
 }
+
 void ToolWidget::onFindRectangle(){
     //读取选中的点云
     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
