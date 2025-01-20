@@ -464,7 +464,30 @@ void ElementListWidget::onAddElement()
 {
     if (stateMachine->configuration().contains(runningState)) {
         updateDistance();
+        CompareCloud();
         m_pMainWin->NotifySubscribe();
+    }
+}
+
+void ElementListWidget::CompareCloud()
+{
+    for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
+        CPointCloud*could=(CPointCloud*)m_pMainWin->getEntityListMgr()->getEntityList()[i];
+        if(could->isModelCloud){
+            m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
+            break;
+        }else{
+            return;
+        }
+    }
+    for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
+        CPointCloud*could=(CPointCloud*)m_pMainWin->getEntityListMgr()->getEntityList()[i];
+        if(could->isMeasureCloud){
+            m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
+            m_pMainWin->getPWinToolWidget()->setauto(true);
+            m_pMainWin->getPWinVtkWidget()->onCompare();
+            m_pMainWin->getPWinToolWidget()->setauto(false);
+        }
     }
 }
 
