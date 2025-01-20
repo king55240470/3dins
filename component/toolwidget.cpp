@@ -926,13 +926,38 @@ void   ToolWidget::onSaveExcel(){
 }
 
 void ToolWidget::onSaveTxt(){
-    QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "", QString("txt(*.txt )"));
-    if (filePath.isEmpty()){
-        return ;
+    QString filePath;
+    if(IsAuto){
+        QString desktopPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
+        if (desktopPath.isEmpty()) {
+            qWarning() << "无法获取桌面路径";
+            return;
+        }
+
+        // 生成文件名
+        QString fileName = "Entities_List";
+        auto& entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
+        for (int i = 0; i < entitylist.size(); i++) {
+            CEntity* entity = entitylist[i];
+            if (i > 0) {
+                fileName += "_";
+            }
+            fileName += entity->m_strAutoName;
+        }
+        fileName += ".txt";
+
+        // 完整的文件路径
+        filePath = desktopPath + "/" + fileName;
+    }else{
+        filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "", QString("txt(*.txt )"));
+        if (filePath.isEmpty()){
+            return ;
+        }
+
+        if (QFileInfo(filePath).suffix().isEmpty())
+            filePath.append(".txt");
     }
 
-    if (QFileInfo(filePath).suffix().isEmpty())
-        filePath.append(".txt");
 
     // 创建 QFile 对象
     QFile file(filePath);
@@ -1208,9 +1233,14 @@ static void WrongWidget(QString message,QString moreMessage="空");
 void   ToolWidget::onSaveImage(){
     //得到路径名称
     QString filter = "PNG (*.png);;JPEG (*.jpg *.jpeg);;TIFF (*.tif *.tiff);;BMP (*.bmp)";
-
-    QString fileName = QFileDialog::getSaveFileName(this, "Save Screenshot", "", filter, &filter);
-
+    QString fileName;
+    if (!IsAuto) {
+        // 如果不是自动保存，弹出文件选择对话框
+        fileName = QFileDialog::getSaveFileName(this, "Save Screenshot", "", filter, &filter);
+    } else {
+        // 如果是自动保存，设置默认保存路径
+        fileName = "C:/Users/Lenovo/Desktop/点云对比图像/screenshot";
+    }
     QFileInfo fileInfo(fileName);
 
     QString filePath = fileInfo.absolutePath(); // 文件的路径
@@ -1250,6 +1280,11 @@ void   ToolWidget::onSaveImage(){
         SaveImage(fileNameFront,format);}
 
     QMessageBox::information(nullptr, "提示", "保存成功");
+}
+
+void ToolWidget::setauto(bool Auto)
+{
+    IsAuto=Auto;
 }
 
 
@@ -1604,6 +1639,12 @@ void ToolWidget:: onFindPlane(){
     if(plane==nullptr){
         return;
     }
+
+    // PointConstructor p_constructor;
+    // CPoint *newPoint;
+    // newPoint=p_constructor.createPoint(point.x,point.y,point.z);
+    // addToFindList(newPoint);
+
     PlaneConstructor constructor;
     CPlane* newPlane;
     CPosition center;
@@ -1665,7 +1706,14 @@ void ToolWidget::onFindPoint(){
             nearPoint->RANSAC(point,pointClouds[0]->m_pointCloud.makeShared());
         return ;
     }
+
+    // PointConstructor p_constructor;
+    // CPoint *Point;
+    // Point=p_constructor.createPoint(point.x,point.y,point.z);
+    // addToFindList(Point);
+
     qDebug()<<pointClouds.size()<<"hhhhh";
+
     PointConstructor constructor;
     CPoint* newPoint;
     CPosition center;
@@ -1677,6 +1725,7 @@ void ToolWidget::onFindPoint(){
         qDebug()<<"找到最近点生成错误";
         return ;
     }
+    addToFindList(newPoint);
     positions.clear();
     m_pMainWin->NotifySubscribe();
 }
@@ -1728,6 +1777,12 @@ void ToolWidget::onFindLine(){
     if(line==nullptr){
         return;
     }
+
+    // PointConstructor p_constructor;
+    // CPoint *newPoint;
+    // newPoint=p_constructor.createPoint(point.x,point.y,point.z);
+    // addToFindList(newPoint);
+
     LineConstructor constructor;
     CLine* newLine;
     CPosition begin,end;
@@ -1798,6 +1853,12 @@ void ToolWidget::onFindCircle(){
     if(circle==nullptr){
         return;
     }
+
+    // PointConstructor p_constructor;
+    // CPoint *newPoint;
+    // newPoint=p_constructor.createPoint(point.x,point.y,point.z);
+    // addToFindList(newPoint);
+
     CircleConstructor constructor;
     CCircle* newCircle;
     CPosition center;
@@ -1864,6 +1925,12 @@ void ToolWidget::onFindRectangle(){
     if(plane==nullptr){
         return;
     }
+
+    // PointConstructor p_constructor;
+    // CPoint *newPoint;
+    // newPoint=p_constructor.createPoint(point.x,point.y,point.z);
+    // addToFindList(newPoint);
+
     RectangleConstructor constructor;
     CPlane* newPlane;
     CPosition center;
@@ -1930,6 +1997,12 @@ void ToolWidget::onFindCylinder(){
     if(cylinder==nullptr){
         return;
     }
+
+    // PointConstructor p_constructor;
+    // CPoint *newPoint;
+    // newPoint=p_constructor.createPoint(point.x,point.y,point.z);
+    // addToFindList(newPoint);
+
     CylinderConstructor constructor;
     CCylinder* newCylinder;
     CPosition center;
@@ -1996,6 +2069,12 @@ void ToolWidget::onFindCone(){
     if(cone==nullptr){
         return;
     }
+
+    // PointConstructor p_constructor;
+    // CPoint *newPoint;
+    // newPoint=p_constructor.createPoint(point.x,point.y,point.z);
+    // addToFindList(newPoint);
+
     ConeConstructor constructor;
     CCone* newCone;
     CPosition center;
@@ -2063,6 +2142,12 @@ void ToolWidget::onFindSphere(){
     if(sphere==nullptr){
         return;
     }
+
+    // PointConstructor p_constructor;
+    // CPoint *newPoint;
+    // newPoint=p_constructor.createPoint(point.x,point.y,point.z);
+    // addToFindList(newPoint);
+
     SphereConstructor constructor;
     CSphere* newSphere;
     CPosition center;

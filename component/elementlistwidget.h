@@ -62,6 +62,7 @@ public:
     void mousePressEvent(QMouseEvent *event) override;
     void setupStateMachine();
     void onAddElement();
+    void CompareCloud();
     void updateDistance();
     void startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree, QVector<CEntity*>distancelist);
     void isAdd();
