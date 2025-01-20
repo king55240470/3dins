@@ -386,8 +386,8 @@ void VtkWidget::ShowColorBar(){
     vtkSmartPointer<vtkCellArray> colorBarPolys = vtkSmartPointer<vtkCellArray>::New();
 
     colorBarPoints->InsertNextPoint(Width - barWidth - 10, 10, 0);
-    colorBarPoints->InsertNextPoint(Width - barWidth, 10, 0);
-    colorBarPoints->InsertNextPoint(Width-barWidth, 10 + barHeight, 0);
+    colorBarPoints->InsertNextPoint(Width - 10, 10, 0);
+    colorBarPoints->InsertNextPoint(Width - 10, 10 + barHeight, 0);
     colorBarPoints->InsertNextPoint(Width - barWidth - 10, 10 + barHeight, 0);
 
     vtkIdType polyIds[4] = {0, 1, 2, 3};
