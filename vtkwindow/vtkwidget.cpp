@@ -397,7 +397,7 @@ void VtkWidget::ShowColorBar()
     // 创建一个颜色数组用于多边形
     vtkSmartPointer<vtkUnsignedCharArray> colorBarColors = vtkSmartPointer<vtkUnsignedCharArray>::New();
     colorBarColors->SetNumberOfComponents(3);
-    colorBarColors->SetNumberOfTuples(barWidth + 1); // +1 是为了包括最后一个点的颜色
+    colorBarColors->SetNumberOfTuples(4); // +1 是为了包括最后一个点的颜色
 
     // 填充颜色数组，这里我们使用插值来确保颜色渐变平滑
     for (int i = 0; i <= barWidth; ++i)
@@ -410,7 +410,7 @@ void VtkWidget::ShowColorBar()
     }
 
     // 将颜色数据绑定到多边形上
-    colorBarPolyData->GetPointData()->SetScalars(colors);
+    colorBarPolyData->GetPointData()->SetScalars(colorBarColors);
 
     // 创建 Mapper
     vtkSmartPointer<vtkPolyDataMapper2D> colorBarMapper = vtkSmartPointer<vtkPolyDataMapper2D>::New();
@@ -707,6 +707,7 @@ void VtkWidget::onCompare()
             point.b = b;
         }
     }
+    ShowColorBar();
 
     // 由RGB点云生成cpointcloud对象，并存入entitylist
     auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateCompareCloud(*comparisonCloud);
