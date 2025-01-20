@@ -6,16 +6,6 @@
 
 #include <vtkInteractorStyle.h>
 #include <vtkEventQtSlotConnect.h>
-#include <vtkImageActor.h>
-#include <vtkImageMapToColors.h>
-#include <vtkImageData.h>
-#include <vtkTexture.h>
-#include <vtkTextureMapToPlane.h>
-#include <vtkTransformPolyDataFilter.h>
-#include <vtkWindowToImageFilter.h>
-#include <vtkPNGWriter.h>
-#include <vtkImageMapper3D.h>
-#include <vtkImageProperty.h>
 
 
 VtkWidget::VtkWidget(QWidget *parent)
@@ -361,8 +351,7 @@ void VtkWidget::closeText()
     renWin->Render();
 }
 
-void VtkWidget::ShowColorTemperature(float maxDistance, float minDistance)
-{
+void VtkWidget::ShowColorBar(){
     // 创建一个 PolyData 对象来存储色温尺的几何信息
     vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
     vtkSmartPointer<vtkCellArray> lines = vtkSmartPointer<vtkCellArray>::New();
@@ -372,23 +361,19 @@ void VtkWidget::ShowColorTemperature(float maxDistance, float minDistance)
     // 定义色温尺的起点和终点
     int barHeight = 20; // 色温尺的高度
     int barWidth = 200; // 色温尺的宽度
-    points->InsertNextPoint(10, 10, 0); // 起点
-    points->InsertNextPoint(10 + barWidth, 10, 0); // 终点
+    auto Width = renWin->GetSize()[0];
+    points->InsertNextPoint(Width-barWidth-10, 10, 0); // 起点
+    points->InsertNextPoint(Width-barWidth, 10, 0); // 终点
 
     // 插入线段
     vtkIdType pointIds[2] = {0, 1};
     lines->InsertNextCell(2, pointIds);
 
-    // 创建颜色渐变（从纯蓝到纯红）
-    for (int i = 0; i < barWidth; ++i)
-    {
-        float ratio = static_cast<float>(i) / (barWidth - 1); // 0 到 1 的比例
-        int r = static_cast<int>(255 * ratio);
-        int b = 255 - r;
-        int g = 0; // 绿色分量始终为0，实现纯蓝到纯红的渐变
-        colors->InsertNextTuple3(r, g, b); // 红蓝渐变（现在包含绿色分量，但始终为0）
-    }
-
+    // 为每个顶点设置颜色
+    colors->InsertTuple3(0, 0, 0, 255); // 左下角
+    colors->InsertTuple3(1, 255, 0, 0); // 右下角
+    colors->InsertTuple3(2, 255, 0, 0); // 右上角
+    colors->InsertTuple3(3, 0, 0, 255); // 左上角
 
     // 创建 PolyData
     vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
@@ -400,11 +385,10 @@ void VtkWidget::ShowColorTemperature(float maxDistance, float minDistance)
     vtkSmartPointer<vtkPoints> colorBarPoints = vtkSmartPointer<vtkPoints>::New();
     vtkSmartPointer<vtkCellArray> colorBarPolys = vtkSmartPointer<vtkCellArray>::New();
 
-
-    colorBarPoints->InsertNextPoint(10, 10, 0);
-    colorBarPoints->InsertNextPoint(10 + barWidth, 10, 0);
-    colorBarPoints->InsertNextPoint(10 + barWidth, 10 + barHeight, 0);
-    colorBarPoints->InsertNextPoint(10, 10 + barHeight, 0);
+    colorBarPoints->InsertNextPoint(Width - barWidth - 10, 10, 0);
+    colorBarPoints->InsertNextPoint(Width - 10, 10, 0);
+    colorBarPoints->InsertNextPoint(Width - 10, 10 + barHeight, 0);
+    colorBarPoints->InsertNextPoint(Width - barWidth - 10, 10 + barHeight, 0);
 
     vtkIdType polyIds[4] = {0, 1, 2, 3};
     colorBarPolys->InsertNextCell(4, polyIds);
@@ -715,7 +699,7 @@ void VtkWidget::onCompare()
     cloudEntity->isComparsionCloud = true;
     m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
     m_pMainWin->NotifySubscribe();
-     ShowColorTemperature(maxDistance, minDistance);
+    ShowColorBar();
 }
 
 //FPFH+ICP
