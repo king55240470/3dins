@@ -642,6 +642,73 @@ public:
     vtkSmartPointer<vtkActor> planeToPlane();
 };
 
+class CAngle : public CEntity {
+    static int currentCAngleId;
+    double angleValue;
+    double uptolerance;
+    double undertolerance;
+    CPosition vertex;
+    CLine line1;
+    CLine line2;
+    bool qualified = false;
+
+    QDataStream& serialize(QDataStream& out) const override {
+        CEntity::serialize(out);  // 先序列化基类部分
+        out << currentCAngleId << angleValue << uptolerance << undertolerance << vertex;
+        line1.serialize(out);
+        line2.serialize(out);
+        out << qualified;
+        return out;
+    }
+
+    QDataStream& deserialize(QDataStream& in) override {
+        CEntity::deserialize(in);  // 先反序列化基类部分
+        in >> currentCAngleId >> angleValue >> uptolerance >> undertolerance >> vertex;
+        line1.deserialize(in);
+        line2.deserialize(in);
+        in >> qualified;
+        return in;
+    }
+
+public:
+    CAngle() {
+        angleValue = 0.0;
+        uptolerance = 0.0;
+        undertolerance = 0.0;
+        m_strAutoName = QString("角度%1").arg(currentCAngleId);
+        m_strCName = QString("角度%1").arg(currentCAngleId);
+        currentCAngleId++;
+    }
+
+    QString getCEntityInfo() override; // 获取图形的信息，在浮动窗口显示
+
+    int GetUniqueType() override {
+        return enAngle;
+    }
+
+    double getAngleValue() const;
+    void setAngleValue(double value);
+    double getUptolerance() const;
+    void setUptolerance(double value);
+    double getUndertolerance() const;
+    void setUndertolerance(double value);
+    CPosition getVertex() const;
+    void setVertex(const CPosition &value);
+
+    CLine getLine1() const;
+    void setLine1(const CLine &value);
+    CLine getLine2() const;
+    void setLine2(const CLine &value);
+
+    bool isQualified() const;
+    void setQualified(bool value);
+
+    bool judge();
+    double getAngle() const;
+
+    vtkSmartPointer<vtkActor> draw() override;
+};
+
 class CPointCloud : public CEntity
 {
 public:
