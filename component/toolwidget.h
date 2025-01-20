@@ -30,7 +30,8 @@ public:
 
     void NotifySubscribe();
 
-    static const int SingalToolBarActionNum=10;//每行工具栏的图标数目
+    static const int iconsize=25;
+    static const int SingalToolBarActionNum=11;//每行工具栏的图标数目
     static const int ActionKindNum=5;//工具栏的种类数
     //获取图标名称
     QStringList* getSaveActionNames();
@@ -74,6 +75,14 @@ public:
     UniqueToolBar& getConstruct();
     ToolBarGathter& getToolBarGather();
 
+    //获得保存图片路片路径
+    QVector<QString>& getImagePaths();
+    //获得当前时间编号
+    QString getTimeString();
+    //保存图片
+    void SaveImage(QString path,std::string format="png");
+    QString getCompareImagePath();
+
 public slots:
               //构造
     void onConstructPoint();
@@ -104,6 +113,8 @@ public slots:
     void onSaveImage();
 
 private:
+    //对比点云保存路径
+    QString CompareImagePath;
     void clearToolBar(QToolBar *toolbar);
     //新的工具栏类
     UniqueToolBar m_save;
@@ -150,5 +161,7 @@ private:
     //存储构建的元素
     QVector<CEntity*> constructEntityList;
     QVector<CEntity*> identifyEntityList;
+    //存储对比过程中产生图片路径
+    QVector<QString> imagePaths;
 };
 #endif // TOOLWIDGET_H
