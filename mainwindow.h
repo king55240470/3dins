@@ -100,6 +100,7 @@ public:
     VtkWidget * getPWinVtkWidget();
     DataWidget *getPWinDataWidget();
     ToolWidget *getPWinToolWidget();
+    VtkPresetWidget *getPWinVtkPresetWidget();
     //slots
     void on2dCoordOriginAuto(); // 创建坐标系
     void on2dCoordSave();
