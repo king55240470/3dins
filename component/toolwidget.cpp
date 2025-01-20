@@ -1924,7 +1924,8 @@ void ToolWidget::onFindCircle(){
     center.y=circle->getCenter()[1];
     center.z=circle->getCenter()[2];
     double radius=circle->getRad();
-    newCircle=constructor.createCircle(center,radius);
+    QVector4D normal=QVector4D(circle->getNormal().x(),circle->getNormal().y(),circle->getNormal().z(),1);
+    newCircle=constructor.createCircle(center,radius,normal);
     if(newCircle==nullptr){
         qDebug()<<"拟合圆生成错误";
         return ;
