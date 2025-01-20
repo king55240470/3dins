@@ -7,6 +7,7 @@
 #include <vtkInteractorStyle.h>
 #include <vtkEventQtSlotConnect.h>
 
+
 VtkWidget::VtkWidget(QWidget *parent)
     : QWidget(parent),
     cloud1(new pcl::PointCloud<pcl::PointXYZ>()),  // 初始化第一个点云对象
@@ -350,8 +351,7 @@ void VtkWidget::closeText()
     renWin->Render();
 }
 
-void VtkWidget::ShowColorBar()
-{
+void VtkWidget::ShowColorBar(){
     // 创建一个 PolyData 对象来存储色温尺的几何信息
     vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
     vtkSmartPointer<vtkCellArray> lines = vtkSmartPointer<vtkCellArray>::New();
@@ -368,17 +368,28 @@ void VtkWidget::ShowColorBar()
     vtkIdType pointIds[2] = {0, 1};
     lines->InsertNextCell(2, pointIds);
 
-    // 创建颜色渐变
-    for (int i = 0; i <= barWidth; ++i) // 使用 <= 来确保包括最后一个点
-    {
-        float ratio = static_cast<float>(i) / barWidth;
-        int r = static_cast<int>(255 * ratio);         // 红色分量从0到255
-        int b = 255 - r;                                // 蓝色分量从255到0
-        int g = 0;                                      // 绿色分量始终为0
-        colors->InsertNextTuple3(r, g, b); // 红蓝渐变，绿色为0
-    }
+    // 创建颜色渐变（从纯蓝到纯红）
+    // for (int i = 0; i < barWidth; ++i)
+    // {
+    //     float ratio = static_cast<float>(i) / (barWidth - 1); // 0 到 1 的比例
+    //     int r = static_cast<int>(255 * ratio);
+    //     int b = 255 - r;
+    //     int g = 0; // 绿色分量始终为0，实现纯蓝到纯红的渐变
+    //     colors->InsertNextTuple3(r, g, b); // 红蓝渐变（现在包含绿色分量，但始终为0）
+    // }
 
-    // 创建用于显示颜色条的多边形 PolyData
+    // 为每个顶点设置颜色
+    colors->InsertTuple3(0, 255, 0, 0); // 左下角（红色）
+    colors->InsertTuple3(1, 255, 0, 0); // 右下角（红色）
+    colors->InsertTuple3(2, 0, 0, 255); // 右上角（蓝色）
+    colors->InsertTuple3(3, 0, 0, 255); // 左上角（蓝色）
+
+    // 创建 PolyData
+    vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
+    polyData->SetPoints(points);
+    polyData->SetLines(lines);
+
+    // 将颜色数据绑定到线段上（通过绘制多边形来模拟颜色条）
     vtkSmartPointer<vtkPolyData> colorBarPolyData = vtkSmartPointer<vtkPolyData>::New();
     vtkSmartPointer<vtkPoints> colorBarPoints = vtkSmartPointer<vtkPoints>::New();
     vtkSmartPointer<vtkCellArray> colorBarPolys = vtkSmartPointer<vtkCellArray>::New();
@@ -393,24 +404,7 @@ void VtkWidget::ShowColorBar()
 
     colorBarPolyData->SetPoints(colorBarPoints);
     colorBarPolyData->SetPolys(colorBarPolys);
-
-    // 创建一个颜色数组用于多边形
-    vtkSmartPointer<vtkUnsignedCharArray> colorBarColors = vtkSmartPointer<vtkUnsignedCharArray>::New();
-    colorBarColors->SetNumberOfComponents(3);
-    colorBarColors->SetNumberOfTuples(4); // +1 是为了包括最后一个点的颜色
-
-    // 填充颜色数组，这里我们使用插值来确保颜色渐变平滑
-    for (int i = 0; i <= barWidth; ++i)
-    {
-        float ratio = static_cast<float>(i) / barWidth;
-        int r = static_cast<int>(255 * ratio);
-        int b = 255 - r;
-        int g = 0;
-        colorBarColors->SetTuple3(i, r, g, b);
-    }
-
-    // 将颜色数据绑定到多边形上
-    colorBarPolyData->GetPointData()->SetScalars(colorBarColors);
+    colorBarPolyData->GetPointData()->SetScalars(colors); // 设置颜色数据
 
     // 创建 Mapper
     vtkSmartPointer<vtkPolyDataMapper2D> colorBarMapper = vtkSmartPointer<vtkPolyDataMapper2D>::New();
@@ -420,6 +414,7 @@ void VtkWidget::ShowColorBar()
     vtkSmartPointer<vtkActor2D> colorBarActor = vtkSmartPointer<vtkActor2D>::New();
     colorBarActor->SetMapper(colorBarMapper);
 
+    // 获取渲染器并添加 Actor2D
     renderer->AddActor2D(colorBarActor);
 
     // 刷新渲染窗口
@@ -676,8 +671,8 @@ void VtkWidget::onCompare()
     comparisonCloud->resize(cloud1->size());
 
     // 初始化最大和最小距离变量
-    maxDistance = std::numeric_limits<float>::min();
-    minDistance = std::numeric_limits<float>::max();
+    float maxDistance = std::numeric_limits<float>::min();
+    float minDistance = std::numeric_limits<float>::max();
 
     // 用于存储最近邻搜索的结果
     std::vector<int> pointIdxNKNSearch(1);
@@ -707,13 +702,13 @@ void VtkWidget::onCompare()
             point.b = b;
         }
     }
-    ShowColorBar();
 
     // 由RGB点云生成cpointcloud对象，并存入entitylist
     auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateCompareCloud(*comparisonCloud);
     cloudEntity->isComparsionCloud = true;
     m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
     m_pMainWin->NotifySubscribe();
+    ShowColorBar();
 }
 
 //FPFH+ICP

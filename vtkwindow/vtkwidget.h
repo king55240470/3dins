@@ -157,8 +157,6 @@ private:
     vtkSmartPointer<vtkPolyDataMapper2D> lineMapper;//指向线的mapper
     QVector<vtkSmartPointer<vtkActor2D>> directLines; // 存储所有的指向线段
 
-    float maxDistance; // 色温图最大值（纯红）
-    float minDistance; // 色温图最小值（纯蓝）
 public slots:
 
 };

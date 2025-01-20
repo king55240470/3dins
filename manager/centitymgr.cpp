@@ -146,6 +146,9 @@ QDataStream& operator>>(QDataStream& in, CEntityMgr& mgr) {
         case enPointCloud:
             entity=new CPointCloud();
             break;
+        case enAngle:
+            entity=new CAngle();
+            break;
         default:
             entity = new CEntity();
             break;
