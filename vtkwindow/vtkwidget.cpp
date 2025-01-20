@@ -132,6 +132,11 @@ void VtkWidget::setCentityList(QVector<CEntity *> list)
     elementEntityList=list;
 }
 
+vtkSmartPointer<vtkTextActor> &VtkWidget::getInfoText()
+{
+    return infoTextActor;
+}
+
 void VtkWidget::createText()
 {
     // 创建浮动信息的文本演员
@@ -147,7 +152,6 @@ void VtkWidget::createText()
     infoTextActor->GetTextProperty()->SetJustificationToLeft(); // 左对齐
     infoTextActor->GetTextProperty()->SetBold(1); // 设置粗体
     infoTextActor->GetTextProperty()->SetShadow(true);
-    infoTextActor->GetTextProperty()->SetShadowOffset(1, 1); // 设置阴影偏移量
 
     QString qstr = elementEntity->getCEntityInfo();
     QByteArray byteArray = qstr.toUtf8(); // 转换 QString 到 QByteArray
@@ -385,6 +389,7 @@ void VtkWidget::ShowColorTemperature(float maxDistance, float minDistance)
         colors->InsertNextTuple3(r, g, b); // 红蓝渐变（现在包含绿色分量，但始终为0）
     }
 
+
     // 创建 PolyData
     vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
     polyData->SetPoints(points);
@@ -394,6 +399,7 @@ void VtkWidget::ShowColorTemperature(float maxDistance, float minDistance)
     vtkSmartPointer<vtkPolyData> colorBarPolyData = vtkSmartPointer<vtkPolyData>::New();
     vtkSmartPointer<vtkPoints> colorBarPoints = vtkSmartPointer<vtkPoints>::New();
     vtkSmartPointer<vtkCellArray> colorBarPolys = vtkSmartPointer<vtkCellArray>::New();
+
 
     colorBarPoints->InsertNextPoint(10, 10, 0);
     colorBarPoints->InsertNextPoint(10 + barWidth, 10, 0);
@@ -477,6 +483,9 @@ void VtkWidget::reDrawCentity(){
                     actorToEntity.insert(actor,entitylist[i]);
                     getRenderer()->AddActor(actor);
                     break;
+                }
+                else{ // 如果隐藏，则删除高亮前的记录
+                    // m_highlightstyle->getPickedActors().erase()
                 }
             }
         }

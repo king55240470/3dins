@@ -173,14 +173,17 @@ void MouseInteractorHighlightActor::CancelHighlightActors()
 // 实现高亮显示actor的方法
 void MouseInteractorHighlightActor::HighlightActor(vtkActor* actor)
 {
-    // 保存高亮前的属性
-    vtkSmartPointer<vtkProperty> originalProperty = vtkSmartPointer<vtkProperty>::New();
-    originalProperty->DeepCopy(actor->GetProperty());
-    pickedActors.emplace_back(actor, originalProperty);// emplace_back作用等于push_back
+    // 如果actor没被隐藏
+    if(actor != nullptr){
+        // 保存高亮前的属性
+        vtkSmartPointer<vtkProperty> originalProperty = vtkSmartPointer<vtkProperty>::New();
+        originalProperty->DeepCopy(actor->GetProperty());
+        pickedActors.emplace_back(actor, originalProperty);// emplace_back作用等于push_back
+        // 让actor高亮
+        actor->GetProperty()->SetColor(MainWindow::HighLightColor[0], MainWindow::HighLightColor[1],
+                                       MainWindow::HighLightColor[2]);
+    }
 
-    // 让actor高亮
-    actor->GetProperty()->SetColor(MainWindow::HighLightColor[0], MainWindow::HighLightColor[1],
-    MainWindow::HighLightColor[2]);
 }
 
 // 实现恢复actor属性的方法
@@ -197,7 +200,7 @@ void MouseInteractorHighlightActor::ResetActor(vtkActor* actor)
     }
 }
 
-QVector<std::pair<vtkSmartPointer<vtkActor>, vtkSmartPointer<vtkProperty> > > &MouseInteractorHighlightActor::getPickedActors()
+QVector<std::pair<vtkSmartPointer<vtkActor>, vtkSmartPointer<vtkProperty>>> &MouseInteractorHighlightActor::getPickedActors()
 {
     return pickedActors;
 }
