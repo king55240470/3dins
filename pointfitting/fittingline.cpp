@@ -57,10 +57,11 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingLine::RANSAC(pcl::PointXYZRGB sear
         pca.setInputCloud(cloud_subset);
 
         // 获取PCA计算得到的主方向（直线方向）
-        normal = pca.getEigenVectors().col(0);
-        // normal=Eigen::Vector3f(coefficients->values[3], coefficients->values[4], coefficients->values[5]);
+        //normal = pca.getEigenVectors().col(0);
+        normal=Eigen::Vector3f(coefficients->values[3], coefficients->values[4], coefficients->values[5]);
         normal.normalize();
         onePoint=Eigen::Vector3f(coefficients->values[0], coefficients->values[1], coefficients->values[2]);
+        //onePoint=Eigen::Vector3f(searchPoint.x,searchPoint.y,searchPoint.z);
 
         //获取平面上的所有点云
         for (int i=0;i<cloudptr->size();i++) {
@@ -68,12 +69,6 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingLine::RANSAC(pcl::PointXYZRGB sear
                 lineCloud->points.push_back(cloudptr->points[i]);
             }
         }
-        // for (size_t i = 0; i < inliers->indices.size(); ++i) {
-        //     // 获取每个内点的索引
-        //     int index = inliers->indices[i];
-        //     // 从原始点云中获取对应的内点并添加到新点云中
-        //     lineCloud->points.push_back(cloudptr->points[index]);
-        // }
         lineCloud->width = lineCloud->points.size();
         lineCloud->height = 1;
         lineCloud->is_dense = true;
@@ -83,12 +78,6 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingLine::RANSAC(pcl::PointXYZRGB sear
             point.g = 0;
             point.b = 0;
         }
-
-        // qDebug()<<"00:"<<beginPoint.x()<<beginPoint.y()<<beginPoint.z();
-        // qDebug()<<"00:"<<endPoint.x()<<endPoint.y()<<endPoint.z();
-
-        // qDebug()<<"00:"<<beginPoint.x()<<beginPoint.y()<<beginPoint.z();
-        // qDebug()<<"00:"<<endPoint.x()<<endPoint.y()<<endPoint.z();
 
         // 初始化最大最小投影值
         float max_projection = -std::numeric_limits<float>::infinity();
@@ -100,7 +89,7 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingLine::RANSAC(pcl::PointXYZRGB sear
         // 遍历点云中的每个点
         for (const auto& point : lineCloud->points) {
             // 计算当前点的投影值
-            float projection = point.x * normal.x() + point.y * normal.y() + point.z * normal.z();
+            float projection = (point.getVector3fMap() - onePoint).dot(normal);
 
             // 更新最大最小投影值和对应点
             if (projection > max_projection) {
@@ -113,26 +102,8 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingLine::RANSAC(pcl::PointXYZRGB sear
             }
         }
 
-        // 计算投影到方向上的点
-        Eigen::Vector3f minProjVec(min_point.x, min_point.y, min_point.z);
-        Eigen::Vector3f maxProjVec(max_point.x, max_point.y, max_point.z);
-
-        // // 将最小投影点和最大投影点的投影向量计算并加回到方向上
-        // minProjVec = normal * minProjVec.dot(normal);
-        // maxProjVec = normal * maxProjVec.dot(normal);
-
-        // beginPoint=Eigen::Vector3f(minProjVec.x(),minProjVec.y(),minProjVec.z());
-        // endPoint=Eigen::Vector3f(maxProjVec.x(),maxProjVec.y(),maxProjVec.z());
-
-        // 计算投影值
-        float min_proj_val = (minProjVec - onePoint).dot(normal);
-        float max_proj_val = (maxProjVec - onePoint).dot(normal);
-
-        beginPoint = onePoint + min_proj_val * normal;
-        endPoint = onePoint + max_proj_val * normal;
-
-        // beginPoint=Eigen::Vector3f(min_point.x, min_point.y, min_point.z);
-        // endPoint=Eigen::Vector3f(max_point.x, max_point.y, max_point.z);
+        beginPoint = onePoint + min_projection * normal;
+        endPoint = onePoint + max_projection * normal;
 
         // 打印调试信息
         qDebug() << "Begin Point: " << beginPoint.x() << ", " << beginPoint.y() << ", " << beginPoint.z();
@@ -152,10 +123,6 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingLine::RANSAC(pcl::PointXYZRGB sear
 }
 
 bool FittingLine::FittingLine::isPointInLine(const pcl::PointXYZRGB& point){
-    // Eigen::Vector3f pointVec(point.x, point.y, point.z); // 点的坐标
-    // Eigen::Vector3f pointToLine = pointVec - onePoint; // 点到直线的向量
-    // double d=pointToLine.cross(normal).norm() / normal.norm(); // 计算点到直线的距离
-    // return fabs(d) <= 0.1;
     Eigen::Vector3f point2(point.x,point.y,point.z);
 
     // 计算点与直线上的点的向量
