@@ -701,6 +701,20 @@ void VtkWidget::onCompare()
     cloudEntity->isComparsionCloud = true;
     m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
     m_pMainWin->NotifySubscribe();
+
+    //得到时间编号
+    QString TimeString=m_pMainWin->getPWinToolWidget()->getTimeString();
+    //得到存放对比图片的路径
+    QString CompareImagePath=m_pMainWin->getPWinToolWidget()->getCompareImagePath();
+
+    //总路径
+    QString path=CompareImagePath+TimeString+".png";
+    qDebug()<<path;
+    //保存
+    m_pMainWin->getPWinToolWidget()->SaveImage(path);
+    //存储在toolwidget中以便在输出报告中使用
+    QVector<QString>& PathList=m_pMainWin->getPWinToolWidget()->getImagePaths();
+    PathList.append(path);
 }
 
 //FPFH+ICP
