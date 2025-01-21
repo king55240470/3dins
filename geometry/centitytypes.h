@@ -580,7 +580,7 @@ class CDistance : public CEntity{
         circle.serialize(out);
         line.serialize(out);
         out<< distance << Projection;
-        out <<isPointToPlane <<isPointToLine <<isPointToCircle;
+        out <<isPointToPoint<<isPointToPlane <<isPointToLine <<isPointToCircle<<isPlaneToPlane;
         return out;
     }
 
@@ -592,7 +592,7 @@ class CDistance : public CEntity{
         circle.deserialize(in);
         line.deserialize(in);
         in>>distance >>Projection;
-        in>> isPointToPlane >>isPointToLine >>isPointToCircle;
+        in>>isPointToPoint>> isPointToPlane >>isPointToLine >>isPointToCircle>>isPlaneToPlane;
         return in;
     }
 public:

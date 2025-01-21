@@ -79,9 +79,15 @@ QDataStream& operator<<(QDataStream& out, const CObjectMgr& mgr){
 
             out<<static_cast<int>(object->parent.size());
             qDebug()<<"parentSize:"<<object->parent.size();
-            for(const CObject* obj:object->parent){
-                const CObject* parentObj = static_cast<const CObject*>(obj);
-                parentObj->CObject::serialize(out);
+            for( const auto& obj:object->parent){
+                int typeInt_ = obj->GetUniqueType();  // 获取对象的类型标识符
+                ENTITY_TYPE type_ = static_cast<ENTITY_TYPE>(typeInt_);
+                out << type_;  // 序列化类型标识符
+
+                obj->serialize(out);
+
+                // const CObject* parentObj = static_cast<const CObject*>(obj);
+                // parentObj->CObject::serialize(out);
             }
         }
     }
@@ -95,12 +101,12 @@ QDataStream& operator>>(QDataStream& in, CObjectMgr& mgr){
     in >> mgr.m_nInsertPos >> mgr.m_bHideInvalid
         >> mgr.m_colorGroup[0] >> mgr.m_colorGroup[1] >> mgr.m_nGroupIndex;
 
-    qsizetype objectListSize;
+    qsizetype objectListSize=0;
     in >> objectListSize;
     qDebug()<<"objectListSize:"<<objectListSize;
     mgr.RemoveAll();
     for (qsizetype i = 0; i < objectListSize; ++i) {
-        int typeInt;
+        int typeInt=0;
         in >> typeInt;
         ENTITY_TYPE type = static_cast<ENTITY_TYPE>(typeInt);
         // qDebug()<<"type:"<<type;
@@ -153,8 +159,41 @@ QDataStream& operator>>(QDataStream& in, CObjectMgr& mgr){
             qDebug()<<"parentSize:"<<parentSize;
             object->parent.clear();
             for(int i=0;i<parentSize;i++){
-                CObject *obj=new CObject();
-                obj->CObject::deserialize(in);
+                int typeInt_;
+                in >> typeInt_;
+                ENTITY_TYPE type_ = static_cast<ENTITY_TYPE>(typeInt_);
+
+                CObject* obj = nullptr;
+                switch (type_) {
+                case enCircle:
+                    obj = new CCircle();
+                    break;
+                case enLine:
+                    obj=new CLine();
+                    break;
+                case enPoint:
+                    obj=new CPoint();
+                    break;
+                case enPlane:
+                    obj=new CPlane();
+                    break;
+                case enSphere:
+                    obj=new CSphere();
+                    break;
+                case enCylinder:
+                    obj=new CCylinder();
+                    break;
+                case enCone:
+                    obj=new CCone();
+                    break;
+                case enCuboid:
+                    obj=new CCuboid();
+                    break;
+                default:
+                    obj = new CObject();
+                    break;
+                }
+                obj->deserialize(in);
                 object->parent.append(obj);
             }
 
