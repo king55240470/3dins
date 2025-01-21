@@ -4,6 +4,7 @@
 #include"geometry/cpcsnode.h"
 #include<list>
 #include "centitymgr.h"
+#include "cobjectmgr.h"
 
 class CPcsMgr
 {

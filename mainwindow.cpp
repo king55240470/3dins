@@ -280,11 +280,13 @@ void MainWindow::openFile(){
                 qDebug() << "Failed to open file:" << file.errorString();
                 return;
             }
+            //deserialize
             QDataStream in(&file);
             // in.setVersion(QDataStream::Qt_6_0);
             in>>*m_EntityListMgr;
             in>>*m_ObjectListMgr;
             pWinSetDataWidget->deserialize(in);
+            //pWinFileManagerWidget->getContentItem()=pWinFileManagerWidget->deserializeItem(in);
             qDebug() << "加载成功,m_EntityListMgr的大小为:"<<m_EntityListMgr->getEntityList().size()<<"m_ObjectListMgr的大小为:"<<m_ObjectListMgr->getObjectList().size();
             qDebug()<<"首个Object的类型为:"<<m_ObjectListMgr->GetAt(0)->GetUniqueType();
             NotifySubscribe();
@@ -325,6 +327,7 @@ void MainWindow::saveFile(){
         return;
     }
 
+    //serialize
     QDataStream out(&file);
     // out.setVersion(QDataStream::Qt_6_0);
 
@@ -334,6 +337,7 @@ void MainWindow::saveFile(){
         out<<*m_EntityListMgr;
         out<<*m_ObjectListMgr;
         pWinSetDataWidget->serialize(out);
+        //pWinFileManagerWidget->serializeItem(out,pWinFileManagerWidget->getContentItem());
     }else{
         qWarning("Entity manager is null, nothing to save.");
     }

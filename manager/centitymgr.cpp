@@ -86,7 +86,9 @@ QDataStream& operator<<(QDataStream& out, const CEntityMgr& mgr) {
         int typeInt = entity->GetUniqueType();  // 获取对象的类型标识符
         ENTITY_TYPE type=static_cast<ENTITY_TYPE>(typeInt);
         out << type;  // 序列化类型标识符
-        entity->serialize(out);  // 调用对象的序列化方法（通过多态性处理具体类型）
+        if(type!=enPointCloud){
+            entity->serialize(out);  // 调用对象的序列化方法（通过多态性处理具体类型）
+        }
     }
 
     // // 序列化 m_SelList
@@ -155,9 +157,11 @@ QDataStream& operator>>(QDataStream& in, CEntityMgr& mgr) {
         }
 
         if (entity) {
-            entity->deserialize(in);  // 调用对象的反序列化方法
-            mgr.m_entityList.append(entity);
-            // mgr.Add(entity);
+            if(type!=enPointCloud){
+                entity->deserialize(in);  // 调用对象的反序列化方法
+                mgr.m_entityList.append(entity);
+                // mgr.Add(entity);
+            }
         }
     }
 

@@ -70,7 +70,8 @@ public:
             <<m_nCsForm
             <<m_strCName
             <<m_strAutoName
-            <<m_nObjectID;
+            <<m_nObjectID
+            <<Form;
 
         // out<<static_cast<int>(parent.size());
         // qDebug()<<"parentSize:"<<parent.size();
@@ -90,7 +91,8 @@ public:
             >>m_nCsForm
             >>m_strCName
             >>m_strAutoName
-            >>m_nObjectID;
+            >>m_nObjectID
+            >>Form;
 
         // int parentSize;
         // in>>parentSize;
