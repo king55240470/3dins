@@ -68,9 +68,11 @@ CDistance* DistanceConstructor::createDistance(CPlane* plane1, CPlane* plane2){
     newdistance->setbegin(pt1);
     newdistance->setplane(*plane2);
     double distance=fabs(newdistance->getdistanceplane());//从第一个平面中心到第二个平面
+    qDebug()<<"从第一个平面中心到第二个平面"<<distance;
     newdistance->setbegin(pt2);
     newdistance->setplane(*plane1);
     distance+=fabs(newdistance->getdistanceplane());//从第二个平面中心到第一个平面
+    qDebug()<<"从第二个平面中心到第一个平面"<<distance;
     distance/=2;//取平均值
     newdistance->setdistance(distance);
     newdistance->isPlaneToPlane = true;
