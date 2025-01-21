@@ -368,7 +368,6 @@ void ElementListWidget::ShowParent(CObject*obj)
             infoItem->setText(0,obj->m_strCName);
             infoItem->setText(1,"对齐得到的点云");
         }
-        return;
     }
     for(CObject*obj1:obj->parent){
         QTreeWidgetItem *infoItem = new QTreeWidgetItem(treeWidgetInfo);
