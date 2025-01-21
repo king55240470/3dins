@@ -71,8 +71,6 @@ void CPcsMgr::SetCurCoordSystem(int nPcsID, bool)
             m_pPcsCurrent=pPcsNode->pPcs;
         }
     }
-
-    //更新实体当前坐标系
 }
 
 
