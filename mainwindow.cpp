@@ -342,10 +342,10 @@ void MainWindow::openFile(){
         // 根据文件扩展名进行判断
         if (filePath.endsWith("ply")) {
             pWinFileManagerWidget->openModelFile(fileName, filePath);
-            //pWinVtkPresetWidget->setWidget(fileName+"文件已打开");
+            pWinVtkPresetWidget->setWidget(fileName+"文件已打开");
         } else if (filePath.endsWith("pcd")) {
             pWinFileManagerWidget->openMeasuredFile(fileName, filePath);
-            //pWinVtkPresetWidget->setWidget(fileName+"文件已打开");
+            pWinVtkPresetWidget->setWidget(fileName+"文件已打开");
             pWinElementListWidget->onAddElement();
         }else if(filePath.endsWith("qins")){
             QFile file(filePath);
@@ -354,11 +354,18 @@ void MainWindow::openFile(){
                 qDebug() << "Failed to open file:" << file.errorString();
                 return;
             }
+            //deserialize
             QDataStream in(&file);
             // in.setVersion(QDataStream::Qt_6_0);
             in>>*m_EntityListMgr;
             in>>*m_ObjectListMgr;
             pWinSetDataWidget->deserialize(in);
+            in>>pWinFileMgr->getContentItemMap();
+            // in>>pWinFileMgr->getIdentifyItemMap();
+
+            //去除原来构建的点云
+            pWinFileMgr->removePointCloudKeys(pWinFileMgr->getContentItemMap());
+
             qDebug() << "加载成功,m_EntityListMgr的大小为:"<<m_EntityListMgr->getEntityList().size()<<"m_ObjectListMgr的大小为:"<<m_ObjectListMgr->getObjectList().size();
             qDebug()<<"首个Object的类型为:"<<m_ObjectListMgr->GetAt(0)->GetUniqueType();
             NotifySubscribe();
@@ -399,6 +406,7 @@ void MainWindow::saveFile(){
         return;
     }
 
+    //serialize
     QDataStream out(&file);
     // out.setVersion(QDataStream::Qt_6_0);
 
@@ -408,6 +416,8 @@ void MainWindow::saveFile(){
         out<<*m_EntityListMgr;
         out<<*m_ObjectListMgr;
         pWinSetDataWidget->serialize(out);
+        out<<pWinFileMgr->getContentItemMap();
+        // out<<pWinFileMgr->getIdentifyItemMap();
     }else{
         qWarning("Entity manager is null, nothing to save.");
     }
