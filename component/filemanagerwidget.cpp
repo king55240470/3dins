@@ -33,7 +33,7 @@ FileManagerWidget::FileManagerWidget(QWidget *parent)
 
     rootItem = model->invisibleRootItem();
 
-    modelFile=new QStandardItem("打开的模型文件");
+    modelFile=new QStandardItem("打开的标准模型文件");
     rootItem->appendRow(modelFile);
 
     measuredFile = new QStandardItem("打开的实测文件");
@@ -46,6 +46,8 @@ FileManagerWidget::FileManagerWidget(QWidget *parent)
     rootItem->appendRow(identifyItem);
 
     filetree->setModel(model);
+
+    filetree->expandAll();  // 展开所有项
 
     layout->addWidget(filetree);
     layout->setContentsMargins(0, 0, 0, 0);//消除边距
@@ -84,6 +86,7 @@ void FileManagerWidget::openModelFile(QString fileName,QString filePath){
     }
     m_pMainWin->NotifySubscribe();
     m_pMainWin->getPWinVtkWidget()->onTopView();
+
 }
 
 void FileManagerWidget::openMeasuredFile(QString fileName,QString filePath){

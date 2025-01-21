@@ -52,9 +52,16 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingLine::RANSAC(pcl::PointXYZRGB sear
         // 执行分割
         seg.segment(*inliers, *coefficients);
 
-        normal=Eigen::Vector3f(coefficients->values[0], coefficients->values[1], coefficients->values[2]);
+        // 计算点云的中心点
+        pcl::PCA<pcl::PointXYZRGB> pca;
+        pca.setInputCloud(cloud_subset);
+
+        // 获取PCA计算得到的主方向（直线方向）
+        //normal = pca.getEigenVectors().col(0);
+        normal=Eigen::Vector3f(coefficients->values[3], coefficients->values[4], coefficients->values[5]);
         normal.normalize();
-        onePoint=Eigen::Vector3f(coefficients->values[3], coefficients->values[4], coefficients->values[5]);
+        onePoint=Eigen::Vector3f(coefficients->values[0], coefficients->values[1], coefficients->values[2]);
+        //onePoint=Eigen::Vector3f(searchPoint.x,searchPoint.y,searchPoint.z);
 
         //获取平面上的所有点云
         for (int i=0;i<cloudptr->size();i++) {
@@ -72,40 +79,31 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingLine::RANSAC(pcl::PointXYZRGB sear
             point.b = 0;
         }
 
-        // qDebug()<<"00:"<<beginPoint.x()<<beginPoint.y()<<beginPoint.z();
-        // qDebug()<<"00:"<<endPoint.x()<<endPoint.y()<<endPoint.z();
+        // 初始化最大最小投影值
+        float max_projection = -std::numeric_limits<float>::infinity();
+        float min_projection = std::numeric_limits<float>::infinity();
 
-        // qDebug()<<"00:"<<beginPoint.x()<<beginPoint.y()<<beginPoint.z();
-        // qDebug()<<"00:"<<endPoint.x()<<endPoint.y()<<endPoint.z();
+        // 初始化最大最小投影点
+        pcl::PointXYZRGB max_point, min_point;
 
-        // 获取点云的最小和最大边界
-        pcl::PointXYZRGB min_pt, max_pt;
-        pcl::getMinMax3D(*lineCloud, min_pt, max_pt);
+        // 遍历点云中的每个点
+        for (const auto& point : lineCloud->points) {
+            // 计算当前点的投影值
+            float projection = (point.getVector3fMap() - onePoint).dot(normal);
 
-        Eigen::Vector3f min_point(min_pt.x, min_pt.y, min_pt.z);
-        Eigen::Vector3f max_point(max_pt.x, max_pt.y, max_pt.z);
+            // 更新最大最小投影值和对应点
+            if (projection > max_projection) {
+                max_projection = projection;
+                max_point = point;  // 记录投影值最大的点
+            }
+            if (projection < min_projection) {
+                min_projection = projection;
+                min_point = point;  // 记录投影值最小的点
+            }
+        }
 
-        // 计算直线与边界的交点
-        // 直线方程：P(t) = P0 + t * V，其中P0是一个点，V是方向向量
-        // 求与边界的交点，计算t_min和t_max
-
-        // 计算各个方向上的t值
-        float t_min_x = (min_point.x() - onePoint.x()) / normal.x();
-        float t_max_x = (max_point.x() - onePoint.x()) / normal.x();
-
-        float t_min_y = (min_point.y() - onePoint.y()) / normal.y();
-        float t_max_y = (max_point.y() - onePoint.y()) / normal.y();
-
-        float t_min_z = (min_point.z() - onePoint.z()) / normal.z();
-        float t_max_z = (max_point.z() - onePoint.z()) / normal.z();
-
-        // 获取每个轴上的最小和最大t
-        float t_min = std::min({t_min_x, t_min_y, t_min_z});
-        float t_max = std::max({t_max_x, t_max_y, t_max_z});
-
-        // 计算起点和终点
-        beginPoint = onePoint + t_min * normal;
-        endPoint = onePoint + t_max * normal;
+        beginPoint = onePoint + min_projection * normal;
+        endPoint = onePoint + max_projection * normal;
 
         // 打印调试信息
         qDebug() << "Begin Point: " << beginPoint.x() << ", " << beginPoint.y() << ", " << beginPoint.z();
@@ -125,10 +123,19 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingLine::RANSAC(pcl::PointXYZRGB sear
 }
 
 bool FittingLine::FittingLine::isPointInLine(const pcl::PointXYZRGB& point){
-    Eigen::Vector3f pointVec(point.x, point.y, point.z); // 点的坐标
-    Eigen::Vector3f pointToLine = pointVec - onePoint; // 点到直线的向量
-    double d=pointToLine.cross(normal).norm() / normal.norm(); // 计算点到直线的距离
-    return fabs(d) <= distance;
+    Eigen::Vector3f point2(point.x,point.y,point.z);
+
+    // 计算点与直线上的点的向量
+    Eigen::Vector3f v = point2 - onePoint;
+
+    // 计算叉积
+    Eigen::Vector3f crossProduct = v.cross(normal);
+
+    // 计算叉积的模
+    float crossProductMagnitude = crossProduct.norm();
+
+    // 如果叉积的模小于给定阈值，则认为点接近直线
+    return crossProductMagnitude <= 0.1;
 }
 
 void FittingLine::setRadius(double rad){

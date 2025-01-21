@@ -12,6 +12,7 @@
 #include <vtkSmartPointer.h>
 #include <vtkActor.h>
 #include <QStandardItem>
+#include"cpcsnode.h"
 
 
 class CLine  : public CEntity
@@ -579,7 +580,7 @@ class CDistance : public CEntity{
         circle.serialize(out);
         line.serialize(out);
         out<< distance << Projection;
-        out <<isPointToPlane <<isPointToLine <<isPointToCircle;
+        out <<isPointToPoint<<isPointToPlane <<isPointToLine <<isPointToCircle<<isPlaneToPlane;
         return out;
     }
 
@@ -591,7 +592,7 @@ class CDistance : public CEntity{
         circle.deserialize(in);
         line.deserialize(in);
         in>>distance >>Projection;
-        in>> isPointToPlane >>isPointToLine >>isPointToCircle;
+        in>>isPointToPoint>> isPointToPlane >>isPointToLine >>isPointToCircle>>isPlaneToPlane;
         return in;
     }
 public:
@@ -650,12 +651,14 @@ class CAngle : public CEntity {
     CPosition vertex;
     CLine line1;
     CLine line2;
+    // CPcsNode* pcsNode;
     bool qualified = false;
 
     QDataStream& serialize(QDataStream& out) const override {
         CEntity::serialize(out);  // 先序列化基类部分
         out << currentCAngleId << angleValue << uptolerance << undertolerance << vertex;
         line1.serialize(out);
+        // out << *(pcsNode->getPcs());
         line2.serialize(out);
         out << qualified;
         return out;
@@ -665,6 +668,7 @@ class CAngle : public CEntity {
         CEntity::deserialize(in);  // 先反序列化基类部分
         in >> currentCAngleId >> angleValue >> uptolerance >> undertolerance >> vertex;
         line1.deserialize(in);
+        // in >> *(pcsNode->getPcs());
         line2.deserialize(in);
         in >> qualified;
         return in;
@@ -726,33 +730,33 @@ public:
     static bool haveSaved;
     static bool haveOpened;
 
-    QDataStream& serialize(QDataStream& out) const override {
-        CEntity::serialize(out);  // 先序列化基类部分
-        out <<m_pt << pointCloudCount<< currentPointCloudId;
-        out <<isFileCloud  <<isComparsionCloud ;
+    // QDataStream& serialize(QDataStream& out) const override {
+    //     CEntity::serialize(out);  // 先序列化基类部分
+    //     out <<m_pt << pointCloudCount<< currentPointCloudId;
+    //     out <<isFileCloud  <<isComparsionCloud ;
 
-        if(!haveSaved){
-            std::string file_path = "D:/output_" + std::to_string(currentPointCloudId) + ".ply";
-            out<< QString::fromStdString(file_path);
-            pcl::io::savePLYFile(file_path, m_pointCloud);
-        }
-        return out;
-    }
+    //     if(!haveSaved){
+    //         std::string file_path = "D:/output_" + std::to_string(currentPointCloudId) + ".ply";
+    //         out<< QString::fromStdString(file_path);
+    //         pcl::io::savePLYFile(file_path, m_pointCloud);
+    //     }
+    //     return out;
+    // }
 
-    QDataStream& deserialize(QDataStream& in) override {
-        CEntity::deserialize(in);  // 先反序列化基类部分
-        in >>m_pt >> pointCloudCount >> currentPointCloudId;
-        in>>isFileCloud  >>isComparsionCloud ;
+    // QDataStream& deserialize(QDataStream& in) override {
+    //     CEntity::deserialize(in);  // 先反序列化基类部分
+    //     in >>m_pt >> pointCloudCount >> currentPointCloudId;
+    //     in>>isFileCloud  >>isComparsionCloud ;
 
-        if(!haveOpened){
-            QString path;
-            in>> path;
-            std::string file_path=path.toStdString();
-            pcl::io::loadPLYFile<pcl::PointXYZRGB>(file_path, m_pointCloud);
-        }
+    //     if(!haveOpened){
+    //         QString path;
+    //         in>> path;
+    //         std::string file_path=path.toStdString();
+    //         pcl::io::loadPLYFile<pcl::PointXYZRGB>(file_path, m_pointCloud);
+    //     }
 
-        return in;
-    }
+    //     return in;
+    // }
 public:
     CPointCloud()
     {

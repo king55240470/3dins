@@ -54,6 +54,7 @@ public:
     void showContextMenu(const QPoint &);
     void UpdateInfo();
     bool isChildOf(QStandardItem*, QStandardItem*);
+
 private slots:
     void getItem(const QModelIndex &);
     void changePlay(const QModelIndex &);
