@@ -5,7 +5,7 @@ QVector4D  toQVector4D(CPosition P){
 CPosition toCPosition(QVector4D P){
     return CPosition(P.x(),P.y(),P.z());
 }
-QVector4D crossProduct(const QVector4D& a, const QVector4D& b) {
+static QVector4D crossProduct(const QVector4D& a, const QVector4D& b) {
     return QVector4D(
         a.y() * b.z() - a.z() * b.y(),
         a.z() * b.x() - a.x() * b.z(),
