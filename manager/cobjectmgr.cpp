@@ -62,14 +62,6 @@ QVector<CObject *> &CObjectMgr::getObjectList()
 }
 
 QDataStream& operator<<(QDataStream& out, const CObjectMgr& mgr){
-    // out<<mgr.m_objectList.count();
-    // qDebug()<<"mgr.m_objectList.count:"<<mgr.m_objectList.count();
-
-    // for(CObject* obj:mgr.m_objectList){
-    //     if(obj){
-    //         obj->serialize(out);
-    //     }
-    // }
 
     out << mgr.m_nInsertPos << mgr.m_bHideInvalid
         << mgr.m_colorGroup[0] << mgr.m_colorGroup[1] << mgr.m_nGroupIndex;
@@ -82,7 +74,16 @@ QDataStream& operator<<(QDataStream& out, const CObjectMgr& mgr){
         ENTITY_TYPE type = static_cast<ENTITY_TYPE>(typeInt);
         out << type;  // 序列化类型标识符
         // qDebug()<<"type:"<<type;
-        object->serialize(out);  // 调用对象的序列化方法（通过多态性处理具体类型）
+        if(type!=enPointCloud){
+            object->serialize(out);  // 调用对象的序列化方法（通过多态性处理具体类型）
+
+            out<<static_cast<int>(object->parent.size());
+            qDebug()<<"parentSize:"<<object->parent.size();
+            for(const CObject* obj:object->parent){
+                const CObject* parentObj = static_cast<const CObject*>(obj);
+                parentObj->CObject::serialize(out);
+            }
+        }
     }
 
     return out;
@@ -90,27 +91,6 @@ QDataStream& operator<<(QDataStream& out, const CObjectMgr& mgr){
 
 QDataStream& operator>>(QDataStream& in, CObjectMgr& mgr){
     // mgr.RemoveAll();
-
-    // qsizetype objectCount;
-    // in >> objectCount;
-    // qDebug()<<"objectcount:"<<objectCount;
-
-    // // 反序列化每个对象
-    // for (int i = 0; i < objectCount; ++i)
-    // {
-    //     // QString type;
-    //     // in>>type;// "圆"
-
-    //     // if(type.){
-    //     //     CCircle* cir=new CCircle();
-    //     //     cir->deserialize(in);
-    //     // }
-
-    //     //pcs->object
-    //     CEntity* obj = new CEntity();
-    //     obj->deserialize(in);
-    //     mgr.Add(obj);
-    // }
 
     in >> mgr.m_nInsertPos >> mgr.m_bHideInvalid
         >> mgr.m_colorGroup[0] >> mgr.m_colorGroup[1] >> mgr.m_nGroupIndex;
@@ -165,10 +145,22 @@ QDataStream& operator>>(QDataStream& in, CObjectMgr& mgr){
             break;
         }
 
-        object->deserialize(in);  // 调用反序列化函数处理特有数据
-        mgr.m_objectList.append(object);
-        // mgr.Add(object);
+        if(type!=enPointCloud){
+            object->deserialize(in);  // 调用反序列化函数处理特有数据
 
+            int parentSize;
+            in>>parentSize;
+            qDebug()<<"parentSize:"<<parentSize;
+            object->parent.clear();
+            for(int i=0;i<parentSize;i++){
+                CObject *obj=new CObject();
+                obj->CObject::deserialize(in);
+                object->parent.append(obj);
+            }
+
+            mgr.m_objectList.append(object);
+            // mgr.Add(object);
+        }
     }
 
     return in;
