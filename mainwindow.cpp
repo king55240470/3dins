@@ -25,6 +25,7 @@ class PresetElemWidget;
 
 double MainWindow::ActorColor[3] = {0.5, 0.5, 0.5};
 double MainWindow::HighLightColor[3] = {1, 0, 0};
+double MainWindow::InfoTextColor[3] = {1, 1, 0};
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -59,7 +60,7 @@ void MainWindow::setupUi(){
     bar->addAction(contralAction);
 
     QMenu *presetMenu=bar->addMenu("预置元素");
-    // 创建图标
+    // 创建图标，用于构造、拟合、预置等功能的指示
     QIcon pointIcon(":/component/construct/point.jpg");
     QIcon lineIcon(":/component/construct/line.jpg");
     QIcon circleIcon(":/component/construct/circle.jpg");
@@ -68,6 +69,10 @@ void MainWindow::setupUi(){
     QIcon cylinderIcon(":/component/construct/cylinder.jpg");
     QIcon coneIcon(":/component/construct/cone.jpg");
     QIcon boxIcon(":/component/viewangle/isometric.png");
+    QIcon distanceIcon(":/component/construct/distance.png");
+    QIcon rectangleIcon(":/component/construct/rectangle.jpg");
+    QIcon cloudIcon(":/component/construct/pointCloud.png");
+    QIcon angleIcon(":/component/construct/angle.png");
 
     QAction* pointAction =presetMenu->addAction("点");
     pointAction->setIcon(pointIcon);
@@ -120,7 +125,7 @@ void MainWindow::setupUi(){
         pWinVtkWidget->onAlign();
     });
 
-    QMenu* dateOperation=bar->addMenu("配置文件");
+    QMenu* dateOperation=bar->addMenu("配置");
     QAction* storeAction=dateOperation->addAction("数据记录");
     connect(storeAction,&QAction::triggered,this,&MainWindow::SaveIniFile);
 
@@ -135,6 +140,73 @@ void MainWindow::setupUi(){
     // connect(fittingSphereAction, &QAction::triggered, this, &setDataWidget::setSphereData);
     // QAction* fittingLineAction=fittingMenu->addAction("拟合直线");
     // connect(fittingLineAction, &QAction::triggered, this, &setDataWidget::setLineData);
+
+    QMenu* constructorMenu = bar->addMenu("构造");
+    QAction* constructPoint = constructorMenu->addAction("点");
+    QAction* constructLine = constructorMenu->addAction("线");
+    QAction* constructPlane = constructorMenu->addAction("平面");
+    QAction* constructCircle = constructorMenu->addAction("圆");
+    QAction* constructSphere = constructorMenu->addAction("球体");
+    QAction* constructRect= constructorMenu->addAction("矩形");
+    QAction* constructCylinder = constructorMenu->addAction("圆柱");
+    QAction* constructCone = constructorMenu->addAction("圆锥");
+    QAction* constructDis= constructorMenu->addAction("距离");
+    QAction* constructCloud = constructorMenu->addAction("点云切割");
+    QAction* constructAngle = constructorMenu->addAction("角度");
+    // 插入图片
+    constructPoint->setIcon(pointIcon);
+    constructLine->setIcon(lineIcon);
+    constructPlane->setIcon(planeIcon);
+    constructCircle->setIcon(circleIcon);
+    constructRect->setIcon(rectangleIcon);
+    constructSphere->setIcon(sphereIcon);
+    constructCylinder->setIcon(cylinderIcon);
+    constructCone->setIcon(coneIcon);
+    constructDis->setIcon(distanceIcon);
+    constructCloud->setIcon(cloudIcon);
+    constructAngle->setIcon(angleIcon);
+    // 连接到 toolwidget
+    connect(constructPoint, &QAction::triggered, this, [&](){ pWinToolWidget->onConstructPoint(); });
+    connect(constructLine, &QAction::triggered, this, [&](){ pWinToolWidget->onConstructLine();});
+    connect(constructPlane, &QAction::triggered, this, [&](){ pWinToolWidget->onConstructPlane();});
+    connect(constructCircle, &QAction::triggered, this, [&](){ pWinToolWidget->onConstructCircle();});
+    connect(constructSphere, &QAction::triggered, this, [&](){ pWinToolWidget->onConstructSphere();});
+    connect(constructCylinder, &QAction::triggered, this, [&](){ pWinToolWidget->onConstructCylinder();});
+    connect(constructCone, &QAction::triggered, this, [&](){ pWinToolWidget->onConstructLine();});
+    connect(constructDis, &QAction::triggered, this, [&](){ pWinToolWidget->onConstructDistance();});
+    connect(constructCloud, &QAction::triggered, this, [&](){ pWinToolWidget->onConstructPointCloud();});
+    connect(constructAngle, &QAction::triggered, this, [&](){ pWinToolWidget->onConstructAngle();});
+    connect(constructRect, &QAction::triggered, this, [&](){ pWinToolWidget->onConstructRectangle();});
+
+    QMenu* fittingMenu = bar->addMenu("识别");
+    QAction* findPoint = fittingMenu->addAction("点");
+    QAction* findLine = fittingMenu->addAction("线");
+    QAction* findPlane = fittingMenu->addAction("平面");
+    QAction* findCirlce = fittingMenu->addAction("圆");
+    QAction* findRect = fittingMenu->addAction("矩形");
+    QAction* findSphere = fittingMenu->addAction("球体");
+    QAction* findCylinder= fittingMenu->addAction("圆柱");
+    QAction* findCone = fittingMenu->addAction("圆锥");
+
+    findPoint->setIcon(pointIcon);
+    findLine->setIcon(lineIcon);
+    findPlane->setIcon(planeIcon);
+    findCirlce->setIcon(circleIcon);
+    findRect->setIcon(rectangleIcon);
+    findSphere->setIcon(sphereIcon);
+    findCylinder->setIcon(cylinderIcon);
+    findCone->setIcon(coneIcon);
+
+    connect(findPoint, &QAction::triggered, this, [&](){ pWinToolWidget->onFindPoint(); });
+    connect(findLine, &QAction::triggered, this, [&](){ pWinToolWidget->onFindLine(); });
+    connect(findPlane, &QAction::triggered, this, [&](){ pWinToolWidget->onFindPlane(); });
+    connect(findCirlce, &QAction::triggered, this, [&](){ pWinToolWidget->onFindCircle(); });
+    connect(findRect, &QAction::triggered, this, [&](){ pWinToolWidget->onFindRectangle(); });
+    connect(findSphere, &QAction::triggered, this, [&](){ pWinToolWidget->onFindSphere(); });
+    connect(findCylinder, &QAction::triggered, this, [&](){ pWinToolWidget->onFindCylinder(); });
+    connect(findCone, &QAction::triggered, this, [&](){ pWinToolWidget->onFindCone(); });
+
+
 
     QMenu * switchTheme = bar->addMenu("主题");
     QAction* lightBlue = switchTheme->addAction("浅蓝色(默认)");
@@ -270,8 +342,10 @@ void MainWindow::openFile(){
         // 根据文件扩展名进行判断
         if (filePath.endsWith("ply")) {
             pWinFileManagerWidget->openModelFile(fileName, filePath);
+            pWinVtkPresetWidget->setWidget(fileName+"文件已打开");
         } else if (filePath.endsWith("pcd")) {
             pWinFileManagerWidget->openMeasuredFile(fileName, filePath);
+            pWinVtkPresetWidget->setWidget(fileName+"文件已打开");
             pWinElementListWidget->onAddElement();
         }else if(filePath.endsWith("qins")){
             QFile file(filePath);
@@ -280,11 +354,18 @@ void MainWindow::openFile(){
                 qDebug() << "Failed to open file:" << file.errorString();
                 return;
             }
+            //deserialize
             QDataStream in(&file);
             // in.setVersion(QDataStream::Qt_6_0);
             in>>*m_EntityListMgr;
             in>>*m_ObjectListMgr;
             pWinSetDataWidget->deserialize(in);
+            in>>pWinFileMgr->getContentItemMap();
+            // in>>pWinFileMgr->getIdentifyItemMap();
+
+            //去除原来构建的点云
+            pWinFileMgr->removePointCloudKeys(pWinFileMgr->getContentItemMap());
+
             qDebug() << "加载成功,m_EntityListMgr的大小为:"<<m_EntityListMgr->getEntityList().size()<<"m_ObjectListMgr的大小为:"<<m_ObjectListMgr->getObjectList().size();
             qDebug()<<"首个Object的类型为:"<<m_ObjectListMgr->GetAt(0)->GetUniqueType();
             NotifySubscribe();
@@ -325,6 +406,7 @@ void MainWindow::saveFile(){
         return;
     }
 
+    //serialize
     QDataStream out(&file);
     // out.setVersion(QDataStream::Qt_6_0);
 
@@ -334,6 +416,8 @@ void MainWindow::saveFile(){
         out<<*m_EntityListMgr;
         out<<*m_ObjectListMgr;
         pWinSetDataWidget->serialize(out);
+        out<<pWinFileMgr->getContentItemMap();
+        // out<<pWinFileMgr->getIdentifyItemMap();
     }else{
         qWarning("Entity manager is null, nothing to save.");
     }
@@ -1056,9 +1140,11 @@ void MainWindow::onConvertLightGreyTheme()
     MainWindow::HighLightColor[0] = 1;
     MainWindow::HighLightColor[1] = 1;
     MainWindow::HighLightColor[2] = 0;
+    MainWindow::InfoTextColor[0] = 1;
+    MainWindow::InfoTextColor[1] = 0;
+
     pWinVtkWidget->getRenderer()->SetBackground(1, 1, 1);
-    pWinVtkWidget->getInfoText()->GetTextProperty()->SetColor(1, 0, 0);
-    pWinVtkWidget->getRenderer()->Render();
+    NotifySubscribe();
 }
 
 void MainWindow::onConvertLighBlueTheme()
@@ -1174,4 +1260,8 @@ setDataWidget *MainWindow::getPWinSetDataWidget(){
 }
 QMap<vtkSmartPointer<vtkActor>, CEntity*>& MainWindow::getactorToEntityMap(){
     return  actorToEntityMap;
+}
+
+VtkPresetWidget *MainWindow::getPWinVtkPresetWidget(){
+    return pWinVtkPresetWidget;
 }

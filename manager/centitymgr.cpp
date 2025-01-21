@@ -3,7 +3,10 @@
 #include "geometry/globes.h"
 
 CEntityMgr::CEntityMgr() {
-
+    m_nSize=0;
+    m_nCount=0;
+    m_bRedraw=false;
+    m_nRedrawIndex=0;
 }
 
 void CEntityMgr::Add(CEntity* pEntity){
@@ -82,11 +85,27 @@ QDataStream& operator<<(QDataStream& out, const CEntityMgr& mgr) {
 
     // 序列化 m_entityList
     out << static_cast<int>(mgr.m_entityList.size());
+    qDebug()<<static_cast<int>(mgr.m_entityList.size());
     for (const auto& entity : mgr.m_entityList) {
         int typeInt = entity->GetUniqueType();  // 获取对象的类型标识符
         ENTITY_TYPE type=static_cast<ENTITY_TYPE>(typeInt);
         out << type;  // 序列化类型标识符
-        entity->serialize(out);  // 调用对象的序列化方法（通过多态性处理具体类型）
+        if(type!=enPointCloud){
+            entity->serialize(out);  // 调用对象的序列化方法（通过多态性处理具体类型）
+
+            out<<static_cast<int>(entity->parent.size());
+            qDebug()<<"parentSize:"<<entity->parent.size();
+            for( const auto& ent:entity->parent){
+                int typeInt_ = ent->GetUniqueType();  // 获取对象的类型标识符
+                ENTITY_TYPE type_ = static_cast<ENTITY_TYPE>(typeInt_);
+                out << type_;  // 序列化类型标识符
+
+                ent->serialize(out);
+
+                // const CObject* parentObj = static_cast<const CObject*>(obj);
+                // parentObj->CObject::serialize(out);
+            }
+        }
     }
 
     // // 序列化 m_SelList
@@ -102,7 +121,7 @@ QDataStream& operator<<(QDataStream& out, const CEntityMgr& mgr) {
 }
 
 QDataStream& operator>>(QDataStream& in, CEntityMgr& mgr) {
-    int entityListSize, selListSize;
+    int entityListSize=0;
 
     in >> mgr.m_nSize >> mgr.m_nCount >> mgr.m_bRedraw >> mgr.m_nRedrawIndex;
 
@@ -110,7 +129,7 @@ QDataStream& operator>>(QDataStream& in, CEntityMgr& mgr) {
     in >> entityListSize;
     mgr.m_entityList.clear();  // 清空现有数据
     for (int i = 0; i < entityListSize; ++i) {
-        int typeInt;
+        int typeInt=0;
         in >> typeInt;
         ENTITY_TYPE type = static_cast<ENTITY_TYPE>(typeInt);
 
@@ -155,9 +174,55 @@ QDataStream& operator>>(QDataStream& in, CEntityMgr& mgr) {
         }
 
         if (entity) {
-            entity->deserialize(in);  // 调用对象的反序列化方法
-            mgr.m_entityList.append(entity);
-            // mgr.Add(entity);
+            if(type!=enPointCloud){
+                entity->deserialize(in);  // 调用对象的反序列化方法
+
+                int parentSize;
+                in>>parentSize;
+                qDebug()<<"parentSize:"<<parentSize;
+                entity->parent.clear();
+                for(int i=0;i<parentSize;i++){
+                    int typeInt_;
+                    in >> typeInt_;
+                    ENTITY_TYPE type_ = static_cast<ENTITY_TYPE>(typeInt_);
+
+                    CEntity* ent = nullptr;
+                    switch (type_) {
+                    case enCircle:
+                        ent = new CCircle();
+                        break;
+                    case enLine:
+                        ent=new CLine();
+                        break;
+                    case enPoint:
+                        ent=new CPoint();
+                        break;
+                    case enPlane:
+                        ent=new CPlane();
+                        break;
+                    case enSphere:
+                        ent=new CSphere();
+                        break;
+                    case enCylinder:
+                        ent=new CCylinder();
+                        break;
+                    case enCone:
+                        ent=new CCone();
+                        break;
+                    case enCuboid:
+                        ent=new CCuboid();
+                        break;
+                    default:
+                        ent = new CEntity();
+                        break;
+                    }
+                    ent->deserialize(in);
+                    entity->parent.append(ent);
+                }
+
+                mgr.m_entityList.append(entity);
+                // mgr.Add(entity);
+            }
         }
     }
 

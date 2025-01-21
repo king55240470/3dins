@@ -60,8 +60,7 @@ vtkSmartPointer<vtkActor> CPoint::draw(){
     vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
     actor->GetProperty()->SetPointSize(5); // 设置点的大小
-    actor->GetProperty()->SetColor(MainWindow::ActorColor[0], MainWindow::ActorColor[1]
-                                   ,MainWindow::ActorColor[2]);
+    actor->GetProperty()->SetColor(MainWindow::ActorColor);
 
     return actor;
 }
@@ -107,7 +106,7 @@ vtkSmartPointer<vtkActor> CLine::draw(){
     // 创建执行器
     auto actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
-    actor->GetProperty()->SetColor(0, 0, 0);
+    actor->GetProperty()->SetColor(MainWindow::ActorColor);
     actor->GetProperty()->SetLineWidth(3);
 
     // 添加到渲染窗口中
@@ -172,7 +171,7 @@ vtkSmartPointer<vtkActor> CCircle::draw(){
 
     auto actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
-    actor->GetProperty()->SetColor(0.0, 0.0, 0.0);
+    actor->GetProperty()->SetColor(MainWindow::ActorColor);
     actor->GetProperty()->SetLineWidth(3);
 
     return actor;
@@ -259,8 +258,7 @@ vtkSmartPointer<vtkActor> CPlane::draw() {
     // 创建一个 vtkActor 来表示多边形
     vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
-    actor->GetProperty()->SetColor(MainWindow::ActorColor[0], MainWindow::ActorColor[1]
-                                   ,MainWindow::ActorColor[2]);
+    actor->GetProperty()->SetColor(MainWindow::ActorColor);
 
     return actor;
 }
@@ -446,10 +444,10 @@ vtkSmartPointer<vtkActor> CCuboid::draw() {
     // 创建执行器
     auto actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
-    actor->GetProperty()->SetColor(0.5, 0.5, 0.5); // 设置颜色
+    actor->GetProperty()->SetColor(MainWindow::InfoTextColor); // 设置颜色
     actor->SetUserTransform(transform); // 应用变换
     actor->GetProperty()->SetRepresentationToWireframe(); // 改为线框绘制
-    actor->GetProperty()->SetLineWidth(2);
+    actor->GetProperty()->SetLineWidth(3);
 
     return actor;
 }

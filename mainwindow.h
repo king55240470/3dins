@@ -100,6 +100,7 @@ public:
     VtkWidget * getPWinVtkWidget();
     DataWidget *getPWinDataWidget();
     ToolWidget *getPWinToolWidget();
+    VtkPresetWidget *getPWinVtkPresetWidget();
     //slots
     void on2dCoordOriginAuto(); // 创建坐标系
     void on2dCoordSave();
@@ -127,6 +128,7 @@ public:
     // 以下参数用于随主题切换而改变渲染窗口的图形及背景颜色
     static double ActorColor[3];
     static double HighLightColor[3];
+    static double InfoTextColor[3];
 
     void SaveIniFile(); // 读取存储图形的配置文件并更新记录
 

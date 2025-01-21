@@ -1,5 +1,6 @@
 #include"toolwidget.h"
 #include"toolaction.h"
+#include"vtkwindow/vtkpresetwidget.h"
 #include <QtWidgets/QMainWindow>
 #include <QMenu>
 #include<QString>
@@ -8,6 +9,7 @@
 #include<QTableWidget>
 #include <QMessageBox>
 #include<QMenuBar>
+
 // 打开文件
 
 #include <QFile>
@@ -107,6 +109,13 @@
 #include<QPrintDialog>
 
 
+//Pdf保存
+#include <QApplication>
+#include <QPdfWriter>
+#include <QPainter>
+//图片保存
+#include <QDateTime>
+
 
 
 int getImagePaths(const QString& directory, QStringList &iconPaths, QStringList &iconNames);
@@ -119,7 +128,7 @@ ToolWidget::ToolWidget(QWidget *parent)
 
     m_pMainWin =(MainWindow*)parent;
 
-
+    CompareImagePath=QString("C:/Users/Lenovo/Desktop/点云对比图像/screenshot/");
 
     resize(400,250);
 
@@ -144,8 +153,8 @@ ToolWidget::ToolWidget(QWidget *parent)
 
 
     save_action_name_list_<<"excel"<< "pdf"<< "txt"<< "word"<<"image";
-    construct_action_name_list_<<"点"<<"线"<<"圆"<<"平面"<<"矩形"<<"圆柱"<<"圆锥"<<"球形"<<"距离"<<"点云"<<"角度";
-    find_action_name_list_<<"点"<<"线"<<"圆"<<"平面"<<"矩形"<<"圆柱"<<"圆锥"<<"球形";;
+    construct_action_name_list_<<"构造点"<<"构造线"<<"构造圆"<<"构造平面"<<"构造矩形"<<"构造圆柱"<<"构造圆锥"<<"构造球形"<<"构造距离"<<"构造点云"<<"构造角度";
+    find_action_name_list_<<"识别点"<<"识别线"<<"识别圆"<<"识别平面"<<"识别矩形"<<"识别圆柱"<<"识别圆锥"<<"识别球形";;
     coord_action_name_list_<<"创建坐标系"<<"旋转坐标系"<<"保存坐标系";
     view_angle_action_name_list_<<"主视角"<<"俯视角"<<"侧视角"<<"立体视角";
 
@@ -167,7 +176,9 @@ ToolWidget::ToolWidget(QWidget *parent)
     //创建工具栏
     int allActionNum=  m_nSaveActionNum+m_nConstructActionNum+m_nFindActionNum+m_nCoordActionNum+m_nViewAngleActionNum;
 
-    m_nToolbarNum =(allActionNum/SingalToolBarActionNum)+5;
+    m_nToolbarNum =(m_nSaveActionNum-1)/SingalToolBarActionNum+(m_nConstructActionNum-1)/SingalToolBarActionNum+
+            (m_nCoordActionNum-1)/SingalToolBarActionNum+(m_nFindActionNum-1)/SingalToolBarActionNum
+        +(m_nViewAngleActionNum-1)/SingalToolBarActionNum+5;
 
     toolBars=new QToolBar*[m_nToolbarNum];
 
@@ -175,7 +186,7 @@ ToolWidget::ToolWidget(QWidget *parent)
     for(int i=0;i<m_nToolbarNum;i++){
 
         toolBars[i]=new QToolBar(this);
-        toolBars[i]->setIconSize(QSize(28,28));
+        toolBars[i]->setIconSize(QSize(iconsize,iconsize));
         toolBars[i]->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         toolBars[i]->setStyleSheet(
             "QToolButton {"
@@ -281,7 +292,7 @@ void ToolWidget::createToolWidget(){
     int lastToolBar_index=0;
 
 
-    layout()->addWidget(new QLabel("识别:"));
+    //layout()->addWidget(new QLabel("识别:"));
     toolbar_index= addFindActions(find_action_name_list_,m_nFindActionNum, toolbar_index);
     for(int i=lastToolBar_index;i<=toolbar_index;i++){
         layout()->addWidget(toolBars[i]);
@@ -289,7 +300,7 @@ void ToolWidget::createToolWidget(){
     lastToolBar_index=toolbar_index+1;
 
 
-    layout()->addWidget(new QLabel("构造:"));
+   // layout()->addWidget(new QLabel("构造:"));
     toolbar_index= addConstructActions(construct_action_name_list_,m_nConstructActionNum, toolbar_index);
     for(int i=lastToolBar_index;i<=toolbar_index;i++){
         layout()->addWidget(toolBars[i]);
@@ -297,7 +308,7 @@ void ToolWidget::createToolWidget(){
     lastToolBar_index=toolbar_index+1;
 
 
-    layout()->addWidget(new QLabel("保存:"));
+    //layout()->addWidget(new QLabel("保存:"));
     toolbar_index= addSaveActions(save_action_name_list_,m_nSaveActionNum, toolbar_index);
     for(int i=lastToolBar_index;i<=toolbar_index;i++){
         layout()->addWidget(toolBars[i]);
@@ -305,14 +316,14 @@ void ToolWidget::createToolWidget(){
     lastToolBar_index=toolbar_index+1;
 
 
-    layout()->addWidget(new QLabel("坐标系:"));
+    //layout()->addWidget(new QLabel("坐标系:"));
     toolbar_index= addCoordActions(coord_action_name_list_,m_nCoordActionNum, toolbar_index);
     for(int i=lastToolBar_index;i<m_nToolbarNum;i++){
         layout()->addWidget(toolBars[i]);
     }
     lastToolBar_index=toolbar_index+1;
 
-    layout()->addWidget(new QLabel("视角:"));
+    //layout()->addWidget(new QLabel("视角:"));
     toolbar_index= addViewAngleActions(view_angle_action_name_list_,m_nViewAngleActionNum, toolbar_index);
     for(int i=lastToolBar_index;i<m_nToolbarNum;i++){
         layout()->addWidget(toolBars[i]);
@@ -497,27 +508,27 @@ void ToolWidget::connectActionWithF(){
 
 
     //识别
-    connect(find_actions_[find_action_name_list_.indexOf("点")],&QAction::triggered,this,&   ToolWidget::onFindPoint);
-    connect(find_actions_[find_action_name_list_.indexOf("线")],&QAction::triggered,this,&   ToolWidget::onFindLine);
-    connect(find_actions_[find_action_name_list_.indexOf("圆")],&QAction::triggered,this,&   ToolWidget::onFindCircle);
-    connect(find_actions_[find_action_name_list_.indexOf("平面")],&QAction::triggered,this,&  ToolWidget:: onFindPlane);
-    connect(find_actions_[find_action_name_list_.indexOf("矩形")],&QAction::triggered,this,&   ToolWidget::onFindRectangle);
-    connect(find_actions_[find_action_name_list_.indexOf("圆柱")],&QAction::triggered,this,&   ToolWidget::onFindCylinder);
-    connect(find_actions_[find_action_name_list_.indexOf("圆锥")],&QAction::triggered,this,&   ToolWidget::onFindCone);
-    connect(find_actions_[find_action_name_list_.indexOf("球形")],&QAction::triggered,this,&   ToolWidget::onFindSphere);
+    connect(find_actions_[find_action_name_list_.indexOf("识别点")],&QAction::triggered,this,&   ToolWidget::onFindPoint);
+    connect(find_actions_[find_action_name_list_.indexOf("识别线")],&QAction::triggered,this,&   ToolWidget::onFindLine);
+    connect(find_actions_[find_action_name_list_.indexOf("识别圆")],&QAction::triggered,this,&   ToolWidget::onFindCircle);
+    connect(find_actions_[find_action_name_list_.indexOf("识别平面")],&QAction::triggered,this,&  ToolWidget:: onFindPlane);
+    connect(find_actions_[find_action_name_list_.indexOf("识别矩形")],&QAction::triggered,this,&   ToolWidget::onFindRectangle);
+    connect(find_actions_[find_action_name_list_.indexOf("识别圆柱")],&QAction::triggered,this,&   ToolWidget::onFindCylinder);
+    connect(find_actions_[find_action_name_list_.indexOf("识别圆锥")],&QAction::triggered,this,&   ToolWidget::onFindCone);
+    connect(find_actions_[find_action_name_list_.indexOf("识别球形")],&QAction::triggered,this,&   ToolWidget::onFindSphere);
 
     //构造
-    connect(construct_actions_[construct_action_name_list_.indexOf("点")],&QAction::triggered,this,& ToolWidget::onConstructPoint);
-    connect(construct_actions_[construct_action_name_list_.indexOf("线")],&QAction::triggered,this,&ToolWidget::onConstructLine);
-    connect(construct_actions_[construct_action_name_list_.indexOf("圆")],&QAction::triggered,this,&ToolWidget::onConstructCircle);
-    connect(construct_actions_[construct_action_name_list_.indexOf("平面")],&QAction::triggered,this,& ToolWidget::onConstructPlane);
-    connect(construct_actions_[construct_action_name_list_.indexOf("矩形")],&QAction::triggered,this,& ToolWidget::onConstructRectangle);
-    connect(construct_actions_[construct_action_name_list_.indexOf("圆柱")],&QAction::triggered,this,&  ToolWidget::onConstructCylinder);
-    connect(construct_actions_[construct_action_name_list_.indexOf("圆锥")],&QAction::triggered,this,&  ToolWidget::onConstructCone);
-    connect(construct_actions_[construct_action_name_list_.indexOf("球形")],&QAction::triggered,this,&  ToolWidget::onConstructSphere);
-    connect(construct_actions_[construct_action_name_list_.indexOf("距离")],&QAction::triggered,this,&  ToolWidget::onConstructDistance);
-    connect(construct_actions_[construct_action_name_list_.indexOf("点云")],&QAction::triggered,this,&  ToolWidget::onConstructPointCloud);
-    connect(construct_actions_[construct_action_name_list_.indexOf("角度")],&QAction::triggered,this,&  ToolWidget::onConstructAngle);
+    connect(construct_actions_[construct_action_name_list_.indexOf("构造点")],&QAction::triggered,this,& ToolWidget::onConstructPoint);
+    connect(construct_actions_[construct_action_name_list_.indexOf("构造线")],&QAction::triggered,this,&ToolWidget::onConstructLine);
+    connect(construct_actions_[construct_action_name_list_.indexOf("构造圆")],&QAction::triggered,this,&ToolWidget::onConstructCircle);
+    connect(construct_actions_[construct_action_name_list_.indexOf("构造平面")],&QAction::triggered,this,& ToolWidget::onConstructPlane);
+    connect(construct_actions_[construct_action_name_list_.indexOf("构造矩形")],&QAction::triggered,this,& ToolWidget::onConstructRectangle);
+    connect(construct_actions_[construct_action_name_list_.indexOf("构造圆柱")],&QAction::triggered,this,&  ToolWidget::onConstructCylinder);
+    connect(construct_actions_[construct_action_name_list_.indexOf("构造圆锥")],&QAction::triggered,this,&  ToolWidget::onConstructCone);
+    connect(construct_actions_[construct_action_name_list_.indexOf("构造球形")],&QAction::triggered,this,&  ToolWidget::onConstructSphere);
+    connect(construct_actions_[construct_action_name_list_.indexOf("构造距离")],&QAction::triggered,this,&  ToolWidget::onConstructDistance);
+    connect(construct_actions_[construct_action_name_list_.indexOf("构造点云")],&QAction::triggered,this,&  ToolWidget::onConstructPointCloud);
+    connect(construct_actions_[construct_action_name_list_.indexOf("构造角度")],&QAction::triggered,this,&  ToolWidget::onConstructAngle);
 
     //保存
     connect(save_actions_[save_action_name_list_.indexOf("excel")],&QAction::triggered,this,&  ToolWidget::onSaveExcel);
@@ -688,77 +699,123 @@ void insertImageIntoPdf(const QString &imagePath, const QString &pdfPath) {
 
 void   ToolWidget::onSavePdf(){
 
-    QString path = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "", QString("Pdf(*.pdf)"));
-    if (path.isEmpty()){
-        return ;
-    }
-    auto& entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
-    QList<QList<QString>> dataAll;
-    QList<QString> header;
-    header<<"类型"<<"名称"<<"数据1"<<"数据2"<<"数据3"<<"数据4"<<"数据5";
-    dataAll.append(header);
-    ExtractData(entitylist,dataAll);
+   //  QString path = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "", QString("Pdf(*.pdf)"));
+   //  if (path.isEmpty()){
+   //      return ;
+   //  }
+   //  auto& entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
+   //  QList<QList<QString>> dataAll;
+   //  QList<QString> header;
+   //  header<<"类型"<<"名称"<<"数据1"<<"数据2"<<"数据3"<<"数据4"<<"数据5";
+   //  dataAll.append(header);
+   //  ExtractData(entitylist,dataAll);
 
 
-    if (QFileInfo(path).suffix().isEmpty())
-        path.append(".pdf");
+   //  if (QFileInfo(path).suffix().isEmpty())
+   //      path.append(".pdf");
 
-    // 只读和追加的方式打开文件
-    QFile pdfFile(path);
-    if (!pdfFile.open(QIODevice::WriteOnly | QIODevice::Append))
-        return;
+   //  // 只读和追加的方式打开文件
+   //  QFile pdfFile(path);
+   //  if (!pdfFile.open(QIODevice::WriteOnly | QIODevice::Append))
+   //      return;
 
-    QPdfWriter *m_pdfWriter = new QPdfWriter(&pdfFile);
-    m_pdfWriter->setPageSize(QPageSize::A4);
-    m_pdfWriter->setResolution(QPrinter::ScreenResolution);
-
-
-    //添加标题
-    //添加标题
-    QString html;
-    html.append("<h1 style='text-align:center;'>3dins</h1><br />");
-    // QString html = addHtmlTable("T1主标题", "T1主标题", row, col, values);
-    //m_html.append(html);
-    // 表格主标题T1
-    html.append("<table border='0.5' cellspacing='0' cellpadding='3' width:100%>");
-    html.append(QString("<tr><td align='center' style='vertical-align:middle;font-weight:bold;' colspan='%1'>").arg(7));
-    html.append("entitylist数据输出");
-    html.append("</td></tr>");
-
-    // 表格主标题T2
-    //html.append(QString("<tr><td align='left' style='vertical-align:middle;font-weight:bold;' colspan='%1'>").arg(col));
-    //html.append("T2主标题");
-    //html.append("</td></tr>");
-
-    // 添加表格数值 字段/字段值
-    // 遍历表格的每个单元格，将数据插入到表格中
-    for (int i = 0; i < entitylist.size()+1; ++i) {
-        html.append("<tr>");
-        for (int j = 0; j < dataAll[i].size(); ++j) {
-            // 表头用<th></th>,有加粗效果
-            //html.append(QString("<th valign='center' style='vertical-align:middle;font-size:100px;'>"));
-
-            // 设置单元格的文本
-            html.append(QString("<td valign='center' style='vertical-align:middle;font-size:100px;'>"));
-            html.append(dataAll[i][j] + "</td>");
-        }
-        html.append("</tr>");
-    }
-    html.append("</table><br /><br />");
-
-   // 加入图片
-    QPainter painter;
-    painter.begin(m_pdfWriter);
+   //  QPdfWriter *m_pdfWriter = new QPdfWriter(&pdfFile);
+   //  m_pdfWriter->setPageSize(QPageSize::A4);
+   //  m_pdfWriter->setResolution(QPrinter::ScreenResolution);
 
 
+   //  //添加标题
+   //  //添加标题
+   //  QString html;
+   //  html.append("<h1 style='text-align:center;'>3dins</h1><br />");
+   //  // QString html = addHtmlTable("T1主标题", "T1主标题", row, col, values);
+   //  //m_html.append(html);
+   //  // 表格主标题T1
+   //  html.append("<table border='0.5' cellspacing='0' cellpadding='3' width:100%>");
+   //  html.append(QString("<tr><td align='center' style='vertical-align:middle;font-weight:bold;' colspan='%1'>").arg(7));
+   //  html.append("entitylist数据输出");
+   //  html.append("</td></tr>");
 
-    QTextDocument textDocument;
-    textDocument.setHtml(html);
-    textDocument.print(m_pdfWriter);
-    textDocument.end();
-    QMessageBox::information(nullptr, "提示", "保存成功");
+   //  // 表格主标题T2
+   //  //html.append(QString("<tr><td align='left' style='vertical-align:middle;font-weight:bold;' colspan='%1'>").arg(col));
+   //  //html.append("T2主标题");
+   //  //html.append("</td></tr>");
 
-    pdfFile.close();
+   //  // 添加表格数值 字段/字段值
+   //  // 遍历表格的每个单元格，将数据插入到表格中
+   //  for (int i = 0; i < entitylist.size()+1; ++i) {
+   //      html.append("<tr>");
+   //      for (int j = 0; j < dataAll[i].size(); ++j) {
+   //          // 表头用<th></th>,有加粗效果
+   //          //html.append(QString("<th valign='center' style='vertical-align:middle;font-size:100px;'>"));
+
+   //          // 设置单元格的文本
+   //          html.append(QString("<td valign='center' style='vertical-align:middle;font-size:100px;'>"));
+   //          html.append(dataAll[i][j] + "</td>");
+   //      }
+   //      html.append("</tr>");
+   //  }
+   //  html.append("</table><br /><br />");
+
+   // // 加入图片
+   //  QPainter painter;
+   //  painter.begin(m_pdfWriter);
+
+
+
+   //  QTextDocument textDocument;
+   //  textDocument.setHtml(html);
+   //  textDocument.print(m_pdfWriter);
+   //  textDocument.end();
+   //  QMessageBox::information(nullptr, "提示", "保存成功");
+
+   //  pdfFile.close();
+
+
+
+   QString filePath = QFileDialog::getSaveFileName(nullptr, "Save PDF", "", "PDF Files (*.pdf)");
+   if (filePath.isEmpty()) {
+       return ; // 用户取消了保存操作
+   }
+
+   QPdfWriter pdfWriter(filePath);
+   pdfWriter.setPageSize(QPageSize::A4);
+   pdfWriter.setResolution(300);
+
+   QPainter painter(&pdfWriter);
+
+   // 插入文字
+   painter.setFont(QFont("Arial", 12));
+   painter.drawText(100, 100, "3dins");
+
+   // 插入纯文本数据
+   auto& entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
+   QList<QList<QString>> dataAll;
+   QList<QString> header;
+   header << "类型" << "名称" << "数据1" << "数据2" << "数据3" << "数据4" << "数据5";
+   dataAll.append(header);
+   ExtractData(entitylist, dataAll);
+
+   int yPos = 150; // 初始y坐标
+   for (int i = 0; i < dataAll.size(); ++i) {
+       QString line;
+       for (int j = 0; j < dataAll[i].size(); ++j) {
+           line += dataAll[i][j] + " "; // 用空格分隔列数据
+       }
+       painter.drawText(100, yPos, line);
+       yPos += 80; // 每行间隔20像素
+   }
+
+   // 插入图片
+   QImage image;
+   for(int i=0;i<imagePaths.size();i++){
+       image=QImage(imagePaths[i]);
+       painter.drawImage(100, 150, image);
+   }
+
+   painter.end();
+
+
 }
 void   ToolWidget::onSaveExcel(){
 
@@ -1204,111 +1261,24 @@ void   ToolWidget::onSaveImage(){
     }
     QString selectedFilter = QFileInfo(fileName).suffix();
     std::string format=selectedFilter.toStdString();
-    {
-    vtkSmartPointer<vtkRenderWindow> renderWindow=m_pMainWin->getPWinVtkWidget()->getRenderWindow();
-     vtkNew<vtkWindowToImageFilter> windowToImageFilter;
-
-    vtkSmartPointer<vtkImageWriter> writer;
-    //确认格式
-    if (format == "png") {
-        writer = vtkSmartPointer<vtkPNGWriter>::New();
-    } else if (format == "jpg" || format == "jpeg") {
-        writer = vtkSmartPointer<vtkJPEGWriter>::New();
-    } else if (format == "tiff" || format == "tif") {
-        writer = vtkSmartPointer<vtkTIFFWriter>::New();
-    } else if (format == "bmp") {
-        writer = vtkSmartPointer<vtkBMPWriter>::New();
-    } else {
-        std::cerr << "Unsupported format: " << format << std::endl;
-        return;
-    }
-    m_pMainWin->onRightViewClicked();
-    renderWindow->Render();
-    //得到截图
-
-    windowToImageFilter->SetInput(renderWindow);
-    windowToImageFilter->SetScale(1);// 缩放因子，可以根据需要调整
-    windowToImageFilter->SetInputBufferTypeToRGBA();//RGBA缓冲
-    windowToImageFilter->ReadFrontBufferOff();//读取
-    windowToImageFilter->Update();
-
-
-    writer->SetFileName(fileNameRight.toStdString().c_str());
-    writer->SetInputConnection(windowToImageFilter->GetOutputPort());
-    writer->Write();
-    }
-    //写入文件
-
-    //侧视角
 
     {
         vtkSmartPointer<vtkRenderWindow> renderWindow=m_pMainWin->getPWinVtkWidget()->getRenderWindow();
-        vtkNew<vtkWindowToImageFilter> windowToImageFilter;
+        m_pMainWin->onRightViewClicked();
+        renderWindow->Render();
+        SaveImage(fileNameRight,format);}
 
-        vtkSmartPointer<vtkImageWriter> writer;
-        //确认格式
-        if (format == "png") {
-            writer = vtkSmartPointer<vtkPNGWriter>::New();
-        } else if (format == "jpg" || format == "jpeg") {
-            writer = vtkSmartPointer<vtkJPEGWriter>::New();
-        } else if (format == "tiff" || format == "tif") {
-            writer = vtkSmartPointer<vtkTIFFWriter>::New();
-        } else if (format == "bmp") {
-            writer = vtkSmartPointer<vtkBMPWriter>::New();
-        } else {
-            std::cerr << "Unsupported format: " << format << std::endl;
-            return;
-        }
-    //俯视角
-    m_pMainWin->onTopViewClicked();
-    renderWindow->Render();
-    //得到截图
-
-    windowToImageFilter->SetInput(renderWindow);
-    windowToImageFilter->SetScale(1);// 缩放因子，可以根据需要调整
-    windowToImageFilter->SetInputBufferTypeToRGBA();//RGBA缓冲
-    windowToImageFilter->ReadFrontBufferOff();//读取
-    windowToImageFilter->Update();
-
-
-    writer->SetFileName(fileNameTop.toStdString().c_str());
-    writer->SetInputConnection(windowToImageFilter->GetOutputPort());
-    writer->Write();
-    }
     {
         vtkSmartPointer<vtkRenderWindow> renderWindow=m_pMainWin->getPWinVtkWidget()->getRenderWindow();
-        vtkNew<vtkWindowToImageFilter> windowToImageFilter;
+        m_pMainWin->onTopViewClicked();
+        renderWindow->Render();
+        SaveImage(fileNameTop,format);}
 
-        vtkSmartPointer<vtkImageWriter> writer;
-        //确认格式
-        if (format == "png") {
-            writer = vtkSmartPointer<vtkPNGWriter>::New();
-        } else if (format == "jpg" || format == "jpeg") {
-            writer = vtkSmartPointer<vtkJPEGWriter>::New();
-        } else if (format == "tiff" || format == "tif") {
-            writer = vtkSmartPointer<vtkTIFFWriter>::New();
-        } else if (format == "bmp") {
-            writer = vtkSmartPointer<vtkBMPWriter>::New();
-        } else {
-            std::cerr << "Unsupported format: " << format << std::endl;
-            return;
-        }
-    //主视角
-    m_pMainWin->onFrontViewClicked();
-    renderWindow->Render();
-    //得到截图
-
-    windowToImageFilter->SetInput(renderWindow);
-    windowToImageFilter->SetScale(1);// 缩放因子，可以根据需要调整
-    windowToImageFilter->SetInputBufferTypeToRGBA();//RGBA缓冲
-    windowToImageFilter->ReadFrontBufferOff();//读取
-    windowToImageFilter->Update();
-
-    writer->SetFileName(fileNameFront.toStdString().c_str());
-    writer->SetInputConnection(windowToImageFilter->GetOutputPort());
-    writer->Write();
-    }
-
+    {
+        vtkSmartPointer<vtkRenderWindow> renderWindow=m_pMainWin->getPWinVtkWidget()->getRenderWindow();
+        m_pMainWin->onFrontViewClicked();
+        renderWindow->Render();
+        SaveImage(fileNameFront,format);}
 
     QMessageBox::information(nullptr, "提示", "保存成功");
 }
@@ -1670,6 +1640,12 @@ void ToolWidget:: onFindPlane(){
     if(plane==nullptr){
         return;
     }
+
+    // PointConstructor p_constructor;
+    // CPoint *newPoint;
+    // newPoint=p_constructor.createPoint(point.x,point.y,point.z);
+    // addToFindList(newPoint);
+
     PlaneConstructor constructor;
     CPlane* newPlane;
     CPosition center;
@@ -1684,6 +1660,8 @@ void ToolWidget:: onFindPlane(){
         return ;
     }
     addToFindList(newPlane);
+
+    m_pMainWin->getPWinVtkPresetWidget()->setWidget("拟合平面已完成");
 
     positions.clear();
     m_pMainWin->NotifySubscribe();
@@ -1731,7 +1709,14 @@ void ToolWidget::onFindPoint(){
             nearPoint->RANSAC(point,pointClouds[0]->m_pointCloud.makeShared());
         return ;
     }
+
+    // PointConstructor p_constructor;
+    // CPoint *Point;
+    // Point=p_constructor.createPoint(point.x,point.y,point.z);
+    // addToFindList(Point);
+
     qDebug()<<pointClouds.size()<<"hhhhh";
+
     PointConstructor constructor;
     CPoint* newPoint;
     CPosition center;
@@ -1744,6 +1729,9 @@ void ToolWidget::onFindPoint(){
         return ;
     }
     addToFindList(newPoint);
+
+    m_pMainWin->getPWinVtkPresetWidget()->setWidget("拟合点已完成");
+
     positions.clear();
     m_pMainWin->NotifySubscribe();
 }
@@ -1795,6 +1783,12 @@ void ToolWidget::onFindLine(){
     if(line==nullptr){
         return;
     }
+
+    // PointConstructor p_constructor;
+    // CPoint *newPoint;
+    // newPoint=p_constructor.createPoint(point.x,point.y,point.z);
+    // addToFindList(newPoint);
+
     LineConstructor constructor;
     CLine* newLine;
     CPosition begin,end;
@@ -1811,37 +1805,12 @@ void ToolWidget::onFindLine(){
     }
     addToFindList(newLine);
 
+    m_pMainWin->getPWinVtkPresetWidget()->setWidget("拟合直线已完成");
+
     positions.clear();
     m_pMainWin->NotifySubscribe();
 }
 
-
-
-// void ToolWidget::onFindCircle(){
-
-
-//     // 选择图片文件
-//     QString imagePath = QFileDialog::getOpenFileName(nullptr, "Select Image", "", "Images (*.png *.jpg *.jpeg *.bmp *.tif *.tiff)");
-//     if (imagePath.isEmpty()) {
-//         qDebug() << "No image selected!";
-//         return ;
-//     }
-
-//     // 选择保存PDF文件的路径
-//     QString pdfPath = QFileDialog::getSaveFileName(nullptr, "Save PDF", "", "PDF Files (*.pdf)");
-//     if (pdfPath.isEmpty()) {
-//         qDebug() << "No save path selected!";
-//         return ;
-//     }
-
-//     // 将图片插入到PDF文件中
-//     insertImageIntoPdf(imagePath, pdfPath);
-
-//     qDebug() << "PDF created successfully at" << pdfPath;
-
-
-
-// }
 
 
 void ToolWidget::onFindCircle(){
@@ -1892,6 +1861,12 @@ void ToolWidget::onFindCircle(){
     if(circle==nullptr){
         return;
     }
+
+    // PointConstructor p_constructor;
+    // CPoint *newPoint;
+    // newPoint=p_constructor.createPoint(point.x,point.y,point.z);
+    // addToFindList(newPoint);
+
     CircleConstructor constructor;
     CCircle* newCircle;
     CPosition center;
@@ -1899,12 +1874,15 @@ void ToolWidget::onFindCircle(){
     center.y=circle->getCenter()[1];
     center.z=circle->getCenter()[2];
     double radius=circle->getRad();
-    newCircle=constructor.createCircle(center,radius);
+    QVector4D normal=QVector4D(circle->getNormal().x(),circle->getNormal().y(),circle->getNormal().z(),1);
+    newCircle=constructor.createCircle(center,radius,normal);
     if(newCircle==nullptr){
         qDebug()<<"拟合圆生成错误";
         return ;
     }
     addToFindList(newCircle);
+
+    m_pMainWin->getPWinVtkPresetWidget()->setWidget("拟合圆已完成");
 
     positions.clear();
     m_pMainWin->NotifySubscribe();
@@ -1958,6 +1936,12 @@ void ToolWidget::onFindRectangle(){
     if(plane==nullptr){
         return;
     }
+
+    // PointConstructor p_constructor;
+    // CPoint *newPoint;
+    // newPoint=p_constructor.createPoint(point.x,point.y,point.z);
+    // addToFindList(newPoint);
+
     RectangleConstructor constructor;
     CPlane* newPlane;
     CPosition center;
@@ -1972,6 +1956,8 @@ void ToolWidget::onFindRectangle(){
         return ;
     }
     addToFindList(newPlane);
+
+    m_pMainWin->getPWinVtkPresetWidget()->setWidget("拟合矩形已完成");
 
     positions.clear();
     m_pMainWin->NotifySubscribe();
@@ -2024,6 +2010,12 @@ void ToolWidget::onFindCylinder(){
     if(cylinder==nullptr){
         return;
     }
+
+    // PointConstructor p_constructor;
+    // CPoint *newPoint;
+    // newPoint=p_constructor.createPoint(point.x,point.y,point.z);
+    // addToFindList(newPoint);
+
     CylinderConstructor constructor;
     CCylinder* newCylinder;
     CPosition center;
@@ -2037,6 +2029,8 @@ void ToolWidget::onFindCylinder(){
         return ;
     }
     addToFindList(newCylinder);
+
+    m_pMainWin->getPWinVtkPresetWidget()->setWidget("拟合圆柱已完成");
 
     positions.clear();
     m_pMainWin->NotifySubscribe();
@@ -2090,6 +2084,12 @@ void ToolWidget::onFindCone(){
     if(cone==nullptr){
         return;
     }
+
+    // PointConstructor p_constructor;
+    // CPoint *newPoint;
+    // newPoint=p_constructor.createPoint(point.x,point.y,point.z);
+    // addToFindList(newPoint);
+
     ConeConstructor constructor;
     CCone* newCone;
     CPosition center;
@@ -2105,6 +2105,8 @@ void ToolWidget::onFindCone(){
         return ;
     }
     addToFindList(newCone);
+
+    m_pMainWin->getPWinVtkPresetWidget()->setWidget("拟合圆锥已完成");
 
     positions.clear();
     m_pMainWin->NotifySubscribe();
@@ -2157,6 +2159,12 @@ void ToolWidget::onFindSphere(){
     if(sphere==nullptr){
         return;
     }
+
+    // PointConstructor p_constructor;
+    // CPoint *newPoint;
+    // newPoint=p_constructor.createPoint(point.x,point.y,point.z);
+    // addToFindList(newPoint);
+
     SphereConstructor constructor;
     CSphere* newSphere;
     CPosition center;
@@ -2170,6 +2178,8 @@ void ToolWidget::onFindSphere(){
         return ;
     }
     addToFindList(newSphere);
+
+    m_pMainWin->getPWinVtkPresetWidget()->setWidget("拟合球已完成");
 
     positions.clear();
     m_pMainWin->NotifySubscribe();
@@ -2224,4 +2234,69 @@ QVector<CEntity*>& ToolWidget::getConstructEntityList(){
 
 QVector<CEntity*>& ToolWidget::getIdentifyEntityList(){
     return identifyEntityList;
+}
+
+
+QVector<QString>& ToolWidget::getImagePaths(){
+    return imagePaths;
+}
+QString ToolWidget::getTimeString(){
+    QDateTime currentDateTime = QDateTime::currentDateTime();
+
+    // 获取年、月、日、小时、分钟和秒
+    int year = currentDateTime.date().year();
+    int month = currentDateTime.date().month();
+    int day = currentDateTime.date().day();
+    int hour = currentDateTime.time().hour();
+    int minute = currentDateTime.time().minute();
+    int second = currentDateTime.time().second();
+
+    // 将年、月、日、小时、分钟和秒连接成一个字符串
+    QString dateTimeString = QString("%1%2%3%4%5%6")
+                                 .arg(year, 4, 10, QChar('0'))
+                                 .arg(month, 2, 10, QChar('0'))
+                                 .arg(day, 2, 10, QChar('0'))
+                                 .arg(hour, 2, 10, QChar('0'))
+                                 .arg(minute, 2, 10, QChar('0'))
+                                 .arg(second, 2, 10, QChar('0'));
+    return dateTimeString;
+}
+
+void ToolWidget::SaveImage(QString Path,std::string format){
+    vtkSmartPointer<vtkRenderWindow> renderWindow=m_pMainWin->getPWinVtkWidget()->getRenderWindow();
+    vtkNew<vtkWindowToImageFilter> windowToImageFilter;
+
+    renderWindow->Render();
+
+    vtkSmartPointer<vtkImageWriter> writer;
+    //确认格式
+    if (format == "png") {
+        writer = vtkSmartPointer<vtkPNGWriter>::New();
+    } else if (format == "jpg" || format == "jpeg") {
+        writer = vtkSmartPointer<vtkJPEGWriter>::New();
+    } else if (format == "tiff" || format == "tif") {
+        writer = vtkSmartPointer<vtkTIFFWriter>::New();
+    } else if (format == "bmp") {
+        writer = vtkSmartPointer<vtkBMPWriter>::New();
+    } else {
+        std::cerr << "Unsupported format: " << format << std::endl;
+        return;
+    }
+
+    renderWindow->Render();
+    //得到截图
+
+    windowToImageFilter->SetInput(renderWindow);
+    windowToImageFilter->SetScale(1);// 缩放因子，可以根据需要调整
+    windowToImageFilter->SetInputBufferTypeToRGBA();//RGBA缓冲
+    windowToImageFilter->ReadFrontBufferOff();//读取
+    windowToImageFilter->Update();
+
+
+    writer->SetFileName(Path.toStdString().c_str());
+    writer->SetInputConnection(windowToImageFilter->GetOutputPort());
+    writer->Write();
+}
+QString ToolWidget::getCompareImagePath(){
+    return CompareImagePath;
 }

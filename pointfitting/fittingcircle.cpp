@@ -44,6 +44,13 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingCircle::RANSAC(pcl::PointXYZRGB se
         pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
         seg.segment(*inliers, *coefficients);
 
+        //计算圆中心
+        center=Eigen::Vector3f(coefficients->values[0], coefficients->values[1], coefficients->values[2]);
+        //计算圆半径
+        r=coefficients->values[3];
+        //计算圆法向量
+        normal=Eigen::Vector3f(coefficients->values[4], coefficients->values[5], coefficients->values[6]);
+
         //获取圆上的所有点云
         for (int i=0;i<cloudptr->size();i++) {
             if(isPointInCircle(cloudptr->points[i])){
@@ -59,13 +66,6 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingCircle::RANSAC(pcl::PointXYZRGB se
             point.g = 0;
             point.b = 0;
         }
-
-        //计算圆中心
-        center=Eigen::Vector3f(coefficients->values[0], coefficients->values[1], coefficients->values[2]);
-        //计算圆半径
-        r=coefficients->values[3];
-        //计算圆法向量
-        normal=Eigen::Vector3f(coefficients->values[4], coefficients->values[5], coefficients->values[6]);
 
         return circleCloud;
 
@@ -85,7 +85,7 @@ bool FittingCircle::isPointInCircle(const pcl::PointXYZRGB& point){
                        std::pow(point.y - center.y(), 2) +
                        std::pow(point.z - center.z(), 2));
 
-    return fabs(d - radius) < 0.01;
+    return fabs(d - r) < 0.01;
 }
 
 void FittingCircle::setRadius(double rad){

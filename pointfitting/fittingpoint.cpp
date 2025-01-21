@@ -17,7 +17,7 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingPoint::RANSAC(pcl::PointXYZRGB sea
     std::vector<int> indices(K);      // 最近点的索引
     std::vector<float> distances(K);  // 最近点的距离
 
-    // 搜索最近邻
+    // 搜索最近邻点
     if (kdtree.nearestKSearch(searchPoint, K, indices, distances) > 0) {
         point=QVector4D(cloudptr->points[indices[0]].x,cloudptr->points[indices[0]].y,cloudptr->points[indices[0]].z,0);
         cloudptr->points[indices[0]].r=1;
