@@ -21,3 +21,15 @@ QMap<QString, bool>& FileMgr::getContentItemMap(){
 QMap<QString, bool>& FileMgr::getIdentifyItemMap(){
     return identifyItemMap;
 }
+
+void FileMgr::removePointCloudKeys(QMap<QString, bool>& map)
+{
+    auto it = map.begin();
+    while (it != map.end()) {
+        if (it.key().startsWith("点云")) {
+            it = map.erase(it);
+        } else {
+            ++it;
+        }
+    }
+};

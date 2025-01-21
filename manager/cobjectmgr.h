@@ -9,9 +9,9 @@ class CObjectMgr
 private:
     QVector<CObject*> m_objectList;
     int m_nInsertPos=-1;
-    bool m_bHideInvalid;
-    int m_colorGroup[0x2];
-    int m_nGroupIndex;
+    bool m_bHideInvalid=false;
+    int m_colorGroup[0x2]={0,0};
+    int m_nGroupIndex=0;
 public:
     CObjectMgr();
     void Add(CObject*);
