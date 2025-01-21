@@ -1260,6 +1260,8 @@ double CDistance::getdistance()
         return getdistancecircle();
     }else if(isPointToPlane){
         return getdistanceplane();
+    }else if(isPlaneToPlane){
+        return distance;
     }
     return 0;
 }

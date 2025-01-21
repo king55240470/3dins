@@ -548,7 +548,7 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
             }
         }
         for(int i=0;i<objlist.size();i++){
-            if(objlist[i]->parent==distancelist[distancelistIndex]->parent){
+            if(objlist[i]->GetObjectCName()==distancelist[distancelistIndex]->GetObjectCName()){
                 CDistance*dis=dynamic_cast<CDistance*>(m_pMainWin->getObjectListMgr()->getObjectList()[i]);
                 if(position.size()==2){
                     dis->setbegin(position[0]->GetPt());
@@ -603,7 +603,7 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
                 //pcl::PointXYZRGB nearestPoint = could->GetmyCould().points[nearestIdx];
                 pcl::PointXYZRGB nearestPoint=m_pMainWin->getpWinFileMgr()->cloudptr->points[nearestIdx];
                 for(int i=0;i<objlist.size();i++){
-                    if(m_pMainWin->getObjectListMgr()->getObjectList()[i]==obj){
+                    if(m_pMainWin->getObjectListMgr()->getObjectList()[i]->GetObjectCName()==obj->GetObjectCName()){
                         CPoint*point1=static_cast<CPoint*>(objlist[i]);
                         CPosition pt;
                         pt.x=nearestPoint.x;pt.y=nearestPoint.y;pt.z=nearestPoint.z;
@@ -615,7 +615,12 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
                 }
             }
         }else if(obj->GetUniqueType()==enPlane){
-            QVector<CObject*>planelist=obj->parent;
+            qDebug()<<obj->parent.size();
+            QVector<CObject*>planelist;
+            for(CObject*obj1:obj->parent){
+                planelist.append(obj1);
+            }
+            qDebug()<<planelist.size();
             CPlane*plane=static_cast<CPlane*>(obj);
             if(planelist.size()==3){
                 QVector<CPosition>positionlist;
@@ -635,13 +640,14 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
                     }
                 }
                 PlaneConstructor constructor;
-                CPlane*plane1=constructor.createPlane(positionlist[0],positionlist[0],positionlist[0]);
+                CPlane*plane1=constructor.createPlane(positionlist[0],positionlist[1],positionlist[2]);
                 plane=plane1;
+                qDebug()<<"plane"<<plane1->getCenter().x;
                 list.push_back(plane);
             }
         }
         for(int i=0;i<objlist.size();i++){
-            if(obj==objlist[i]){
+            if(obj->GetObjectCName()==objlist[i]->GetObjectCName()){
                 QTreeWidgetItem *item = treeWidgetNames->topLevelItem(i);
                 treeWidgetNames->setCurrentItem(item);
                 break;
