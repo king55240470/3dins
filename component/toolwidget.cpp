@@ -62,6 +62,7 @@
 #include"constructor/distanceconstructor.h"
 #include"constructor/distanceconstructor.h"
 #include"constructor/pointcloudconstructor.h"
+#include"constructor/angleconstructor.h"
 
 #include <pcl/point_cloud.h>     // PCL 的点云类
 #include <pcl/visualization/pcl_visualizer.h> // PCL 的可视化工具
@@ -1588,6 +1589,20 @@ void ToolWidget::onConstructPointCloud(){
     m_pMainWin->NotifySubscribe();
 }
 void ToolWidget::onConstructAngle(){
+   auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+    AngleConstructor constructor;
+    CAngle* newAngle=(CAngle*)constructor.create(entityList);
+    if(newAngle==nullptr){
+       if(constructor.getWrongInformation()==SourceEntityLess){
+            WrongWidget("实体数目过少");
+       }else{
+           WrongWidget("实体数目过多");
+       }
+    }else{
+        addToList(newAngle);
+         m_pMainWin->NotifySubscribe();
+    }
+
 
 }
 
