@@ -1,5 +1,6 @@
 #include"toolwidget.h"
 #include"toolaction.h"
+#include"vtkwindow/vtkpresetwidget.h"
 #include <QtWidgets/QMainWindow>
 #include <QMenu>
 #include<QString>
@@ -1660,6 +1661,8 @@ void ToolWidget:: onFindPlane(){
     }
     addToFindList(newPlane);
 
+    m_pMainWin->getPWinVtkPresetWidget()->setWidget("拟合平面已完成");
+
     positions.clear();
     m_pMainWin->NotifySubscribe();
 
@@ -1726,6 +1729,9 @@ void ToolWidget::onFindPoint(){
         return ;
     }
     addToFindList(newPoint);
+
+    m_pMainWin->getPWinVtkPresetWidget()->setWidget("拟合点已完成");
+
     positions.clear();
     m_pMainWin->NotifySubscribe();
 }
@@ -1799,6 +1805,8 @@ void ToolWidget::onFindLine(){
     }
     addToFindList(newLine);
 
+    m_pMainWin->getPWinVtkPresetWidget()->setWidget("拟合直线已完成");
+
     positions.clear();
     m_pMainWin->NotifySubscribe();
 }
@@ -1866,12 +1874,15 @@ void ToolWidget::onFindCircle(){
     center.y=circle->getCenter()[1];
     center.z=circle->getCenter()[2];
     double radius=circle->getRad();
-    newCircle=constructor.createCircle(center,radius);
+    QVector4D normal=QVector4D(circle->getNormal().x(),circle->getNormal().y(),circle->getNormal().z(),1);
+    newCircle=constructor.createCircle(center,radius,normal);
     if(newCircle==nullptr){
         qDebug()<<"拟合圆生成错误";
         return ;
     }
     addToFindList(newCircle);
+
+    m_pMainWin->getPWinVtkPresetWidget()->setWidget("拟合圆已完成");
 
     positions.clear();
     m_pMainWin->NotifySubscribe();
@@ -1946,6 +1957,8 @@ void ToolWidget::onFindRectangle(){
     }
     addToFindList(newPlane);
 
+    m_pMainWin->getPWinVtkPresetWidget()->setWidget("拟合矩形已完成");
+
     positions.clear();
     m_pMainWin->NotifySubscribe();
 }
@@ -2016,6 +2029,8 @@ void ToolWidget::onFindCylinder(){
         return ;
     }
     addToFindList(newCylinder);
+
+    m_pMainWin->getPWinVtkPresetWidget()->setWidget("拟合圆柱已完成");
 
     positions.clear();
     m_pMainWin->NotifySubscribe();
@@ -2091,6 +2106,8 @@ void ToolWidget::onFindCone(){
     }
     addToFindList(newCone);
 
+    m_pMainWin->getPWinVtkPresetWidget()->setWidget("拟合圆锥已完成");
+
     positions.clear();
     m_pMainWin->NotifySubscribe();
 }
@@ -2161,6 +2178,8 @@ void ToolWidget::onFindSphere(){
         return ;
     }
     addToFindList(newSphere);
+
+    m_pMainWin->getPWinVtkPresetWidget()->setWidget("拟合球已完成");
 
     positions.clear();
     m_pMainWin->NotifySubscribe();

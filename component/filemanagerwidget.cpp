@@ -86,6 +86,7 @@ void FileManagerWidget::openModelFile(QString fileName,QString filePath){
     }
     m_pMainWin->NotifySubscribe();
     m_pMainWin->getPWinVtkWidget()->onTopView();
+
 }
 
 void FileManagerWidget::openMeasuredFile(QString fileName,QString filePath){
