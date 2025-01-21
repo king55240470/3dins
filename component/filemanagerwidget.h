@@ -54,12 +54,6 @@ public:
     void showContextMenu(const QPoint &);
     void UpdateInfo();
     bool isChildOf(QStandardItem*, QStandardItem*);
-    QStandardItem*& getContentItem()  { return contentItem; }
-    QStandardItem*& getIdentifyItem() { return identifyItem; }
-
-    // 序列化单个 QStandardItem
-    void serializeItem(QDataStream& out, const QStandardItem* item);
-    QStandardItem* deserializeItem(QDataStream& in);
 
 private slots:
     void getItem(const QModelIndex &);
