@@ -3,7 +3,10 @@
 #include "geometry/globes.h"
 
 CEntityMgr::CEntityMgr() {
-
+    m_nSize=0;
+    m_nCount=0;
+    m_bRedraw=false;
+    m_nRedrawIndex=0;
 }
 
 void CEntityMgr::Add(CEntity* pEntity){
@@ -82,6 +85,7 @@ QDataStream& operator<<(QDataStream& out, const CEntityMgr& mgr) {
 
     // 序列化 m_entityList
     out << static_cast<int>(mgr.m_entityList.size());
+    qDebug()<<static_cast<int>(mgr.m_entityList.size());
     for (const auto& entity : mgr.m_entityList) {
         int typeInt = entity->GetUniqueType();  // 获取对象的类型标识符
         ENTITY_TYPE type=static_cast<ENTITY_TYPE>(typeInt);
@@ -104,7 +108,7 @@ QDataStream& operator<<(QDataStream& out, const CEntityMgr& mgr) {
 }
 
 QDataStream& operator>>(QDataStream& in, CEntityMgr& mgr) {
-    int entityListSize, selListSize;
+    int entityListSize=0;
 
     in >> mgr.m_nSize >> mgr.m_nCount >> mgr.m_bRedraw >> mgr.m_nRedrawIndex;
 
@@ -112,7 +116,7 @@ QDataStream& operator>>(QDataStream& in, CEntityMgr& mgr) {
     in >> entityListSize;
     mgr.m_entityList.clear();  // 清空现有数据
     for (int i = 0; i < entityListSize; ++i) {
-        int typeInt;
+        int typeInt=0;
         in >> typeInt;
         ENTITY_TYPE type = static_cast<ENTITY_TYPE>(typeInt);
 
