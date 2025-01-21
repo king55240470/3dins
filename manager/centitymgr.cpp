@@ -92,6 +92,19 @@ QDataStream& operator<<(QDataStream& out, const CEntityMgr& mgr) {
         out << type;  // 序列化类型标识符
         if(type!=enPointCloud){
             entity->serialize(out);  // 调用对象的序列化方法（通过多态性处理具体类型）
+
+            out<<static_cast<int>(entity->parent.size());
+            qDebug()<<"parentSize:"<<entity->parent.size();
+            for( const auto& ent:entity->parent){
+                int typeInt_ = ent->GetUniqueType();  // 获取对象的类型标识符
+                ENTITY_TYPE type_ = static_cast<ENTITY_TYPE>(typeInt_);
+                out << type_;  // 序列化类型标识符
+
+                ent->serialize(out);
+
+                // const CObject* parentObj = static_cast<const CObject*>(obj);
+                // parentObj->CObject::serialize(out);
+            }
         }
     }
 
@@ -163,6 +176,50 @@ QDataStream& operator>>(QDataStream& in, CEntityMgr& mgr) {
         if (entity) {
             if(type!=enPointCloud){
                 entity->deserialize(in);  // 调用对象的反序列化方法
+
+                int parentSize;
+                in>>parentSize;
+                qDebug()<<"parentSize:"<<parentSize;
+                entity->parent.clear();
+                for(int i=0;i<parentSize;i++){
+                    int typeInt_;
+                    in >> typeInt_;
+                    ENTITY_TYPE type_ = static_cast<ENTITY_TYPE>(typeInt_);
+
+                    CEntity* ent = nullptr;
+                    switch (type_) {
+                    case enCircle:
+                        ent = new CCircle();
+                        break;
+                    case enLine:
+                        ent=new CLine();
+                        break;
+                    case enPoint:
+                        ent=new CPoint();
+                        break;
+                    case enPlane:
+                        ent=new CPlane();
+                        break;
+                    case enSphere:
+                        ent=new CSphere();
+                        break;
+                    case enCylinder:
+                        ent=new CCylinder();
+                        break;
+                    case enCone:
+                        ent=new CCone();
+                        break;
+                    case enCuboid:
+                        ent=new CCuboid();
+                        break;
+                    default:
+                        ent = new CEntity();
+                        break;
+                    }
+                    ent->deserialize(in);
+                    entity->parent.append(ent);
+                }
+
                 mgr.m_entityList.append(entity);
                 // mgr.Add(entity);
             }
