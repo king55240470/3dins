@@ -120,7 +120,23 @@ CCircle* CircleConstructor::createCircle(CPosition p1,CPosition p2,CPosition p3)
         setWrongInformation(PointTooClose);
         return nullptr;
     }
-    return createCircle(toCPosition(Circle.center),Circle.radius*2);
+    CPosition normal;
+    CPosition v1, v2;
+
+    v1.x = p2.x - p1.x;
+    v1.y = p2.y - p1.y;
+    v1.z = p2.z - p1.z;
+
+    v2.x = p3.x - p1.x;
+    v2.y = p3.y - p1.y;
+    v2.z = p3.z - p1.z;
+
+    normal.x = v1.y * v2.z - v1.z * v2.y;
+    normal.y = v1.z * v2.x - v1.x * v2.z;
+    normal.z = v1.x * v2.y - v1.y * v2.x;
+
+    QVector4D normal1=QVector4D(normal.x,normal.y,normal.z,1);
+    return createCircle(toCPosition(Circle.center),Circle.radius*2,normal1);
 }
 CCircle* CircleConstructor::createCircle(CPoint *p1,CPoint *p2,CPoint *p3){
     CPosition pt1=p1->GetPt();
@@ -128,10 +144,11 @@ CCircle* CircleConstructor::createCircle(CPoint *p1,CPoint *p2,CPoint *p3){
     CPosition pt3=p3->GetPt();
     return createCircle(pt1,pt2,pt3);
 }
-CCircle* CircleConstructor::createCircle(CPosition center,double diameter){
+CCircle* CircleConstructor::createCircle(CPosition center,double diameter,QVector4D normal){
     CCircle* newCircle=new CCircle();
     newCircle->SetCenter(center);
     newCircle->SetDiameter(diameter);
+    newCircle->setNormal(normal);
     return newCircle;
 }
 QVector4D CircleConstructor::getNormal(){

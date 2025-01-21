@@ -517,13 +517,12 @@ void ElementListWidget::updateDistance()
     timer = new QTimer(this);
     list.clear();
     currentIndex=0;
+    distancelistIndex=0;
     connect(timer, &QTimer::timeout, [this,kdtree,distancelist](){
         startupdateData(kdtree,distancelist);
     });
     timer->start(1000);
     qDebug()<<"时间开始后";
-    distancelistIndex=0;
-
 }
 
 void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree,QVector<CEntity*>distancelist)
@@ -548,7 +547,7 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
             }
         }
         for(int i=0;i<objlist.size();i++){
-            if(objlist[i]->parent==distancelist[distancelistIndex]->parent){
+            if(objlist[i]->GetObjectCName()==distancelist[distancelistIndex]->GetObjectCName()){
                 CDistance*dis=dynamic_cast<CDistance*>(m_pMainWin->getObjectListMgr()->getObjectList()[i]);
                 if(position.size()==2){
                     dis->setbegin(position[0]->GetPt());
@@ -573,6 +572,7 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
         distancelistIndex++;
         currentIndex=0;
         list.clear();
+        m_pMainWin->NotifySubscribe();
         m_pMainWin->getPWinToolWidget()->setauto(true);
         m_pMainWin->getPWinToolWidget()->onSaveTxt();
         m_pMainWin->getPWinToolWidget()->setauto(false);
@@ -588,7 +588,12 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
         return;
     }
     if(stateMachine->configuration().contains(runningState)){
-        CObject*obj=distancelist[distancelistIndex]->parent[currentIndex];
+        CObject* obj=nullptr;
+        for( CObject* ob: m_pMainWin->getObjectListMgr()->getObjectList()){
+            if(distancelist[distancelistIndex]->parent[currentIndex]->GetObjectCName()==ob->GetObjectCName()){
+                obj=ob;
+            }
+        }
         currentIndex++;
         std::vector<int> pointIdxNKNSearch(1);
         std::vector<float> pointNKNSquaredDistance(1);
@@ -603,7 +608,7 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
                 //pcl::PointXYZRGB nearestPoint = could->GetmyCould().points[nearestIdx];
                 pcl::PointXYZRGB nearestPoint=m_pMainWin->getpWinFileMgr()->cloudptr->points[nearestIdx];
                 for(int i=0;i<objlist.size();i++){
-                    if(m_pMainWin->getObjectListMgr()->getObjectList()[i]==obj){
+                    if(m_pMainWin->getObjectListMgr()->getObjectList()[i]->GetObjectCName()==obj->GetObjectCName()){
                         CPoint*point1=static_cast<CPoint*>(objlist[i]);
                         CPosition pt;
                         pt.x=nearestPoint.x;pt.y=nearestPoint.y;pt.z=nearestPoint.z;
@@ -615,7 +620,12 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
                 }
             }
         }else if(obj->GetUniqueType()==enPlane){
-            QVector<CObject*>planelist=obj->parent;
+            qDebug()<<obj->parent.size();
+            QVector<CObject*>planelist;
+            for(CObject*obj1:obj->parent){
+                planelist.append(obj1);
+            }
+            qDebug()<<planelist.size();
             CPlane*plane=static_cast<CPlane*>(obj);
             if(planelist.size()==3){
                 QVector<CPosition>positionlist;
@@ -635,13 +645,14 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
                     }
                 }
                 PlaneConstructor constructor;
-                CPlane*plane1=constructor.createPlane(positionlist[0],positionlist[0],positionlist[0]);
+                CPlane*plane1=constructor.createPlane(positionlist[0],positionlist[1],positionlist[2]);
                 plane=plane1;
+                qDebug()<<"plane"<<plane1->getCenter().x;
                 list.push_back(plane);
             }
         }
         for(int i=0;i<objlist.size();i++){
-            if(obj==objlist[i]){
+            if(obj->GetObjectCName()==objlist[i]->GetObjectCName()){
                 QTreeWidgetItem *item = treeWidgetNames->topLevelItem(i);
                 treeWidgetNames->setCurrentItem(item);
                 break;

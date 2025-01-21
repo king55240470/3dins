@@ -700,7 +700,7 @@ void DataWidget::updateinfo()
                 table->setItem(8, 2, new QTableWidgetItem(""));
             }
         }
-        if(obj->m_strCName.left(5)=="工件坐标系"){
+        if(obj->m_strCName.left(5)=="工件坐标系" || obj->m_strCName.left(5)=="临时坐标系"){
             CPcsNode* pcsnode=dynamic_cast<CPcsNode*>(obj);
             CPosition position;
             position.x=pcsnode->getPcs()->m_poso.x;

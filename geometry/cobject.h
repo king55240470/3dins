@@ -14,7 +14,7 @@ public:
     QString m_strAutoName;// 存储自动生成的名称
 
     int m_nObjectID=0;//存储每个对象的编号
-    int m_nObjectCount;//表示一共创建了多少个对象
+    int m_nObjectCount=0;//表示一共创建了多少个对象
     bool m_bMeasured=false;//是否被测量
     bool m_bChecked=false;//是否被检查
     bool m_bValid=false;//是否有效
@@ -70,7 +70,8 @@ public:
             <<m_nCsForm
             <<m_strCName
             <<m_strAutoName
-            <<m_nObjectID;
+            <<m_nObjectID
+            <<Form;
 
         // out<<static_cast<int>(parent.size());
         // qDebug()<<"parentSize:"<<parent.size();
@@ -90,7 +91,8 @@ public:
             >>m_nCsForm
             >>m_strCName
             >>m_strAutoName
-            >>m_nObjectID;
+            >>m_nObjectID
+            >>Form;
 
         // int parentSize;
         // in>>parentSize;
