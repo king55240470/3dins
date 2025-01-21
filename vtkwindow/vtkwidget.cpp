@@ -620,11 +620,13 @@ void VtkWidget::onCompare()
     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
     auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
     QVector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> clouds;
+    QVector<CObject*>parentlist;
     for(int i=0;i<entityList.size();i++){
         CEntity* entity=entityList[i];
         if(!entity->IsSelected())continue;
         if(entity->GetUniqueType()==enPointCloud){
             auto & temp=((CPointCloud*)entity)->m_pointCloud;
+            parentlist.append(entity);
             clouds.append(temp.makeShared());
         }
     }
@@ -697,6 +699,7 @@ void VtkWidget::onCompare()
     // 由RGB点云生成cpointcloud对象，并存入entitylist
     auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateCompareCloud(*comparisonCloud);
     cloudEntity->isComparsionCloud = true;
+    cloudEntity->parent=parentlist;
     m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
     m_pMainWin->NotifySubscribe();
 
