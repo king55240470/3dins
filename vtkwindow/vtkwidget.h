@@ -44,6 +44,7 @@
 #include <vtkProp3D.h>
 #include <vtkProperty.h>
 #include <vtkCamera.h>
+#include <vtkTextMapper.h>
 #include <vtkAxesActor.h>
 #include <vtkCubeAxesActor.h>
 #include <vtkCaptionActor2D.h>
@@ -118,14 +119,15 @@ public:
     void OnMouseMove();
     void OnLeftButtonPress();
     void OnLeftButtonRelease();
-    void createText();
-    void createTextBox();
-    void createLine();
+    void createText(CEntity* entity);
+    vtkSmartPointer<vtkActor2D> createTextBox(vtkSmartPointer<vtkTextActor> textActor, double x, double y);
+    vtkSmartPointer<vtkActor2D> createLine(CEntity* entity, vtkSmartPointer<vtkTextActor> textActor);
     void Linechange();
     void closeText();
     void GetScreenCoordinates(vtkRenderer* renderer, double pt[3], double screenCoord[2]);
+    CEntity* getEntityFromTextActor(vtkSmartPointer<vtkTextActor> textActor); // 从文本演员找到对应的entity
 
-    void ShowColorBar();
+    void ShowColorBar(double minDistance, double maxDistance);
 private:
     QVTKOpenGLNativeWidget* vtkWidget; // vtk窗口
     MainWindow *m_pMainWin = nullptr; // mainwindow指针
@@ -135,27 +137,32 @@ private:
     // vtkSmartPointer<vtkRenderer> renderer2D; // 专门放文本框和指向线段的渲染器
     vtkSmartPointer<vtkGenericOpenGLRenderWindow> renWin;
     vtkSmartPointer<MouseInteractorHighlightActor> m_highlightstyle;
+    vtkSmartPointer<vtkOrientationMarkerWidget> axeWidget; // 显示坐标器的浮动窗口
 
     pcl::PointCloud<pcl::PointXYZRGB> tempCloud; // 转换rgb点云用的临时点云
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud1; // 对比用的两个点云
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud2;
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr comparisonCloud;
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr alignedCloud;
+    vtkSmartPointer<vtkActor2D> colorBarActor; // 色温条
 
     vtkSmartPointer<vtkTextActor> infoTextActor;// 浮动信息文本演员
     vtkSmartPointer<vtkActor2D> rectangleActor; // 背景和边框
     vtkSmartPointer<vtkActor2D> lineActor;//指向线条
     vtkSmartPointer<vtkPNGReader> pngReader; //储存图片信息
     vtkSmartPointer<vtkImageActor> iconActor; //图片演员
-    vtkSmartPointer<vtkOrientationMarkerWidget> axeWidget; // 显示坐标器的浮动窗口
-    vtkSmartPointer<vtkOrientationMarkerWidget> textWidget; // 显示图形信息的浮动窗口
     CEntity* elementEntity;//储存传入的entity
-    QVector<CEntity *> elementEntityList;
     bool isDragging=false;  //判断注释是否能移动
-    CPosition b;//储存指向箭头的终点
+    CPosition b; // 储存指向箭头的终点
     vtkSmartPointer<vtkPolyData> linePolyData;//储存线的data
     vtkSmartPointer<vtkPolyDataMapper2D> lineMapper;//指向线的mapper
-    QVector<vtkSmartPointer<vtkActor2D>> directLines; // 存储所有的指向线段
+
+    QMap<CEntity*, vtkSmartPointer<vtkTextActor>> entityToTextActors; // 每个图形对应的文本演员
+    QMap<CEntity*, vtkSmartPointer<vtkActor2D>> entityToTextBoxs; // 每个图形对应的文本框
+    QMap<CEntity*, vtkSmartPointer<vtkActor2D>> entityToLines; // 每个图形对应的指向线段
+    QMap<CEntity*, vtkSmartPointer<vtkImageActor>> entityToIcons; // 每个图形对应的图标
+    QMap<CEntity*, CPosition> entityToEndPoints; // 每个显示信息的centity对应一个指向线段的落点
+    double increaseDis[2] = {0, 0}; // 每增加一个文本显示，自动间隔一段距离
 
 public slots:
 

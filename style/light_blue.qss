@@ -279,3 +279,47 @@ QSlider::handle:hover {
 QSlider::handle:pressed {
     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #5fa7ea, stop: 1 #3b7cb5);
 }
+
+/* QComboBox的样式 */
+QComboBox {
+    font-size: 14px "微软雅黑";
+    border: 1px solid #3570b2;
+    border-radius: 5px;
+    color: #000000;
+}
+
+QComboBox:hover {
+    border: 2px solid #4a90e2;
+}
+
+QComboBox:pressed {
+    /*background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #5fa7ea, stop: 1 #3b7cb5);*/
+    color: #ffffff;
+}
+
+QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 18px;
+    border-left-width: 1px;
+    border-left-color: #3570b2;
+    border-left-style: solid;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+    background-color: transparent;
+}
+
+QComboBox::down-arrow {
+
+}
+
+QComboBox QAbstractItemView {
+    border: 1px solid #3570b2;
+    selection-background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #3570b2, stop: 1 #4a90e2);
+    selection-color: #ffffff;
+}
+
+QComboBox QAbstractItemView::item:selected {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #3570b2, stop: 1 #4a90e2);
+    color: #ffffff;
+}
