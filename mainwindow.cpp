@@ -342,10 +342,10 @@ void MainWindow::openFile(){
         // 根据文件扩展名进行判断
         if (filePath.endsWith("ply")) {
             pWinFileManagerWidget->openModelFile(fileName, filePath);
-            //pWinVtkPresetWidget->setWidget(fileName+"文件已打开");
+            pWinVtkPresetWidget->setWidget(fileName+"文件已打开");
         } else if (filePath.endsWith("pcd")) {
             pWinFileManagerWidget->openMeasuredFile(fileName, filePath);
-            //pWinVtkPresetWidget->setWidget(fileName+"文件已打开");
+            pWinVtkPresetWidget->setWidget(fileName+"文件已打开");
             pWinElementListWidget->onAddElement();
         }else if(filePath.endsWith("qins")){
             QFile file(filePath);
