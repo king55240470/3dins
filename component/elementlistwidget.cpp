@@ -572,6 +572,7 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
         distancelistIndex++;
         currentIndex=0;
         list.clear();
+
         m_pMainWin->getPWinToolWidget()->setauto(true);
         m_pMainWin->getPWinToolWidget()->onSaveTxt();
         m_pMainWin->getPWinToolWidget()->setauto(false);
