@@ -366,6 +366,12 @@ void MainWindow::openFile(){
             //去除原来构建的点云
             pWinFileMgr->removePointCloudKeys(pWinFileMgr->getContentItemMap());
 
+            //打开模型点云
+            QString path;
+            in>> path;
+            pWinFileManagerWidget->openModelFile("modelCloud.ply", path);
+
+
             qDebug() << "加载成功,m_EntityListMgr的大小为:"<<m_EntityListMgr->getEntityList().size()<<"m_ObjectListMgr的大小为:"<<m_ObjectListMgr->getObjectList().size();
             qDebug()<<"首个Object的类型为:"<<m_ObjectListMgr->GetAt(0)->GetUniqueType();
             NotifySubscribe();
@@ -418,6 +424,23 @@ void MainWindow::saveFile(){
         pWinSetDataWidget->serialize(out);
         out<<pWinFileMgr->getContentItemMap();
         // out<<pWinFileMgr->getIdentifyItemMap();
+
+        //保存模型点云路径
+        for(int i=0;i<getEntityListMgr()->getEntityList().size();i++){
+            CPointCloud*could=(CPointCloud*)getEntityListMgr()->getEntityList()[i];
+            if(could->isModelCloud){
+                QString file_path = "D:/modelCloud.ply";
+                out << file_path;
+                int result = pcl::io::savePLYFile(file_path.toStdString(), could->m_pointCloud);
+                if (result != 0) {
+                    qDebug() << "Failed to save PLY file. Error code:" << result;
+                }else {
+                    qDebug() << "PLY file saved successfully!";
+                }
+                break;
+            }
+        }
+
     }else{
         qWarning("Entity manager is null, nothing to save.");
     }
