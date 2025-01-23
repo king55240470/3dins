@@ -63,6 +63,7 @@
 #include"constructor/distanceconstructor.h"
 #include"constructor/distanceconstructor.h"
 #include"constructor/pointcloudconstructor.h"
+#include"constructor/angleconstructor.h"
 
 #include <pcl/point_cloud.h>     // PCL 的点云类
 #include <pcl/visualization/pcl_visualizer.h> // PCL 的可视化工具
@@ -971,19 +972,19 @@ void ToolWidget::onSaveTxt(){
 
     // 创建 QTextStream 对象
     QTextStream out(&file);
-    auto& entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
+    auto& objectlist = m_pMainWin->m_ObjectListMgr->getObjectList();
     // 写入内容
 
-    for(int i=0;i<entitylist.size();i++){
-        CEntity* entity=entitylist[i];
-        if(entity->GetUniqueType()==enPoint){
-            CPoint * point=(CPoint*)entity;
+    for(int i=0;i<objectlist.size();i++){
+        CObject* object=objectlist[i];
+        if(object->GetUniqueType()==enPoint){
+            CPoint * point=(CPoint*)object;
             CPosition position =point->GetPt();
             out<<"类型：点 名称:"<<point->m_strAutoName<<Qt::endl;
             out<<"坐标:("<<position.x<<","<<position.y<<","<<position.z<<",)"<<Qt::endl;
             out<<Qt::endl;
-        }else if(entity->GetUniqueType()==enCircle){
-            CCircle* circle=(CCircle*)entity;
+        }else if(object->GetUniqueType()==enCircle){
+            CCircle* circle=(CCircle*)object;
             CPosition position=circle->getCenter();
             out<<"类型：圆 名称:"<<circle->m_strAutoName<<Qt::endl;
             out<<"中心:("<<position.x<<","<<position.y<<","<<position.z<<",)"<<Qt::endl;
@@ -991,8 +992,8 @@ void ToolWidget::onSaveTxt(){
             out<<Qt::endl;
             out<<Qt::endl;
 
-        }else if(entity->GetUniqueType()==enSphere){
-            CSphere* sphere=(CSphere*)entity;
+        }else if(object->GetUniqueType()==enSphere){
+            CSphere* sphere=(CSphere*)object;
             CPosition position=sphere->getCenter();
             out<<"类型：球 名称:"<<sphere->m_strAutoName<<Qt::endl;
             out<<"中心:("<<position.x<<","<<position.y<<","<<position.z<<",)"<<Qt::endl;
@@ -1000,8 +1001,8 @@ void ToolWidget::onSaveTxt(){
             out<<Qt::endl;
             out<<Qt::endl;
 
-        }else if(entity->GetUniqueType()==enPlane){
-            CPlane* plane=(CPlane*)entity;
+        }else if(object->GetUniqueType()==enPlane){
+            CPlane* plane=(CPlane*)object;
             CPosition position=plane->getCenter();
             QVector4D normal,dir_long_edge;
             normal=plane->getNormal();
@@ -1013,8 +1014,8 @@ void ToolWidget::onSaveTxt(){
             out<<"长:"<<plane->getLength()<<" 宽:"<<plane->getWidth()<<Qt::endl;
             out<<Qt::endl;
 
-        }else if(entity->GetUniqueType()==enCone){
-            CCone* cone=(CCone*)entity;
+        }else if(object->GetUniqueType()==enCone){
+            CCone* cone=(CCone*)object;
 
             CPosition position=cone->getVertex();
             QVector4D axis;
@@ -1025,8 +1026,8 @@ void ToolWidget::onSaveTxt(){
             out<<"高:"<<cone->getHeight()<<" 弧度:"<<cone->getRadian()<<" 圆锥高:"<<cone->getCone_height()<<Qt::endl;
             out<<Qt::endl;
 
-        }else if(entity->GetUniqueType()==enCylinder){
-            CCylinder* cylinder=(CCylinder*)entity;
+        }else if(object->GetUniqueType()==enCylinder){
+            CCylinder* cylinder=(CCylinder*)object;
             CPosition position=cylinder->getBtm_center();
             QVector4D axis;
             axis=cylinder->getAxis();
@@ -1036,8 +1037,8 @@ void ToolWidget::onSaveTxt(){
             out<<"高:"<<cylinder->getHeight()<<" 直径:"<<cylinder->getDiameter()<<Qt::endl;
             out<<Qt::endl;
 
-        }else if(entity->GetUniqueType()==enLine){
-            CLine* line=(CLine*)entity;
+        }else if(object->GetUniqueType()==enLine){
+            CLine* line=(CLine*)object;
             CPosition position1,position2;
             position1=line->getPosition1();
             position2=line->getPosition2();
@@ -1046,14 +1047,14 @@ void ToolWidget::onSaveTxt(){
             out<<"终点:("<<position2.x<<","<<position2.y<<","<<position2.z<<",)"<<Qt::endl;
             out<<Qt::endl;
 
-        }else if(entity->GetUniqueType()==enDistance){
-            CDistance* Distance=(CDistance*) entity;
+        }else if(object->GetUniqueType()==enDistance){
+            CDistance* Distance=(CDistance*) object;
             out<<"类型：距离 名称:"<<Distance->m_strCName<<Qt::endl;
             out<<"大小:"<<Distance->getdistance()<<" 上公差："<<Distance->getUptolerance()<<" 下公差:"<<Distance->getUndertolerance();
             out<<Qt::endl;
             out<<Qt::endl;
-        }else if(entity->GetUniqueType()==enPointCloud){
-            CPointCloud* PointCloud=(CPointCloud*) entity;
+        }else if(object->GetUniqueType()==enPointCloud){
+            CPointCloud* PointCloud=(CPointCloud*) object;
             out<<"类型：距离 名称:"<<PointCloud->m_strCName<<Qt::endl;
             out<<Qt::endl;
         }
@@ -1589,6 +1590,20 @@ void ToolWidget::onConstructPointCloud(){
     m_pMainWin->NotifySubscribe();
 }
 void ToolWidget::onConstructAngle(){
+   auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+    AngleConstructor constructor;
+    CAngle* newAngle=(CAngle*)constructor.create(entityList);
+    if(newAngle==nullptr){
+       if(constructor.getWrongInformation()==SourceEntityLess){
+            WrongWidget("实体数目过少");
+       }else{
+           WrongWidget("实体数目过多");
+       }
+    }else{
+        addToList(newAngle);
+         m_pMainWin->NotifySubscribe();
+    }
+
 
 }
 
