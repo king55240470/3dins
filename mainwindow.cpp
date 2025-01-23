@@ -387,6 +387,9 @@ void MainWindow::openFile(){
             pWinToolWidget->deserializeEntityList(in,pWinToolWidget->getConstructEntityList()); //构造
             //pWinToolWidget->deserializeEntityList(in,pWinToolWidget->getIdentifyEntityList()); //拟合
 
+            qDebug() << "加载成功,ConstructEntityList的大小为:"<<pWinToolWidget->getConstructEntityList().size();
+            qDebug() << "加载成功,IdentifyEntityList的大小为:"<<pWinToolWidget->getIdentifyEntityList().size();
+
             qDebug() << "加载成功,m_EntityListMgr的大小为:"<<m_EntityListMgr->getEntityList().size()<<"m_ObjectListMgr的大小为:"<<m_ObjectListMgr->getObjectList().size();
             qDebug()<<"首个Object的类型为:"<<m_ObjectListMgr->GetAt(0)->GetUniqueType();
             NotifySubscribe();
