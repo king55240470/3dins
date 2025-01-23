@@ -637,7 +637,6 @@ void VtkWidget::createAxes()
 
 // 切换相机视角1
 void VtkWidget::onTopView() {
-    m_pMainWin->NotifySubscribe();
     vtkCamera *camera = renderer->GetActiveCamera();
     if (camera) {
         camera->SetPosition(0, 0, 1);  // 重置相机位置为俯视
@@ -654,8 +653,6 @@ void VtkWidget::onTopView() {
 
 // 切换相机视角2
 void VtkWidget::onRightView(){
-    m_pMainWin->NotifySubscribe();
-
     vtkCamera *camera = renderer->GetActiveCamera();
     if (camera) {
         camera->SetPosition(1, 0, 0);  // 重置相机位置为右侧
@@ -672,8 +669,6 @@ void VtkWidget::onRightView(){
 
 // 切换相机视角3
 void VtkWidget::onFrontView(){
-    m_pMainWin->NotifySubscribe();
-
     vtkCamera *camera = renderer->GetActiveCamera();
     if (camera) {
         camera->SetPosition(0, -1, 0);  // 重置相机位置为正视
@@ -690,8 +685,6 @@ void VtkWidget::onFrontView(){
 
 // 切换相机视角4，立体视角可以在前三个的基础上旋转
 void VtkWidget::onIsometricView(){
-    m_pMainWin->NotifySubscribe();
-
     vtkCamera *camera = renderer->GetActiveCamera();
     if (camera) {
         camera->SetPosition(0, 0, 0); // 重置相机位置
@@ -710,8 +703,10 @@ void VtkWidget::onIsometricView(){
 // 比较两个点云的处理函数
 void VtkWidget::onCompare()
 {
-    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+    auto entityList = m_pMainWin->m_EntityListMgr->getEntityList();
     auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
+    auto marksMap = m_pMainWin->getpWinFileMgr()->getContentItemMap();
+
     QVector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> clouds;
     for(int i=0;i<entityList.size();i++){
         CEntity* entity=entityList[i];
@@ -736,12 +731,11 @@ void VtkWidget::onCompare()
     pcl::copyPointCloud( *clouds[0], *cloud1);
     pcl::copyPointCloud( *clouds[1], *cloud2);
 
-    for(int i = 0;i < 2;i++)
-        // 检查点云是否为空
-        if (cloud1->empty() || cloud2->empty()) {
-            QMessageBox::warning(this, "Warning", "其中一个或两个点云为空!");
-            return;
-        }
+    // 检查点云是否为空
+    if (cloud1->empty() || cloud2->empty()) {
+        QMessageBox::warning(this, "Warning", "其中一个或两个点云为空!");
+        return;
+    }
 
     // 创建KD-Tree用于点云2
     pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
