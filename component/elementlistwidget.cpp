@@ -592,6 +592,7 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
         for( CObject* ob: m_pMainWin->getObjectListMgr()->getObjectList()){
             if(distancelist[distancelistIndex]->parent[currentIndex]->GetObjectCName()==ob->GetObjectCName()){
                 obj=ob;
+                break;
             }
         }
         currentIndex++;
@@ -622,8 +623,15 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
         }else if(obj->GetUniqueType()==enPlane){
             qDebug()<<obj->parent.size();
             QVector<CObject*>planelist;
-            for(CObject*obj1:obj->parent){
-                planelist.append(obj1);
+            // for(CObject*obj1:obj->parent){
+            //     planelist.append(obj1);
+            // }
+            for(CObject*obj1:m_pMainWin->getObjectListMgr()->getObjectList()){
+                for(CObject* obj2:obj->parent){
+                    if(obj2->GetObjectCName()==obj1->GetObjectCName()){
+                        planelist.append(obj1);
+                    }
+                }
             }
             qDebug()<<planelist.size();
             CPlane*plane=static_cast<CPlane*>(obj);

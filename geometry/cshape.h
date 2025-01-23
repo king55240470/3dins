@@ -11,15 +11,16 @@ class CShape
 {
 public:
     CShape();
+    virtual ~CShape(){}
 
     // 获取centity子类具体类型接口
     virtual int GetUniqueType() {return -1;};
 
-    bool m_bUnderCursor=false;//是否在光标下
-    bool m_bSel=false;//是否被选中
-    bool m_bDeleted=false;//是否被删除
-    bool m_bShow=false;//是否显示
-    bool m_bGroup=false;//是否属于某个组
+    bool m_bUnderCursor;//是否在光标下
+    bool m_bSel;//是否被选中
+    bool m_bDeleted;//是否被删除
+    bool m_bShow;//是否显示
+    bool m_bGroup;//是否属于某个组
 
     uintptr_t m_dwAddress;//存储与形状相关联的地址
 

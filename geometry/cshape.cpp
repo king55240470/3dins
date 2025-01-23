@@ -1,7 +1,13 @@
 #include "cshape.h"
 
 CShape::CShape()
-{}
+{
+    m_bUnderCursor=false;
+    m_bSel=false;
+    m_bDeleted=false;
+    m_bShow=false;
+    m_bGroup=false;
+}
 
 bool CShape::IsUnderCursor(){
     return m_bUnderCursor;
@@ -78,23 +84,23 @@ QDataStream& operator<<(QDataStream& out,const CShape& shape){
         <<shape.m_bSel
         <<shape.m_bDeleted
         <<shape.m_bShow
-        <<shape.m_bGroup
-        <<static_cast<quint64>(shape.m_dwAddress)//转换为64位整数以确保跨平台一致性
-        <<shape.m_strInformation;
+        <<shape.m_bGroup;
+        // <<static_cast<quint64>(shape.m_dwAddress)//转换为64位整数以确保跨平台一致性
+        // <<shape.m_strInformation;
     // qDebug()<<"address:"<<static_cast<quint64>(shape.m_dwAddress);
     return out;
 }
 //反序列化
 QDataStream& operator>>(QDataStream& in,CShape& shape){
-    quint64 address;
+    // quint64 address;
     in>>shape.m_bUnderCursor
         >>shape.m_bSel
         >>shape.m_bDeleted
         >>shape.m_bShow
-        >>shape.m_bGroup
-        >>address//先读取为 64 位整数
-        >>shape.m_strInformation;
+        >>shape.m_bGroup;
+        // >>address//先读取为 64 位整数
+        // >>shape.m_strInformation;
     // qDebug()<<"address:"<<address;
-    shape.m_dwAddress=static_cast<uintptr_t>(address);//转换回uintptr_t类型
+    // shape.m_dwAddress=static_cast<uintptr_t>(address);//转换回uintptr_t类型
     return in;
 }

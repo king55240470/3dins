@@ -565,7 +565,7 @@ class CDistance : public CEntity{
     double undertolerance;
     CPosition begin;
     CPosition end;
-    bool qualified=false;
+    bool qualified;
     CPlane plane;
     CCircle circle;
     CLine line;
@@ -599,6 +599,10 @@ public:
     CDistance(){
         uptolerance=0.0;
         undertolerance=0.0;
+        qualified=false;
+        plane=CPlane();
+        circle=CCircle();
+        line=CLine();
         m_strAutoName = QString("距离%1").arg(currentCdistacneId);
         m_strCName = QString("距离%1").arg(currentCdistacneId);
         currentCdistacneId++;
@@ -652,7 +656,7 @@ class CAngle : public CEntity {
     CLine line1;
     CLine line2;
     // CPcsNode* pcsNode;
-    bool qualified = false;
+    bool qualified;
 
     QDataStream& serialize(QDataStream& out) const override {
         CEntity::serialize(out);  // 先序列化基类部分
@@ -679,6 +683,7 @@ public:
         angleValue = 0.0;
         uptolerance = 0.0;
         undertolerance = 0.0;
+        qualified=false;
         m_strAutoName = QString("角度%1").arg(currentCAngleId);
         m_strCName = QString("角度%1").arg(currentCAngleId);
         currentCAngleId++;
@@ -736,7 +741,7 @@ public:
     //     out <<isFileCloud  <<isComparsionCloud ;
 
     //     if(!haveSaved){
-    //         std::string file_path = "D:/output_" + std::to_string(currentPointCloudId) + ".ply";
+    //         std::string file_path = std::getenv("USERPROFILE") + std::string("/Desktop/output_") + std::to_string(currentPointCloudId) + ".ply";
     //         out<< QString::fromStdString(file_path);
     //         pcl::io::savePLYFile(file_path, m_pointCloud);
     //     }
