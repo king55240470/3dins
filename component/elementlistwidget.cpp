@@ -517,13 +517,12 @@ void ElementListWidget::updateDistance()
     timer = new QTimer(this);
     list.clear();
     currentIndex=0;
+    distancelistIndex=0;
     connect(timer, &QTimer::timeout, [this,kdtree,distancelist](){
         startupdateData(kdtree,distancelist);
     });
     timer->start(1000);
     qDebug()<<"时间开始后";
-    distancelistIndex=0;
-
 }
 
 void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree,QVector<CEntity*>distancelist)
@@ -573,6 +572,7 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
         distancelistIndex++;
         currentIndex=0;
         list.clear();
+        m_pMainWin->NotifySubscribe();
         m_pMainWin->getPWinToolWidget()->setauto(true);
         m_pMainWin->getPWinToolWidget()->onSaveTxt();
         m_pMainWin->getPWinToolWidget()->setauto(false);
@@ -588,7 +588,12 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
         return;
     }
     if(stateMachine->configuration().contains(runningState)){
-        CObject*obj=distancelist[distancelistIndex]->parent[currentIndex];
+        CObject* obj=nullptr;
+        for( CObject* ob: m_pMainWin->getObjectListMgr()->getObjectList()){
+            if(distancelist[distancelistIndex]->parent[currentIndex]->GetObjectCName()==ob->GetObjectCName()){
+                obj=ob;
+            }
+        }
         currentIndex++;
         std::vector<int> pointIdxNKNSearch(1);
         std::vector<float> pointNKNSquaredDistance(1);
