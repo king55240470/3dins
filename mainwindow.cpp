@@ -37,7 +37,7 @@ MainWindow::MainWindow(QWidget *parent)
     LoadSetDataWidget();
     m_nRelyOnWhichCs=csRef;
     SetUpTheme();
-
+    modelCloudExist=false;
 }
 
 void MainWindow::setupUi(){
@@ -348,6 +348,7 @@ void MainWindow::openFile(){
         QString fileName = fileInfo.fileName();
         // 根据文件扩展名进行判断
         if (filePath.endsWith("ply")) {
+            modelCloudExist=true; // 用于保证后续序列化文件
             pWinFileManagerWidget->openModelFile(fileName, filePath);
             pWinVtkPresetWidget->setWidget(fileName+"文件已打开");
         } else if (filePath.endsWith("pcd")) {
@@ -375,13 +376,16 @@ void MainWindow::openFile(){
             pWinFileMgr->removePointCloudKeys(pWinFileMgr->getContentItemMap());
 
             //打开模型点云
-            QString path;
-            in>> path;
-            pWinFileManagerWidget->openModelFile("modelCloud.ply", path);
+            in>>modelCloudExist;
+            if(modelCloudExist){
+                QString path;
+                in>> path;
+                pWinFileManagerWidget->openModelFile("modelCloud.ply", path);
+            }
 
             //反序列化toolWidget中的list
-            pWinToolWidget->deserializeConstructEntityList(in,pWinToolWidget->getConstructEntityList());
-            pWinToolWidget->deserializeIdentifyEntityList(in,pWinToolWidget->getIdentifyEntityList());
+            pWinToolWidget->deserializeEntityList(in,pWinToolWidget->getConstructEntityList()); //构造
+            //pWinToolWidget->deserializeEntityList(in,pWinToolWidget->getIdentifyEntityList()); //拟合
 
             qDebug() << "加载成功,m_EntityListMgr的大小为:"<<m_EntityListMgr->getEntityList().size()<<"m_ObjectListMgr的大小为:"<<m_ObjectListMgr->getObjectList().size();
             qDebug()<<"首个Object的类型为:"<<m_ObjectListMgr->GetAt(0)->GetUniqueType();
@@ -436,10 +440,11 @@ void MainWindow::saveFile(){
         out<<pWinFileMgr->getContentItemMap();
         // out<<pWinFileMgr->getIdentifyItemMap();
 
-        //保存模型点云路径
+        //保存模型点云
+        out<<modelCloudExist;
         for(int i=0;i<getEntityListMgr()->getEntityList().size();i++){
             CPointCloud*could=(CPointCloud*)getEntityListMgr()->getEntityList()[i];
-            if(could->isModelCloud){
+            if(could->isModelCloud){               
                 QString file_path = "D:/modelCloud.ply";
                 out << file_path;
                 int result = pcl::io::savePLYFile(file_path.toStdString(), could->m_pointCloud);
@@ -453,8 +458,8 @@ void MainWindow::saveFile(){
         }
 
         //序列化toolWidget中的list
-        pWinToolWidget->serializeConstructEntityList(out,pWinToolWidget->getConstructEntityList());
-        pWinToolWidget->serializeIdentifyEntityList(out,pWinToolWidget->getIdentifyEntityList());
+        pWinToolWidget->serializeEntityList(out,pWinToolWidget->getConstructEntityList()); //构造
+        //pWinToolWidget->serializeEntityList(out,pWinToolWidget->getIdentifyEntityList()); //拟合
 
     }else{
         qWarning("Entity manager is null, nothing to save.");

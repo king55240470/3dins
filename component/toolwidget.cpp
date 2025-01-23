@@ -2316,7 +2316,7 @@ QString ToolWidget::getCompareImagePath(){
     return CompareImagePath;
 }
 
-void ToolWidget::serializeConstructEntityList(QDataStream& out, const QVector<CEntity*>& entityList){
+QDataStream& ToolWidget::serializeEntityList(QDataStream& out, const QVector<CEntity*>& entityList){
     out << static_cast<int>(entityList.size());
     for (const auto& entity : entityList) {
         int typeInt = entity->GetUniqueType();  // 获取对象的类型标识符
@@ -2327,9 +2327,10 @@ void ToolWidget::serializeConstructEntityList(QDataStream& out, const QVector<CE
             entity->serialize(out);
         }
     }
+    return out;
 }
 
-void ToolWidget::deserializeConstructEntityList(QDataStream& in, QVector<CEntity*>& entityList){
+QDataStream& ToolWidget::deserializeEntityList(QDataStream& in, QVector<CEntity*>& entityList){
     int size;
     in >> size;
     entityList.clear();
@@ -2383,73 +2384,5 @@ void ToolWidget::deserializeConstructEntityList(QDataStream& in, QVector<CEntity
             entityList.append(entity);
         }
     }
-}
-
-void ToolWidget::serializeIdentifyEntityList(QDataStream& out, const QVector<CEntity*>& entityList){
-    out << static_cast<int>(entityList.size());
-    for (const auto& entity : entityList) {
-        int typeInt = entity->GetUniqueType();  // 获取对象的类型标识符
-        ENTITY_TYPE type=static_cast<ENTITY_TYPE>(typeInt);
-        out << type;  // 序列化类型标识符
-
-        if(type!=enPointCloud){
-            entity->serialize(out);
-        }
-    }
-}
-
-void ToolWidget::deserializeIdentifyEntityList(QDataStream& in, QVector<CEntity*>& entityList){
-    int size;
-    in >> size;
-    entityList.clear();
-    for (int i = 0; i < size; ++i) {
-        int typeInt=0;
-        in >> typeInt;
-        ENTITY_TYPE type = static_cast<ENTITY_TYPE>(typeInt);
-
-        CEntity* entity = nullptr;
-        switch (type) {
-        case enCircle:
-            entity = new CCircle();
-            break;
-        case enLine:
-            entity = new CLine();
-            break;
-        case enPoint:
-            entity=new CPoint();
-            break;
-        case enPlane:
-            entity=new CPlane();
-            break;
-        case enSphere:
-            entity=new CSphere();
-            break;
-        case enCylinder:
-            entity=new CCylinder();
-            break;
-        case enCone:
-            entity=new CCone();
-            break;
-        case enCuboid:
-            entity=new CCuboid();
-            break;
-        case enDistance:
-            entity=new CDistance();
-            break;
-        case enPointCloud:
-            entity=new CPointCloud();
-            break;
-        case enAngle:
-            entity=new CAngle();
-            break;
-        default:
-            entity = new CEntity();
-            break;
-        }
-
-        if(type!=enPointCloud){
-            entity->deserialize(in);
-            entityList.append(entity);
-        }
-    }
+    return in;
 }

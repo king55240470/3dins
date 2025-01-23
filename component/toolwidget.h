@@ -70,10 +70,9 @@ public:
     QVector<CEntity*>& getIdentifyEntityList();
 
     //serialize
-    void serializeConstructEntityList(QDataStream& out, const QVector<CEntity*>& entityList);
-    void deserializeConstructEntityList(QDataStream& in, QVector<CEntity*>& entityList);
-    void serializeIdentifyEntityList(QDataStream& out, const QVector<CEntity*>& entityList);
-    void deserializeIdentifyEntityList(QDataStream& in, QVector<CEntity*>& entityList);
+    QDataStream& serializeEntityList(QDataStream& out, const QVector<CEntity*>& entityList);
+    QDataStream& deserializeEntityList(QDataStream& in, QVector<CEntity*>& entityList);
+
 
     //返回UniqueToolBar的引用，以便contralwidget操作
     UniqueToolBar& getSave();
