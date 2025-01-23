@@ -553,7 +553,8 @@ void VtkWidget::reDrawCentity(){
         // 循环判断是哪种元素
         for(int j=0;j<constructEntityList.size();j++){
             QString key=constructEntityList[j]->GetObjectCName() + "  " + constructEntityList[j]->GetObjectAutoName();
-            if(entitylist[i] == constructEntityList[j]){//是构建的元素
+            QString name=entitylist[i]->GetObjectCName()+"  "+entitylist[i]->GetObjectAutoName();
+            if(name == key){//是构建的元素
                 constructFlag=1;
                 if(contentItemmap[key]){ // 如果不隐藏
                     vtkSmartPointer<vtkActor>actor = entitylist[i]->draw();
@@ -571,7 +572,8 @@ void VtkWidget::reDrawCentity(){
         if(constructFlag==0){//不是构建的元素
             for(int j=0;j<identifyEntityList.size();j++){
                 QString key=identifyEntityList[j]->GetObjectCName() + "  " + identifyEntityList[j]->GetObjectAutoName();
-                if(entitylist[i] == identifyEntityList[j]){//是构建的元素
+                QString name=entitylist[i]->GetObjectCName()+"  "+entitylist[i]->GetObjectAutoName();
+                if(name == key){//是构建的元素
                     identifyFlag=1;
                     if(identifyItemmap[key]){ // 如果不隐藏
                         vtkSmartPointer<vtkActor>actor = entitylist[i]->draw();
