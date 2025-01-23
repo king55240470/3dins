@@ -361,6 +361,7 @@ void MainWindow::openFile(){
                 qDebug() << "Failed to open file:" << file.errorString();
                 return;
             }
+
             //deserialize
             QDataStream in(&file);
             // in.setVersion(QDataStream::Qt_6_0);
@@ -378,6 +379,9 @@ void MainWindow::openFile(){
             in>> path;
             pWinFileManagerWidget->openModelFile("modelCloud.ply", path);
 
+            //反序列化toolWidget中的list
+            pWinToolWidget->deserializeConstructEntityList(in,pWinToolWidget->getConstructEntityList());
+            pWinToolWidget->deserializeIdentifyEntityList(in,pWinToolWidget->getIdentifyEntityList());
 
             qDebug() << "加载成功,m_EntityListMgr的大小为:"<<m_EntityListMgr->getEntityList().size()<<"m_ObjectListMgr的大小为:"<<m_ObjectListMgr->getObjectList().size();
             qDebug()<<"首个Object的类型为:"<<m_ObjectListMgr->GetAt(0)->GetUniqueType();
@@ -447,6 +451,10 @@ void MainWindow::saveFile(){
                 break;
             }
         }
+
+        //序列化toolWidget中的list
+        pWinToolWidget->serializeConstructEntityList(out,pWinToolWidget->getConstructEntityList());
+        pWinToolWidget->serializeIdentifyEntityList(out,pWinToolWidget->getIdentifyEntityList());
 
     }else{
         qWarning("Entity manager is null, nothing to save.");
