@@ -82,7 +82,7 @@ void FileManagerWidget::openModelFile(QString fileName,QString filePath){
 
     m_pMainWin->getpWinFileMgr()->cloudptr = pcl::PointCloud<pcl::PointXYZRGB>::Ptr(newcloud);
     if(!m_pMainWin->getpWinFileMgr()->cloudptr){
-        qDebug() << "拟合用的点云指针为空!";
+        qDebug() << "拟合用的点云为空!";
     }
     m_pMainWin->NotifySubscribe();
     m_pMainWin->getPWinVtkWidget()->onTopView();
