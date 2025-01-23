@@ -154,14 +154,23 @@ void MainWindow::setupUi(){
     QAction* constructCloud = constructorMenu->addAction("点云切割");
     QAction* constructAngle = constructorMenu->addAction("角度");
     // 插入图片
-    constructPoint->setIcon(pointIcon);
-    constructLine->setIcon(lineIcon);
-    constructPlane->setIcon(planeIcon);
-    constructCircle->setIcon(circleIcon);
-    constructRect->setIcon(rectangleIcon);
-    constructSphere->setIcon(sphereIcon);
-    constructCylinder->setIcon(cylinderIcon);
-    constructCone->setIcon(coneIcon);
+    QIcon point_construct(":/component/construct/point_.png");
+    QIcon line_construct(":/component/construct/line_.png");
+    QIcon plane_construct(":/component/construct/plane_.png");
+    QIcon circle_construct(":/component/construct/circle_.png");
+    QIcon rect_construct(":/component/construct/rectangle_.png");
+    QIcon sphere_construct(":/component/construct/sphere_.png");
+    QIcon cone_construct(":/component/construct/cone_.png");
+    QIcon cylinder_construct(":/component/construct/cylinder_.png");
+
+    constructPoint->setIcon(point_construct);
+    constructLine->setIcon(line_construct);
+    constructPlane->setIcon(plane_construct);
+    constructCircle->setIcon(circle_construct);
+    constructRect->setIcon(rect_construct);
+    constructSphere->setIcon(sphere_construct);
+    constructCylinder->setIcon(cylinder_construct);
+    constructCone->setIcon(cone_construct);
     constructDis->setIcon(distanceIcon);
     constructCloud->setIcon(cloudIcon);
     constructAngle->setIcon(angleIcon);
@@ -205,8 +214,6 @@ void MainWindow::setupUi(){
     connect(findSphere, &QAction::triggered, this, [&](){ pWinToolWidget->onFindSphere(); });
     connect(findCylinder, &QAction::triggered, this, [&](){ pWinToolWidget->onFindCylinder(); });
     connect(findCone, &QAction::triggered, this, [&](){ pWinToolWidget->onFindCone(); });
-
-
 
     QMenu * switchTheme = bar->addMenu("主题");
     QAction* lightBlue = switchTheme->addAction("浅蓝色(默认)");

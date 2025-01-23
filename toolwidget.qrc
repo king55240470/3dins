@@ -34,5 +34,13 @@
         <file>component/construct/start.png</file>
         <file>component/construct/stop.png</file>
         <file>component/construct/angle.png</file>
+        <file>component/construct/circle_.png</file>
+        <file>component/construct/cone_.png</file>
+        <file>component/construct/cylinder_.png</file>
+        <file>component/construct/line_.png</file>
+        <file>component/construct/plane_.png</file>
+        <file>component/construct/point_.png</file>
+        <file>component/construct/rectangle_.png</file>
+        <file>component/construct/sphere_.png</file>
     </qresource>
 </RCC>
