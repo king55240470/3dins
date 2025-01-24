@@ -30,7 +30,7 @@ public:
     enum COMPENSATE_TYPE m_CompenType;
 public:
     CEntity();
-    ~CEntity();
+    virtual ~CEntity(){}
     CPcs* GetRefCoord() override;//使用override关键字时，如果派生类的函数签名与基类的虚函数不匹配，编译器会报错,这有助于确保正确地重写基类函数
     CPcs* GetCurCoord() override;
     CPcs* GetExtCoord() override;
@@ -72,44 +72,9 @@ public:
 
 
     //序列化
-    QDataStream& serialize(QDataStream& out) const override{
-        CObject::serialize(out);//序列化基类部分
-        out<<*m_pRefCoord<<*m_pCurCoord<<*m_pExtCoord;
-
-        out<<static_cast<int>(m_ConstructList.size());
-        qDebug()<<"constructListSize:"<<m_ConstructList.size();
-        for(const auto* entity:m_ConstructList){//auto让编译器自动推断元素的类型
-            out<<*entity;
-        }
-
-        out<<m_bShowCNameLabel
-            <<m_nRef
-            <<m_bRemeasure;
-        return out;
-    }
-
-
-
+    QDataStream& serialize(QDataStream& out) const override;
     //反序列化
-    QDataStream& deserialize(QDataStream& in) override{
-        CObject::deserialize(in);//反序列化基类部分
-        in>>*m_pRefCoord>>*m_pCurCoord>>*m_pExtCoord;//解引用‘*’将数据流中的内容读取到已经存在的对象中，确保将读取的数据填充到对象内部
-
-        int constructListSize;
-        in>>constructListSize;
-        qDebug()<<"constructListSize:"<<constructListSize;
-        m_ConstructList.clear();
-        for(int i=0;i<constructListSize;i++){
-            CEntity *entity=new CEntity();
-            in>>*entity;
-            m_ConstructList.append(entity);
-        }
-
-        in>>m_bShowCNameLabel
-            >>m_nRef
-            >>m_bRemeasure;
-        return in;
-    }
+    QDataStream& deserialize(QDataStream& in) override;
 };
 
 #endif // CENTITY_H
