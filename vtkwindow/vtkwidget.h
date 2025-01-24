@@ -124,6 +124,7 @@ public:
     vtkSmartPointer<vtkActor2D> createLine(CEntity* entity, vtkSmartPointer<vtkTextActor> textActor);
     void Linechange();
     void closeText();
+    void closeTextActor(CEntity* entity);
     void GetScreenCoordinates(vtkRenderer* renderer, double pt[3], double screenCoord[2]);
     CEntity* getEntityFromTextActor(vtkSmartPointer<vtkTextActor> textActor); // 从文本演员找到对应的entity
 
@@ -147,6 +148,9 @@ private:
     vtkSmartPointer<vtkActor2D> colorBarActor; // 色温条
 
     vtkSmartPointer<vtkTextActor> infoTextActor;// 浮动信息文本演员
+    vtkSmartPointer<vtkCellArray> polygons;
+    vtkSmartPointer<vtkPolyData> rectangle;
+    vtkSmartPointer<vtkPolyDataMapper2D> rectangleMapper;
     vtkSmartPointer<vtkActor2D> rectangleActor; // 背景和边框
     vtkSmartPointer<vtkActor2D> lineActor;//指向线条
     vtkSmartPointer<vtkPNGReader> pngReader; //储存图片信息
@@ -154,6 +158,8 @@ private:
     CEntity* elementEntity;//储存传入的entity
     bool isDragging=false;  //判断注释是否能移动
     CPosition b; // 储存指向箭头的终点
+    vtkSmartPointer<vtkPoints> points;
+    vtkSmartPointer<vtkCellArray> lines;
     vtkSmartPointer<vtkPolyData> linePolyData;//储存线的data
     vtkSmartPointer<vtkPolyDataMapper2D> lineMapper;//指向线的mapper
 
