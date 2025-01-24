@@ -6,8 +6,8 @@ vtkStandardNewMacro(MouseInteractorHighlightActor);
 MouseInteractorHighlightActor::MouseInteractorHighlightActor(vtkInteractorStyleTrackballCamera* parent)
 {
     vtkMenu = new QMenu(m_pMainWin); // 创建菜单
-    auto cancelSelect = new QAction("取消选中");
-    vtkMenu->addAction(cancelSelect);
+    auto clearText = new QAction("清除标注和高亮");
+    vtkMenu->addAction(clearText);
 }
 
 // 实现左键按下事件的处理方法
