@@ -54,6 +54,7 @@
 #include <vtkCallbackCommand.h>
 #include <vtkGlyphSource2D.h>
 #include <vtkTextActor.h>
+#include <vtkTexturedActor2D.h>
 #include <vtkTextProperty.h>
 #include <vtkAutoInit.h>
 #include <vtkCommand.h>
@@ -119,6 +120,7 @@ public:
     void OnMouseMove();
     void OnLeftButtonPress();
     void OnLeftButtonRelease();
+    void OnRightButtonPress();
     void createText(CEntity* entity);
     vtkSmartPointer<vtkActor2D> createTextBox(vtkSmartPointer<vtkTextActor> textActor, double x, double y);
     vtkSmartPointer<vtkActor2D> createLine(CEntity* entity, vtkSmartPointer<vtkTextActor> textActor);
@@ -132,6 +134,7 @@ public:
 private:
     QVTKOpenGLNativeWidget* vtkWidget; // vtk窗口
     MainWindow *m_pMainWin = nullptr; // mainwindow指针
+    QMenu* vtkMenu;
 
     // 创建渲染器、渲染窗口和交互器
     vtkSmartPointer<vtkRenderer> renderer;
@@ -154,7 +157,7 @@ private:
     vtkSmartPointer<vtkActor2D> rectangleActor; // 背景和边框
     vtkSmartPointer<vtkActor2D> lineActor;//指向线条
     vtkSmartPointer<vtkPNGReader> pngReader; //储存图片信息
-    vtkSmartPointer<vtkImageActor> iconActor; //图片演员
+    vtkSmartPointer<vtkTexturedActor2D> iconActor; //图片演员
     CEntity* elementEntity;//储存传入的entity
     bool isDragging=false;  //判断注释是否能移动
     CPosition b; // 储存指向箭头的终点
@@ -166,7 +169,7 @@ private:
     QMap<CEntity*, vtkSmartPointer<vtkTextActor>> entityToTextActors; // 每个图形对应的文本演员
     QMap<CEntity*, vtkSmartPointer<vtkActor2D>> entityToTextBoxs; // 每个图形对应的文本框
     QMap<CEntity*, vtkSmartPointer<vtkActor2D>> entityToLines; // 每个图形对应的指向线段
-    QMap<CEntity*, vtkSmartPointer<vtkImageActor>> entityToIcons; // 每个图形对应的图标
+    QMap<CEntity*, vtkSmartPointer<vtkTexturedActor2D>> entityToIcons; // 每个图形对应的图标
     QMap<CEntity*, CPosition> entityToEndPoints; // 每个显示信息的centity对应一个指向线段的落点
     double increaseDis[2] = {0, 0}; // 每增加一个文本显示，自动间隔一段距离
 
