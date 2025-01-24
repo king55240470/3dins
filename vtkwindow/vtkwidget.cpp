@@ -179,7 +179,7 @@ void VtkWidget::createText(CEntity* entity)
     infoTextActor->SetInput(byteArray.constData());
 
     // 计算文本框的初始位置
-    double x = renWin->GetSize()[0] - 250 - increaseDis[0];
+    double x = renWin->GetSize()[0] - 200 - increaseDis[0];
     double y = renWin->GetSize()[1] - 150 - increaseDis[1];
     infoTextActor->SetPosition(x, y);
     if(increaseDis[1]  <= renWin->GetSize()[1] - 300){
@@ -187,7 +187,7 @@ void VtkWidget::createText(CEntity* entity)
     }
     else {
         increaseDis[1] = 0;
-        increaseDis[0] += renWin->GetSize()[0] - 250; // 放到窗口左边显示
+        increaseDis[0] += renWin->GetSize()[0] - 200; // 放到窗口左边显示
     }
 
     // 检查是否重叠，并调整位置
@@ -277,21 +277,21 @@ vtkSmartPointer<vtkActor2D> VtkWidget::createTextBox(vtkSmartPointer<vtkTextActo
 
     rectangleActor = vtkSmartPointer<vtkActor2D>::New();
     rectangleActor->SetMapper(rectangleMapper);
-    rectangleActor->GetProperty()->SetColor(0.1, 0.2, 0.3);
-    rectangleActor->GetProperty()->SetOpacity(0.6);
+    rectangleActor->GetProperty()->SetColor(0.6, 0.6, 0.6);
+    rectangleActor->GetProperty()->SetOpacity(0.4);
     rectangleActor->GetProperty()->SetLineWidth(5);
     rectangleActor->SetPosition(x, y);
 
     // 添加关闭按钮图片
-    vtkSmartPointer<vtkJPEGReader> jpegReader = vtkSmartPointer<vtkJPEGReader>::New();
-    jpegReader->SetFileName(":/component/eye/close.jpg");
+    pngReader = vtkSmartPointer<vtkPNGReader>::New();
+    pngReader->SetFileName(":/component/eye/close.png");
 
     vtkSmartPointer<vtkImageActor> imageActor = vtkSmartPointer<vtkImageActor>::New();
-    imageActor->GetMapper()->SetInputConnection(jpegReader->GetOutputPort());
+    imageActor->GetMapper()->SetInputConnection(pngReader->GetOutputPort());
     imageActor->SetPosition(x + width - 20, y + height - 20, 0);
 
     vtkSmartPointer<vtkTexture> texture = vtkSmartPointer<vtkTexture>::New();
-    texture->SetInputConnection(jpegReader->GetOutputPort());
+    texture->SetInputConnection(pngReader->GetOutputPort());
 
     iconActor = vtkSmartPointer<vtkTexturedActor2D>::New();
     iconActor->SetTexture(texture);
