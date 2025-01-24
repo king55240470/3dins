@@ -3,5 +3,6 @@
         <file>component/eye/closeeye.png</file>
         <file>component/eye/openeye.png</file>
         <file>component/eye/close.jpg</file>
+        <file>component/eye/close.png</file>
     </qresource>
 </RCC>
