@@ -28,6 +28,13 @@ VtkWidget::VtkWidget(QWidget *parent)
 }
 
 void VtkWidget::setUpVtk(QVBoxLayout *layout){
+    vtkMenu = new QMenu(m_pMainWin); // 创建菜单
+    auto clearAction = new QAction("清除标注");
+    vtkMenu->addAction(clearAction);
+    connect(clearAction, &QAction::triggered, this, [&](){
+        this->closeText();
+    });
+
     // 初始化渲染器和交互器
     renderer = vtkSmartPointer<vtkRenderer>::New();
     renderer->SetBackground(1, 1, 1); // 设置渲染器颜色为白
@@ -90,6 +97,7 @@ void VtkWidget::OnMouseMove()
 
 void VtkWidget::OnLeftButtonPress()
 {
+    vtkMenu->hideTearOffMenu(); // 关闭右键菜单栏
     int* clickPos = renWin->GetInteractor()->GetEventPosition();
 
     // 遍历所有文本框，检查点击位置是否在某个文本框内
@@ -158,22 +166,22 @@ vtkSmartPointer<vtkTextActor> &VtkWidget::getInfoText()
 
 void VtkWidget::createText(CEntity* entity)
 {
-    vtkSmartPointer<vtkTextActor> textActor = vtkSmartPointer<vtkTextActor>::New();
-    textActor->GetTextProperty()->SetFontSize(16);
-    textActor->GetTextProperty()->SetFontFamilyToTimes();
-    textActor->GetTextProperty()->SetColor(MainWindow::InfoTextColor);
-    textActor->GetTextProperty()->SetJustificationToLeft();
-    textActor->GetTextProperty()->SetBold(1);
-    textActor->GetTextProperty()->SetShadow(true);
+    infoTextActor = vtkSmartPointer<vtkTextActor>::New();
+    infoTextActor->GetTextProperty()->SetFontSize(16);
+    infoTextActor->GetTextProperty()->SetFontFamilyToTimes();
+    infoTextActor->GetTextProperty()->SetColor(MainWindow::InfoTextColor);
+    infoTextActor->GetTextProperty()->SetJustificationToLeft();
+    infoTextActor->GetTextProperty()->SetBold(1);
+    infoTextActor->SetLayerNumber(1);
 
     QString qstr = entity->getCEntityInfo();
     QByteArray byteArray = qstr.toUtf8();
-    textActor->SetInput(byteArray.constData());
+    infoTextActor->SetInput(byteArray.constData());
 
     // 计算文本框的初始位置
-    double x = renWin->GetSize()[0] - 200 - increaseDis[0];
+    double x = renWin->GetSize()[0] - 250 - increaseDis[0];
     double y = renWin->GetSize()[1] - 150 - increaseDis[1];
-    textActor->SetPosition(x, y);
+    infoTextActor->SetPosition(x, y);
     if(increaseDis[1]  <= renWin->GetSize()[1] - 300){
         increaseDis[1] += 200;
     }
@@ -184,7 +192,7 @@ void VtkWidget::createText(CEntity* entity)
 
     // 检查是否重叠，并调整位置
     double bbox[4];
-    textActor->GetBoundingBox(renderer, bbox);
+    infoTextActor->GetBoundingBox(renderer, bbox);
     double textWidth = bbox[1] - bbox[0];
     double textHeight = bbox[3] - bbox[2];
     double width = textWidth + 20;
@@ -204,18 +212,18 @@ void VtkWidget::createText(CEntity* entity)
     }
 
     // 创建文本框
-    vtkSmartPointer<vtkActor2D> textBox = createTextBox(textActor, x, y);
+    vtkSmartPointer<vtkActor2D> textBox = createTextBox(infoTextActor, x, y);
 
     // 创建指向线段
-    vtkSmartPointer<vtkActor2D> line = createLine(entity, textActor);
+    vtkSmartPointer<vtkActor2D> line = createLine(entity, infoTextActor);
 
     // 存储信息
-    entityToTextActors[entity] = textActor;
+    entityToTextActors[entity] = infoTextActor;
     entityToTextBoxs[entity] = textBox;
     entityToLines[entity] = line;
 
     // 添加到渲染器
-    renderer->AddActor(textActor);
+    renderer->AddActor(infoTextActor);
     renderer->AddActor(textBox);
     renderer->AddActor(line);
 
@@ -223,6 +231,7 @@ void VtkWidget::createText(CEntity* entity)
     renWin->GetInteractor()->AddObserver(vtkCommand::LeftButtonPressEvent, this, &VtkWidget::OnLeftButtonPress);
     renWin->GetInteractor()->AddObserver(vtkCommand::MouseMoveEvent, this, &VtkWidget::OnMouseMove);
     renWin->GetInteractor()->AddObserver(vtkCommand::LeftButtonReleaseEvent, this, &VtkWidget::OnLeftButtonRelease);
+    renWin->GetInteractor()->AddObserver(vtkCommand::RightButtonPressEvent, this, &VtkWidget::OnRightButtonPress);
 
     renWin->Render();
 }
@@ -268,10 +277,29 @@ vtkSmartPointer<vtkActor2D> VtkWidget::createTextBox(vtkSmartPointer<vtkTextActo
 
     rectangleActor = vtkSmartPointer<vtkActor2D>::New();
     rectangleActor->SetMapper(rectangleMapper);
-    rectangleActor->GetProperty()->SetColor(0.3, 0.3, 0.3);
-    rectangleActor->GetProperty()->SetOpacity(0.4);
+    rectangleActor->GetProperty()->SetColor(0.1, 0.2, 0.3);
+    rectangleActor->GetProperty()->SetOpacity(0.6);
     rectangleActor->GetProperty()->SetLineWidth(5);
     rectangleActor->SetPosition(x, y);
+
+    // 添加关闭按钮图片
+    vtkSmartPointer<vtkJPEGReader> jpegReader = vtkSmartPointer<vtkJPEGReader>::New();
+    jpegReader->SetFileName(":/component/eye/close.jpg");
+
+    vtkSmartPointer<vtkImageActor> imageActor = vtkSmartPointer<vtkImageActor>::New();
+    imageActor->GetMapper()->SetInputConnection(jpegReader->GetOutputPort());
+    imageActor->SetPosition(x + width - 20, y + height - 20, 0);
+
+    vtkSmartPointer<vtkTexture> texture = vtkSmartPointer<vtkTexture>::New();
+    texture->SetInputConnection(jpegReader->GetOutputPort());
+
+    iconActor = vtkSmartPointer<vtkTexturedActor2D>::New();
+    iconActor->SetTexture(texture);
+    iconActor->SetPosition(x + width - 10, y + height - 10); // 右上角位置
+
+    // 存储关闭按钮图片演员
+    entityToIcons[entityToTextActors.key(textActor)] = iconActor;
+    renderer->AddActor(iconActor);
 
     return rectangleActor;
 }
@@ -412,12 +440,15 @@ void VtkWidget::closeText()
     {
         renderer->RemoveActor(it.value());
     }
-
     entityToTextActors.clear();
     entityToTextBoxs.clear();
     entityToLines.clear();
     entityToIcons.clear();
+    // 重置所有文本所占位置
+    increaseDis[0] = 0;
+    increaseDis[1] = 0;
 
+    vtkMenu->hideTearOffMenu(); // 关闭右键菜单栏
     renWin->Render();
 }
 // 删除选中的文本框
@@ -537,6 +568,11 @@ void VtkWidget::ShowColorBar(double minDistance, double maxDistance){
 
     // 刷新渲染窗口
     renderer->Render();
+}
+
+void VtkWidget::OnRightButtonPress()
+{
+    vtkMenu->showTearOffMenu(); // 弹出菜单栏
 }
 
 vtkSmartPointer<vtkRenderWindow> VtkWidget::getRenderWindow(){
