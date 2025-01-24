@@ -114,6 +114,8 @@
 #include <QApplication>
 #include <QPdfWriter>
 #include <QPainter>
+//Excelbaocun
+//#include <QtXlsx>
 //图片保存
 #include <QDateTime>
 
@@ -129,7 +131,9 @@ ToolWidget::ToolWidget(QWidget *parent)
 
     m_pMainWin =(MainWindow*)parent;
 
-    CompareImagePath=QString("C:/Users/Lenovo/Desktop/点云对比图像/screenshot/");
+
+    InitOutputFolder();
+
 
     resize(400,250);
 
@@ -279,7 +283,19 @@ ToolWidget::ToolWidget(QWidget *parent)
     connectActionWithF();
 
 }
+void ToolWidget::InitOutputFolder(){
+    QString currentPath = QCoreApplication::applicationDirPath();
+    //获得前两级路径，并在此基础上生成文件夹
+    QString ParentPath=getParentPath(2);
+    CompareImagePath= ParentPath+"/点云对比图像/screenshot"+"/";
 
+    createFolder(ParentPath+"/点云对比图像/screenshot");
+    createFolder(ParentPath+"/输出/word");
+    createFolder(ParentPath+"/输出/pdf");
+    createFolder(ParentPath+"/输出/image");
+    createFolder(ParentPath+"/输出/excel");
+    createFolder(ParentPath+"/输出/txt");
+}
 void ToolWidget::clearToolWidget(){
 
     //清空
@@ -668,7 +684,14 @@ void   ExtractData(QVector<CEntity *>& entitylist,QList<QList<QString>>& dataAll
             CPointCloud* PointCloud=(CPointCloud*) entity;
             inList<<"点云";
             inList<<PointCloud->m_strCName;
-
+        }
+        else if (entity->GetUniqueType()==enAngle){
+            CAngle* Angle=(CAngle*)entity;
+            inList<<"角度";
+            inList<<Angle->m_strCName;
+            inList<<QString::number(Angle->getAngleValue(),'f',6);
+            inList<<"上公差"+QString::number(Angle->getUptolerance(),'f',6);
+            inList<<"下公差"+QString::number(Angle->getUndertolerance(),'f',6);
         }
         dataAll.append(inList);
     }
@@ -700,84 +723,14 @@ void insertImageIntoPdf(const QString &imagePath, const QString &pdfPath) {
 
 void   ToolWidget::onSavePdf(){
 
-   //  QString path = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "", QString("Pdf(*.pdf)"));
-   //  if (path.isEmpty()){
-   //      return ;
-   //  }
-   //  auto& entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
-   //  QList<QList<QString>> dataAll;
-   //  QList<QString> header;
-   //  header<<"类型"<<"名称"<<"数据1"<<"数据2"<<"数据3"<<"数据4"<<"数据5";
-   //  dataAll.append(header);
-   //  ExtractData(entitylist,dataAll);
+   QString path= getOutputPath("pdf");
+   QString name=getTimeString();
 
-
-   //  if (QFileInfo(path).suffix().isEmpty())
-   //      path.append(".pdf");
-
-   //  // 只读和追加的方式打开文件
-   //  QFile pdfFile(path);
-   //  if (!pdfFile.open(QIODevice::WriteOnly | QIODevice::Append))
-   //      return;
-
-   //  QPdfWriter *m_pdfWriter = new QPdfWriter(&pdfFile);
-   //  m_pdfWriter->setPageSize(QPageSize::A4);
-   //  m_pdfWriter->setResolution(QPrinter::ScreenResolution);
-
-
-   //  //添加标题
-   //  //添加标题
-   //  QString html;
-   //  html.append("<h1 style='text-align:center;'>3dins</h1><br />");
-   //  // QString html = addHtmlTable("T1主标题", "T1主标题", row, col, values);
-   //  //m_html.append(html);
-   //  // 表格主标题T1
-   //  html.append("<table border='0.5' cellspacing='0' cellpadding='3' width:100%>");
-   //  html.append(QString("<tr><td align='center' style='vertical-align:middle;font-weight:bold;' colspan='%1'>").arg(7));
-   //  html.append("entitylist数据输出");
-   //  html.append("</td></tr>");
-
-   //  // 表格主标题T2
-   //  //html.append(QString("<tr><td align='left' style='vertical-align:middle;font-weight:bold;' colspan='%1'>").arg(col));
-   //  //html.append("T2主标题");
-   //  //html.append("</td></tr>");
-
-   //  // 添加表格数值 字段/字段值
-   //  // 遍历表格的每个单元格，将数据插入到表格中
-   //  for (int i = 0; i < entitylist.size()+1; ++i) {
-   //      html.append("<tr>");
-   //      for (int j = 0; j < dataAll[i].size(); ++j) {
-   //          // 表头用<th></th>,有加粗效果
-   //          //html.append(QString("<th valign='center' style='vertical-align:middle;font-size:100px;'>"));
-
-   //          // 设置单元格的文本
-   //          html.append(QString("<td valign='center' style='vertical-align:middle;font-size:100px;'>"));
-   //          html.append(dataAll[i][j] + "</td>");
-   //      }
-   //      html.append("</tr>");
-   //  }
-   //  html.append("</table><br /><br />");
-
-   // // 加入图片
-   //  QPainter painter;
-   //  painter.begin(m_pdfWriter);
-
-
-
-   //  QTextDocument textDocument;
-   //  textDocument.setHtml(html);
-   //  textDocument.print(m_pdfWriter);
-   //  textDocument.end();
-   //  QMessageBox::information(nullptr, "提示", "保存成功");
-
-   //  pdfFile.close();
-
-
-
-   QString filePath = QFileDialog::getSaveFileName(nullptr, "Save PDF", "", "PDF Files (*.pdf)");
-   if (filePath.isEmpty()) {
-       return ; // 用户取消了保存操作
-   }
+   QString filePath=path+"/"+name+".pdf";
+   // QString filePath = QFileDialog::getSaveFileName(nullptr, "Save PDF", "", "PDF Files (*.pdf)");
+   // if (filePath.isEmpty()) {
+   //     return; // 用户取消了保存操作
+   // }
 
    QPdfWriter pdfWriter(filePath);
    pdfWriter.setPageSize(QPageSize::A4);
@@ -804,26 +757,74 @@ void   ToolWidget::onSavePdf(){
            line += dataAll[i][j] + " "; // 用空格分隔列数据
        }
        painter.drawText(100, yPos, line);
-       yPos += 80; // 每行间隔20像素
+       yPos += 80; // 每行间隔80像素
    }
 
    // 插入图片
    QImage image;
-   for(int i=0;i<imagePaths.size();i++){
-       image=QImage(imagePaths[i]);
-       painter.drawImage(100, 150, image);
+   for (int i = 0; i < imagePaths.size(); ++i) {
+       image = QImage(imagePaths[i]);
+       if (!image.isNull()) {
+           // 检查图片高度是否会超出页面
+           if (yPos + image.height() > pdfWriter.height()) {
+               // 超出页面高度时，添加新的一页
+               pdfWriter.newPage();
+               yPos = 0; // 重置y坐标
+           }
+           painter.drawImage(100, yPos, image);
+           yPos += image.height() + 20; // 图片下方留出20像素的间隔
+       }
    }
 
    painter.end();
-
+QMessageBox::information(nullptr, "提示", "保存成功");
 
 }
-void   ToolWidget::onSaveExcel(){
+// void ToolWidget::onSaveExcel() {
+//     QString path = getOutputPath("xlsx");
+//     QString name = getTimeString();
+//     QString filePath = path + "/" + name + ".xlsx";
 
-    QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "", QString("Excel(*.xlsx *.xls)"));
-    if (filePath.isEmpty()){
-        return ;
-    }
+//     QStringList headers;
+//     headers << "类型" << "名称" << "数据1" << "数据2" << "数据3" << "数据4" << "数据5";
+//     QList<QList<QString>> dataAll;
+//     auto& entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
+//     ExtractData(entitylist, dataAll);
+
+//     QXlsx::Document xlsx;
+//     xlsx.write("A1", "entitylist 数据输出");
+//     xlsx.mergeCells("A1:G1");
+//     xlsx.setRowHeight(1, 30);
+
+//     // 写入列标题
+//     for (int i = 0; i < headers.size(); ++i) {
+//         xlsx.write(2, i + 1, headers[i]);
+//     }
+
+//     // 写入数据
+//     for (int row = 0; row < dataAll.size(); ++row) {
+//         for (int col = 0; col < dataAll[row].size(); ++col) {
+//             xlsx.write(row + 3, col + 1, dataAll[row][col]);
+//         }
+//     }
+
+//     // 保存文件
+//     if (xlsx.saveAs(filePath)) {
+//         QMessageBox::information(nullptr, "提示", "保存成功");
+//     } else {
+//         QMessageBox::warning(nullptr, "提示", "保存失败");
+//     }
+// }
+
+void   ToolWidget::onSaveExcel(){
+    QString path= getOutputPath("xlsx");
+    QString name=getTimeString();
+
+    QString filePath=path+"/"+name+".xlsx";
+    // QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "", QString("Excel(*.xlsx *.xls)"));
+    // if (filePath.isEmpty()){
+    //     return ;
+    // }
 
     QStringList headers;
     headers << "类型" << "名称" << "数据1" << "数据2" << "数据3"<<"数据4"<<"数据5" ;
@@ -929,6 +930,7 @@ void   ToolWidget::onSaveExcel(){
 
 void ToolWidget::onSaveTxt(){
     QString filePath;
+    IsAuto=true;
     if(IsAuto){
         QString desktopPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
         if (desktopPath.isEmpty()) {
@@ -959,6 +961,11 @@ void ToolWidget::onSaveTxt(){
         if (QFileInfo(filePath).suffix().isEmpty())
             filePath.append(".txt");
     }
+    //先覆盖一下
+    QString path= getOutputPath("txt");
+    QString name=getTimeString();
+
+     filePath=path+"/"+name+".txt";
 
 
     // 创建 QFile 对象
@@ -981,13 +988,13 @@ void ToolWidget::onSaveTxt(){
             CPoint * point=(CPoint*)object;
             CPosition position =point->GetPt();
             out<<"类型：点 名称:"<<point->m_strAutoName<<Qt::endl;
-            out<<"坐标:("<<position.x<<","<<position.y<<","<<position.z<<",)"<<Qt::endl;
+            out<<"坐标:("<<position.x<<","<<position.y<<","<<position.z<<")"<<Qt::endl;
             out<<Qt::endl;
         }else if(object->GetUniqueType()==enCircle){
             CCircle* circle=(CCircle*)object;
             CPosition position=circle->getCenter();
             out<<"类型：圆 名称:"<<circle->m_strAutoName<<Qt::endl;
-            out<<"中心:("<<position.x<<","<<position.y<<","<<position.z<<",)"<<Qt::endl;
+            out<<"中心:("<<position.x<<","<<position.y<<","<<position.z<<")"<<Qt::endl;
             out<<"直径D:"<<circle->getDiameter();
             out<<Qt::endl;
             out<<Qt::endl;
@@ -996,7 +1003,7 @@ void ToolWidget::onSaveTxt(){
             CSphere* sphere=(CSphere*)object;
             CPosition position=sphere->getCenter();
             out<<"类型：球 名称:"<<sphere->m_strAutoName<<Qt::endl;
-            out<<"中心:("<<position.x<<","<<position.y<<","<<position.z<<",)"<<Qt::endl;
+            out<<"中心:("<<position.x<<","<<position.y<<","<<position.z<<")"<<Qt::endl;
             out<<"直径D:"<<sphere->getDiameter();
             out<<Qt::endl;
             out<<Qt::endl;
@@ -1008,9 +1015,9 @@ void ToolWidget::onSaveTxt(){
             normal=plane->getNormal();
             dir_long_edge=plane->getDir_long_edge();
             out<<"类型：平面 名称:"<<plane->m_strAutoName<<Qt::endl;
-            out<<"中心:("<<position.x<<","<<position.y<<","<<position.z<<",)"<<Qt::endl;
-            out<<"法线:("<<normal.x()<<","<<normal.y()<<","<<normal.z()<<",)"<<Qt::endl;
-            out<<"边向量:("<<dir_long_edge.x()<<","<<dir_long_edge.y()<<","<<dir_long_edge.z()<<",)"<<Qt::endl;
+            out<<"中心:("<<position.x<<","<<position.y<<","<<position.z<<")"<<Qt::endl;
+            out<<"法线:("<<normal.x()<<","<<normal.y()<<","<<normal.z()<<")"<<Qt::endl;
+            out<<"边向量:("<<dir_long_edge.x()<<","<<dir_long_edge.y()<<","<<dir_long_edge.z()<<")"<<Qt::endl;
             out<<"长:"<<plane->getLength()<<" 宽:"<<plane->getWidth()<<Qt::endl;
             out<<Qt::endl;
 
@@ -1021,8 +1028,8 @@ void ToolWidget::onSaveTxt(){
             QVector4D axis;
             axis=cone->getAxis();
             out<<"类型：圆锥 名称:"<<cone->m_strAutoName<<Qt::endl;
-            out<<"顶点:("<<position.x<<","<<position.y<<","<<position.z<<",)"<<Qt::endl;
-            out<<"轴线向量:("<<axis.x()<<","<<axis.y()<<","<<axis.z()<<",)"<<Qt::endl;
+            out<<"顶点:("<<position.x<<","<<position.y<<","<<position.z<<")"<<Qt::endl;
+            out<<"轴线向量:("<<axis.x()<<","<<axis.y()<<","<<axis.z()<<")"<<Qt::endl;
             out<<"高:"<<cone->getHeight()<<" 弧度:"<<cone->getRadian()<<" 圆锥高:"<<cone->getCone_height()<<Qt::endl;
             out<<Qt::endl;
 
@@ -1032,8 +1039,8 @@ void ToolWidget::onSaveTxt(){
             QVector4D axis;
             axis=cylinder->getAxis();
             out<<"类型：圆柱 名称:"<<cylinder->m_strAutoName<<Qt::endl;
-            out<<"底面中心:("<<position.x<<","<<position.y<<","<<position.z<<",)"<<Qt::endl;
-            out<<"轴线向量:("<<axis.x()<<","<<axis.y()<<","<<axis.z()<<",)"<<Qt::endl;
+            out<<"底面中心:("<<position.x<<","<<position.y<<","<<position.z<<")"<<Qt::endl;
+            out<<"轴线向量:("<<axis.x()<<","<<axis.y()<<","<<axis.z()<<")"<<Qt::endl;
             out<<"高:"<<cylinder->getHeight()<<" 直径:"<<cylinder->getDiameter()<<Qt::endl;
             out<<Qt::endl;
 
@@ -1043,8 +1050,8 @@ void ToolWidget::onSaveTxt(){
             position1=line->getPosition1();
             position2=line->getPosition2();
             out<<"类型：线 名称:"<<line->m_strAutoName<<Qt::endl;
-            out<<"起点:("<<position1.x<<","<<position1.y<<","<<position1.z<<",)"<<Qt::endl;
-            out<<"终点:("<<position2.x<<","<<position2.y<<","<<position2.z<<",)"<<Qt::endl;
+            out<<"起点:("<<position1.x<<","<<position1.y<<","<<position1.z<<")"<<Qt::endl;
+            out<<"终点:("<<position2.x<<","<<position2.y<<","<<position2.z<<")"<<Qt::endl;
             out<<Qt::endl;
 
         }else if(object->GetUniqueType()==enDistance){
@@ -1070,10 +1077,14 @@ void ToolWidget::onSaveTxt(){
 
 
 void   ToolWidget::onSaveWord(){
-    QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "", QString("word(*.doc *.docx)"));
-    if (filePath.isEmpty()) {
-        return;
-    }
+    QString path= getOutputPath("word");
+    QString name=getTimeString();
+
+    QString filePath=path+"/"+name+".docx";
+    // QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "", QString("word(*.doc *.docx)"));
+    // if (filePath.isEmpty()) {
+    //     return;
+    // }
 
     QStringList headers;
     headers << "类型" << "名称" << "数据1" << "数据2" << "数据3" << "数据4" << "数据5";
@@ -1117,115 +1128,6 @@ void   ToolWidget::onSaveWord(){
         QMessageBox::information(nullptr, "提示", "保存成功");
     }
 
-    // QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "", QString("word(*.doc *.docx)"));
-    // if (filePath.isEmpty()){
-    //     return ;
-    // }
-    // QStringList headers;
-    // headers << "类型" << "名称" << "数据1" << "数据2" << "数据3"<<"数据4"<<"数据5";
-    // auto& entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
-    // int col = headers.size();
-    // int row = entitylist.size();
-    // QList<QList<QString>> dataAll;
-    // ExtractData(entitylist,dataAll);
-
-    // // 写入内容
-    // // 创建一个QTextDocument对象
-    // QTextDocument doc;
-
-    // QTextCharFormat formatTitle;
-    // formatTitle.setFontPointSize(16); // 设置字体大小
-    // formatTitle.setFontWeight(QFont::Bold); // 设置字体加粗
-
-    // // 创建一个QTextCursor对象
-    // QTextCursor cursor(&doc);
-    // // 标题和参数信息
-    // //cursor.insertHtml(QString("<a style='text-align：center; font-weight:bold; font-size:30px;'>%1</a>").arg(title));
-    // cursor.setCharFormat(formatTitle);
-    // cursor.insertText("entitylist列表输出");
-    // cursor.insertBlock(); // 换行
-
-    // QTextCharFormat format;
-    // format.setFontPointSize(10);
-    // format.setFontWeight(QFont::Bold);
-
-    // cursor.setCharFormat(format);
-    // //cursor.insertText("");
-
-    // // 插入一个表格，行头占一行
-    // QTextTable *table = cursor.insertTable(row + 1, col);
-
-    // //获取表格的格式
-    // QTextTableFormat tableFormat = table->format();
-    // //表格格式设置宽度
-    // tableFormat.setWidth(QTextLength(QTextLength::FixedLength, 800));
-
-    // //设置表格的columnWidthConstraints约束
-    // QVector<QTextLength> colLength = tableFormat.columnWidthConstraints();
-    // for (int i = 0; i < col; ++i) {
-    //     colLength.append(QTextLength(QTextLength::FixedLength, tableFormat.width().rawValue() / col));
-    // }
-    // tableFormat.setColumnWidthConstraints(colLength);
-    // tableFormat.setBorder(5);
-    // tableFormat.setBorderBrush(Qt::black);
-
-    // QTextTableCellFormat titleFormat;
-    // titleFormat.setBackground(QColor("moccasin"));
-    // titleFormat.setFontWeight(QFont::Bold);
-    // // 设置表头 第一行下标为1
-    // for (int i = 0; i < col; ++i) {
-    //     QTextTableCell cell = table->cellAt(0, i);
-    //     cell.firstCursorPosition().insertText(headers[i]);
-    //     cell.setFormat(titleFormat);
-    // }
-
-    // //定义单元格格式
-    // QTextTableCellFormat cellFormat;
-    // cellFormat.setBottomPadding(2);
-    // // 遍历表格的每个单元格，将数据插入到表格中
-    // for (int i = 0; i < row; ++i) {
-    //     for (int j = 0; j < dataAll[i].size(); ++j) {
-    //         // 将文本插入到表格中,第二行开始下标为2
-    //         QTextTableCell cell = table->cellAt(i + 1, j);
-    //         cell.firstCursorPosition().insertText(dataAll[i][j]);
-    //         cell.setFormat(cellFormat);
-    //     }
-    // }
-    // vtkSmartPointer<vtkRenderWindow> renderWindow=m_pMainWin->getPWinVtkWidget()->getRenderWindow();
-    // renderWindow->Render();
-    // //得到截图
-    // vtkNew<vtkWindowToImageFilter> windowToImageFilter;
-    // windowToImageFilter->SetInput(renderWindow);
-    // windowToImageFilter->SetScale(1);// 缩放因子，可以根据需要调整
-    // windowToImageFilter->SetInputBufferTypeToRGBA();//RGBA缓冲
-    // windowToImageFilter->ReadFrontBufferOff();//读取
-    // windowToImageFilter->Update();
-    // vtkSmartPointer<vtkImageData> imageData = windowToImageFilter->GetOutput();
-    // int extent[6];
-    // imageData->GetExtent(extent);
-    // int width = extent[1] - extent[0] + 1;
-    // int height = extent[3] - extent[2] + 1;
-
-    // // 获取图像数据的指针
-    // unsigned char* imagePointer = static_cast<unsigned char*>(imageData->GetScalarPointer());
-
-    // // 创建 QImage 对象
-    // QImage qImage(imagePointer, width, height, QImage::Format_RGBA8888);
-
-    // cursor.insertBlock();
-    // cursor.insertImage(qImage);
-
-
-    // //保存为Word文件
-    // QFile file(filePath);
-    // if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-    //     QTextStream stream(&file);
-    //     //stream.setCodec("UTF-8");
-    //     stream << doc.toHtml();
-    //     file.close();
-    //     QMessageBox::information(nullptr, "提示", "保存成功");
-    // }
-
 
 }
 
@@ -1234,8 +1136,10 @@ void   ToolWidget::onSaveWord(){
 static void WrongWidget(QString message,QString moreMessage="空");
 void   ToolWidget::onSaveImage(){
     //得到路径名称
+    IsAuto=true;
     QString filter = "PNG (*.png);;JPEG (*.jpg *.jpeg);;TIFF (*.tif *.tiff);;BMP (*.bmp)";
     QString fileName;
+    IsAuto=true;
     if (!IsAuto) {
         // 如果不是自动保存，弹出文件选择对话框
         fileName = QFileDialog::getSaveFileName(this, "Save Screenshot", "", filter, &filter);
@@ -1243,6 +1147,9 @@ void   ToolWidget::onSaveImage(){
         // 如果是自动保存，设置默认保存路径
         fileName = "C:/Users/Lenovo/Desktop/点云对比图像/screenshot";
     }
+    QString path= getOutputPath("image");
+    QString name=getTimeString();
+    fileName=path+"/"+name+".png";
     QFileInfo fileInfo(fileName);
 
     QString filePath = fileInfo.absolutePath(); // 文件的路径
@@ -1603,6 +1510,7 @@ void ToolWidget::onConstructAngle(){
         addToList(newAngle);
          m_pMainWin->NotifySubscribe();
     }
+
 
 
 }
@@ -2314,4 +2222,110 @@ void ToolWidget::SaveImage(QString Path,std::string format){
 }
 QString ToolWidget::getCompareImagePath(){
     return CompareImagePath;
+}
+
+
+QString  ToolWidget::getParentPath(int step){
+    // 获取上一级目录路径
+    QString currentPath = QCoreApplication::applicationDirPath();
+
+    QDir dir(currentPath);
+
+    for(int i=0;i<step;i++){
+
+         dir.cdUp();
+    }
+
+    QString parentPath = dir.absolutePath();
+
+    return parentPath;
+
+}
+
+void ToolWidget::createFolder(QString path){
+    QDir dir;
+    if (dir.mkpath(path)) {
+
+        qDebug() << "文件夹创建成功:" << path;
+    } else {
+
+        qDebug() << "文件夹创建失败:" << path;
+    }
+}
+
+
+QString ToolWidget::getOutputPath(QString kind){
+    QString path=getParentPath(2);
+    return path+"/输出/"+kind;
+
+}
+QDataStream& ToolWidget::serializeEntityList(QDataStream& out, const QVector<CEntity*>& entityList){
+    out << static_cast<int>(entityList.size());
+    for (const auto& entity : entityList) {
+        int typeInt = entity->GetUniqueType();  // 获取对象的类型标识符
+        ENTITY_TYPE type=static_cast<ENTITY_TYPE>(typeInt);
+        out << type;  // 序列化类型标识符
+
+        if(type!=enPointCloud){
+            entity->serialize(out);
+        }
+    }
+    return out;
+}
+
+QDataStream& ToolWidget::deserializeEntityList(QDataStream& in, QVector<CEntity*>& entityList){
+    int size;
+    in >> size;
+    entityList.clear();
+    for (int i = 0; i < size; ++i) {
+        int typeInt=0;
+        in >> typeInt;
+        ENTITY_TYPE type = static_cast<ENTITY_TYPE>(typeInt);
+
+        CEntity* entity = nullptr;
+        switch (type) {
+        case enCircle:
+            entity = new CCircle();
+            break;
+        case enLine:
+            entity = new CLine();
+            break;
+        case enPoint:
+            entity=new CPoint();
+            break;
+        case enPlane:
+            entity=new CPlane();
+            break;
+        case enSphere:
+            entity=new CSphere();
+            break;
+        case enCylinder:
+            entity=new CCylinder();
+            break;
+        case enCone:
+            entity=new CCone();
+            break;
+        case enCuboid:
+            entity=new CCuboid();
+            break;
+        case enDistance:
+            entity=new CDistance();
+            break;
+        case enPointCloud:
+            entity=new CPointCloud();
+            break;
+        case enAngle:
+            entity=new CAngle();
+            break;
+        default:
+            entity = new CEntity();
+            break;
+        }
+
+        if(type!=enPointCloud){
+            entity->deserialize(in);
+            entityList.append(entity);
+        }
+    }
+    return in;
 }

@@ -726,16 +726,30 @@ vtkSmartPointer<vtkActor> CAngle::draw() {
     QVector4D posVec_line2_end = GetRefCoord()->m_mat * QVector4D(pos_line2_end.x, pos_line2_end.y, pos_line2_end.z, 1);
     CPosition globalPos_line2_end(posVec_line2_end.x(), posVec_line2_end.y(), posVec_line2_end.z());
 
+
+    CPosition pos_line1_begin(line1.getBegin().x, line1.getBegin().y, line1.getBegin().z);
+    QVector4D posVec_line1_begin = GetRefCoord()->m_mat * QVector4D(pos_line1_begin.x, pos_line1_begin.y, pos_line1_begin.z, 1);
+    CPosition globalPos_line1_begin(posVec_line1_begin.x(), posVec_line1_begin.y(), posVec_line1_begin.z());
+
+    CPosition pos_line2_begin(line2.getBegin().x, line2.getBegin().y, line2.getBegin().z);
+    QVector4D posVec_line2_begin = GetRefCoord()->m_mat * QVector4D(pos_line2_begin.x, pos_line2_begin.y, pos_line2_begin.z, 1);
+    CPosition globalPos_line2_begin(posVec_line2_begin.x(), posVec_line2_begin.y(), posVec_line2_begin.z());
+
+
     // 创建点集，并插入定义角度的三个点
     auto points = vtkSmartPointer<vtkPoints>::New();
     points->InsertNextPoint(globalPos_vertex.x, globalPos_vertex.y, globalPos_vertex.z);
+    points->InsertNextPoint(globalPos_line1_begin.x, globalPos_line1_begin.y, globalPos_line1_begin.z);
     points->InsertNextPoint(globalPos_line1_end.x, globalPos_line1_end.y, globalPos_line1_end.z);
+    points->InsertNextPoint(globalPos_line2_begin.x, globalPos_line2_begin.y, globalPos_line2_begin.z);
     points->InsertNextPoint(globalPos_line2_end.x, globalPos_line2_end.y, globalPos_line2_end.z);
+
+
 
     // 创建线源
     auto lines = vtkSmartPointer<vtkCellArray>::New();
-    vtkIdType line1[2] = {0, 1}; // 顶点到线1端点
-    vtkIdType line2[2] = {0, 2}; // 顶点到线2端点
+    vtkIdType line1[2] = {1, 2}; // 顶点到线1端点
+    vtkIdType line2[2] = {3, 4}; // 顶点到线2端点
     lines->InsertNextCell(2, line1);
     lines->InsertNextCell(2, line2);
 

@@ -63,6 +63,8 @@ private:
 
     QMap<vtkSmartPointer<vtkActor>, CEntity*> actorToEntityMap;
 
+    bool modelCloudExist; //序列化时判断文件是否存在
+
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
 
