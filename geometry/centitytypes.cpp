@@ -67,7 +67,7 @@ vtkSmartPointer<vtkActor> CPoint::draw(){
 
 QString CPoint::getCEntityInfo()
 {
-    QString infoText = QString("Information:\nX:%1\nY:%2\nZ:%3").arg(QString::number(m_pt.x, 'f',  6))
+    QString infoText = QString("Point\nX: %1\nY: %2\nZ: %3").arg(QString::number(m_pt.x, 'f',  6))
     .arg(QString::number(m_pt.y, 'f',  6)).arg(QString::number(m_pt.z, 'f',  6));
     return infoText;
 }
@@ -342,7 +342,7 @@ vtkSmartPointer<vtkActor> CCylinder::draw(){
 
 QString CCone::getCEntityInfo()
 {
-    auto infoText = QString("Information:\ncenter: (%1,%2,%3)\nradian:%4\nheight:%5\naxis:(%6,%7,%8)")
+    auto infoText = QString("Cone\ncenter: (%1, %2, %3)\nRadian: %4\nHeight:%5\nAxis:(%6, %7, %8)")
     .arg(QString::number(getVertex().x, 'f',  6)).arg(QString::number(getVertex().y, 'f',  6)).arg(QString::number(getVertex().z, 'f',  6))
         .arg(QString::number(radian, 'f',  6)).arg(QString::number(height, 'f',  6))
         .arg(QString::number(axis.x(), 'f',  6)).arg(QString::number(axis.y(), 'f',  6)).arg(QString::number(axis.z(), 'f',  6));
@@ -726,16 +726,30 @@ vtkSmartPointer<vtkActor> CAngle::draw() {
     QVector4D posVec_line2_end = GetRefCoord()->m_mat * QVector4D(pos_line2_end.x, pos_line2_end.y, pos_line2_end.z, 1);
     CPosition globalPos_line2_end(posVec_line2_end.x(), posVec_line2_end.y(), posVec_line2_end.z());
 
+
+    CPosition pos_line1_begin(line1.getBegin().x, line1.getBegin().y, line1.getBegin().z);
+    QVector4D posVec_line1_begin = GetRefCoord()->m_mat * QVector4D(pos_line1_begin.x, pos_line1_begin.y, pos_line1_begin.z, 1);
+    CPosition globalPos_line1_begin(posVec_line1_begin.x(), posVec_line1_begin.y(), posVec_line1_begin.z());
+
+    CPosition pos_line2_begin(line2.getBegin().x, line2.getBegin().y, line2.getBegin().z);
+    QVector4D posVec_line2_begin = GetRefCoord()->m_mat * QVector4D(pos_line2_begin.x, pos_line2_begin.y, pos_line2_begin.z, 1);
+    CPosition globalPos_line2_begin(posVec_line2_begin.x(), posVec_line2_begin.y(), posVec_line2_begin.z());
+
+
     // 创建点集，并插入定义角度的三个点
     auto points = vtkSmartPointer<vtkPoints>::New();
     points->InsertNextPoint(globalPos_vertex.x, globalPos_vertex.y, globalPos_vertex.z);
+    points->InsertNextPoint(globalPos_line1_begin.x, globalPos_line1_begin.y, globalPos_line1_begin.z);
     points->InsertNextPoint(globalPos_line1_end.x, globalPos_line1_end.y, globalPos_line1_end.z);
+    points->InsertNextPoint(globalPos_line2_begin.x, globalPos_line2_begin.y, globalPos_line2_begin.z);
     points->InsertNextPoint(globalPos_line2_end.x, globalPos_line2_end.y, globalPos_line2_end.z);
+
+
 
     // 创建线源
     auto lines = vtkSmartPointer<vtkCellArray>::New();
-    vtkIdType line1[2] = {0, 1}; // 顶点到线1端点
-    vtkIdType line2[2] = {0, 2}; // 顶点到线2端点
+    vtkIdType line1[2] = {1, 2}; // 顶点到线1端点
+    vtkIdType line2[2] = {3, 4}; // 顶点到线2端点
     lines->InsertNextCell(2, line1);
     lines->InsertNextCell(2, line2);
 
@@ -809,7 +823,7 @@ int CCircle::getId()
 
 QString CCircle::getCEntityInfo()
 {
-    QString infoText = QString("Information:\nCenterX: %1\nCenterY: %2\nCenterZ: %3\ndiameter: %4")
+    QString infoText = QString("Circle\nCenter_X: %1\nCenter_Y: %2\nCenter_Z: %3\ndiameter: %4")
     .arg(QString::number(m_pt.x, 'f',  6)).arg(QString::number(m_pt.y, 'f',  6)).arg(QString::number(m_pt.z, 'f',  6)).arg(QString::number(m_d, 'f',  6));
     return infoText;
 }
@@ -826,7 +840,7 @@ void CLine::setEnd(const CPosition &newEnd)
 
 QString CLine::getCEntityInfo()
 {
-    QString infoText = QString("Information:\nbeginX: %1,beginY: %2,beginZ: %3\n endX: %4,endY: %5,endZ: %6").arg(QString::number(begin.x, 'f',  6))
+    QString infoText = QString("Line\nbegin_X: %1\nbegin_Y: %2\nbegin_Z: %3\n end_X: %4\nend_Y: %5\nend_Z: %6").arg(QString::number(begin.x, 'f',  6))
     .arg(QString::number(begin.y, 'f',  6)).arg(QString::number(begin.z, 'f',  6))
         .arg(QString::number(end.x, 'f',  6)).arg(QString::number(end.y, 'f',  6)).arg(QString::number(end.z, 'f',  6));
     return infoText;
@@ -884,7 +898,9 @@ void CPlane::setWidth(double newWidth)
 
 QString CPlane::getCEntityInfo()
 {
-    QString infoText = QString("Information:\nCenterX: %1\nCenterY: %2\nCenterZ: %3\nnormal:(%4,%5,%6)\nedge:(%7,%8,%9)\nlength,width:(%10,%11)").arg(QString::number(center.x, 'f',  6)).arg(QString::number(center.y, 'f',  6)).arg(QString::number(center.z, 'f',  6)).
+    QString infoText = QString("Plane\nCenterX: %1\nCenterY: %2\nCenterZ: %3\n"
+                               "Normal_X: %4\nNormal_Y: %5\nNormal_Z: %6)\nLongEdge:(%7, %8, %9)\n"
+                               "length: %10\nWidth: %11)").arg(QString::number(center.x, 'f',  6)).arg(QString::number(center.y, 'f',  6)).arg(QString::number(center.z, 'f',  6)).
                        arg(QString::number(normal.x(), 'f',  6)).arg(GetObjectCName())
                            .arg(QString::number(normal.y(), 'f',  6)).arg(QString::number(normal.z(), 'f',  6))
                            .arg(QString::number(dir_long_edge.x(), 'f',  6)).arg(QString::number(dir_long_edge.y(), 'f',  6))
@@ -915,7 +931,7 @@ void CSphere::setDiameter(double newDiameter)
 
 QString CSphere::getCEntityInfo()
 {
-    QString infoText = QString("Information:\nCenterX: %1\nCenterY: %2\nCenterZ: %3\ndiameter: %4")
+    QString infoText = QString("Sphere\nCenter_X: %1\nCenter_Y: %2\nCenter_Z: %3\ndiameter: %4")
     .arg(QString::number(center.x, 'f',  6)).arg(QString::number(center.y, 'f',  6))
         .arg(QString::number(center.z, 'f',  6)).arg(QString::number(diameter, 'f',  6));
     return infoText;
@@ -963,7 +979,7 @@ void CCylinder::setBtm_center(const CPosition &newBtm_center)
 
 QString CCylinder::getCEntityInfo()
 {
-    QString infoText = QString("Information:\nX: %1\nY: %2\nZ: %3\ndiameter: %4\nheight: %5\naxial:(%6,%7,%8)")
+    QString infoText = QString("Cylinder\nCenter_X: %1\nCenter_Y: %2\nCenter_Z: %3\ndiameter: %4\nheight: %5\naxial:(%6,%7,%8)")
     .arg(QString::number(btm_center.x, 'f',  6)).arg(QString::number(btm_center.y, 'f',  6))
         .arg(QString::number(btm_center.z, 'f',  6)).arg(QString::number(diameter, 'f',  6))
         .arg(QString::number(height, 'f',  6)).arg(QString::number(axis.x(), 'f',  6))
@@ -1090,18 +1106,18 @@ QString CDistance::getCEntityInfo()
     QString q;
     // 判断是哪种距离
     if(isPointToPlane)
-        type_str = QString("pointToPlane distance: %1\n").arg(QString::number(getdistanceplane(), 'f',  6));
+        type_str = QString("distance: %1\n").arg(QString::number(getdistanceplane(), 'f',  6));
     else if(isPointToLine)
-        type_str = QString("pointToLine distance: %1\n").arg(QString::number(getdistanceline(), 'f',  6));
+        type_str = QString("distance: %1\n").arg(QString::number(getdistanceline(), 'f',  6));
     else if(isPointToCircle){
-        type_str = QString("pointToCircle distance: %1\n").arg(QString::number(getdistancecircle(), 'f',  6));
+        type_str = QString("distance: %1\n").arg(QString::number(getdistancecircle(), 'f',  6));
     }
     else if(isPointToPoint){
-        type_str = QString("pointToPoint distance: %1\n").arg(QString::number(getdistancepoint(), 'f',  6));
+        type_str = QString("distance: %1\n").arg(QString::number(getdistancepoint(), 'f',  6));
     }
-    upTol_str = QString("upTolerance: %1\n").arg(QString::number(getUptolerance(), 'f',  6));
-    underTol_str = QString("underTolerance: %1\n").arg(QString::number(getUndertolerance(), 'f',  6));
-    q=QString("quality: %1、n").arg(judge());
+    upTol_str = QString("max: %1\n").arg(QString::number(getUptolerance(), 'f',  6));
+    underTol_str = QString("min: %1\n").arg(QString::number(getUndertolerance(), 'f',  6));
+    q=QString("quality: %1").arg(judge());
     return type_str + upTol_str + underTol_str+q;
 }
 
@@ -1350,7 +1366,7 @@ bool CAngle::judge()
 }
 
 QString CAngle::getCEntityInfo() {
-    QString infoText = QString("Angle Information:\nVertex: (%1, %2, %3)\nLine1 End: (%4, %5, %6)\nLine2 End: (%7, %8, %9)\nAngle Value: %10\nUp Tolerance: %11\nUnder Tolerance: %12\nQualified: %13")
+    QString infoText = QString("Angle\nVertex: (%1, %2, %3)\nLine1 End: (%4, %5, %6)\nLine2 End: (%7, %8, %9)\nAngle Value: %10\nUp Tolerance: %11\nUnder Tolerance: %12\nQualified: %13")
         .arg(QString::number(vertex.x, 'f', 3)).arg(QString::number(vertex.y, 'f', 3)).arg(QString::number(vertex.z, 'f', 3))
         .arg(QString::number(line1.getEnd().x, 'f', 3)).arg(QString::number(line1.getEnd().y, 'f', 3)).arg(QString::number(line1.getEnd().z, 'f', 3))
         .arg(QString::number(line2.getEnd().x, 'f', 3)).arg(QString::number(line2.getEnd().y, 'f', 3)).arg(QString::number(line2.getEnd().z, 'f', 3))
