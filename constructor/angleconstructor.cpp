@@ -181,12 +181,6 @@ CAngle* AngleConstructor::createAngle(CPlane* plane1,CPlane* plane2){
     std::pair<CLine, CLine> perpendicularLines = PlanePlane::perpendicularLines(*plane1, *plane2);
     CPosition intersectionPerpendicularLines = PlanePlane::intersectionOfPerpendicularLines(perpendicularLines.first, perpendicularLines.second);
     return createAngle(&perpendicularLines.first,&perpendicularLines.second,anglePlanePlane,intersectionPerpendicularLines);
-    // qDebug() << "Angle between planes (radians):" << anglePlanePlane;
-    // qDebug() << "Perpendicular lines to the intersection line: line1 begin(" << perpendicularLines.first.begin.x << "," << perpendicularLines.first.begin.y << "," << perpendicularLines.first.begin.z << ") end("
-    //          << perpendicularLines.first.end.x << "," << perpendicularLines.first.end.y << "," << perpendicularLines.first.end.z << ") line2 begin("
-    //          << perpendicularLines.second.begin.x << "," << perpendicularLines.second.begin.y << "," << perpendicularLines.second.begin.z << ") end("
-    //          << perpendicularLines.second.end.x << "," << perpendicularLines.second.end.y << "," << perpendicularLines.second.end.z << ")";
-    // qDebug() << "Intersection of perpendicular lines: (" << intersectionPerpendicularLines.x << "," << intersectionPerpendicularLines.y << "," << intersectionPerpendicularLines.z << ")";
 
 }
 CAngle* AngleConstructor::createAngle(CLine* line1,CPlane* plane1){
@@ -194,10 +188,6 @@ CAngle* AngleConstructor::createAngle(CLine* line1,CPlane* plane1){
     CLine projectedLine = LinePlane::projectOntoPlane(*line1, *plane1);
     CPosition intersectionLinePlane = LinePlane::intersectionWithPlane(*line1, *plane1);
     return createAngle(line1,&projectedLine,angleLinePlane,intersectionLinePlane);
-    // qDebug() << "Angle between line and plane (radians):" << angleLinePlane;
-    // qDebug() << "Projected line on plane: begin(" << projectedLine.begin.x << "," << projectedLine.begin.y << "," << projectedLine.begin.z << ") end("
-    //          << projectedLine.end.x << "," << projectedLine.end.y << "," << projectedLine.end.z << ")";
-    // qDebug() << "Intersection of line and plane: (" << intersectionLinePlane.x << "," << intersectionLinePlane.y << "," << intersectionLinePlane.z << ")";
 
 }
 CAngle* AngleConstructor::createAngle(CPoint*p1 ,CPoint* crossPosition,CPoint*p3)
@@ -289,9 +279,8 @@ CAngle* AngleConstructor::createAngle(CLine* line1,CLine* line2){
         double t = dot(cross(r, d2), cross(d1, d2)) / norm(cross(d1, d2));
         CPosition intersection = add(line1->getBegin(), multiply(d1, t));
         double angle = angleBetween(d1, d2);
+
         return createAngle(line1,line2,angle,intersection);
-        // qDebug() << "Intersection point:" << intersection.x << intersection.y << intersection.z;
-        // qDebug() << "Angle (radians):" << angle;
     } else {
         // 异面
         auto [closestPointLine1, closestPointLine2] = closestPointsBetweenLines(*line1, *line2);
@@ -299,14 +288,11 @@ CAngle* AngleConstructor::createAngle(CLine* line1,CLine* line2){
         double distance = norm(subtract(closestPointLine1, closestPointLine2));
         double angle = angleBetween(subtract(line1->getEnd(), line1->getBegin()), subtract(line2->getEnd(), line2->getBegin()));
         if (distance < 1e-3) {
-            //qDebug() << "Intersection point:" << midPoint.x << midPoint.y << midPoint.z;
             return createAngle(line1,line2,angle,midPoint);
         } else {
             return createAngle(line1,line2,angle);
-            //qDebug() << "Lines do not intersect";
         }
 
-        // qDebug() << "Angle (radians):" << angle;
-        // qDebug() << "Distance:" << distance;
+
     }
 }

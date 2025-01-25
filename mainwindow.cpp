@@ -237,21 +237,21 @@ void MainWindow::setupUi(){
     stbar->addWidget(label1);
     // QLabel *label2=new QLabel("右侧状态栏",this);
     // stbar->addPermanentWidget(label2);
-    switchRefCsBtn = new QPushButton("参考依赖坐标系");
-    // switchRefCsBtn->setFixedWidth(100);
-    switchRefCsBtn->setObjectName("statusSwitchRef");
-    switchRefCsBtn->setFlat(true); // 设置按钮为平面样式
-    switchRefCsBtn->installEventFilter(this);  // 为按钮安装事件过滤器
-    stbar->addPermanentWidget(switchRefCsBtn);
+    // switchRefCsBtn = new QPushButton("参考依赖坐标系");
+    // // switchRefCsBtn->setFixedWidth(100);
+    // switchRefCsBtn->setObjectName("statusSwitchRef");
+    // switchRefCsBtn->setFlat(true); // 设置按钮为平面样式
+    // switchRefCsBtn->installEventFilter(this);  // 为按钮安装事件过滤器
+    // stbar->addPermanentWidget(switchRefCsBtn);
 
-    stbar->addPermanentWidget(line);
+    // stbar->addPermanentWidget(line);
 
-    switchCsBtn = new QPushButton("机械坐标系");
-    // switchCsBtn->setFixedWidth(100);
-    // switchCsBtn->setFlat(true); // 设置按钮为平面样式
-    // switchCsBtn->installEventFilter(this);  // 为按钮安装事件过滤器
-    switchCsBtn->setObjectName("statusSwitchCs");
-    stbar->addPermanentWidget(switchCsBtn);
+    // switchCsBtn = new QPushButton("机械坐标系");
+    // // switchCsBtn->setFixedWidth(100);
+    // // switchCsBtn->setFlat(true); // 设置按钮为平面样式
+    // // switchCsBtn->installEventFilter(this);  // 为按钮安装事件过滤器
+    // switchCsBtn->setObjectName("statusSwitchCs");
+    // stbar->addPermanentWidget(switchCsBtn);
 
     stbar->addPermanentWidget(line);
 
@@ -1187,11 +1187,11 @@ void MainWindow::onConvertLightGreyTheme()
     MainWindow::HighLightColor[0] = 1;
     MainWindow::HighLightColor[1] = 1;
     MainWindow::HighLightColor[2] = 0;
-    MainWindow::InfoTextColor[0] = 1;
+    MainWindow::InfoTextColor[0] = 0;
     MainWindow::InfoTextColor[1] = 0;
 
     pWinVtkWidget->getRenderer()->SetBackground(1, 1, 1);
-    NotifySubscribe();
+    pWinVtkWidget->UpdateInfo();
 }
 
 void MainWindow::onConvertLighBlueTheme()
@@ -1213,9 +1213,11 @@ void MainWindow::onConvertLighBlueTheme()
     MainWindow::HighLightColor[0] = 1;
     MainWindow::HighLightColor[1] = 0;
     MainWindow::HighLightColor[2] = 0;
+    MainWindow::InfoTextColor[0] = 1;
+    MainWindow::InfoTextColor[1] = 1;
 
     pWinVtkWidget->getRenderer()->SetBackground(0.2, 0.3, 0.5);
-    pWinVtkWidget->getRenderer()->Render();
+    pWinVtkWidget->UpdateInfo();
 }
 
 void MainWindow::onConvertDarkBlueTheme()
@@ -1237,9 +1239,11 @@ void MainWindow::onConvertDarkBlueTheme()
     MainWindow::HighLightColor[0] = 1;
     MainWindow::HighLightColor[1] = 0;
     MainWindow::HighLightColor[2] = 0;
+    MainWindow::InfoTextColor[0] = 1;
+    MainWindow::InfoTextColor[1] = 1;
 
     pWinVtkWidget->getRenderer()->SetBackground(0.1, 0.2, 0.3);
-    pWinVtkWidget->getRenderer()->Render();
+    pWinVtkWidget->UpdateInfo();
 }
 
 FileMgr *MainWindow::getpWinFileMgr(){
