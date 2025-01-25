@@ -393,6 +393,7 @@ void MainWindow::openFile(){
             qDebug() << "加载成功,m_EntityListMgr的大小为:"<<m_EntityListMgr->getEntityList().size()<<"m_ObjectListMgr的大小为:"<<m_ObjectListMgr->getObjectList().size();
             qDebug()<<"首个Object的类型为:"<<m_ObjectListMgr->GetAt(0)->GetUniqueType();
             NotifySubscribe();
+            pWinVtkPresetWidget->setWidget(fileName+"文件已打开");
             file.close();
         }
     }
