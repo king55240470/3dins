@@ -187,7 +187,7 @@ void VtkWidget::createText(CEntity* entity)
     }
     else {
         increaseDis[1] = 0;
-        increaseDis[0] += renWin->GetSize()[0] - 200; // 放到窗口左边显示
+        increaseDis[0] += renWin->GetSize()[0] - 300; // 放到窗口左边显示
     }
 
     // 检查是否重叠，并调整位置
@@ -239,7 +239,7 @@ void VtkWidget::createText(CEntity* entity)
 // 创建文本框
 vtkSmartPointer<vtkActor2D> VtkWidget::createTextBox(vtkSmartPointer<vtkTextActor> textActor, double x, double y)
 {
-    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+    points = vtkSmartPointer<vtkPoints>::New();
     double bbox[4];
     textActor->GetBoundingBox(renderer, bbox);
     double textWidth = bbox[1] - bbox[0];
@@ -284,22 +284,15 @@ vtkSmartPointer<vtkActor2D> VtkWidget::createTextBox(vtkSmartPointer<vtkTextActo
 
     // 添加关闭按钮图片
     pngReader = vtkSmartPointer<vtkPNGReader>::New();
-    pngReader->SetFileName(":/component/eye/close.png");
+    pngReader->SetFileName("E:\3d\3dins\\component\\eye\\close.png");
 
-    vtkSmartPointer<vtkImageActor> imageActor = vtkSmartPointer<vtkImageActor>::New();
-    imageActor->GetMapper()->SetInputConnection(pngReader->GetOutputPort());
-    imageActor->SetPosition(x + width - 20, y + height - 20, 0);
-
-    vtkSmartPointer<vtkTexture> texture = vtkSmartPointer<vtkTexture>::New();
-    texture->SetInputConnection(pngReader->GetOutputPort());
-
-    iconActor = vtkSmartPointer<vtkTexturedActor2D>::New();
-    iconActor->SetTexture(texture);
-    iconActor->SetPosition(x + width - 10, y + height - 10); // 右上角位置
+    iconActor = vtkSmartPointer<vtkImageActor>::New();
+    iconActor->GetMapper()->SetInputConnection(pngReader->GetOutputPort());
+    iconActor->SetPosition(x + width - 20, y + height - 20, 0);
 
     // 存储关闭按钮图片演员
     entityToIcons[entityToTextActors.key(textActor)] = iconActor;
-    renderer->AddActor(iconActor);
+    getRenderer()->AddActor(iconActor);
 
     return rectangleActor;
 }
@@ -364,7 +357,7 @@ vtkSmartPointer<vtkActor2D> VtkWidget::createLine(CEntity* entity, vtkSmartPoint
     coordinate->SetCoordinateSystemToWorld();
     int* viewportMidPoint = coordinate->GetComputedViewportValue(renderer);
 
-    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+    points = vtkSmartPointer<vtkPoints>::New();
     points->InsertNextPoint(a[0], a[1], 0.0);
     points->InsertNextPoint(viewportMidPoint[0], viewportMidPoint[1], viewportMidPoint[2]);
 
@@ -398,7 +391,7 @@ void VtkWidget::Linechange()
     double* textPosition = infoTextActor->GetPosition();
 
     // 获取指向线段的终点位置（从实体到终点映射中获取）
-    CPosition endPoint = entityToEndPoints[getEntityFromTextActor(infoTextActor)];
+    endPoint = entityToEndPoints[getEntityFromTextActor(infoTextActor)];
 
     // 将终点从世界坐标转换为视口坐标
     vtkSmartPointer<vtkCoordinate> coordinate = vtkSmartPointer<vtkCoordinate>::New();
@@ -417,9 +410,6 @@ void VtkWidget::Linechange()
     lineMapper->SetInputData(linePolyData);
     lineMapper->Update();
     lineActor->SetMapper(lineMapper);
-
-    // 重新渲染窗口
-    renWin->Render();
 }
 
 void VtkWidget::closeText()
