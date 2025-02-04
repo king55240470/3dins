@@ -138,7 +138,6 @@ private:
 
     // 创建渲染器、渲染窗口和交互器
     vtkSmartPointer<vtkRenderer> renderer;
-    // vtkSmartPointer<vtkRenderer> renderer2D; // 专门放文本框和指向线段的渲染器
     vtkSmartPointer<vtkGenericOpenGLRenderWindow> renWin;
     vtkSmartPointer<MouseInteractorHighlightActor> m_highlightstyle;
     vtkSmartPointer<vtkOrientationMarkerWidget> axeWidget; // 显示坐标器的浮动窗口
@@ -151,16 +150,17 @@ private:
     vtkSmartPointer<vtkActor2D> colorBarActor; // 色温条
 
     vtkSmartPointer<vtkTextActor> infoTextActor;// 浮动信息文本演员
+    vtkSmartPointer<vtkTextActor> titleTextActor; // 第一行作为标题行
     vtkSmartPointer<vtkCellArray> polygons;
     vtkSmartPointer<vtkPolyData> rectangle;
     vtkSmartPointer<vtkPolyDataMapper2D> rectangleMapper;
     vtkSmartPointer<vtkActor2D> rectangleActor; // 背景和边框
     vtkSmartPointer<vtkActor2D> lineActor;//指向线条
     vtkSmartPointer<vtkPNGReader> pngReader; //储存图片信息
-    vtkSmartPointer<vtkTexturedActor2D> iconActor; //图片演员
+    vtkSmartPointer<vtkImageActor> iconActor; //图片演员
     CEntity* elementEntity;//储存传入的entity
     bool isDragging=false;  //判断注释是否能移动
-    CPosition b; // 储存指向箭头的终点
+    CPosition endPoint; // 储存指向箭头的终点
     vtkSmartPointer<vtkPoints> points;
     vtkSmartPointer<vtkCellArray> lines;
     vtkSmartPointer<vtkPolyData> linePolyData;//储存线的data
@@ -169,7 +169,7 @@ private:
     QMap<CEntity*, vtkSmartPointer<vtkTextActor>> entityToTextActors; // 每个图形对应的文本演员
     QMap<CEntity*, vtkSmartPointer<vtkActor2D>> entityToTextBoxs; // 每个图形对应的文本框
     QMap<CEntity*, vtkSmartPointer<vtkActor2D>> entityToLines; // 每个图形对应的指向线段
-    QMap<CEntity*, vtkSmartPointer<vtkTexturedActor2D>> entityToIcons; // 每个图形对应的图标
+    QMap<CEntity*, vtkSmartPointer<vtkImageActor>> entityToIcons; // 每个图形对应的图标
     QMap<CEntity*, CPosition> entityToEndPoints; // 每个显示信息的centity对应一个指向线段的落点
     double increaseDis[2] = {0, 0}; // 每增加一个文本显示，自动间隔一段距离
 
