@@ -22,6 +22,7 @@ SOURCES += \
     component/reportwidget.cpp \
     component/toolaction.cpp \
     component/toolwidget.cpp \
+    constructor/angleconstructor.cpp \
     constructor/circleconstructor.cpp \
     constructor/coneconstructor.cpp \
     constructor/constructor.cpp \
@@ -72,6 +73,7 @@ HEADERS += \
     component/reportwidget.h \
     component/toolaction.h \
     component/toolwidget.h \
+    constructor/angleconstructor.h \
     constructor/circleconstructor.h \
     constructor/coneconstructor.h \
     constructor/constructor.h \
