@@ -6,7 +6,7 @@ CEntityMgr::CEntityMgr() {
     m_nSize=0;
     m_nCount=0;
     m_bRedraw=false;
-    m_nRedrawIndex=0;
+    m_nRedrawIndex=-1;
 }
 
 void CEntityMgr::Add(CEntity* pEntity){
@@ -81,7 +81,7 @@ QString CEntityMgr::getCEntityInfo()
 }
 
 QDataStream& operator<<(QDataStream& out, const CEntityMgr& mgr) {
-    //out << mgr.m_nSize << mgr.m_nCount << mgr.m_bRedraw << mgr.m_nRedrawIndex;
+    out << mgr.m_nSize << mgr.m_nCount << mgr.m_bRedraw << mgr.m_nRedrawIndex;
 
     // 序列化 m_entityList
     out << static_cast<int>(mgr.m_entityList.size());
@@ -123,7 +123,7 @@ QDataStream& operator<<(QDataStream& out, const CEntityMgr& mgr) {
 QDataStream& operator>>(QDataStream& in, CEntityMgr& mgr) {
     int entityListSize=0;
 
-    //in >> mgr.m_nSize >> mgr.m_nCount >> mgr.m_bRedraw >> mgr.m_nRedrawIndex;
+    in >> mgr.m_nSize >> mgr.m_nCount >> mgr.m_bRedraw >> mgr.m_nRedrawIndex;
 
     // 反序列化 m_entityList
     in >> entityListSize;
