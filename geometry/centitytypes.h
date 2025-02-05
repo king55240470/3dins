@@ -293,6 +293,7 @@ public:
         center.y=0;
         center.z=0;
         normal=QVector4D(0,0,0,1);
+        dir_long_edge=QVector4D(0,0,0,1);
         currentPlainId = ++plainCount;
         m_strAutoName = QString("平面%1").arg(currentPlainId);
         m_strCName = QString("平面%1").arg(currentPlainId);
