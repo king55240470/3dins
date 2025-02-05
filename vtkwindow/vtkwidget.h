@@ -6,6 +6,7 @@
 #include "mousedragcommand.h"
 #include "manager/filemgr.h"
 #include "component/toolwidget.h"
+#include"vtkwindow/vtkpresetwidget.h"
 
 #include <QWidget>
 #include <QVTKOpenGLWidget.h>

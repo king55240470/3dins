@@ -1136,16 +1136,14 @@ void   ToolWidget::onSaveWord(){
 static void WrongWidget(QString message,QString moreMessage="空");
 void   ToolWidget::onSaveImage(){
     //得到路径名称
-    IsAuto=true;
     QString filter = "PNG (*.png);;JPEG (*.jpg *.jpeg);;TIFF (*.tif *.tiff);;BMP (*.bmp)";
     QString fileName;
-    IsAuto=true;
     if (!IsAuto) {
         // 如果不是自动保存，弹出文件选择对话框
         fileName = QFileDialog::getSaveFileName(this, "Save Screenshot", "", filter, &filter);
     } else {
         // 如果是自动保存，设置默认保存路径
-        fileName = "C:/Users/Lenovo/Desktop/点云对比图像/screenshot";
+        fileName = "C:/Users/Lenovo/Desktop/imageSave";
     }
     QString path= getOutputPath("image");
     QString name=getTimeString();
@@ -1489,6 +1487,7 @@ void ToolWidget::onConstructPointCloud(){
             WrongWidget("构造点云失败");
             continue;
         }
+        newPointCloud->isCut=true;
         newPointCloud->m_strAutoName+="(切割)";
         addToList(newPointCloud);
     }

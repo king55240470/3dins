@@ -777,11 +777,13 @@ void VtkWidget::onCompare()
     QString logInfo; // 用于在右下角输出调用日志
 
     QVector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> clouds;
+    QVector<CObject*>parentlist;
     for(int i=0;i<entityList.size();i++){
         CEntity* entity=entityList[i];
         if(!entity->IsSelected())continue;
         if(entity->GetUniqueType()==enPointCloud){
             auto & temp=((CPointCloud*)entity)->m_pointCloud;
+            parentlist.append(entity);
             clouds.append(temp.makeShared());
             logInfo += ((CPointCloud*)entity)->m_strAutoName + ' '; //添加对比的点云编号
         }
@@ -854,6 +856,7 @@ void VtkWidget::onCompare()
     // 由RGB点云生成cpointcloud对象，并存入entitylist
     auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateCompareCloud(*comparisonCloud);
     cloudEntity->isComparsionCloud = true;
+    cloudEntity->parent=parentlist;
     m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
     m_pMainWin->NotifySubscribe();
 
@@ -875,7 +878,7 @@ void VtkWidget::onCompare()
     // 添加日志输出
     logInfo += "对比完成";
     m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
-
+    m_pMainWin->getPWinToolWidget()->onSaveImage();
 }
 
 //FPFH+ICP
