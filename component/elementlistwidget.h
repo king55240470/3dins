@@ -1,6 +1,6 @@
 #ifndef ELEMENTLISTWIDGET_H
 #define ELEMENTLISTWIDGET_H
-#include "geometry/centity.h"
+
 #include <QWidget>
 #include <QLabel>
 #include <QPushButton>
@@ -26,6 +26,7 @@
 #include <QSignalTransition>
 #include <QPropertyAnimation>
 #include <QTimer>
+#include "geometry/centity.h"
 #include "toolwidget.h"
 #include "mainwindow.h"
 #include "DataWidget.h"
@@ -33,6 +34,9 @@
 #include"vtkwindow/vtkwidget.h"
 #include"constructor/distanceconstructor.h"
 #include"constructor/planeconstructor.h"
+#include"constructor/angleconstructor.h"
+#include"vtkwindow/vtkpresetwidget.h"
+
 class ElementListWidget : public QWidget
 {
     Q_OBJECT
@@ -64,7 +68,7 @@ public:
     void onAddElement();
     void CompareCloud();
     void updateDistance();
-    void startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree, QVector<CEntity*>distancelist);
+    void startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree, QVector<CEntity*>distancelist, int distanceCount);
     void isAdd();
 
 protected:
