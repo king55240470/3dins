@@ -1193,6 +1193,7 @@ void MainWindow::onConvertLightGreyTheme()
     MainWindow::InfoTextColor[1] = 0;
 
     pWinVtkWidget->getRenderer()->SetBackground(1, 1, 1);
+    pWinVtkWidget->getRenderer()->SetGradientBackground(false);
     pWinVtkWidget->UpdateInfo();
 }
 
