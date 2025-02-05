@@ -757,6 +757,7 @@ public:
     bool isAlignCloud;// 是否是对齐得到的点云
     bool isModelCloud;// 是否是模型点云
     bool isMeasureCloud; // 是否是实测点云
+    bool isCut;
     static bool haveSaved;
     static bool haveOpened;
 
@@ -798,6 +799,7 @@ public:
         isAlignCloud=false;
         isModelCloud=false;
         isMeasureCloud=false;
+        isCut=false;
         currentPointCloudId = ++pointCloudCount;
         m_strAutoName = QString("点云%1").arg(currentPointCloudId);
         m_strCName = QString("点云%1").arg(currentPointCloudId);
