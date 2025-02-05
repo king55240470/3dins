@@ -95,13 +95,13 @@ void VtkWidget::OnMouseMove()
     // 限制渲染频率
     static double lastRenderTime = vtkTimerLog::GetUniversalTime();
     double currentTime = vtkTimerLog::GetUniversalTime();
-    if (currentTime - lastRenderTime > 0.05) {
+    if (currentTime - lastRenderTime > 0.1) {
         getRenderWindow()->Render();
         lastRenderTime = currentTime;
     }
 
     // 重新渲染窗口
-    getRenderWindow()->Render();
+    // getRenderWindow()->Render();
 }
 
 void VtkWidget::OnLeftButtonPress()
@@ -122,13 +122,16 @@ void VtkWidget::OnLeftButtonPress()
         double width = textWidth + 20; // 加上边距
         double height = textHeight + 10; // 加上边距
         position = textActor->GetPosition();
+        double* titlePosition = titleTextActor->GetPosition();
+        double titleSize[2];
+        titleTextActor->GetSize(renderer, titleSize);
 
         // 检查点击位置是否在文本框右上角的特定区域内
-        double closeBoxSize = 20; // 右上角关闭区域的大小
-        if (clickPos[0] >= position[0] + width - closeBoxSize &&
-            clickPos[0] <= position[0] + width &&
-            clickPos[1] >= position[1] + height - closeBoxSize &&
-            clickPos[1] <= position[1] + height)
+        double closeBoxSize = 25; // 右上角关闭区域的大小
+        if (clickPos[0] >= titlePosition[0] + width - closeBoxSize &&
+            clickPos[0] <= titlePosition[0] + width &&
+            clickPos[1] >= titlePosition[1] + titleSize[1] - closeBoxSize &&
+            clickPos[1] <= titlePosition[1] + titleSize[1])
         {
             closeTextActor(it.key()); // 关闭文本框
             return;
@@ -199,6 +202,8 @@ void VtkWidget::createText(CEntity* entity)
     else {
         increaseDis[1] = 0;
         increaseDis[0] += renWin->GetSize()[0] - 300; // 放到窗口左边显示
+        if(increaseDis[0] >= renWin->GetSize()[0] - 300)
+            increaseDis[0] = 0;
     }
 
     // 检查是否重叠，并调整位置
@@ -306,7 +311,10 @@ vtkSmartPointer<vtkActor2D> VtkWidget::createTextBox(vtkSmartPointer<vtkTextActo
 
     // 添加关闭按钮图片
     pngReader = vtkSmartPointer<vtkPNGReader>::New();
-    pngReader->SetFileName("E:\3d\3dins\\component\\eye\\close.png");
+    pngReader->SetFileName(":/component/eye/close.png");
+
+    vtkSmartPointer<vtkTexture> texture = vtkSmartPointer<vtkTexture>::New();
+    texture->SetInputConnection(pngReader->GetOutputPort());
 
     iconActor = vtkSmartPointer<vtkImageActor>::New();
     iconActor->GetMapper()->SetInputConnection(pngReader->GetOutputPort());
@@ -314,7 +322,7 @@ vtkSmartPointer<vtkActor2D> VtkWidget::createTextBox(vtkSmartPointer<vtkTextActo
 
     // 存储关闭按钮图片演员
     entityToIcons[entityToTextActors.key(textActor)] = iconActor;
-    getRenderer()->AddActor(iconActor);
+    renderer->AddActor(iconActor);
 
     return rectangleActor;
 }
@@ -416,7 +424,7 @@ void VtkWidget::Linechange()
     endPoint = entityToEndPoints[getEntityFromTextActor(infoTextActor)];
 
     // 将终点从世界坐标转换为视口坐标
-    vtkSmartPointer<vtkCoordinate> coordinate = vtkSmartPointer<vtkCoordinate>::New();
+    coordinate = vtkSmartPointer<vtkCoordinate>::New();
     coordinate->SetValue(endPoint.x, endPoint.y, endPoint.z);
     coordinate->SetCoordinateSystemToWorld();
     int* viewportMidPoint = coordinate->GetComputedViewportValue(renderer);
@@ -473,22 +481,16 @@ void VtkWidget::closeTextActor(CEntity* entity)
 {
     if (entityToTextActors.contains(entity))
     {
-        // 移除文本框
+        // 移除文本
         renderer->RemoveActor(entityToTextActors[entity]);
-        // 移除文本框背景
+        // 移除文本框
         renderer->RemoveActor(entityToTextBoxs[entity]);
         // 移除指向线段
         renderer->RemoveActor(entityToLines[entity]);
-        // 移除图标（如果有）
-        if (entityToIcons.contains(entity))
-        {
-            renderer->RemoveActor(entityToIcons[entity]);
-        }
         // 移除标题文本演员
-        if (entityToTitleTextActors.contains(entity))
-        {
-            renderer->RemoveActor(entityToTitleTextActors[entity]);
-        }
+        renderer->RemoveActor(entityToTitleTextActors[entity]);
+        // 移除图标
+        renderer->RemoveActor(entityToIcons[entity]);
 
         // 从映射中移除
         entityToTextActors.remove(entity);
@@ -496,6 +498,11 @@ void VtkWidget::closeTextActor(CEntity* entity)
         entityToLines.remove(entity);
         entityToIcons.remove(entity);
         entityToTitleTextActors.remove(entity);
+
+        // 去掉该文本框占用的位置
+        if(increaseDis[1] != 0){
+            increaseDis[1] -= 200;
+        }
 
         // 重新渲染窗口
         renWin->Render();
@@ -953,83 +960,86 @@ void VtkWidget::onAlign()
             return;
         }
 
-    // 下采样：提高效率
-    pcl::PointCloud<pcl::PointXYZ>::Ptr downsampledCloud1(new pcl::PointCloud<pcl::PointXYZ>());
-    pcl::PointCloud<pcl::PointXYZ>::Ptr downsampledCloud2(new pcl::PointCloud<pcl::PointXYZ>());
-    pcl::VoxelGrid<pcl::PointXYZ> voxelGrid;
-    voxelGrid.setLeafSize(0.05f, 0.05f, 0.05f);  // 设置叶子大小为 5cm
-    voxelGrid.setInputCloud(cloud1);
-    voxelGrid.filter(*downsampledCloud1);
-    voxelGrid.setInputCloud(cloud2);
-    voxelGrid.filter(*downsampledCloud2);
+    // // 下采样：提高效率
+    // pcl::PointCloud<pcl::PointXYZ>::Ptr downsampledCloud1(new pcl::PointCloud<pcl::PointXYZ>());
+    // pcl::PointCloud<pcl::PointXYZ>::Ptr downsampledCloud2(new pcl::PointCloud<pcl::PointXYZ>());
+    // pcl::VoxelGrid<pcl::PointXYZ> voxelGrid;
+    // voxelGrid.setLeafSize(0.05f, 0.05f, 0.05f);  // 设置叶子大小为 5cm
+    // voxelGrid.setInputCloud(cloud1);
+    // voxelGrid.filter(*downsampledCloud1);
+    // voxelGrid.setInputCloud(cloud2);
+    // voxelGrid.filter(*downsampledCloud2);
+    // if (downsampledCloud1->empty() || downsampledCloud2->empty()) {
+    //     QMessageBox::warning(this, "警告", "下采样后的点云为空！");
+    //     return;
+    // }
 
-    // FPFH特征提取
-    pcl::PointCloud<pcl::FPFHSignature33>::Ptr fpfh1(new pcl::PointCloud<pcl::FPFHSignature33>());
-    pcl::PointCloud<pcl::FPFHSignature33>::Ptr fpfh2(new pcl::PointCloud<pcl::FPFHSignature33>());
+    // // FPFH特征提取
+    // pcl::PointCloud<pcl::FPFHSignature33>::Ptr fpfh1(new pcl::PointCloud<pcl::FPFHSignature33>());
+    // pcl::PointCloud<pcl::FPFHSignature33>::Ptr fpfh2(new pcl::PointCloud<pcl::FPFHSignature33>());
+    // pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>());
+    // pcl::FPFHEstimation<pcl::PointXYZ, pcl::Normal, pcl::FPFHSignature33> fpfh;
+    // fpfh.setSearchMethod(tree);
 
-    pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>());
+    // // 计算法线
+    // pcl::PointCloud<pcl::Normal>::Ptr normals1(new pcl::PointCloud<pcl::Normal>());
+    // pcl::PointCloud<pcl::Normal>::Ptr normals2(new pcl::PointCloud<pcl::Normal>());
+    // pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> ne;
+    // ne.setSearchMethod(tree);
+    // ne.setRadiusSearch(0.05);  // 设置法线估计的半径
+    // ne.setInputCloud(downsampledCloud1);
+    // ne.compute(*normals1);
+    // ne.setInputCloud(downsampledCloud2);
+    // ne.compute(*normals2);
 
-    pcl::FPFHEstimation<pcl::PointXYZ, pcl::Normal, pcl::FPFHSignature33> fpfh;
-    fpfh.setSearchMethod(tree);
-
-    // 计算法线
-    pcl::PointCloud<pcl::Normal>::Ptr normals1(new pcl::PointCloud<pcl::Normal>());
-    pcl::PointCloud<pcl::Normal>::Ptr normals2(new pcl::PointCloud<pcl::Normal>());
-    pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> ne;
-    ne.setSearchMethod(tree);
-    ne.setRadiusSearch(0.05);  // 设置法线估计的半径
-
-    ne.setInputCloud(downsampledCloud1);
-    ne.compute(*normals1);
-    ne.setInputCloud(downsampledCloud2);
-    ne.compute(*normals2);
-
-    // 计算FPFH特征
-    fpfh.setRadiusSearch(0.1);  // 设置特征计算的半径
-    fpfh.setInputCloud(downsampledCloud1);
-    fpfh.setInputNormals(normals1);
-    fpfh.compute(*fpfh1);
-
-    fpfh.setInputCloud(downsampledCloud2);
-    fpfh.setInputNormals(normals2);
-    fpfh.compute(*fpfh2);
+    // // 计算FPFH特征
+    // fpfh.setRadiusSearch(0.1);  // 设置特征计算的半径
+    // fpfh.setInputCloud(downsampledCloud1);
+    // fpfh.setInputNormals(normals1);
+    // fpfh.compute(*fpfh1);
+    // fpfh.setInputCloud(downsampledCloud2);
+    // fpfh.setInputNormals(normals2);
+    // fpfh.compute(*fpfh2);
+    // if (fpfh1->empty()) {
+    //     QMessageBox::warning(this, "警告", "特征提取失败，特征点云为空！");
+    //     return;
+    // }
 
     // SAC-IA粗配准
-    pcl::SampleConsensusInitialAlignment<pcl::PointXYZ, pcl::PointXYZ, pcl::FPFHSignature33> sac_ia;
-    sac_ia.setInputSource(downsampledCloud1);
-    sac_ia.setInputTarget(downsampledCloud2);
-    sac_ia.setSourceFeatures(fpfh1);
-    sac_ia.setTargetFeatures(fpfh2);
-    sac_ia.setMaximumIterations(500);  // 设置最大迭代次数
-    sac_ia.setMinSampleDistance(0.05);  // 设置最小采样距离
-    sac_ia.setMaxCorrespondenceDistance(0.1);  // 设置最大对应点距离
+    // pcl::SampleConsensusInitialAlignment<pcl::PointXYZ, pcl::PointXYZ, pcl::FPFHSignature33> sac_ia;
+    // sac_ia.setInputSource(downsampledCloud1);
+    // sac_ia.setInputTarget(downsampledCloud2);
+    // sac_ia.setSourceFeatures(fpfh1);
+    // sac_ia.setTargetFeatures(fpfh2);
+    // sac_ia.setMaximumIterations(500);  // 设置最大迭代次数
+    // sac_ia.setMinSampleDistance(0.05);  // 设置最小采样距离
+    // sac_ia.setMaxCorrespondenceDistance(0.1);  // 设置最大对应点距离
 
-    pcl::PointCloud<pcl::PointXYZ> sacAlignedCloud;
-    sac_ia.align(sacAlignedCloud);  // 粗配准
-
-    if (!sac_ia.hasConverged()) {
-        QMessageBox::critical(this, "Error", "FPFH粗配准未收敛！");
-        return;
-    }
-
-    auto initialTransformation = std::make_shared<Eigen::Matrix4f>(sac_ia.getFinalTransformation());
+    // pcl::PointCloud<pcl::PointXYZ> sacAlignedCloud;
+    // sac_ia.align(sacAlignedCloud);  // 粗配准
+    // if (!sac_ia.hasConverged()) {
+    //     QMessageBox::critical(this, "Error", "FPFH粗配准未收敛！");
+    //     return;
+    // }
+    // auto initialTransformation = std::make_shared<Eigen::Matrix4f>(sac_ia.getFinalTransformation());
 
     // ICP精配准
     pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
-    icp.setInputSource(downsampledCloud1);
-    icp.setInputTarget(downsampledCloud2);
+    icp.setInputSource(cloud1);
+    icp.setInputTarget(cloud2);
     icp.setMaximumIterations(50);  // 设置最大迭代次数
     icp.setTransformationEpsilon(1e-8);  // 设置变换容差
     icp.setMaxCorrespondenceDistance(0.05);  // 设置最大对应点距离
 
     pcl::PointCloud<pcl::PointXYZ> icpFinalCloud;
-    icp.align(icpFinalCloud, *initialTransformation);  // 使用FPFH的变换矩阵作为初始对齐
+    // icp.align(icpFinalCloud, *initialTransformation);  // 使用FPFH的变换矩阵作为初始对齐
+    icp.align(icpFinalCloud);
 
     if (!icp.hasConverged()) {
-        // Retry with adjusted parameters
         icp.setMaxCorrespondenceDistance(0.1);  // 增加最大对应点距离
         icp.setMaximumIterations(100);  // 增加最大迭代次数
-        icp.align(icpFinalCloud, *initialTransformation);
+        // icp.align(icpFinalCloud, *initialTransformation);
+        icp.align(icpFinalCloud);
 
         if (!icp.hasConverged()) {
             QMessageBox::critical(this, "Error", "ICP 配准未收敛！");
