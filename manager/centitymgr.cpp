@@ -102,7 +102,7 @@ QDataStream& operator<<(QDataStream& out, const CEntityMgr& mgr) {
 
             //     ent->serialize(out);
 
-            const CObject* parentEnt = dynamic_cast<const CObject*>(ent);
+            const CObject* parentEnt = static_cast<const CObject*>(ent);
             parentEnt->CObject::serialize(out);
             }
         }
@@ -182,7 +182,7 @@ QDataStream& operator>>(QDataStream& in, CEntityMgr& mgr) {
             if(type!=enPointCloud){
                 entity->deserialize(in);  // 调用对象的反序列化方法
 
-                int parentSize;
+                int parentSize=0;
                 in>>parentSize;
                 qDebug()<<"parentSize:"<<parentSize;
                 entity->parent.clear();
