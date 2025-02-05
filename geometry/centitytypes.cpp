@@ -899,12 +899,10 @@ void CPlane::setWidth(double newWidth)
 QString CPlane::getCEntityInfo()
 {
     QString infoText = QString("Plane\nCenterX: %1\nCenterY: %2\nCenterZ: %3\n"
-                               "Normal_X: %4\nNormal_Y: %5\nNormal_Z: %6)\nLongEdge:(%7, %8, %9)\n"
+                               "Normal_X: %4\nNormal_Y: %5\nNormal_Z: %6)\n"
                                "length: %10\nWidth: %11)").arg(QString::number(center.x, 'f',  6)).arg(QString::number(center.y, 'f',  6)).arg(QString::number(center.z, 'f',  6)).
                        arg(QString::number(normal.x(), 'f',  6)).arg(GetObjectCName())
-                           .arg(QString::number(normal.y(), 'f',  6)).arg(QString::number(normal.z(), 'f',  6))
-                           .arg(QString::number(dir_long_edge.x(), 'f',  6)).arg(QString::number(dir_long_edge.y(), 'f',  6))
-                           .arg(QString::number(dir_long_edge.z(), 'f',  6)).arg(QString::number(length, 'f',  6)).arg(QString::number(width, 'f',  6));
+                           .arg(QString::number(normal.y(), 'f',  6)).arg(QString::number(normal.z(), 'f',  6)).arg(QString::number(length, 'f',  6)).arg(QString::number(width, 'f',  6));
     return infoText;
 }
 
