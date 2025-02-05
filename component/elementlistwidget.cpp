@@ -476,19 +476,46 @@ void ElementListWidget::CompareCloud()
         if(could->isModelCloud){
             m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
             break;
-        }else{
+        }
+        if(i==m_pMainWin->getEntityListMgr()->getEntityList().size()-1){
             return;
         }
     }
+    bool isHaveShape=false;
     for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
         CPointCloud*could=(CPointCloud*)m_pMainWin->getEntityListMgr()->getEntityList()[i];
         if(could->isMeasureCloud){
             m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
-            m_pMainWin->getPWinToolWidget()->setauto(true);
-            m_pMainWin->getPWinVtkWidget()->onCompare();
-            m_pMainWin->getPWinToolWidget()->setauto(false);
+            //m_pMainWin->getPWinToolWidget()->setauto(true);
+            //m_pMainWin->getPWinVtkWidget()->onCompare();
+            //m_pMainWin->getPWinToolWidget()->setauto(false);
+        }
+        if(m_pMainWin->getEntityListMgr()->getEntityList()[i]->GetUniqueType()==enCuboid){
+            m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
+            isHaveShape=true;
         }
     }
+    if(isHaveShape){
+        m_pMainWin->getPWinToolWidget()->onConstructPointCloud();
+    }else{
+        m_pMainWin->getPWinToolWidget()->setauto(true);
+        m_pMainWin->getPWinVtkWidget()->onCompare();
+        m_pMainWin->getPWinToolWidget()->setauto(false);
+        return;
+    }
+    for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
+        m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
+    }
+    for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
+        CPointCloud*could=(CPointCloud*)m_pMainWin->getEntityListMgr()->getEntityList()[i];
+        if(could->isCut){
+            m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
+        }
+    }
+    m_pMainWin->getPWinToolWidget()->setauto(true);
+    m_pMainWin->getPWinVtkWidget()->onCompare();
+    m_pMainWin->getPWinToolWidget()->setauto(false);
+    return;
 }
 
 void ElementListWidget::updateDistance()

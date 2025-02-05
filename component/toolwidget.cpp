@@ -1489,6 +1489,7 @@ void ToolWidget::onConstructPointCloud(){
             WrongWidget("构造点云失败");
             continue;
         }
+        newPointCloud->isCut=true;
         newPointCloud->m_strAutoName+="(切割)";
         addToList(newPointCloud);
     }
