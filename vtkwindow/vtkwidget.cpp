@@ -1,4 +1,5 @@
 #include "vtkwindow/vtkwidget.h"
+#include "vtkwindow/vtkpresetwidget.h"
 #include <QFileDialog>  // 用于文件对话框
 #include <QOpenGLContext>
 #include <qopenglfunctions.h>
@@ -27,6 +28,13 @@ VtkWidget::VtkWidget(QWidget *parent)
 }
 
 void VtkWidget::setUpVtk(QVBoxLayout *layout){
+    vtkMenu = new QMenu(m_pMainWin); // 创建菜单
+    auto clearAction = new QAction("清除标注");
+    vtkMenu->addAction(clearAction);
+    connect(clearAction, &QAction::triggered, this, [&](){
+        this->closeText();
+    });
+
     // 初始化渲染器和交互器
     renderer = vtkSmartPointer<vtkRenderer>::New();
     renderer->SetBackground(1, 1, 1); // 设置渲染器颜色为白
@@ -89,6 +97,7 @@ void VtkWidget::OnMouseMove()
 
 void VtkWidget::OnLeftButtonPress()
 {
+    vtkMenu->hideTearOffMenu(); // 关闭右键菜单栏
     int* clickPos = renWin->GetInteractor()->GetEventPosition();
 
     // 遍历所有文本框，检查点击位置是否在某个文本框内
@@ -104,6 +113,17 @@ void VtkWidget::OnLeftButtonPress()
         double width = textWidth + 20; // 加上边距
         double height = textHeight + 10; // 加上边距
         double* position = textActor->GetPosition();
+
+        // 检查点击位置是否在文本框右上角的特定区域内
+        double closeBoxSize = 20; // 右上角关闭区域的大小
+        if (clickPos[0] >= position[0] + width - closeBoxSize &&
+            clickPos[0] <= position[0] + width &&
+            clickPos[1] >= position[1] + height - closeBoxSize &&
+            clickPos[1] <= position[1] + height)
+        {
+            closeTextActor(it.key()); // 关闭文本框
+            return;
+        }
 
         if (clickPos[0] >= position[0] && clickPos[0] <= position[0] + width &&
             clickPos[1] >= position[1] && clickPos[1] <= position[1] + height)
@@ -146,27 +166,33 @@ vtkSmartPointer<vtkTextActor> &VtkWidget::getInfoText()
 
 void VtkWidget::createText(CEntity* entity)
 {
-    vtkSmartPointer<vtkTextActor> textActor = vtkSmartPointer<vtkTextActor>::New();
-    textActor->GetTextProperty()->SetFontSize(16);
-    textActor->GetTextProperty()->SetFontFamilyToTimes();
-    textActor->GetTextProperty()->SetColor(MainWindow::InfoTextColor);
-    textActor->GetTextProperty()->SetJustificationToLeft();
-    textActor->GetTextProperty()->SetBold(1);
-    textActor->GetTextProperty()->SetShadow(true);
+    infoTextActor = vtkSmartPointer<vtkTextActor>::New();
+    infoTextActor->GetTextProperty()->SetFontSize(16);
+    infoTextActor->GetTextProperty()->SetFontFamilyToTimes();
+    infoTextActor->GetTextProperty()->SetColor(MainWindow::InfoTextColor);
+    infoTextActor->GetTextProperty()->SetJustificationToLeft();
+    infoTextActor->GetTextProperty()->SetBold(1);
+    infoTextActor->SetLayerNumber(1);
 
     QString qstr = entity->getCEntityInfo();
     QByteArray byteArray = qstr.toUtf8();
-    textActor->SetInput(byteArray.constData());
+    infoTextActor->SetInput(byteArray.constData());
 
     // 计算文本框的初始位置
     double x = renWin->GetSize()[0] - 200 - increaseDis[0];
-    double y = renWin->GetSize()[1] - 100 - increaseDis[1];
-    textActor->SetPosition(x, y);
-    increaseDis[1] += 100;
+    double y = renWin->GetSize()[1] - 150 - increaseDis[1];
+    infoTextActor->SetPosition(x, y);
+    if(increaseDis[1]  <= renWin->GetSize()[1] - 300){
+        increaseDis[1] += 200;
+    }
+    else {
+        increaseDis[1] = 0;
+        increaseDis[0] += renWin->GetSize()[0] - 300; // 放到窗口左边显示
+    }
 
     // 检查是否重叠，并调整位置
     double bbox[4];
-    textActor->GetBoundingBox(renderer, bbox);
+    infoTextActor->GetBoundingBox(renderer, bbox);
     double textWidth = bbox[1] - bbox[0];
     double textHeight = bbox[3] - bbox[2];
     double width = textWidth + 20;
@@ -181,23 +207,23 @@ void VtkWidget::createText(CEntity* entity)
             y + height > otherBbox[2] && y < otherBbox[3])
         {
             // 如果重叠，调整位置
-            y -= (height + 10); // 向上移动
+            y -= (height + 10);
         }
     }
 
     // 创建文本框
-    vtkSmartPointer<vtkActor2D> textBox = createTextBox(textActor, x, y);
+    vtkSmartPointer<vtkActor2D> textBox = createTextBox(infoTextActor, x, y);
 
     // 创建指向线段
-    vtkSmartPointer<vtkActor2D> line = createLine(entity, textActor);
+    vtkSmartPointer<vtkActor2D> line = createLine(entity, infoTextActor);
 
     // 存储信息
-    entityToTextActors[entity] = textActor;
+    entityToTextActors[entity] = infoTextActor;
     entityToTextBoxs[entity] = textBox;
     entityToLines[entity] = line;
 
     // 添加到渲染器
-    renderer->AddActor(textActor);
+    renderer->AddActor(infoTextActor);
     renderer->AddActor(textBox);
     renderer->AddActor(line);
 
@@ -205,6 +231,7 @@ void VtkWidget::createText(CEntity* entity)
     renWin->GetInteractor()->AddObserver(vtkCommand::LeftButtonPressEvent, this, &VtkWidget::OnLeftButtonPress);
     renWin->GetInteractor()->AddObserver(vtkCommand::MouseMoveEvent, this, &VtkWidget::OnMouseMove);
     renWin->GetInteractor()->AddObserver(vtkCommand::LeftButtonReleaseEvent, this, &VtkWidget::OnLeftButtonRelease);
+    renWin->GetInteractor()->AddObserver(vtkCommand::RightButtonPressEvent, this, &VtkWidget::OnRightButtonPress);
 
     renWin->Render();
 }
@@ -212,7 +239,7 @@ void VtkWidget::createText(CEntity* entity)
 // 创建文本框
 vtkSmartPointer<vtkActor2D> VtkWidget::createTextBox(vtkSmartPointer<vtkTextActor> textActor, double x, double y)
 {
-    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+    points = vtkSmartPointer<vtkPoints>::New();
     double bbox[4];
     textActor->GetBoundingBox(renderer, bbox);
     double textWidth = bbox[1] - bbox[0];
@@ -225,7 +252,7 @@ vtkSmartPointer<vtkActor2D> VtkWidget::createTextBox(vtkSmartPointer<vtkTextActo
     points->InsertNextPoint(width, height, 0);
     points->InsertNextPoint(0, height, 0);
 
-    vtkSmartPointer<vtkCellArray> lines = vtkSmartPointer<vtkCellArray>::New();
+    lines = vtkSmartPointer<vtkCellArray>::New();
     vtkIdType lineIds[2];
     lineIds[0] = 0; lineIds[1] = 1;
     lines->InsertNextCell(2, lineIds);
@@ -236,31 +263,42 @@ vtkSmartPointer<vtkActor2D> VtkWidget::createTextBox(vtkSmartPointer<vtkTextActo
     lineIds[0] = 3; lineIds[1] = 0;
     lines->InsertNextCell(2, lineIds);
 
-    vtkSmartPointer<vtkCellArray> polygons = vtkSmartPointer<vtkCellArray>::New();
+    polygons = vtkSmartPointer<vtkCellArray>::New();
     vtkIdType ids[4] = {0, 1, 2, 3};
     polygons->InsertNextCell(4, ids);
 
-    vtkSmartPointer<vtkPolyData> rectangle = vtkSmartPointer<vtkPolyData>::New();
+    rectangle = vtkSmartPointer<vtkPolyData>::New();
     rectangle->SetPoints(points);
     rectangle->SetLines(lines);
     rectangle->SetPolys(polygons);
 
-    vtkSmartPointer<vtkPolyDataMapper2D> rectangleMapper = vtkSmartPointer<vtkPolyDataMapper2D>::New();
+    rectangleMapper = vtkSmartPointer<vtkPolyDataMapper2D>::New();
     rectangleMapper->SetInputData(rectangle);
 
-    vtkSmartPointer<vtkActor2D> textBox = vtkSmartPointer<vtkActor2D>::New();
-    textBox->SetMapper(rectangleMapper);
-    textBox->GetProperty()->SetColor(0.1, 0.2, 0.3);
-    textBox->GetProperty()->SetOpacity(0.2);
-    textBox->GetProperty()->SetLineWidth(2);
-    textBox->SetPosition(x, y);
+    rectangleActor = vtkSmartPointer<vtkActor2D>::New();
+    rectangleActor->SetMapper(rectangleMapper);
+    rectangleActor->GetProperty()->SetColor(0.6, 0.6, 0.6);
+    rectangleActor->GetProperty()->SetOpacity(0.4);
+    rectangleActor->GetProperty()->SetLineWidth(5);
+    rectangleActor->SetPosition(x, y);
 
-    return textBox;
+    // 添加关闭按钮图片
+    pngReader = vtkSmartPointer<vtkPNGReader>::New();
+    pngReader->SetFileName("E:\3d\3dins\\component\\eye\\close.png");
+
+    iconActor = vtkSmartPointer<vtkImageActor>::New();
+    iconActor->GetMapper()->SetInputConnection(pngReader->GetOutputPort());
+    iconActor->SetPosition(x + width - 20, y + height - 20, 0);
+
+    // 存储关闭按钮图片演员
+    entityToIcons[entityToTextActors.key(textActor)] = iconActor;
+    getRenderer()->AddActor(iconActor);
+
+    return rectangleActor;
 }
 
 vtkSmartPointer<vtkActor2D> VtkWidget::createLine(CEntity* entity, vtkSmartPointer<vtkTextActor> textActor)
 {
-    vtkSmartPointer<vtkPNGReader> pngReader = vtkSmartPointer<vtkPNGReader>::New();
     double* a = textActor->GetPosition();
     CPosition b;
     QString filename;
@@ -276,51 +314,42 @@ vtkSmartPointer<vtkActor2D> VtkWidget::createLine(CEntity* entity, vtkSmartPoint
         b.x = dis->getbegin().x - (distance * plane_normal.x()) / 2;
         b.y = dis->getbegin().y - (distance * plane_normal.y()) / 2;
         b.z = dis->getbegin().z - (distance * plane_normal.z()) / 2;
-        filename = ":/component/construct/distance.png";
     }
     else if (entity->getEntityType() == enPoint)
     {
         CPoint* point = static_cast<CPoint*>(entity);
         b = point->GetPt();
-        filename = ":/component/find/point.jpg";
     }
     else if (entity->getEntityType() == enLine)
     {
         CLine* line = static_cast<CLine*>(entity);
         b = line->GetObjectCenterLocalPoint();
-        filename = ":/component/find/line.jpg";
     }
     else if (entity->getEntityType() == enCircle)
     {
         CCircle* circle = static_cast<CCircle*>(entity);
         b = circle->getCenter();
-        filename = ":/component/find/circle.jpg";
     }
     else if (entity->getEntityType() == enSphere)
     {
         CSphere* s = static_cast<CSphere*>(entity);
         b = s->getCenter();
-        filename = ":/component/find/sphere.jpg";
     }
     else if (entity->getEntityType() == enPlane)
     {
         CPlane* s = static_cast<CPlane*>(entity);
         b = s->getCenter();
-        filename = ":/component/find/plan.jpg";
     }
     else if (entity->getEntityType() == enCylinder)
     {
         CCylinder* s = static_cast<CCylinder*>(entity);
         b = s->getBtm_center();
-        filename = ":/component/find/cylinder.jpg";
     }
     else if (entity->getEntityType() == enCone)
     {
         CCone* s = static_cast<CCone*>(entity);
         b = s->getVertex();
-        filename = ":/component/find/cone.jpg";
     }
-
     entityToEndPoints[entity] = b;
 
     vtkSmartPointer<vtkCoordinate> coordinate = vtkSmartPointer<vtkCoordinate>::New();
@@ -328,23 +357,23 @@ vtkSmartPointer<vtkActor2D> VtkWidget::createLine(CEntity* entity, vtkSmartPoint
     coordinate->SetCoordinateSystemToWorld();
     int* viewportMidPoint = coordinate->GetComputedViewportValue(renderer);
 
-    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+    points = vtkSmartPointer<vtkPoints>::New();
     points->InsertNextPoint(a[0], a[1], 0.0);
     points->InsertNextPoint(viewportMidPoint[0], viewportMidPoint[1], viewportMidPoint[2]);
 
-    vtkSmartPointer<vtkPolyData> linePolyData = vtkSmartPointer<vtkPolyData>::New();
+    linePolyData = vtkSmartPointer<vtkPolyData>::New();
     linePolyData->SetPoints(points);
 
-    vtkSmartPointer<vtkCellArray> lines = vtkSmartPointer<vtkCellArray>::New();
+    lines = vtkSmartPointer<vtkCellArray>::New();
     lines->InsertNextCell(2);
     lines->InsertCellPoint(0);
     lines->InsertCellPoint(1);
     linePolyData->SetLines(lines);
 
-    vtkSmartPointer<vtkPolyDataMapper2D> lineMapper = vtkSmartPointer<vtkPolyDataMapper2D>::New();
+    lineMapper = vtkSmartPointer<vtkPolyDataMapper2D>::New();
     lineMapper->SetInputData(linePolyData);
 
-    vtkSmartPointer<vtkActor2D> lineActor = vtkSmartPointer<vtkActor2D>::New();
+    lineActor = vtkSmartPointer<vtkActor2D>::New();
     lineActor->SetMapper(lineMapper);
     lineActor->GetProperty()->SetColor(MainWindow::InfoTextColor);
     lineActor->GetProperty()->SetLineWidth(2);
@@ -362,7 +391,7 @@ void VtkWidget::Linechange()
     double* textPosition = infoTextActor->GetPosition();
 
     // 获取指向线段的终点位置（从实体到终点映射中获取）
-    CPosition endPoint = entityToEndPoints[getEntityFromTextActor(infoTextActor)];
+    endPoint = entityToEndPoints[getEntityFromTextActor(infoTextActor)];
 
     // 将终点从世界坐标转换为视口坐标
     vtkSmartPointer<vtkCoordinate> coordinate = vtkSmartPointer<vtkCoordinate>::New();
@@ -371,7 +400,7 @@ void VtkWidget::Linechange()
     int* viewportMidPoint = coordinate->GetComputedViewportValue(renderer);
 
     // 更新指向线段的起点和终点
-    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+    points = vtkSmartPointer<vtkPoints>::New();
     points->InsertNextPoint(textPosition[0], textPosition[1], 0.0); // 起点为文本框位置
     points->InsertNextPoint(viewportMidPoint[0], viewportMidPoint[1], viewportMidPoint[2]); // 终点为视口坐标
 
@@ -381,9 +410,6 @@ void VtkWidget::Linechange()
     lineMapper->SetInputData(linePolyData);
     lineMapper->Update();
     lineActor->SetMapper(lineMapper);
-
-    // 重新渲染窗口
-    renWin->Render();
 }
 
 void VtkWidget::closeText()
@@ -404,15 +430,44 @@ void VtkWidget::closeText()
     {
         renderer->RemoveActor(it.value());
     }
-
     entityToTextActors.clear();
     entityToTextBoxs.clear();
     entityToLines.clear();
     entityToIcons.clear();
+    // 重置所有文本所占位置
+    increaseDis[0] = 0;
+    increaseDis[1] = 0;
 
+    vtkMenu->hideTearOffMenu(); // 关闭右键菜单栏
     renWin->Render();
 }
+// 删除选中的文本框
+void VtkWidget::closeTextActor(CEntity* entity)
+{
+    if (entityToTextActors.contains(entity))
+    {
+        // 移除文本框
+        renderer->RemoveActor(entityToTextActors[entity]);
+        // 移除文本框背景
+        renderer->RemoveActor(entityToTextBoxs[entity]);
+        // 移除指向线段
+        renderer->RemoveActor(entityToLines[entity]);
+        // 移除图标（如果有）
+        if (entityToIcons.contains(entity))
+        {
+            renderer->RemoveActor(entityToIcons[entity]);
+        }
 
+        // 从映射中移除
+        entityToTextActors.remove(entity);
+        entityToTextBoxs.remove(entity);
+        entityToLines.remove(entity);
+        entityToIcons.remove(entity);
+
+        // 重新渲染窗口
+        renWin->Render();
+    }
+}
 CEntity* VtkWidget::getEntityFromTextActor(vtkSmartPointer<vtkTextActor> textActor)
 {
     for (auto it = entityToTextActors.begin(); it != entityToTextActors.end(); ++it)
@@ -492,8 +547,8 @@ void VtkWidget::ShowColorBar(double minDistance, double maxDistance){
     vtkSmartPointer<vtkActor2D> maxTextActor = vtkSmartPointer<vtkActor2D>::New();
     maxTextActor->SetMapper(maxTextMapper);
     maxTextActor->SetPosition(Width - 100, barHeight + 7); // 调整位置以适应显示
-    minTextMapper->GetTextProperty()->SetFontSize(12);
-    maxTextMapper->GetTextProperty()->SetFontSize(12);
+    minTextMapper->GetTextProperty()->SetFontSize(15);
+    maxTextMapper->GetTextProperty()->SetFontSize(15);
 
     // 获取渲染器并添加色温条和标注
     renderer->AddActor2D(colorBarActor);
@@ -503,6 +558,11 @@ void VtkWidget::ShowColorBar(double minDistance, double maxDistance){
 
     // 刷新渲染窗口
     renderer->Render();
+}
+
+void VtkWidget::OnRightButtonPress()
+{
+    vtkMenu->showTearOffMenu(); // 弹出菜单栏
 }
 
 vtkSmartPointer<vtkRenderWindow> VtkWidget::getRenderWindow(){
@@ -544,6 +604,12 @@ void VtkWidget::reDrawCentity(){
     }
 
     actorToEntity.clear();
+    // 清除所有文本标注的记录
+    entityToTextActors.clear();
+    entityToTextBoxs.clear();
+    entityToLines.clear();
+    entityToIcons.clear();
+
     CPointCloud::getActorToPointCloud().clear();
     // 遍历entitylist绘制图形并加入渲染器
     for(auto i = 0;i < entitylist.size();i++){
@@ -553,7 +619,8 @@ void VtkWidget::reDrawCentity(){
         // 循环判断是哪种元素
         for(int j=0;j<constructEntityList.size();j++){
             QString key=constructEntityList[j]->GetObjectCName() + "  " + constructEntityList[j]->GetObjectAutoName();
-            if(entitylist[i] == constructEntityList[j]){//是构建的元素
+            QString name=entitylist[i]->GetObjectCName()+"  "+entitylist[i]->GetObjectAutoName();
+            if(name == key){//是构建的元素
                 constructFlag=1;
                 if(contentItemmap[key]){ // 如果不隐藏
                     vtkSmartPointer<vtkActor>actor = entitylist[i]->draw();
@@ -571,7 +638,8 @@ void VtkWidget::reDrawCentity(){
         if(constructFlag==0){//不是构建的元素
             for(int j=0;j<identifyEntityList.size();j++){
                 QString key=identifyEntityList[j]->GetObjectCName() + "  " + identifyEntityList[j]->GetObjectAutoName();
-                if(entitylist[i] == identifyEntityList[j]){//是构建的元素
+                QString name=entitylist[i]->GetObjectCName()+"  "+entitylist[i]->GetObjectAutoName();
+                if(name == key){//是构建的元素
                     identifyFlag=1;
                     if(identifyItemmap[key]){ // 如果不隐藏
                         vtkSmartPointer<vtkActor>actor = entitylist[i]->draw();
@@ -637,7 +705,6 @@ void VtkWidget::createAxes()
 
 // 切换相机视角1
 void VtkWidget::onTopView() {
-    m_pMainWin->NotifySubscribe();
     vtkCamera *camera = renderer->GetActiveCamera();
     if (camera) {
         camera->SetPosition(0, 0, 1);  // 重置相机位置为俯视
@@ -654,8 +721,6 @@ void VtkWidget::onTopView() {
 
 // 切换相机视角2
 void VtkWidget::onRightView(){
-    m_pMainWin->NotifySubscribe();
-
     vtkCamera *camera = renderer->GetActiveCamera();
     if (camera) {
         camera->SetPosition(1, 0, 0);  // 重置相机位置为右侧
@@ -672,8 +737,6 @@ void VtkWidget::onRightView(){
 
 // 切换相机视角3
 void VtkWidget::onFrontView(){
-    m_pMainWin->NotifySubscribe();
-
     vtkCamera *camera = renderer->GetActiveCamera();
     if (camera) {
         camera->SetPosition(0, -1, 0);  // 重置相机位置为正视
@@ -690,8 +753,6 @@ void VtkWidget::onFrontView(){
 
 // 切换相机视角4，立体视角可以在前三个的基础上旋转
 void VtkWidget::onIsometricView(){
-    m_pMainWin->NotifySubscribe();
-
     vtkCamera *camera = renderer->GetActiveCamera();
     if (camera) {
         camera->SetPosition(0, 0, 0); // 重置相机位置
@@ -710,8 +771,11 @@ void VtkWidget::onIsometricView(){
 // 比较两个点云的处理函数
 void VtkWidget::onCompare()
 {
-    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+    auto entityList = m_pMainWin->m_EntityListMgr->getEntityList();
     auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
+    auto marksMap = m_pMainWin->getpWinFileMgr()->getContentItemMap();
+    QString logInfo; // 用于在右下角输出调用日志
+
     QVector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> clouds;
     QVector<CObject*>parentlist;
     for(int i=0;i<entityList.size();i++){
@@ -721,6 +785,7 @@ void VtkWidget::onCompare()
             auto & temp=((CPointCloud*)entity)->m_pointCloud;
             parentlist.append(entity);
             clouds.append(temp.makeShared());
+            logInfo += ((CPointCloud*)entity)->m_strAutoName + ' '; //添加对比的点云编号
         }
     }
 
@@ -738,12 +803,11 @@ void VtkWidget::onCompare()
     pcl::copyPointCloud( *clouds[0], *cloud1);
     pcl::copyPointCloud( *clouds[1], *cloud2);
 
-    for(int i = 0;i < 2;i++)
-        // 检查点云是否为空
-        if (cloud1->empty() || cloud2->empty()) {
-            QMessageBox::warning(this, "Warning", "其中一个或两个点云为空!");
-            return;
-        }
+    // 检查点云是否为空
+    if (cloud1->empty() || cloud2->empty()) {
+        QMessageBox::warning(this, "Warning", "其中一个或两个点云为空!");
+        return;
+    }
 
     // 创建KD-Tree用于点云2
     pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
@@ -811,6 +875,9 @@ void VtkWidget::onCompare()
     PathList.append(path);
 
     ShowColorBar(minDistance, maxDistance);
+    // 添加日志输出
+    logInfo += "对比完成";
+    m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
 
 }
 

@@ -44,7 +44,7 @@ CPointCloud *PointCloudListMgr::CreateCompareCloud(pcl::PointCloud<pcl::PointXYZ
     CPointCloud* CloudEntity=new CPointCloud();
     CloudEntity->isComparsionCloud = true; // 对比生成的点云
     CloudEntity->setPointCloud(cloud);
-    CloudEntity->m_strAutoName += "(全尺寸比对)";
+    CloudEntity->m_strAutoName += "(对比)";
     return CloudEntity;
 }
 
