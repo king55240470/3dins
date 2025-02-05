@@ -37,7 +37,7 @@ MainWindow::MainWindow(QWidget *parent)
     LoadSetDataWidget();
     m_nRelyOnWhichCs=csRef;
     SetUpTheme();
-
+    modelCloudExist=false;
 }
 
 void MainWindow::setupUi(){
@@ -154,14 +154,23 @@ void MainWindow::setupUi(){
     QAction* constructCloud = constructorMenu->addAction("点云切割");
     QAction* constructAngle = constructorMenu->addAction("角度");
     // 插入图片
-    constructPoint->setIcon(pointIcon);
-    constructLine->setIcon(lineIcon);
-    constructPlane->setIcon(planeIcon);
-    constructCircle->setIcon(circleIcon);
-    constructRect->setIcon(rectangleIcon);
-    constructSphere->setIcon(sphereIcon);
-    constructCylinder->setIcon(cylinderIcon);
-    constructCone->setIcon(coneIcon);
+    QIcon point_construct(":/component/construct/point_.png");
+    QIcon line_construct(":/component/construct/line_.png");
+    QIcon plane_construct(":/component/construct/plane_.png");
+    QIcon circle_construct(":/component/construct/circle_.png");
+    QIcon rect_construct(":/component/construct/rectangle_.png");
+    QIcon sphere_construct(":/component/construct/sphere_.png");
+    QIcon cone_construct(":/component/construct/cone_.png");
+    QIcon cylinder_construct(":/component/construct/cylinder_.png");
+
+    constructPoint->setIcon(point_construct);
+    constructLine->setIcon(line_construct);
+    constructPlane->setIcon(plane_construct);
+    constructCircle->setIcon(circle_construct);
+    constructRect->setIcon(rect_construct);
+    constructSphere->setIcon(sphere_construct);
+    constructCylinder->setIcon(cylinder_construct);
+    constructCone->setIcon(cone_construct);
     constructDis->setIcon(distanceIcon);
     constructCloud->setIcon(cloudIcon);
     constructAngle->setIcon(angleIcon);
@@ -206,8 +215,6 @@ void MainWindow::setupUi(){
     connect(findCylinder, &QAction::triggered, this, [&](){ pWinToolWidget->onFindCylinder(); });
     connect(findCone, &QAction::triggered, this, [&](){ pWinToolWidget->onFindCone(); });
 
-
-
     QMenu * switchTheme = bar->addMenu("主题");
     QAction* lightBlue = switchTheme->addAction("浅蓝色(默认)");
     connect(lightBlue, &QAction::triggered, this, &MainWindow::onConvertLighBlueTheme);
@@ -230,21 +237,21 @@ void MainWindow::setupUi(){
     stbar->addWidget(label1);
     // QLabel *label2=new QLabel("右侧状态栏",this);
     // stbar->addPermanentWidget(label2);
-    switchRefCsBtn = new QPushButton("参考依赖坐标系");
-    // switchRefCsBtn->setFixedWidth(100);
-    switchRefCsBtn->setObjectName("statusSwitchRef");
-    switchRefCsBtn->setFlat(true); // 设置按钮为平面样式
-    switchRefCsBtn->installEventFilter(this);  // 为按钮安装事件过滤器
-    stbar->addPermanentWidget(switchRefCsBtn);
+    // switchRefCsBtn = new QPushButton("参考依赖坐标系");
+    // // switchRefCsBtn->setFixedWidth(100);
+    // switchRefCsBtn->setObjectName("statusSwitchRef");
+    // switchRefCsBtn->setFlat(true); // 设置按钮为平面样式
+    // switchRefCsBtn->installEventFilter(this);  // 为按钮安装事件过滤器
+    // stbar->addPermanentWidget(switchRefCsBtn);
 
-    stbar->addPermanentWidget(line);
+    // stbar->addPermanentWidget(line);
 
-    switchCsBtn = new QPushButton("机械坐标系");
-    // switchCsBtn->setFixedWidth(100);
-    // switchCsBtn->setFlat(true); // 设置按钮为平面样式
-    // switchCsBtn->installEventFilter(this);  // 为按钮安装事件过滤器
-    switchCsBtn->setObjectName("statusSwitchCs");
-    stbar->addPermanentWidget(switchCsBtn);
+    // switchCsBtn = new QPushButton("机械坐标系");
+    // // switchCsBtn->setFixedWidth(100);
+    // // switchCsBtn->setFlat(true); // 设置按钮为平面样式
+    // // switchCsBtn->installEventFilter(this);  // 为按钮安装事件过滤器
+    // switchCsBtn->setObjectName("statusSwitchCs");
+    // stbar->addPermanentWidget(switchCsBtn);
 
     stbar->addPermanentWidget(line);
 
@@ -341,6 +348,7 @@ void MainWindow::openFile(){
         QString fileName = fileInfo.fileName();
         // 根据文件扩展名进行判断
         if (filePath.endsWith("ply")) {
+            modelCloudExist=true; // 用于保证后续序列化文件
             pWinFileManagerWidget->openModelFile(fileName, filePath);
             pWinVtkPresetWidget->setWidget(fileName+"文件已打开");
         } else if (filePath.endsWith("pcd")) {
@@ -354,6 +362,7 @@ void MainWindow::openFile(){
                 qDebug() << "Failed to open file:" << file.errorString();
                 return;
             }
+
             //deserialize
             QDataStream in(&file);
             // in.setVersion(QDataStream::Qt_6_0);
@@ -366,9 +375,25 @@ void MainWindow::openFile(){
             //去除原来构建的点云
             pWinFileMgr->removePointCloudKeys(pWinFileMgr->getContentItemMap());
 
+            //打开模型点云
+            in>>modelCloudExist;
+            if(modelCloudExist){
+                QString path;
+                in>> path;
+                pWinFileManagerWidget->openModelFile("modelCloud.ply", path);
+            }
+
+            //反序列化toolWidget中的list
+            pWinToolWidget->deserializeEntityList(in,pWinToolWidget->getConstructEntityList()); //构造
+            //pWinToolWidget->deserializeEntityList(in,pWinToolWidget->getIdentifyEntityList()); //拟合
+
+            qDebug() << "加载成功,ConstructEntityList的大小为:"<<pWinToolWidget->getConstructEntityList().size();
+            qDebug() << "加载成功,IdentifyEntityList的大小为:"<<pWinToolWidget->getIdentifyEntityList().size();
+
             qDebug() << "加载成功,m_EntityListMgr的大小为:"<<m_EntityListMgr->getEntityList().size()<<"m_ObjectListMgr的大小为:"<<m_ObjectListMgr->getObjectList().size();
             qDebug()<<"首个Object的类型为:"<<m_ObjectListMgr->GetAt(0)->GetUniqueType();
             NotifySubscribe();
+            pWinVtkPresetWidget->setWidget(fileName+"文件已打开");
             file.close();
         }
     }
@@ -418,6 +443,28 @@ void MainWindow::saveFile(){
         pWinSetDataWidget->serialize(out);
         out<<pWinFileMgr->getContentItemMap();
         // out<<pWinFileMgr->getIdentifyItemMap();
+
+        //保存模型点云
+        out<<modelCloudExist;
+        for(int i=0;i<getEntityListMgr()->getEntityList().size();i++){
+            CPointCloud*could=(CPointCloud*)getEntityListMgr()->getEntityList()[i];
+            if(could->isModelCloud){               
+                QString file_path = "D:/modelCloud.ply";
+                out << file_path;
+                int result = pcl::io::savePLYFile(file_path.toStdString(), could->m_pointCloud);
+                if (result != 0) {
+                    qDebug() << "Failed to save PLY file. Error code:" << result;
+                }else {
+                    qDebug() << "PLY file saved successfully!";
+                }
+                break;
+            }
+        }
+
+        //序列化toolWidget中的list
+        pWinToolWidget->serializeEntityList(out,pWinToolWidget->getConstructEntityList()); //构造
+        //pWinToolWidget->serializeEntityList(out,pWinToolWidget->getIdentifyEntityList()); //拟合
+
     }else{
         qWarning("Entity manager is null, nothing to save.");
     }
@@ -1140,11 +1187,11 @@ void MainWindow::onConvertLightGreyTheme()
     MainWindow::HighLightColor[0] = 1;
     MainWindow::HighLightColor[1] = 1;
     MainWindow::HighLightColor[2] = 0;
-    MainWindow::InfoTextColor[0] = 1;
+    MainWindow::InfoTextColor[0] = 0;
     MainWindow::InfoTextColor[1] = 0;
 
     pWinVtkWidget->getRenderer()->SetBackground(1, 1, 1);
-    NotifySubscribe();
+    pWinVtkWidget->UpdateInfo();
 }
 
 void MainWindow::onConvertLighBlueTheme()
@@ -1166,9 +1213,11 @@ void MainWindow::onConvertLighBlueTheme()
     MainWindow::HighLightColor[0] = 1;
     MainWindow::HighLightColor[1] = 0;
     MainWindow::HighLightColor[2] = 0;
+    MainWindow::InfoTextColor[0] = 1;
+    MainWindow::InfoTextColor[1] = 1;
 
     pWinVtkWidget->getRenderer()->SetBackground(0.2, 0.3, 0.5);
-    pWinVtkWidget->getRenderer()->Render();
+    pWinVtkWidget->UpdateInfo();
 }
 
 void MainWindow::onConvertDarkBlueTheme()
@@ -1190,9 +1239,11 @@ void MainWindow::onConvertDarkBlueTheme()
     MainWindow::HighLightColor[0] = 1;
     MainWindow::HighLightColor[1] = 0;
     MainWindow::HighLightColor[2] = 0;
+    MainWindow::InfoTextColor[0] = 1;
+    MainWindow::InfoTextColor[1] = 1;
 
     pWinVtkWidget->getRenderer()->SetBackground(0.1, 0.2, 0.3);
-    pWinVtkWidget->getRenderer()->Render();
+    pWinVtkWidget->UpdateInfo();
 }
 
 FileMgr *MainWindow::getpWinFileMgr(){

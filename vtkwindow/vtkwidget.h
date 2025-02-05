@@ -55,6 +55,7 @@
 #include <vtkCallbackCommand.h>
 #include <vtkGlyphSource2D.h>
 #include <vtkTextActor.h>
+#include <vtkTexturedActor2D.h>
 #include <vtkTextProperty.h>
 #include <vtkAutoInit.h>
 #include <vtkCommand.h>
@@ -120,11 +121,13 @@ public:
     void OnMouseMove();
     void OnLeftButtonPress();
     void OnLeftButtonRelease();
+    void OnRightButtonPress();
     void createText(CEntity* entity);
     vtkSmartPointer<vtkActor2D> createTextBox(vtkSmartPointer<vtkTextActor> textActor, double x, double y);
     vtkSmartPointer<vtkActor2D> createLine(CEntity* entity, vtkSmartPointer<vtkTextActor> textActor);
     void Linechange();
     void closeText();
+    void closeTextActor(CEntity* entity);
     void GetScreenCoordinates(vtkRenderer* renderer, double pt[3], double screenCoord[2]);
     CEntity* getEntityFromTextActor(vtkSmartPointer<vtkTextActor> textActor); // 从文本演员找到对应的entity
 
@@ -132,10 +135,10 @@ public:
 private:
     QVTKOpenGLNativeWidget* vtkWidget; // vtk窗口
     MainWindow *m_pMainWin = nullptr; // mainwindow指针
+    QMenu* vtkMenu;
 
     // 创建渲染器、渲染窗口和交互器
     vtkSmartPointer<vtkRenderer> renderer;
-    // vtkSmartPointer<vtkRenderer> renderer2D; // 专门放文本框和指向线段的渲染器
     vtkSmartPointer<vtkGenericOpenGLRenderWindow> renWin;
     vtkSmartPointer<MouseInteractorHighlightActor> m_highlightstyle;
     vtkSmartPointer<vtkOrientationMarkerWidget> axeWidget; // 显示坐标器的浮动窗口
@@ -148,13 +151,19 @@ private:
     vtkSmartPointer<vtkActor2D> colorBarActor; // 色温条
 
     vtkSmartPointer<vtkTextActor> infoTextActor;// 浮动信息文本演员
+    vtkSmartPointer<vtkTextActor> titleTextActor; // 第一行作为标题行
+    vtkSmartPointer<vtkCellArray> polygons;
+    vtkSmartPointer<vtkPolyData> rectangle;
+    vtkSmartPointer<vtkPolyDataMapper2D> rectangleMapper;
     vtkSmartPointer<vtkActor2D> rectangleActor; // 背景和边框
     vtkSmartPointer<vtkActor2D> lineActor;//指向线条
     vtkSmartPointer<vtkPNGReader> pngReader; //储存图片信息
     vtkSmartPointer<vtkImageActor> iconActor; //图片演员
     CEntity* elementEntity;//储存传入的entity
     bool isDragging=false;  //判断注释是否能移动
-    CPosition b; // 储存指向箭头的终点
+    CPosition endPoint; // 储存指向箭头的终点
+    vtkSmartPointer<vtkPoints> points;
+    vtkSmartPointer<vtkCellArray> lines;
     vtkSmartPointer<vtkPolyData> linePolyData;//储存线的data
     vtkSmartPointer<vtkPolyDataMapper2D> lineMapper;//指向线的mapper
 

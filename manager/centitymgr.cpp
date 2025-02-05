@@ -81,11 +81,11 @@ QString CEntityMgr::getCEntityInfo()
 }
 
 QDataStream& operator<<(QDataStream& out, const CEntityMgr& mgr) {
-    out << mgr.m_nSize << mgr.m_nCount << mgr.m_bRedraw << mgr.m_nRedrawIndex;
+    //out << mgr.m_nSize << mgr.m_nCount << mgr.m_bRedraw << mgr.m_nRedrawIndex;
 
     // 序列化 m_entityList
     out << static_cast<int>(mgr.m_entityList.size());
-    qDebug()<<static_cast<int>(mgr.m_entityList.size());
+    qDebug()<<"entityListSize:"<<static_cast<int>(mgr.m_entityList.size());
     for (const auto& entity : mgr.m_entityList) {
         int typeInt = entity->GetUniqueType();  // 获取对象的类型标识符
         ENTITY_TYPE type=static_cast<ENTITY_TYPE>(typeInt);
@@ -96,14 +96,14 @@ QDataStream& operator<<(QDataStream& out, const CEntityMgr& mgr) {
             out<<static_cast<int>(entity->parent.size());
             qDebug()<<"parentSize:"<<entity->parent.size();
             for( const auto& ent:entity->parent){
-                int typeInt_ = ent->GetUniqueType();  // 获取对象的类型标识符
-                ENTITY_TYPE type_ = static_cast<ENTITY_TYPE>(typeInt_);
-                out << type_;  // 序列化类型标识符
+            //     int typeInt_ = ent->GetUniqueType();  // 获取对象的类型标识符
+            //     ENTITY_TYPE type_ = static_cast<ENTITY_TYPE>(typeInt_);
+            //     out << type_;  // 序列化类型标识符
 
-                ent->serialize(out);
+            //     ent->serialize(out);
 
-                // const CObject* parentObj = static_cast<const CObject*>(obj);
-                // parentObj->CObject::serialize(out);
+            const CObject* parentEnt = dynamic_cast<const CObject*>(ent);
+            parentEnt->CObject::serialize(out);
             }
         }
     }
@@ -116,17 +116,22 @@ QDataStream& operator<<(QDataStream& out, const CEntityMgr& mgr) {
     //     entity->serialize(out);  // 调用对象的序列化方法
     // }
     // qDebug()<<"m_entityList.size and m_SelList.size"<<mgr.m_entityList.size()<<mgr.m_SelList.size();
-    CPointCloud::haveSaved=true;
+    //CPointCloud::haveSaved=true;
     return out;
 }
 
 QDataStream& operator>>(QDataStream& in, CEntityMgr& mgr) {
     int entityListSize=0;
 
-    in >> mgr.m_nSize >> mgr.m_nCount >> mgr.m_bRedraw >> mgr.m_nRedrawIndex;
+    //in >> mgr.m_nSize >> mgr.m_nCount >> mgr.m_bRedraw >> mgr.m_nRedrawIndex;
 
     // 反序列化 m_entityList
     in >> entityListSize;
+    if (in.status() != QDataStream::Ok) {
+        qWarning() << "读取 entityListSize 失败";
+        return in;
+    }
+    qDebug()<<"entityListSize:"<<entityListSize;
     mgr.m_entityList.clear();  // 清空现有数据
     for (int i = 0; i < entityListSize; ++i) {
         int typeInt=0;
@@ -182,43 +187,49 @@ QDataStream& operator>>(QDataStream& in, CEntityMgr& mgr) {
                 qDebug()<<"parentSize:"<<parentSize;
                 entity->parent.clear();
                 for(int i=0;i<parentSize;i++){
-                    int typeInt_;
-                    in >> typeInt_;
-                    ENTITY_TYPE type_ = static_cast<ENTITY_TYPE>(typeInt_);
-
-                    CEntity* ent = nullptr;
-                    switch (type_) {
-                    case enCircle:
-                        ent = new CCircle();
-                        break;
-                    case enLine:
-                        ent=new CLine();
-                        break;
-                    case enPoint:
-                        ent=new CPoint();
-                        break;
-                    case enPlane:
-                        ent=new CPlane();
-                        break;
-                    case enSphere:
-                        ent=new CSphere();
-                        break;
-                    case enCylinder:
-                        ent=new CCylinder();
-                        break;
-                    case enCone:
-                        ent=new CCone();
-                        break;
-                    case enCuboid:
-                        ent=new CCuboid();
-                        break;
-                    default:
-                        ent = new CEntity();
-                        break;
-                    }
-                    ent->deserialize(in);
+                    CObject* ent=new CObject();
+                    ent->CObject::deserialize(in);
                     entity->parent.append(ent);
                 }
+                //     int typeInt_;
+                //     in >> typeInt_;
+                //     ENTITY_TYPE type_ = static_cast<ENTITY_TYPE>(typeInt_);
+
+                //     CEntity* ent = nullptr;
+                //     switch (type_) {
+                //     case enCircle:
+                //         ent = new CCircle();
+                //         break;
+                //     case enLine:
+                //         ent=new CLine();
+                //         break;
+                //     case enPoint:
+                //         ent=new CPoint();
+                //         break;
+                //     case enPlane:
+                //         ent=new CPlane();
+                //         break;
+                //     case enSphere:
+                //         ent=new CSphere();
+                //         break;
+                //     case enCylinder:
+                //         ent=new CCylinder();
+                //         break;
+                //     case enCone:
+                //         ent=new CCone();
+                //         break;
+                //     case enCuboid:
+                //         ent=new CCuboid();
+                //         break;
+                //     default:
+                //         ent = new CEntity();
+                //         break;
+                //     }
+                //     ent->deserialize(in);
+                //     entity->parent.append(ent);
+                // }
+
+
 
                 mgr.m_entityList.append(entity);
                 // mgr.Add(entity);
@@ -226,7 +237,7 @@ QDataStream& operator>>(QDataStream& in, CEntityMgr& mgr) {
         }
     }
 
-    CPointCloud::haveOpened=true;
+    //CPointCloud::haveOpened=true;
 
     // // 反序列化 m_SelList
     // in >> selListSize;
