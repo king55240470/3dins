@@ -167,11 +167,15 @@ private:
     vtkSmartPointer<vtkPolyDataMapper2D> lineMapper;//指向线的mapper
 
     QMap<CEntity*, vtkSmartPointer<vtkTextActor>> entityToTextActors; // 每个图形对应的文本演员
+    QMap<CEntity*, vtkSmartPointer<vtkTextActor>> entityToTitleTextActors; // 每个图形对应的文本标题
+    QMap<CEntity*, vtkSmartPointer<vtkActor2D>> entityToTitleBackground; // 标题背景
     QMap<CEntity*, vtkSmartPointer<vtkActor2D>> entityToTextBoxs; // 每个图形对应的文本框
     QMap<CEntity*, vtkSmartPointer<vtkActor2D>> entityToLines; // 每个图形对应的指向线段
     QMap<CEntity*, vtkSmartPointer<vtkImageActor>> entityToIcons; // 每个图形对应的图标
     QMap<CEntity*, CPosition> entityToEndPoints; // 每个显示信息的centity对应一个指向线段的落点
     double increaseDis[2] = {0, 0}; // 每增加一个文本显示，自动间隔一段距离
+    double textWidth, textHeight;
+    double* position; // infoTextActor 的位置
 
 public slots:
 
