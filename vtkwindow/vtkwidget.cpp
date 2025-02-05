@@ -4,10 +4,9 @@
 #include <QOpenGLContext>
 #include <qopenglfunctions.h>
 #include <QMessageBox>
-
 #include <vtkInteractorStyle.h>
 #include <vtkEventQtSlotConnect.h>
-
+#include <vtkTimerLog.h>
 
 VtkWidget::VtkWidget(QWidget *parent)
     : QWidget(parent),
@@ -37,7 +36,8 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
 
     // 初始化渲染器和交互器
     renderer = vtkSmartPointer<vtkRenderer>::New();
-    renderer->SetBackground(1, 1, 1); // 设置渲染器颜色为白
+    renderer->SetBackground(1, 1, 1); // 设置渲染器初始颜色为白
+    renderer->SetGradientBackground(true);
     renWin = vtkSmartPointer<vtkGenericOpenGLRenderWindow>::New();
     renWin->AddRenderer(renderer);  // 将渲染器添加到渲染窗口
 
@@ -83,13 +83,22 @@ void VtkWidget::OnMouseMove()
 
     // 更新当前拖动的文本演员
     infoTextActor->SetPosition(clickPos[0] - 30, clickPos[1] - 20);
-    double* a = infoTextActor->GetPosition();
+    position = infoTextActor->GetPosition();
 
-    // 更新对应的文本框位置
-    rectangleActor->SetPosition(a[0], a[1]);
+    // 更新对应的文本框和标题行位置
+    rectangleActor->SetPosition(position[0], position[1]);
+    titleTextActor->SetPosition(position[0], position[1] + textHeight);
 
     // 更新对应的指向线段
     Linechange();
+
+    // 限制渲染频率
+    static double lastRenderTime = vtkTimerLog::GetUniversalTime();
+    double currentTime = vtkTimerLog::GetUniversalTime();
+    if (currentTime - lastRenderTime > 0.05) {
+        getRenderWindow()->Render();
+        lastRenderTime = currentTime;
+    }
 
     // 重新渲染窗口
     getRenderWindow()->Render();
@@ -107,12 +116,12 @@ void VtkWidget::OnLeftButtonPress()
 
         double bbox[4];
         textActor->GetBoundingBox(renderer, bbox);
-        double textWidth = bbox[1] - bbox[0];
-        double textHeight = bbox[3] - bbox[2];
+        textWidth = bbox[1] - bbox[0];
+        textHeight = bbox[3] - bbox[2];
 
         double width = textWidth + 20; // 加上边距
         double height = textHeight + 10; // 加上边距
-        double* position = textActor->GetPosition();
+        position = textActor->GetPosition();
 
         // 检查点击位置是否在文本框右上角的特定区域内
         double closeBoxSize = 20; // 右上角关闭区域的大小
@@ -128,11 +137,12 @@ void VtkWidget::OnLeftButtonPress()
         if (clickPos[0] >= position[0] && clickPos[0] <= position[0] + width &&
             clickPos[1] >= position[1] && clickPos[1] <= position[1] + height)
         {
-            // 设置当前拖动的文本框
+            // 设置当前拖动的所有actor
             infoTextActor = textActor;
             rectangleActor = entityToTextBoxs[it.key()];
             iconActor = entityToIcons[it.key()];
             lineActor = entityToLines[it.key()];
+            titleTextActor = entityToTitleTextActors[it.key()];
 
             isDragging = true; // 开启拖动状态
             renWin->GetInteractor()->SetEventInformation(clickPos[0], clickPos[1], 0, 0, 0, 0);
@@ -166,7 +176,12 @@ vtkSmartPointer<vtkTextActor> &VtkWidget::getInfoText()
 
 void VtkWidget::createText(CEntity* entity)
 {
+    QString qstr = entity->getCEntityInfo();
+    QString firstLine = qstr.section('\n', 0, 0); // 提取第一行
+    QString remainingText = qstr.section('\n', 1); // 去掉第一行后的文本
+
     infoTextActor = vtkSmartPointer<vtkTextActor>::New();
+    infoTextActor->SetInput(remainingText.toUtf8().constData()); // 设置去掉第一行后的文本
     infoTextActor->GetTextProperty()->SetFontSize(16);
     infoTextActor->GetTextProperty()->SetFontFamilyToTimes();
     infoTextActor->GetTextProperty()->SetColor(MainWindow::InfoTextColor);
@@ -174,12 +189,8 @@ void VtkWidget::createText(CEntity* entity)
     infoTextActor->GetTextProperty()->SetBold(1);
     infoTextActor->SetLayerNumber(1);
 
-    QString qstr = entity->getCEntityInfo();
-    QByteArray byteArray = qstr.toUtf8();
-    infoTextActor->SetInput(byteArray.constData());
-
     // 计算文本框的初始位置
-    double x = renWin->GetSize()[0] - 200 - increaseDis[0];
+    double x = renWin->GetSize()[0] - 250 - increaseDis[0];
     double y = renWin->GetSize()[1] - 150 - increaseDis[1];
     infoTextActor->SetPosition(x, y);
     if(increaseDis[1]  <= renWin->GetSize()[1] - 300){
@@ -193,8 +204,8 @@ void VtkWidget::createText(CEntity* entity)
     // 检查是否重叠，并调整位置
     double bbox[4];
     infoTextActor->GetBoundingBox(renderer, bbox);
-    double textWidth = bbox[1] - bbox[0];
-    double textHeight = bbox[3] - bbox[2];
+    textWidth = bbox[1] - bbox[0];
+    textHeight = bbox[3] - bbox[2];
     double width = textWidth + 20;
     double height = textHeight + 10;
 
@@ -211,6 +222,15 @@ void VtkWidget::createText(CEntity* entity)
         }
     }
 
+    // 创建标题文本演员
+    titleTextActor = vtkSmartPointer<vtkTextActor>::New();
+    titleTextActor->GetTextProperty()->SetFontSize(18); // 设置字体大小
+    titleTextActor->GetTextProperty()->SetFontFamilyToTimes(); // 设置字体样式
+    titleTextActor->GetTextProperty()->SetColor(MainWindow::HighLightColor); // 设置字体颜色
+    titleTextActor->GetTextProperty()->SetBold(1); // 设置加粗
+    titleTextActor->SetInput(firstLine.toUtf8().constData()); // 设置输入文本
+    titleTextActor->SetPosition(x, y + textHeight); // 设置标题文本的位置
+
     // 创建文本框
     vtkSmartPointer<vtkActor2D> textBox = createTextBox(infoTextActor, x, y);
 
@@ -221,11 +241,13 @@ void VtkWidget::createText(CEntity* entity)
     entityToTextActors[entity] = infoTextActor;
     entityToTextBoxs[entity] = textBox;
     entityToLines[entity] = line;
+    entityToTitleTextActors[entity] = titleTextActor;
 
     // 添加到渲染器
     renderer->AddActor(infoTextActor);
     renderer->AddActor(textBox);
     renderer->AddActor(line);
+    renderer->AddActor(titleTextActor);
 
     // 设置事件回调
     renWin->GetInteractor()->AddObserver(vtkCommand::LeftButtonPressEvent, this, &VtkWidget::OnLeftButtonPress);
@@ -245,7 +267,7 @@ vtkSmartPointer<vtkActor2D> VtkWidget::createTextBox(vtkSmartPointer<vtkTextActo
     double textWidth = bbox[1] - bbox[0];
     double textHeight = bbox[3] - bbox[2];
     double width = textWidth + 20;
-    double height = textHeight + 10;
+    double height = textHeight + 40; // 加上标题行的高度
 
     points->InsertNextPoint(0, 0, 0);
     points->InsertNextPoint(width, 0, 0);
@@ -430,10 +452,15 @@ void VtkWidget::closeText()
     {
         renderer->RemoveActor(it.value());
     }
+    for (auto it = entityToTitleTextActors.begin(); it != entityToTitleTextActors.end(); ++it)
+    {
+        renderer->RemoveActor(it.value());
+    }
     entityToTextActors.clear();
     entityToTextBoxs.clear();
     entityToLines.clear();
     entityToIcons.clear();
+    entityToTitleTextActors.clear();
     // 重置所有文本所占位置
     increaseDis[0] = 0;
     increaseDis[1] = 0;
@@ -457,12 +484,18 @@ void VtkWidget::closeTextActor(CEntity* entity)
         {
             renderer->RemoveActor(entityToIcons[entity]);
         }
+        // 移除标题文本演员
+        if (entityToTitleTextActors.contains(entity))
+        {
+            renderer->RemoveActor(entityToTitleTextActors[entity]);
+        }
 
         // 从映射中移除
         entityToTextActors.remove(entity);
         entityToTextBoxs.remove(entity);
         entityToLines.remove(entity);
         entityToIcons.remove(entity);
+        entityToTitleTextActors.remove(entity);
 
         // 重新渲染窗口
         renWin->Render();
@@ -491,7 +524,6 @@ void VtkWidget::ShowColorBar(double minDistance, double maxDistance){
     int barHeight = 20; // 色温尺的高度
     int barWidth = 200; // 色温尺的宽度
     auto Width = renWin->GetSize()[0];
-    auto Height = renWin->GetSize()[1];
     points->InsertNextPoint(Width-barWidth-10, 10, 0); // 起点
     points->InsertNextPoint(Width-barWidth, 10, 0); // 终点
 
