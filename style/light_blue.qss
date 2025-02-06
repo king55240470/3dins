@@ -14,7 +14,7 @@ QLineEdit {
     background-color: #ffffff;
     border: 1px solid #262626;
     border-color: transparent;
-    padding: 2px;
+    padding: 1px;
     border-radius: 5px;
     selection-background-color: #add8e6;
     selection-color: #000000;
@@ -29,13 +29,13 @@ QLineEdit:focus {
 QLabel {
     font-size: 14px "微软雅黑";
     background-color: transparent;
-    padding: 1px;
-    border-radius: 5px;
+    /*padding: 1px;*/
+    border-radius: 3px;
 }
 
 QLabel:hover {
-    background-color: rgb(207, 220, 235);
-    border-color: transparent;
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #3570b2, stop: 1 #4a90e2);
+    color: #ffffff;
 }
 
 QLabel:selected {
@@ -66,7 +66,7 @@ QPushButton:pressed {
 
 QToolBar {
     background-color: #f0f0f0;
-    padding: 1px; /* 工具栏内部的填充 */
+    padding: 2px; /* 工具栏内部的填充 */
     font-size: 14px; /* 字体大小 */
 }
 
@@ -84,7 +84,7 @@ QTreeWidget {
 }
 
 QTreeWidget::item {
-    padding: 5px;
+    padding: 3px;
 }
 
 QTreeWidget::item:selected {
@@ -100,23 +100,20 @@ QTreeWidget::branch {
 /* QTreeWidget的头部样式 */
 QHeaderView {
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f0f0f0, stop: 1 #e0e0e0);
-    border: 1px solid #cccccc;
-    padding: 2px;
+    padding: 3px;
     border-radius: 2px;
 }
 
 QHeaderView::section {
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f0f0f0, stop: 1 #e0e0e0);
     border: 1px solid #cccccc;
-    padding: 3px;
+    padding: 2px;
 }
 
 QTreeView {
     font-size: 14px "微软雅黑";
     background-color: #ffffff;
-    border: 1px solid #cccccc;
     alternate-background-color: #444;
-    show-decoration-selected: 1; /* 确保选中时显示装饰 */
 }
 
 QTreeView::item {
@@ -154,7 +151,7 @@ QMenu:hover {
 }
 
 QMenu::item {
-    padding: 5px;
+    padding: 3px;
     border: 1px solid #d3d3d3 ; /* 用于鼠标悬停时的边框 */
 }
 

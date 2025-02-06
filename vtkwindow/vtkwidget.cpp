@@ -7,6 +7,7 @@
 #include <vtkInteractorStyle.h>
 #include <vtkEventQtSlotConnect.h>
 #include <vtkTimerLog.h>
+#include <vtkImageResize.h>
 
 VtkWidget::VtkWidget(QWidget *parent)
     : QWidget(parent),
@@ -36,7 +37,8 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
 
     // 初始化渲染器和交互器
     renderer = vtkSmartPointer<vtkRenderer>::New();
-    renderer->SetBackground(1, 1, 1); // 设置渲染器初始颜色为白
+    renderer->SetBackground(0.1, 0.2, 0.4);
+    renderer->SetBackground(1, 1, 1);
     renderer->SetGradientBackground(true);
     renWin = vtkSmartPointer<vtkGenericOpenGLRenderWindow>::New();
     renWin->AddRenderer(renderer);  // 将渲染器添加到渲染窗口
@@ -85,9 +87,10 @@ void VtkWidget::OnMouseMove()
     infoTextActor->SetPosition(clickPos[0] - 30, clickPos[1] - 20);
     position = infoTextActor->GetPosition();
 
-    // 更新对应的文本框和标题行位置
+    // 更新对应的文本框、标题行和叉号的位置
     rectangleActor->SetPosition(position[0], position[1]);
     titleTextActor->SetPosition(position[0], position[1] + textHeight);
+    iconActor->SetPosition(position[0] + textWidth, position[1] + textHeight + 20);
 
     // 更新对应的指向线段
     Linechange();
@@ -99,9 +102,6 @@ void VtkWidget::OnMouseMove()
         getRenderWindow()->Render();
         lastRenderTime = currentTime;
     }
-
-    // 重新渲染窗口
-    // getRenderWindow()->Render();
 }
 
 void VtkWidget::OnLeftButtonPress()
@@ -127,7 +127,7 @@ void VtkWidget::OnLeftButtonPress()
         titleTextActor->GetSize(renderer, titleSize);
 
         // 检查点击位置是否在文本框右上角的特定区域内
-        double closeBoxSize = 25; // 右上角关闭区域的大小
+        double closeBoxSize =  20; // 右上角关闭区域的大小，和叉号尺寸一致
         if (clickPos[0] >= titlePosition[0] + width - closeBoxSize &&
             clickPos[0] <= titlePosition[0] + width &&
             clickPos[1] >= titlePosition[1] + titleSize[1] - closeBoxSize &&
@@ -187,12 +187,12 @@ void VtkWidget::createText(CEntity* entity)
     infoTextActor->SetInput(remainingText.toUtf8().constData()); // 设置去掉第一行后的文本
     infoTextActor->GetTextProperty()->SetFontSize(16);
     infoTextActor->GetTextProperty()->SetFontFamilyToTimes();
-    infoTextActor->GetTextProperty()->SetColor(MainWindow::InfoTextColor);
+    infoTextActor->GetTextProperty()->SetColor(0, 0, 0);
     infoTextActor->GetTextProperty()->SetJustificationToLeft();
     infoTextActor->GetTextProperty()->SetBold(1);
     infoTextActor->SetLayerNumber(1);
 
-    // 计算文本框的初始位置
+    // 计算文本框的位置
     double x = renWin->GetSize()[0] - 250 - increaseDis[0];
     double y = renWin->GetSize()[1] - 150 - increaseDis[1];
     infoTextActor->SetPosition(x, y);
@@ -202,8 +202,6 @@ void VtkWidget::createText(CEntity* entity)
     else {
         increaseDis[1] = 0;
         increaseDis[0] += renWin->GetSize()[0] - 300; // 放到窗口左边显示
-        if(increaseDis[0] >= renWin->GetSize()[0] - 300)
-            increaseDis[0] = 0;
     }
 
     // 检查是否重叠，并调整位置
@@ -231,7 +229,7 @@ void VtkWidget::createText(CEntity* entity)
     titleTextActor = vtkSmartPointer<vtkTextActor>::New();
     titleTextActor->GetTextProperty()->SetFontSize(18); // 设置字体大小
     titleTextActor->GetTextProperty()->SetFontFamilyToTimes(); // 设置字体样式
-    titleTextActor->GetTextProperty()->SetColor(MainWindow::HighLightColor); // 设置字体颜色
+    titleTextActor->GetTextProperty()->SetColor(MainWindow::InfoTextColor); // 设置字体颜色
     titleTextActor->GetTextProperty()->SetBold(1); // 设置加粗
     titleTextActor->SetInput(firstLine.toUtf8().constData()); // 设置输入文本
     titleTextActor->SetPosition(x, y + textHeight); // 设置标题文本的位置
@@ -242,17 +240,22 @@ void VtkWidget::createText(CEntity* entity)
     // 创建指向线段
     vtkSmartPointer<vtkActor2D> line = createLine(entity, infoTextActor);
 
+    // 创建叉号
+    vtkSmartPointer<vtkActor2D> closeIcon = createCloseIcon(infoTextActor, x, y);
+
     // 存储信息
     entityToTextActors[entity] = infoTextActor;
     entityToTextBoxs[entity] = textBox;
     entityToLines[entity] = line;
     entityToTitleTextActors[entity] = titleTextActor;
+    entityToIcons[entity] = iconActor;
 
     // 添加到渲染器
     renderer->AddActor(infoTextActor);
     renderer->AddActor(textBox);
     renderer->AddActor(line);
     renderer->AddActor(titleTextActor);
+    renderer->AddActor(closeIcon);
 
     // 设置事件回调
     renWin->GetInteractor()->AddObserver(vtkCommand::LeftButtonPressEvent, this, &VtkWidget::OnLeftButtonPress);
@@ -304,25 +307,10 @@ vtkSmartPointer<vtkActor2D> VtkWidget::createTextBox(vtkSmartPointer<vtkTextActo
 
     rectangleActor = vtkSmartPointer<vtkActor2D>::New();
     rectangleActor->SetMapper(rectangleMapper);
-    rectangleActor->GetProperty()->SetColor(0.6, 0.6, 0.6);
-    rectangleActor->GetProperty()->SetOpacity(0.4);
-    rectangleActor->GetProperty()->SetLineWidth(5);
+    rectangleActor->GetProperty()->SetColor(0.8, 0.8, 0.8);
+    rectangleActor->GetProperty()->SetOpacity(0.3);
+    rectangleActor->GetProperty()->SetLineWidth(4);
     rectangleActor->SetPosition(x, y);
-
-    // 添加关闭按钮图片
-    pngReader = vtkSmartPointer<vtkPNGReader>::New();
-    pngReader->SetFileName(":/component/eye/close.png");
-
-    vtkSmartPointer<vtkTexture> texture = vtkSmartPointer<vtkTexture>::New();
-    texture->SetInputConnection(pngReader->GetOutputPort());
-
-    iconActor = vtkSmartPointer<vtkImageActor>::New();
-    iconActor->GetMapper()->SetInputConnection(pngReader->GetOutputPort());
-    iconActor->SetPosition(x + width - 20, y + height - 20, 0);
-
-    // 存储关闭按钮图片演员
-    entityToIcons[entityToTextActors.key(textActor)] = iconActor;
-    renderer->AddActor(iconActor);
 
     return rectangleActor;
 }
@@ -409,6 +397,52 @@ vtkSmartPointer<vtkActor2D> VtkWidget::createLine(CEntity* entity, vtkSmartPoint
     lineActor->GetProperty()->SetLineWidth(2);
 
     return lineActor;
+}
+
+vtkSmartPointer<vtkActor2D> VtkWidget::createCloseIcon(vtkSmartPointer<vtkTextActor> textActor, double x, double y)
+{
+    double bbox[4];
+    textActor->GetBoundingBox(renderer, bbox);
+    double textWidth = bbox[1] - bbox[0];
+    double textHeight = bbox[3] - bbox[2];
+    double width = textWidth + 20;
+    double height = textHeight + 40; // 加上标题行的高度
+
+    // 创建点,用于绘制叉号
+    crossPoints = vtkSmartPointer<vtkPoints>::New();
+    crossPoints->InsertNextPoint(0, 0, 0); // 左下角
+    crossPoints->InsertNextPoint(20, 20, 0);  // 右上角
+    crossPoints->InsertNextPoint(0, 20, 0); // 左上角
+    crossPoints->InsertNextPoint(20, 0, 0); // 右下角
+
+    // 创建线
+    crossLines = vtkSmartPointer<vtkCellArray>::New();
+    vtkSmartPointer<vtkLine> line1 = vtkSmartPointer<vtkLine>::New();
+    line1->GetPointIds()->SetId(0, 0); // 左下角
+    line1->GetPointIds()->SetId(1, 1); // 右上角
+    vtkSmartPointer<vtkLine> line2 = vtkSmartPointer<vtkLine>::New();
+    line2->GetPointIds()->SetId(0, 2); // 左上角
+    line2->GetPointIds()->SetId(1, 3); // 右下角
+    crossLines->InsertNextCell(line1);
+    crossLines->InsertNextCell(line2);
+
+    // 创建多边形数据
+    crossPolyData = vtkSmartPointer<vtkPolyData>::New();
+    crossPolyData->SetPoints(crossPoints);
+    crossPolyData->SetLines(crossLines);
+
+    // 创建映射器
+    crossMapper = vtkSmartPointer<vtkPolyDataMapper2D>::New();
+    crossMapper->SetInputData(crossPolyData);
+
+    // 创建叉号演员
+    iconActor = vtkSmartPointer<vtkActor2D>::New();
+    iconActor->SetMapper(crossMapper);
+    iconActor->GetProperty()->SetLineWidth(5);
+    iconActor->GetProperty()->SetColor(MainWindow::HighLightColor);
+    iconActor->SetPosition(x + width - 20, y + height - 20);
+
+    return iconActor;
 }
 
 void VtkWidget::Linechange()

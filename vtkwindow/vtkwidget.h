@@ -38,6 +38,7 @@
 #include <vtkRenderWindowInteractor.h>
 #include <vtkGenericOpenGLRenderWindow.h>
 #include <vtkGenericRenderWindowInteractor.h>
+#include <vtkLine.h>
 #include <vtkActor.h>
 #include <vtkSmartPointer.h>
 #include <vtkSphereSource.h>
@@ -68,7 +69,6 @@
 #include <vtkPNGReader.h>
 #include <vtkImageMapper.h>
 #include <vtkJPEGReader.h>
-#include <vtkImageActor.h>
 #include <vtkImageMapToColors.h>
 #include <vtkImageData.h>
 #include <vtkTexture.h>
@@ -125,6 +125,7 @@ public:
     void createText(CEntity* entity);
     vtkSmartPointer<vtkActor2D> createTextBox(vtkSmartPointer<vtkTextActor> textActor, double x, double y);
     vtkSmartPointer<vtkActor2D> createLine(CEntity* entity, vtkSmartPointer<vtkTextActor> textActor);
+    vtkSmartPointer<vtkActor2D> createCloseIcon(vtkSmartPointer<vtkTextActor> textActor, double x, double y);
     void Linechange();
     void closeText();
     void closeTextActor(CEntity* entity);
@@ -158,7 +159,7 @@ private:
     vtkSmartPointer<vtkActor2D> rectangleActor; // 背景和边框
     vtkSmartPointer<vtkActor2D> lineActor;//指向线条
     vtkSmartPointer<vtkPNGReader> pngReader; //储存图片信息
-    vtkSmartPointer<vtkImageActor> iconActor; //图片演员
+    vtkSmartPointer<vtkActor2D> iconActor; //图片演员
     vtkSmartPointer<vtkCoordinate> coordinate; // 世界坐标，即vtk窗口的坐标系
     CEntity* elementEntity;//储存传入的entity
     bool isDragging=false;  //判断注释是否能移动
@@ -167,16 +168,21 @@ private:
     vtkSmartPointer<vtkCellArray> lines;
     vtkSmartPointer<vtkPolyData> linePolyData;//储存线的data
     vtkSmartPointer<vtkPolyDataMapper2D> lineMapper;//指向线的mapper
+    vtkSmartPointer<vtkPoints> crossPoints;
+    vtkSmartPointer<vtkCellArray> crossLines;
+    vtkSmartPointer<vtkPolyData> crossPolyData;
+    vtkSmartPointer<vtkPolyDataMapper2D> crossMapper;
 
     QMap<CEntity*, vtkSmartPointer<vtkTextActor>> entityToTextActors; // 每个图形对应的文本演员
     QMap<CEntity*, vtkSmartPointer<vtkTextActor>> entityToTitleTextActors; // 每个图形对应的文本标题
     QMap<CEntity*, vtkSmartPointer<vtkActor2D>> entityToTextBoxs; // 每个图形对应的文本框
     QMap<CEntity*, vtkSmartPointer<vtkActor2D>> entityToLines; // 每个图形对应的指向线段
-    QMap<CEntity*, vtkSmartPointer<vtkImageActor>> entityToIcons; // 每个图形对应的图标
+    QMap<CEntity*, vtkSmartPointer<vtkActor2D>> entityToIcons; // 每个图形对应的关闭图标
     QMap<CEntity*, CPosition> entityToEndPoints; // 每个显示信息的centity对应一个指向线段的落点
     double increaseDis[2] = {0, 0}; // 每增加一个文本显示，自动间隔一段距离
     double textWidth, textHeight;
     double* position; // infoTextActor 的位置
+    double textBox[4];
 
 public slots:
 

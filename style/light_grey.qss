@@ -14,7 +14,7 @@ QMainWindow {
 QLineEdit {
     background-color: #ffffff; /* 白色背景 */
     border: 1px solid #dcdcdc; /* 浅灰色边框 */
-    padding: 5px;
+    padding: 3px;
     border-radius: 5px;
     selection-background-color: #e6e6e6; /* 浅灰色选中背景 */
     selection-color: #333; /* 深灰色选中文字 */
@@ -66,7 +66,7 @@ QTabBar::tab {
     border: 1px solid #dcdcdc; /* 标签边框 */
     border-top-left-radius: 5px; /* 标签左上边圆角 */
     border-top-right-radius: 5px; /* 标签右边圆角 */
-    padding: 5px; /* 标签内边距 */
+    padding: 3px; /* 标签内边距 */
     min-width: 80px; /* 标签最小宽度 */
 }
 
