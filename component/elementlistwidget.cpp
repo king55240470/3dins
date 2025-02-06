@@ -460,12 +460,16 @@ void ElementListWidget::setupStateMachine()
 
 }
 
-void ElementListWidget::onAddElement()
+void ElementListWidget::onAddElement(pcl::PointCloud<pcl::PointXYZRGB>::Ptr could)
 {
     if (stateMachine->configuration().contains(runningState)) {
-        updateDistance();
-        CompareCloud();
-        m_pMainWin->NotifySubscribe();
+        pointCouldlists.enqueue(could);
+        if(isProcessing==false){
+            isProcessing=true;
+            CompareCloud();
+            updateDistance();
+            m_pMainWin->NotifySubscribe();
+        }
     }
 }
 
@@ -473,19 +477,22 @@ void ElementListWidget::CompareCloud()
 {
     for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
         CPointCloud*could=(CPointCloud*)m_pMainWin->getEntityListMgr()->getEntityList()[i];
+        if(i==m_pMainWin->getEntityListMgr()->getEntityList().size()-1){
+            return;
+        }
         if(could->isModelCloud){
             m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
             break;
         }
-        if(i==m_pMainWin->getEntityListMgr()->getEntityList().size()-1){
-            return;
-        }
     }
     bool isHaveShape=false;
+    //CPointCloud*could=(CPointCloud*)pointCouldlists.dequeue();
+    //could->SetSelected(true);
     for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
         CPointCloud*could=(CPointCloud*)m_pMainWin->getEntityListMgr()->getEntityList()[i];
-        if(could->isMeasureCloud){
+        if(could->isMeasureCloud&&could->isOver==false){
             m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
+            could->isOver=true;
             //m_pMainWin->getPWinToolWidget()->setauto(true);
             //m_pMainWin->getPWinVtkWidget()->onCompare();
             //m_pMainWin->getPWinToolWidget()->setauto(false);
@@ -508,12 +515,14 @@ void ElementListWidget::CompareCloud()
     }
     for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
         CPointCloud*could=(CPointCloud*)m_pMainWin->getEntityListMgr()->getEntityList()[i];
-        if(could->isCut){
+        if(could->isCut&&could->isOver==false){
             m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
+            could->isOver=true;
         }
     }
     m_pMainWin->getPWinToolWidget()->setauto(true);
     m_pMainWin->getPWinVtkWidget()->onCompare();
+    m_pMainWin->getPWinToolWidget()->onSaveImage();
     m_pMainWin->getPWinToolWidget()->setauto(false);
     return;
 }
@@ -530,7 +539,9 @@ void ElementListWidget::updateDistance()
     //CPointCloud*could=static_cast<CPointCloud*>(entity);
     pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree;
     //kdtree.setInputCloud(could->GetmyCould().makeShared());
-    kdtree.setInputCloud(m_pMainWin->getpWinFileMgr()->cloudptr);
+    //kdtree.setInputCloud(m_pMainWin->getpWinFileMgr()->cloudptr);
+    kdtree.setInputCloud(pointCouldlists.dequeue());
+    qDebug()<<"队列的大小"<<pointCouldlists.size();
     //QVector<CEntity*>distancelist;
     //QVector<CEntity*>anglelist;
     QVector<CEntity*>disAndanglelist;
@@ -566,7 +577,14 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
         timer->stop();
         delete timer;
         timer=nullptr;
-        return;
+        if(!pointCouldlists.empty()){
+            CompareCloud();
+            updateDistance();
+        }else{
+            isProcessing=false;
+            return;
+        }
+
     }
     if(currentIndex>distancelist[distancelistIndex]->parent.size()-1){
         qDebug()<<list.size();
@@ -763,7 +781,7 @@ void ElementListWidget::isAdd()
     int Nowlistsizes=m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().size();
     if(Nowlistsize>Treelistsize){
         Treelistsize=Nowlistsize;
-        onAddElement();
+        //onAddElement();
     }else if(Nowlistsize<Treelistsize){
         Treelistsize=Nowlistsize;
     }
@@ -791,10 +809,6 @@ QVector<CObject*> ElementListWidget::getEleobjlist(){
 
 void ElementListWidget::starttime()
 {
-    currentIndex=0;
-    timer = new QTimer(this);
-    connect(timer, &QTimer::timeout, this, &ElementListWidget::onAddElement);
-    timer->start(1000);
 }
 
 void ElementListWidget::selectall()

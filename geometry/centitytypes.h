@@ -734,6 +734,7 @@ public:
     bool isModelCloud=false;// 是否是模型点云
     bool isMeasureCloud=false; // 是否是实测点云
     bool isCut=false;
+    bool isOver=false;
     static bool haveSaved;
     static bool haveOpened;
 
