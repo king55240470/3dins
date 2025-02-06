@@ -451,8 +451,9 @@ void MainWindow::saveFile(){
         out<<modelCloudExist;
         for(int i=0;i<getEntityListMgr()->getEntityList().size();i++){
             CPointCloud*could=(CPointCloud*)getEntityListMgr()->getEntityList()[i];
-            if(could->isModelCloud){               
+            if(could->isModelCloud){
                 QString file_path = "D:/modelCloud.ply";
+                //QString file_path = "D:/source/3dins/build/modelCloud.ply";
                 out << file_path;
                 int result = pcl::io::savePLYFile(file_path.toStdString(), could->m_pointCloud);
                 if (result != 0) {
