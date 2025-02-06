@@ -752,12 +752,13 @@ public:
     double pointCloudSize; // 点云的大小，即包含点的数量
     static int pointCloudCount;
     int currentPointCloudId;
-    bool isFileCloud ; // 是否是文件生成的点云
-    bool isComparsionCloud ; //  是否是对比得到的点云
-    bool isAlignCloud;// 是否是对齐得到的点云
-    bool isModelCloud;// 是否是模型点云
-    bool isMeasureCloud; // 是否是实测点云
-    bool isCut;
+    bool isFileCloud = false; // 是否是文件生成的点云
+    bool isComparsionCloud = false; //  是否是对比得到的点云
+    bool isAlignCloud=false;// 是否是对齐得到的点云
+    bool isModelCloud=false;// 是否是模型点云
+    bool isMeasureCloud=false; // 是否是实测点云
+    bool isCut=false;
+    bool isOver=false;
     static bool haveSaved;
     static bool haveOpened;
 

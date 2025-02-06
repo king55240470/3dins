@@ -36,6 +36,7 @@ MainWindow::MainWindow(QWidget *parent)
     RestoreWidgets();
     loadManager();
     LoadSetDataWidget();
+
     m_nRelyOnWhichCs=csRef;
     SetUpTheme();
     modelCloudExist=false;
@@ -355,7 +356,7 @@ void MainWindow::openFile(){
         } else if (filePath.endsWith("pcd")) {
             pWinFileManagerWidget->openMeasuredFile(fileName, filePath);
             pWinVtkPresetWidget->setWidget(fileName+"文件已打开");
-            pWinElementListWidget->onAddElement();
+            //pWinElementListWidget->onAddElement();
         }else if(filePath.endsWith("qins")){
             QFile file(filePath);
             if (!file.open(QIODevice::ReadOnly)) {
@@ -450,8 +451,9 @@ void MainWindow::saveFile(){
         out<<modelCloudExist;
         for(int i=0;i<getEntityListMgr()->getEntityList().size();i++){
             CPointCloud*could=(CPointCloud*)getEntityListMgr()->getEntityList()[i];
-            if(could->isModelCloud){               
+            if(could->isModelCloud){
                 QString file_path = "D:/modelCloud.ply";
+                //QString file_path = "D:/source/3dins/build/modelCloud.ply";
                 out << file_path;
                 int result = pcl::io::savePLYFile(file_path.toStdString(), could->m_pointCloud);
                 if (result != 0) {
@@ -1114,6 +1116,41 @@ void MainWindow::onFrontViewClicked()
 void MainWindow::onIsometricViewClicked()
 {
     pWinVtkWidget->onIsometricView();
+}
+
+void MainWindow::filechange()
+{
+    fileWatcher.addPath("/path/to/ftp/directory"); // 替换为FTP目录路径
+    connect(&fileWatcher, &QFileSystemWatcher::fileChanged, this, &MainWindow::onFileChanged);
+
+    // 初始化文件处理定时器
+    fileProcessorTimer.setInterval(1000); // 每秒处理一个文件
+    connect(&fileProcessorTimer, &QTimer::timeout, this, &MainWindow::processNextFile);
+}
+
+void MainWindow::onFileChanged(const QString &path)
+{
+    qDebug() << "文件发生变化：" << path;
+    fileQueue.enqueue(path);
+
+    // 如果定时器未启动，启动定时器
+    if (!fileProcessorTimer.isActive()) {
+        fileProcessorTimer.start();
+    }
+}
+
+void MainWindow::processNextFile()
+{
+    if (fileQueue.isEmpty()) {
+        fileProcessorTimer.stop(); // 如果队列为空，停止定时器
+        return;
+    }
+
+    QString filePath = fileQueue.dequeue();
+    qDebug() << "正在处理文件：" << filePath;
+
+    // 调用 openFile 函数处理文件
+    //openFile(filePath);
 }
 
 double MainWindow::AxesRotateX()
