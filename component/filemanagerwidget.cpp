@@ -2,6 +2,7 @@
 #include "mainwindow.h"
 #include "manager/filemgr.h"
 #include "geometry/centity.h"
+#include "component/elementlistwidget.h"
 #include "vtkwindow/vtkwidget.h"
 
 #include <QMainWindow>
@@ -106,6 +107,7 @@ void FileManagerWidget::openMeasuredFile(QString fileName,QString filePath){
     m_pMainWin->getpWinFileMgr()->cloudptr = pcl::PointCloud<pcl::PointXYZRGB>::Ptr(newcloud);
     m_pMainWin->NotifySubscribe();
     m_pMainWin->getPWinVtkWidget()->onTopView();
+    m_pMainWin->getPWinElementListWidget()->onAddElement(m_pMainWin->getpWinFileMgr()->cloudptr);
 }
 
 void FileManagerWidget::createContentItem(){

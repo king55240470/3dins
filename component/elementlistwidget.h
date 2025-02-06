@@ -26,6 +26,7 @@
 #include <QSignalTransition>
 #include <QPropertyAnimation>
 #include <QTimer>
+#include <QQueue>
 #include "geometry/centity.h"
 #include "toolwidget.h"
 #include "mainwindow.h"
@@ -65,7 +66,7 @@ public:
     void closeInfotext();
     void mousePressEvent(QMouseEvent *event) override;
     void setupStateMachine();
-    void onAddElement();
+    void onAddElement(pcl::PointCloud<pcl::PointXYZRGB>::Ptr could);
     void CompareCloud();
     void updateDistance();
     void startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree, QVector<CEntity*>distancelist, int distanceCount);
@@ -105,6 +106,8 @@ private:
     int currentIndex;
     int distancelistIndex;
     QTimer* timer=nullptr;
+    QQueue<pcl::PointCloud<pcl::PointXYZRGB>::Ptr>pointCouldlists;
+    bool isProcessing=false;
     QVector<CEntity*>list;
 signals:
     void itemSelected(int index);
