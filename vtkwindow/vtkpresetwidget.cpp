@@ -2,6 +2,7 @@
 #include "mainwindow.h"
 
 #include <QDateTime>
+#include <QLabel>
 
 VtkPresetWidget::VtkPresetWidget(QWidget *parent)
     : QWidget{parent}
@@ -24,10 +25,14 @@ VtkPresetWidget::VtkPresetWidget(QWidget *parent)
 }
 
 void VtkPresetWidget::setWidget(QString a){
+
     QDateTime currentDateTime = QDateTime::currentDateTime();  // 获取当前日期和时间
     QString time=currentDateTime.toString("yyyy-MM-dd HH:mm:ss");   // 格式化为指定的字符串格式
-    QTreeWidgetItem *item=new QTreeWidgetItem();
-    item->setText(0,a+"     "+time);
+
+    QTreeWidgetItem *item = new QTreeWidgetItem(treeWidget);
+    QWidget *itemWidget = new MessageItemWidget(time,a);
+    treeWidget->setItemWidget(item, 0, itemWidget);
+
     treeWidget->addTopLevelItem(item);
 }
 

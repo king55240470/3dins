@@ -20,6 +20,7 @@
 #include <QWidget>
 #include "manager/cpcsmgr.h"
 #include <QListWidget>
+#include <QIODevice>
 
 class PresetElemWidget;
 
@@ -366,7 +367,8 @@ void MainWindow::openFile(){
 
             //deserialize
             QDataStream in(&file);
-            // in.setVersion(QDataStream::Qt_6_0);
+            in.setVersion(QDataStream::Qt_6_0);
+
             in>>*m_EntityListMgr;
             in>>*m_ObjectListMgr;
             pWinSetDataWidget->deserialize(in);
@@ -427,14 +429,14 @@ void MainWindow::saveFile(){
     QFile file(filePath);
 
     // 打开文件以进行写入
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+    if (!file.open(QIODevice::WriteOnly)) {
         qWarning() << "无法打开文件:" << file.errorString();
         return;
     }
 
     //serialize
     QDataStream out(&file);
-    // out.setVersion(QDataStream::Qt_6_0);
+    out.setVersion(QDataStream::Qt_6_0);
 
     // 写入内容
     // out<<*(getObjectListMgr()); // 返回为指针，需要解引用
@@ -1227,6 +1229,7 @@ void MainWindow::onConvertLightGreyTheme()
     MainWindow::InfoTextColor[1] = 0;
 
     pWinVtkWidget->getRenderer()->SetBackground(1, 1, 1);
+    pWinVtkWidget->getRenderer()->SetGradientBackground(false);
     pWinVtkWidget->UpdateInfo();
 }
 

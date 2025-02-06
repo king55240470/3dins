@@ -4,10 +4,9 @@
 #include <QOpenGLContext>
 #include <qopenglfunctions.h>
 #include <QMessageBox>
-
 #include <vtkInteractorStyle.h>
 #include <vtkEventQtSlotConnect.h>
-
+#include <vtkTimerLog.h>
 
 VtkWidget::VtkWidget(QWidget *parent)
     : QWidget(parent),
@@ -37,7 +36,8 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
 
     // 初始化渲染器和交互器
     renderer = vtkSmartPointer<vtkRenderer>::New();
-    renderer->SetBackground(1, 1, 1); // 设置渲染器颜色为白
+    renderer->SetBackground(1, 1, 1); // 设置渲染器初始颜色为白
+    renderer->SetGradientBackground(true);
     renWin = vtkSmartPointer<vtkGenericOpenGLRenderWindow>::New();
     renWin->AddRenderer(renderer);  // 将渲染器添加到渲染窗口
 
@@ -83,16 +83,25 @@ void VtkWidget::OnMouseMove()
 
     // 更新当前拖动的文本演员
     infoTextActor->SetPosition(clickPos[0] - 30, clickPos[1] - 20);
-    double* a = infoTextActor->GetPosition();
+    position = infoTextActor->GetPosition();
 
-    // 更新对应的文本框位置
-    rectangleActor->SetPosition(a[0], a[1]);
+    // 更新对应的文本框和标题行位置
+    rectangleActor->SetPosition(position[0], position[1]);
+    titleTextActor->SetPosition(position[0], position[1] + textHeight);
 
     // 更新对应的指向线段
     Linechange();
 
+    // 限制渲染频率
+    static double lastRenderTime = vtkTimerLog::GetUniversalTime();
+    double currentTime = vtkTimerLog::GetUniversalTime();
+    if (currentTime - lastRenderTime > 0.1) {
+        getRenderWindow()->Render();
+        lastRenderTime = currentTime;
+    }
+
     // 重新渲染窗口
-    getRenderWindow()->Render();
+    // getRenderWindow()->Render();
 }
 
 void VtkWidget::OnLeftButtonPress()
@@ -107,19 +116,22 @@ void VtkWidget::OnLeftButtonPress()
 
         double bbox[4];
         textActor->GetBoundingBox(renderer, bbox);
-        double textWidth = bbox[1] - bbox[0];
-        double textHeight = bbox[3] - bbox[2];
+        textWidth = bbox[1] - bbox[0];
+        textHeight = bbox[3] - bbox[2];
 
         double width = textWidth + 20; // 加上边距
         double height = textHeight + 10; // 加上边距
-        double* position = textActor->GetPosition();
+        position = textActor->GetPosition();
+        double* titlePosition = titleTextActor->GetPosition();
+        double titleSize[2];
+        titleTextActor->GetSize(renderer, titleSize);
 
         // 检查点击位置是否在文本框右上角的特定区域内
-        double closeBoxSize = 20; // 右上角关闭区域的大小
-        if (clickPos[0] >= position[0] + width - closeBoxSize &&
-            clickPos[0] <= position[0] + width &&
-            clickPos[1] >= position[1] + height - closeBoxSize &&
-            clickPos[1] <= position[1] + height)
+        double closeBoxSize = 25; // 右上角关闭区域的大小
+        if (clickPos[0] >= titlePosition[0] + width - closeBoxSize &&
+            clickPos[0] <= titlePosition[0] + width &&
+            clickPos[1] >= titlePosition[1] + titleSize[1] - closeBoxSize &&
+            clickPos[1] <= titlePosition[1] + titleSize[1])
         {
             closeTextActor(it.key()); // 关闭文本框
             return;
@@ -128,11 +140,12 @@ void VtkWidget::OnLeftButtonPress()
         if (clickPos[0] >= position[0] && clickPos[0] <= position[0] + width &&
             clickPos[1] >= position[1] && clickPos[1] <= position[1] + height)
         {
-            // 设置当前拖动的文本框
+            // 设置当前拖动的所有actor
             infoTextActor = textActor;
             rectangleActor = entityToTextBoxs[it.key()];
             iconActor = entityToIcons[it.key()];
             lineActor = entityToLines[it.key()];
+            titleTextActor = entityToTitleTextActors[it.key()];
 
             isDragging = true; // 开启拖动状态
             renWin->GetInteractor()->SetEventInformation(clickPos[0], clickPos[1], 0, 0, 0, 0);
@@ -166,7 +179,12 @@ vtkSmartPointer<vtkTextActor> &VtkWidget::getInfoText()
 
 void VtkWidget::createText(CEntity* entity)
 {
+    QString qstr = entity->getCEntityInfo();
+    QString firstLine = qstr.section('\n', 0, 0); // 提取第一行
+    QString remainingText = qstr.section('\n', 1); // 去掉第一行后的文本
+
     infoTextActor = vtkSmartPointer<vtkTextActor>::New();
+    infoTextActor->SetInput(remainingText.toUtf8().constData()); // 设置去掉第一行后的文本
     infoTextActor->GetTextProperty()->SetFontSize(16);
     infoTextActor->GetTextProperty()->SetFontFamilyToTimes();
     infoTextActor->GetTextProperty()->SetColor(MainWindow::InfoTextColor);
@@ -174,12 +192,8 @@ void VtkWidget::createText(CEntity* entity)
     infoTextActor->GetTextProperty()->SetBold(1);
     infoTextActor->SetLayerNumber(1);
 
-    QString qstr = entity->getCEntityInfo();
-    QByteArray byteArray = qstr.toUtf8();
-    infoTextActor->SetInput(byteArray.constData());
-
     // 计算文本框的初始位置
-    double x = renWin->GetSize()[0] - 200 - increaseDis[0];
+    double x = renWin->GetSize()[0] - 250 - increaseDis[0];
     double y = renWin->GetSize()[1] - 150 - increaseDis[1];
     infoTextActor->SetPosition(x, y);
     if(increaseDis[1]  <= renWin->GetSize()[1] - 300){
@@ -188,13 +202,15 @@ void VtkWidget::createText(CEntity* entity)
     else {
         increaseDis[1] = 0;
         increaseDis[0] += renWin->GetSize()[0] - 300; // 放到窗口左边显示
+        if(increaseDis[0] >= renWin->GetSize()[0] - 300)
+            increaseDis[0] = 0;
     }
 
     // 检查是否重叠，并调整位置
     double bbox[4];
     infoTextActor->GetBoundingBox(renderer, bbox);
-    double textWidth = bbox[1] - bbox[0];
-    double textHeight = bbox[3] - bbox[2];
+    textWidth = bbox[1] - bbox[0];
+    textHeight = bbox[3] - bbox[2];
     double width = textWidth + 20;
     double height = textHeight + 10;
 
@@ -211,6 +227,15 @@ void VtkWidget::createText(CEntity* entity)
         }
     }
 
+    // 创建标题文本演员
+    titleTextActor = vtkSmartPointer<vtkTextActor>::New();
+    titleTextActor->GetTextProperty()->SetFontSize(18); // 设置字体大小
+    titleTextActor->GetTextProperty()->SetFontFamilyToTimes(); // 设置字体样式
+    titleTextActor->GetTextProperty()->SetColor(MainWindow::HighLightColor); // 设置字体颜色
+    titleTextActor->GetTextProperty()->SetBold(1); // 设置加粗
+    titleTextActor->SetInput(firstLine.toUtf8().constData()); // 设置输入文本
+    titleTextActor->SetPosition(x, y + textHeight); // 设置标题文本的位置
+
     // 创建文本框
     vtkSmartPointer<vtkActor2D> textBox = createTextBox(infoTextActor, x, y);
 
@@ -221,11 +246,13 @@ void VtkWidget::createText(CEntity* entity)
     entityToTextActors[entity] = infoTextActor;
     entityToTextBoxs[entity] = textBox;
     entityToLines[entity] = line;
+    entityToTitleTextActors[entity] = titleTextActor;
 
     // 添加到渲染器
     renderer->AddActor(infoTextActor);
     renderer->AddActor(textBox);
     renderer->AddActor(line);
+    renderer->AddActor(titleTextActor);
 
     // 设置事件回调
     renWin->GetInteractor()->AddObserver(vtkCommand::LeftButtonPressEvent, this, &VtkWidget::OnLeftButtonPress);
@@ -245,7 +272,7 @@ vtkSmartPointer<vtkActor2D> VtkWidget::createTextBox(vtkSmartPointer<vtkTextActo
     double textWidth = bbox[1] - bbox[0];
     double textHeight = bbox[3] - bbox[2];
     double width = textWidth + 20;
-    double height = textHeight + 10;
+    double height = textHeight + 40; // 加上标题行的高度
 
     points->InsertNextPoint(0, 0, 0);
     points->InsertNextPoint(width, 0, 0);
@@ -284,7 +311,10 @@ vtkSmartPointer<vtkActor2D> VtkWidget::createTextBox(vtkSmartPointer<vtkTextActo
 
     // 添加关闭按钮图片
     pngReader = vtkSmartPointer<vtkPNGReader>::New();
-    pngReader->SetFileName("E:\3d\3dins\\component\\eye\\close.png");
+    pngReader->SetFileName(":/component/eye/close.png");
+
+    vtkSmartPointer<vtkTexture> texture = vtkSmartPointer<vtkTexture>::New();
+    texture->SetInputConnection(pngReader->GetOutputPort());
 
     iconActor = vtkSmartPointer<vtkImageActor>::New();
     iconActor->GetMapper()->SetInputConnection(pngReader->GetOutputPort());
@@ -292,7 +322,7 @@ vtkSmartPointer<vtkActor2D> VtkWidget::createTextBox(vtkSmartPointer<vtkTextActo
 
     // 存储关闭按钮图片演员
     entityToIcons[entityToTextActors.key(textActor)] = iconActor;
-    getRenderer()->AddActor(iconActor);
+    renderer->AddActor(iconActor);
 
     return rectangleActor;
 }
@@ -394,7 +424,7 @@ void VtkWidget::Linechange()
     endPoint = entityToEndPoints[getEntityFromTextActor(infoTextActor)];
 
     // 将终点从世界坐标转换为视口坐标
-    vtkSmartPointer<vtkCoordinate> coordinate = vtkSmartPointer<vtkCoordinate>::New();
+    coordinate = vtkSmartPointer<vtkCoordinate>::New();
     coordinate->SetValue(endPoint.x, endPoint.y, endPoint.z);
     coordinate->SetCoordinateSystemToWorld();
     int* viewportMidPoint = coordinate->GetComputedViewportValue(renderer);
@@ -430,10 +460,15 @@ void VtkWidget::closeText()
     {
         renderer->RemoveActor(it.value());
     }
+    for (auto it = entityToTitleTextActors.begin(); it != entityToTitleTextActors.end(); ++it)
+    {
+        renderer->RemoveActor(it.value());
+    }
     entityToTextActors.clear();
     entityToTextBoxs.clear();
     entityToLines.clear();
     entityToIcons.clear();
+    entityToTitleTextActors.clear();
     // 重置所有文本所占位置
     increaseDis[0] = 0;
     increaseDis[1] = 0;
@@ -446,23 +481,28 @@ void VtkWidget::closeTextActor(CEntity* entity)
 {
     if (entityToTextActors.contains(entity))
     {
-        // 移除文本框
+        // 移除文本
         renderer->RemoveActor(entityToTextActors[entity]);
-        // 移除文本框背景
+        // 移除文本框
         renderer->RemoveActor(entityToTextBoxs[entity]);
         // 移除指向线段
         renderer->RemoveActor(entityToLines[entity]);
-        // 移除图标（如果有）
-        if (entityToIcons.contains(entity))
-        {
-            renderer->RemoveActor(entityToIcons[entity]);
-        }
+        // 移除标题文本演员
+        renderer->RemoveActor(entityToTitleTextActors[entity]);
+        // 移除图标
+        renderer->RemoveActor(entityToIcons[entity]);
 
         // 从映射中移除
         entityToTextActors.remove(entity);
         entityToTextBoxs.remove(entity);
         entityToLines.remove(entity);
         entityToIcons.remove(entity);
+        entityToTitleTextActors.remove(entity);
+
+        // 去掉该文本框占用的位置
+        if(increaseDis[1] != 0){
+            increaseDis[1] -= 200;
+        }
 
         // 重新渲染窗口
         renWin->Render();
@@ -491,7 +531,6 @@ void VtkWidget::ShowColorBar(double minDistance, double maxDistance){
     int barHeight = 20; // 色温尺的高度
     int barWidth = 200; // 色温尺的宽度
     auto Width = renWin->GetSize()[0];
-    auto Height = renWin->GetSize()[1];
     points->InsertNextPoint(Width-barWidth-10, 10, 0); // 起点
     points->InsertNextPoint(Width-barWidth, 10, 0); // 终点
 
@@ -920,83 +959,86 @@ void VtkWidget::onAlign()
             return;
         }
 
-    // 下采样：提高效率
-    pcl::PointCloud<pcl::PointXYZ>::Ptr downsampledCloud1(new pcl::PointCloud<pcl::PointXYZ>());
-    pcl::PointCloud<pcl::PointXYZ>::Ptr downsampledCloud2(new pcl::PointCloud<pcl::PointXYZ>());
-    pcl::VoxelGrid<pcl::PointXYZ> voxelGrid;
-    voxelGrid.setLeafSize(0.05f, 0.05f, 0.05f);  // 设置叶子大小为 5cm
-    voxelGrid.setInputCloud(cloud1);
-    voxelGrid.filter(*downsampledCloud1);
-    voxelGrid.setInputCloud(cloud2);
-    voxelGrid.filter(*downsampledCloud2);
+    // // 下采样：提高效率
+    // pcl::PointCloud<pcl::PointXYZ>::Ptr downsampledCloud1(new pcl::PointCloud<pcl::PointXYZ>());
+    // pcl::PointCloud<pcl::PointXYZ>::Ptr downsampledCloud2(new pcl::PointCloud<pcl::PointXYZ>());
+    // pcl::VoxelGrid<pcl::PointXYZ> voxelGrid;
+    // voxelGrid.setLeafSize(0.05f, 0.05f, 0.05f);  // 设置叶子大小为 5cm
+    // voxelGrid.setInputCloud(cloud1);
+    // voxelGrid.filter(*downsampledCloud1);
+    // voxelGrid.setInputCloud(cloud2);
+    // voxelGrid.filter(*downsampledCloud2);
+    // if (downsampledCloud1->empty() || downsampledCloud2->empty()) {
+    //     QMessageBox::warning(this, "警告", "下采样后的点云为空！");
+    //     return;
+    // }
 
-    // FPFH特征提取
-    pcl::PointCloud<pcl::FPFHSignature33>::Ptr fpfh1(new pcl::PointCloud<pcl::FPFHSignature33>());
-    pcl::PointCloud<pcl::FPFHSignature33>::Ptr fpfh2(new pcl::PointCloud<pcl::FPFHSignature33>());
+    // // FPFH特征提取
+    // pcl::PointCloud<pcl::FPFHSignature33>::Ptr fpfh1(new pcl::PointCloud<pcl::FPFHSignature33>());
+    // pcl::PointCloud<pcl::FPFHSignature33>::Ptr fpfh2(new pcl::PointCloud<pcl::FPFHSignature33>());
+    // pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>());
+    // pcl::FPFHEstimation<pcl::PointXYZ, pcl::Normal, pcl::FPFHSignature33> fpfh;
+    // fpfh.setSearchMethod(tree);
 
-    pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>());
+    // // 计算法线
+    // pcl::PointCloud<pcl::Normal>::Ptr normals1(new pcl::PointCloud<pcl::Normal>());
+    // pcl::PointCloud<pcl::Normal>::Ptr normals2(new pcl::PointCloud<pcl::Normal>());
+    // pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> ne;
+    // ne.setSearchMethod(tree);
+    // ne.setRadiusSearch(0.05);  // 设置法线估计的半径
+    // ne.setInputCloud(downsampledCloud1);
+    // ne.compute(*normals1);
+    // ne.setInputCloud(downsampledCloud2);
+    // ne.compute(*normals2);
 
-    pcl::FPFHEstimation<pcl::PointXYZ, pcl::Normal, pcl::FPFHSignature33> fpfh;
-    fpfh.setSearchMethod(tree);
-
-    // 计算法线
-    pcl::PointCloud<pcl::Normal>::Ptr normals1(new pcl::PointCloud<pcl::Normal>());
-    pcl::PointCloud<pcl::Normal>::Ptr normals2(new pcl::PointCloud<pcl::Normal>());
-    pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> ne;
-    ne.setSearchMethod(tree);
-    ne.setRadiusSearch(0.05);  // 设置法线估计的半径
-
-    ne.setInputCloud(downsampledCloud1);
-    ne.compute(*normals1);
-    ne.setInputCloud(downsampledCloud2);
-    ne.compute(*normals2);
-
-    // 计算FPFH特征
-    fpfh.setRadiusSearch(0.1);  // 设置特征计算的半径
-    fpfh.setInputCloud(downsampledCloud1);
-    fpfh.setInputNormals(normals1);
-    fpfh.compute(*fpfh1);
-
-    fpfh.setInputCloud(downsampledCloud2);
-    fpfh.setInputNormals(normals2);
-    fpfh.compute(*fpfh2);
+    // // 计算FPFH特征
+    // fpfh.setRadiusSearch(0.1);  // 设置特征计算的半径
+    // fpfh.setInputCloud(downsampledCloud1);
+    // fpfh.setInputNormals(normals1);
+    // fpfh.compute(*fpfh1);
+    // fpfh.setInputCloud(downsampledCloud2);
+    // fpfh.setInputNormals(normals2);
+    // fpfh.compute(*fpfh2);
+    // if (fpfh1->empty()) {
+    //     QMessageBox::warning(this, "警告", "特征提取失败，特征点云为空！");
+    //     return;
+    // }
 
     // SAC-IA粗配准
-    pcl::SampleConsensusInitialAlignment<pcl::PointXYZ, pcl::PointXYZ, pcl::FPFHSignature33> sac_ia;
-    sac_ia.setInputSource(downsampledCloud1);
-    sac_ia.setInputTarget(downsampledCloud2);
-    sac_ia.setSourceFeatures(fpfh1);
-    sac_ia.setTargetFeatures(fpfh2);
-    sac_ia.setMaximumIterations(500);  // 设置最大迭代次数
-    sac_ia.setMinSampleDistance(0.05);  // 设置最小采样距离
-    sac_ia.setMaxCorrespondenceDistance(0.1);  // 设置最大对应点距离
+    // pcl::SampleConsensusInitialAlignment<pcl::PointXYZ, pcl::PointXYZ, pcl::FPFHSignature33> sac_ia;
+    // sac_ia.setInputSource(downsampledCloud1);
+    // sac_ia.setInputTarget(downsampledCloud2);
+    // sac_ia.setSourceFeatures(fpfh1);
+    // sac_ia.setTargetFeatures(fpfh2);
+    // sac_ia.setMaximumIterations(500);  // 设置最大迭代次数
+    // sac_ia.setMinSampleDistance(0.05);  // 设置最小采样距离
+    // sac_ia.setMaxCorrespondenceDistance(0.1);  // 设置最大对应点距离
 
-    pcl::PointCloud<pcl::PointXYZ> sacAlignedCloud;
-    sac_ia.align(sacAlignedCloud);  // 粗配准
-
-    if (!sac_ia.hasConverged()) {
-        QMessageBox::critical(this, "Error", "FPFH粗配准未收敛！");
-        return;
-    }
-
-    auto initialTransformation = std::make_shared<Eigen::Matrix4f>(sac_ia.getFinalTransformation());
+    // pcl::PointCloud<pcl::PointXYZ> sacAlignedCloud;
+    // sac_ia.align(sacAlignedCloud);  // 粗配准
+    // if (!sac_ia.hasConverged()) {
+    //     QMessageBox::critical(this, "Error", "FPFH粗配准未收敛！");
+    //     return;
+    // }
+    // auto initialTransformation = std::make_shared<Eigen::Matrix4f>(sac_ia.getFinalTransformation());
 
     // ICP精配准
     pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
-    icp.setInputSource(downsampledCloud1);
-    icp.setInputTarget(downsampledCloud2);
+    icp.setInputSource(cloud1);
+    icp.setInputTarget(cloud2);
     icp.setMaximumIterations(50);  // 设置最大迭代次数
     icp.setTransformationEpsilon(1e-8);  // 设置变换容差
     icp.setMaxCorrespondenceDistance(0.05);  // 设置最大对应点距离
 
     pcl::PointCloud<pcl::PointXYZ> icpFinalCloud;
-    icp.align(icpFinalCloud, *initialTransformation);  // 使用FPFH的变换矩阵作为初始对齐
+    // icp.align(icpFinalCloud, *initialTransformation);  // 使用FPFH的变换矩阵作为初始对齐
+    icp.align(icpFinalCloud);
 
     if (!icp.hasConverged()) {
-        // Retry with adjusted parameters
         icp.setMaxCorrespondenceDistance(0.1);  // 增加最大对应点距离
         icp.setMaximumIterations(100);  // 增加最大迭代次数
-        icp.align(icpFinalCloud, *initialTransformation);
+        // icp.align(icpFinalCloud, *initialTransformation);
+        icp.align(icpFinalCloud);
 
         if (!icp.hasConverged()) {
             QMessageBox::critical(this, "Error", "ICP 配准未收敛！");
