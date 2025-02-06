@@ -951,7 +951,6 @@ void VtkWidget::onCompare()
     // 添加日志输出
     logInfo += "对比完成";
     m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
-    m_pMainWin->getPWinToolWidget()->onSaveImage();
 }
 
 //FPFH+ICP

@@ -8,6 +8,9 @@
 #include <QPushButton>
 #include <QFile>
 #include <QCoreApplication>
+#include <QQueue>
+#include <QFileSystemWatcher>
+#include <QTimer>
 #include "geometry/globes.h"
 #include "geometry/centity.h"
 #include "manager/centitymgr.h"
@@ -65,6 +68,10 @@ private:
 
     bool modelCloudExist; //序列化时判断文件是否存在
 
+    QFileSystemWatcher fileWatcher; // 用于监控文件系统变化
+    QQueue<QString> fileQueue; // 用于存储待处理的文件路径
+    QTimer fileProcessorTimer; // 用于依次处理文件的定时器
+    bool isProcessing = false; // 标记是否正在处理文件
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
 
@@ -112,6 +119,11 @@ public:
     void onRightViewClicked();
     void onFrontViewClicked();
     void onIsometricViewClicked();
+
+    //文件传入预处理
+    void filechange();
+    void onFileChanged(const QString &path);
+    void processNextFile();
 
 public:
     MainWindow(QWidget *parent = nullptr);
