@@ -159,6 +159,7 @@ private:
     vtkSmartPointer<vtkActor2D> lineActor;//指向线条
     vtkSmartPointer<vtkPNGReader> pngReader; //储存图片信息
     vtkSmartPointer<vtkImageActor> iconActor; //图片演员
+    vtkSmartPointer<vtkCoordinate> coordinate; // 世界坐标，即vtk窗口的坐标系
     CEntity* elementEntity;//储存传入的entity
     bool isDragging=false;  //判断注释是否能移动
     CPosition endPoint; // 储存指向箭头的终点
@@ -168,11 +169,14 @@ private:
     vtkSmartPointer<vtkPolyDataMapper2D> lineMapper;//指向线的mapper
 
     QMap<CEntity*, vtkSmartPointer<vtkTextActor>> entityToTextActors; // 每个图形对应的文本演员
+    QMap<CEntity*, vtkSmartPointer<vtkTextActor>> entityToTitleTextActors; // 每个图形对应的文本标题
     QMap<CEntity*, vtkSmartPointer<vtkActor2D>> entityToTextBoxs; // 每个图形对应的文本框
     QMap<CEntity*, vtkSmartPointer<vtkActor2D>> entityToLines; // 每个图形对应的指向线段
     QMap<CEntity*, vtkSmartPointer<vtkImageActor>> entityToIcons; // 每个图形对应的图标
     QMap<CEntity*, CPosition> entityToEndPoints; // 每个显示信息的centity对应一个指向线段的落点
     double increaseDis[2] = {0, 0}; // 每增加一个文本显示，自动间隔一段距离
+    double textWidth, textHeight;
+    double* position; // infoTextActor 的位置
 
 public slots:
 

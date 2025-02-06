@@ -294,6 +294,8 @@ public:
         center.z=0;
         normal=QVector4D(0,0,0,1);
         dir_long_edge=QVector4D(0,0,0,1);
+        length=0;
+        width=0;
         currentPlainId = ++plainCount;
         m_strAutoName = QString("平面%1").arg(currentPlainId);
         m_strCName = QString("平面%1").arg(currentPlainId);
@@ -349,6 +351,7 @@ public:
         center.x=0;
         center.y=0;
         center.z=0;
+        diameter=0;
         currentSphereId = ++sphereCount;
         m_strAutoName = QString("球%1").arg(currentSphereId);
         m_strCName = QString("球%1").arg(currentSphereId);
@@ -403,6 +406,9 @@ public:
         btm_center.x=0;
         btm_center.y=0;
         btm_center.z=0;
+        diameter=0;
+        height=0;
+        axis=QVector4D(0,0,0,1);
         currentCylinderId = ++cylinderCount;
         m_strAutoName = QString("圆柱%1").arg(currentCylinderId);
         m_strCName = QString("圆柱%1").arg(currentCylinderId);
@@ -464,6 +470,10 @@ public:
         vertex.x=0;
         vertex.y=0;
         vertex.z=0;
+        axis=QVector4D(0,0,0,1);
+        radian=0;
+        height=0;
+        cone_height=0;
         currentConeId = ++coneCount;
         m_strAutoName = QString("圆锥%1").arg(currentConeId);
         m_strCName = QString("圆锥%1").arg(currentConeId);
@@ -527,6 +537,9 @@ public:
         center.y=0;
         center.z=0;
         normal=QVector4D(0,0,0,1);
+        length=0;
+        width=0;
+        height=0;
         currentCuboidId= ++cuboidCount;
         m_strAutoName = QString("长方体%1").arg(currentCuboidId);
         m_strCName = QString("长方体%1").arg(currentCuboidId);
@@ -598,6 +611,12 @@ class CDistance : public CEntity{
     }
 public:
     CDistance(){
+        begin.x=0;
+        begin.y=0;
+        begin.z=0;
+        end.x=0;
+        end.y=0;
+        end.z=0;
         uptolerance=0.0;
         undertolerance=0.0;
         qualified=false;
@@ -681,10 +700,15 @@ class CAngle : public CEntity {
 
 public:
     CAngle() {
+        vertex.x=0;
+        vertex.y=0;
+        vertex.z=0;
         angleValue = 0.0;
         uptolerance = 0.0;
         undertolerance = 0.0;
         qualified=false;
+        line1=CLine();
+        line2=CLine();
         m_strAutoName = QString("角度%1").arg(currentCAngleId);
         m_strCName = QString("角度%1").arg(currentCAngleId);
         currentCAngleId++;
@@ -771,6 +795,12 @@ public:
         m_pt.x=0;
         m_pt.y=0;
         m_pt.z=0;
+        isFileCloud = false;
+        isComparsionCloud = false;
+        isAlignCloud=false;
+        isModelCloud=false;
+        isMeasureCloud=false;
+        isCut=false;
         currentPointCloudId = ++pointCloudCount;
         m_strAutoName = QString("点云%1").arg(currentPointCloudId);
         m_strCName = QString("点云%1").arg(currentPointCloudId);

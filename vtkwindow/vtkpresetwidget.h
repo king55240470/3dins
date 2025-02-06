@@ -23,4 +23,27 @@ private:
 signals:
 };
 
+
+#include <QLabel>
+
+class MessageItemWidget : public QWidget
+{
+public:
+    MessageItemWidget(const QString &time, const QString &a, QWidget *parent = nullptr)
+        : QWidget(parent) {
+        QVBoxLayout *messageLayout=new QVBoxLayout(this);
+
+        QLabel *timeLabel = new QLabel(time);
+        timeLabel->setStyleSheet("font-size: 8pt; color: gray; background-color: white;");
+
+        QLabel *messageLabel = new QLabel(a);
+        messageLabel->setStyleSheet("font-size: 10pt");
+
+        messageLayout->addWidget(timeLabel);
+        messageLayout->addWidget(messageLabel);
+
+        setLayout(messageLayout);  // 设置布局
+    }
+};
+
 #endif // VTKPRESETWIDGET_H
