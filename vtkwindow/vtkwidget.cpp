@@ -523,7 +523,7 @@ void VtkWidget::closeTextActor(CEntity* entity)
         renderer->RemoveActor(entityToLines[entity]);
         // 移除标题文本演员
         renderer->RemoveActor(entityToTitleTextActors[entity]);
-        // 移除图标
+        // 移除关闭图标
         renderer->RemoveActor(entityToIcons[entity]);
 
         // 从映射中移除
