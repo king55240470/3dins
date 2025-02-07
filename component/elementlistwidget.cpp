@@ -490,6 +490,7 @@ void ElementListWidget::CompareCloud()
         return;
     }
     bool isHaveShape=false;
+    int CurrentMeasureindex;
     //CPointCloud*could=(CPointCloud*)pointCouldlists.dequeue();
     //could->SetSelected(true);
     for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
@@ -497,6 +498,7 @@ void ElementListWidget::CompareCloud()
             CPointCloud*could=(CPointCloud*)m_pMainWin->getEntityListMgr()->getEntityList()[i];
             if(could->isMeasureCloud&&could->isOver==false){
                 m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
+                CurrentMeasureindex=i;
                 could->isOver=true;
                 //m_pMainWin->getPWinToolWidget()->setauto(true);
                 //m_pMainWin->getPWinVtkWidget()->onCompare();
@@ -509,10 +511,15 @@ void ElementListWidget::CompareCloud()
         }
     }
     if(isHaveShape){
+        m_pMainWin->getPWinVtkWidget()->onAlign();
+        m_pMainWin->getEntityListMgr()->getEntityList()[CurrentMeasureindex]->SetSelected(false);
+        m_pMainWin->getEntityListMgr()->getEntityList().back()->SetSelected(true);
         m_pMainWin->getPWinToolWidget()->onConstructPointCloud();
     }else{
         m_pMainWin->getPWinToolWidget()->setauto(true);
         m_pMainWin->getPWinVtkWidget()->onAlign();
+        m_pMainWin->getEntityListMgr()->getEntityList()[CurrentMeasureindex]->SetSelected(false);
+        m_pMainWin->getEntityListMgr()->getEntityList().back()->SetSelected(true);
         m_pMainWin->getPWinVtkWidget()->onCompare();
         m_pMainWin->getPWinToolWidget()->onSaveImage();
         m_pMainWin->getPWinToolWidget()->setauto(false);
@@ -529,7 +536,6 @@ void ElementListWidget::CompareCloud()
         }
     }
     m_pMainWin->getPWinToolWidget()->setauto(true);
-    m_pMainWin->getPWinVtkWidget()->onAlign();
     m_pMainWin->getPWinVtkWidget()->onCompare();
     m_pMainWin->getPWinToolWidget()->onSaveImage();
     m_pMainWin->getPWinToolWidget()->setauto(false);
