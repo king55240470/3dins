@@ -53,6 +53,7 @@ CPointCloud *PointCloudListMgr::CreateAlignCloud(pcl::PointCloud<pcl::PointXYZRG
     CPointCloud* CloudEntity=new CPointCloud();
     CloudEntity->isAlignCloud = true; // 对齐生成的点云
     CloudEntity->setPointCloud(cloud);
+    CloudEntity->m_strAutoName +="(对齐)";
     return CloudEntity;
 }
 
