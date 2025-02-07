@@ -1104,18 +1104,18 @@ QString CDistance::getCEntityInfo()
     QString q;
     // 判断是哪种距离
     if(isPointToPlane)
-        type_str = QString("distance: %1\n").arg(QString::number(getdistanceplane(), 'f',  6));
+        type_str = QString("distance \nactual  %1\n").arg(QString::number(getdistanceplane(), 'f',  6));
     else if(isPointToLine)
-        type_str = QString("distance: %1\n").arg(QString::number(getdistanceline(), 'f',  6));
+        type_str = QString("distance \nactual  %1\n").arg(QString::number(getdistanceline(), 'f',  6));
     else if(isPointToCircle){
-        type_str = QString("distance: %1\n").arg(QString::number(getdistancecircle(), 'f',  6));
+        type_str = QString("distance \nactual  %1\n").arg(QString::number(getdistancecircle(), 'f',  6));
     }
     else if(isPointToPoint){
-        type_str = QString("distance: %1\n").arg(QString::number(getdistancepoint(), 'f',  6));
+        type_str = QString("distance \nactual  %1\n").arg(QString::number(getdistancepoint(), 'f',  6));
     }
-    upTol_str = QString("max: %1\n").arg(QString::number(getUptolerance(), 'f',  6));
-    underTol_str = QString("min: %1\n").arg(QString::number(getUndertolerance(), 'f',  6));
-    q=QString("quality: %1").arg(judge());
+    upTol_str = QString("max  %1\n").arg(QString::number(getUptolerance(), 'f',  6));
+    underTol_str = QString("min  %1\n").arg(QString::number(getUndertolerance(), 'f',  6));
+    q=QString("quality  %1").arg(judge());
     return type_str + upTol_str + underTol_str+q;
 }
 

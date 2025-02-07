@@ -1257,6 +1257,7 @@ void MainWindow::onConvertLighBlueTheme()
     MainWindow::InfoTextColor[1] = 1;
 
     pWinVtkWidget->getRenderer()->SetBackground(0.2, 0.3, 0.5);
+    pWinVtkWidget->getRenderer()->SetGradientBackground(true);
     pWinVtkWidget->UpdateInfo();
 }
 
@@ -1283,6 +1284,7 @@ void MainWindow::onConvertDarkBlueTheme()
     MainWindow::InfoTextColor[1] = 1;
 
     pWinVtkWidget->getRenderer()->SetBackground(0.1, 0.2, 0.3);
+    pWinVtkWidget->getRenderer()->SetGradientBackground(true);
     pWinVtkWidget->UpdateInfo();
 }
 
