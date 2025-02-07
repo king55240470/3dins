@@ -235,27 +235,27 @@ void MainWindow::setupUi(){
     //状态栏
     stbar=statusBar();
     setStatusBar(stbar);
-    QLabel *label1=new QLabel("左侧状态栏",this);
-    stbar->addWidget(label1);
+    // QLabel *label1=new QLabel("左侧状态栏",this);
+    // stbar->addWidget(label1);
     // QLabel *label2=new QLabel("右侧状态栏",this);
-    // stbar->addPermanentWidget(label2);
-    // switchRefCsBtn = new QPushButton("参考依赖坐标系");
-    // // switchRefCsBtn->setFixedWidth(100);
-    // switchRefCsBtn->setObjectName("statusSwitchRef");
-    // switchRefCsBtn->setFlat(true); // 设置按钮为平面样式
-    // switchRefCsBtn->installEventFilter(this);  // 为按钮安装事件过滤器
-    // stbar->addPermanentWidget(switchRefCsBtn);
+    // stbar->addWidget(label2);
+    switchRefCsBtn = new QPushButton("依赖坐标系");
+    switchRefCsBtn->setFixedWidth(100);
+    switchRefCsBtn->setObjectName("statusSwitchRef");
+    switchRefCsBtn->setFlat(true); // 设置按钮为平面样式
+    switchRefCsBtn->installEventFilter(this);  // 为按钮安装事件过滤器
+    stbar->addWidget(switchRefCsBtn);
 
-    // stbar->addPermanentWidget(line);
+    stbar->addWidget(line);
 
-    // switchCsBtn = new QPushButton("机械坐标系");
-    // // switchCsBtn->setFixedWidth(100);
-    // // switchCsBtn->setFlat(true); // 设置按钮为平面样式
-    // // switchCsBtn->installEventFilter(this);  // 为按钮安装事件过滤器
-    // switchCsBtn->setObjectName("statusSwitchCs");
-    // stbar->addPermanentWidget(switchCsBtn);
+    switchCsBtn = new QPushButton("机械坐标系");
+    switchCsBtn->setFixedWidth(100);
+    switchCsBtn->setFlat(true); // 设置按钮为平面样式
+    switchCsBtn->installEventFilter(this);  // 为按钮安装事件过滤器
+    switchCsBtn->setObjectName("statusSwitchCs");
+    stbar->addWidget(switchCsBtn);
 
-    stbar->addPermanentWidget(line);
+    // stbar->addWidget(line);
 
 
     spMainWindow=new QSplitter(Qt::Horizontal,this);
