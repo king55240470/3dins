@@ -36,7 +36,7 @@ MainWindow::MainWindow(QWidget *parent)
     RestoreWidgets();
     loadManager();
     LoadSetDataWidget();
-
+    filechange();
     m_nRelyOnWhichCs=csRef;
     SetUpTheme();
     modelCloudExist=false;
@@ -339,11 +339,16 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::openFile(){
-    // 使用QFileDialog打开文件对话框，允许多选
-    QStringList filePaths = QFileDialog::getOpenFileNames(this, tr("Open Files"));
-    //QString filePath = QFileDialog::getOpenFileName(this, tr("open  file"));
-    if (filePaths.isEmpty()) { // 如果没有选择文件，返回
-        return;
+    QStringList filePaths;
+    if(peopleOpenfile){
+        // 使用QFileDialog打开文件对话框，允许多选
+        filePaths = QFileDialog::getOpenFileNames(this, tr("Open Files"));
+        //QString filePath = QFileDialog::getOpenFileName(this, tr("open  file"));
+        if (filePaths.isEmpty()) { // 如果没有选择文件，返回
+            return;
+        }
+    }else{
+        filePaths.append(filePathChange);
     }
     for (const QString &filePath : filePaths) {
         QFileInfo fileInfo(filePath);
@@ -1119,19 +1124,45 @@ void MainWindow::onIsometricViewClicked()
 
 void MainWindow::filechange()
 {
-    fileWatcher.addPath("/path/to/ftp/directory"); // 替换为FTP目录路径
-    connect(&fileWatcher, &QFileSystemWatcher::fileChanged, this, &MainWindow::onFileChanged);
 
+    fileWatcher.addPath("C:/Users/Lenovo/Desktop/downFTPfile"); // 替换为FTP目录路径
+    connect(&fileWatcher, &QFileSystemWatcher::directoryChanged, this, &MainWindow::onFileChanged);
     // 初始化文件处理定时器
     fileProcessorTimer.setInterval(1000); // 每秒处理一个文件
     connect(&fileProcessorTimer, &QTimer::timeout, this, &MainWindow::processNextFile);
+    // 初始化已存在的文件列表
+    QDir dir("C:/Users/Lenovo/Desktop/downFTPfile");
+    existingFiles = dir.entryList(QDir::Files);
 }
 
 void MainWindow::onFileChanged(const QString &path)
 {
     qDebug() << "文件发生变化：" << path;
-    fileQueue.enqueue(path);
+    // 获取目录中的所有文件
+    QDir dir(path);
+    QStringList currentFiles = dir.entryList(QDir::Files);
+    // 检查新增的文件
+    foreach (const QString &file, currentFiles) {
+        if (!existingFiles.contains(file)) {
+            QString filePath = path + "/" + file;
+            qDebug() << "发现新文件：" << filePath;
 
+            // 根据文件扩展名判断优先级
+            if (file.endsWith(".ply", Qt::CaseInsensitive)) {
+                // 如果是.ply文件，优先添加到队列前面
+                fileQueue.prepend(filePath);
+                qDebug() << "优先添加.ply文件到队列：" << filePath;
+            } else {
+                // 其他文件正常添加到队列末尾
+                fileQueue.enqueue(filePath);
+                qDebug() << "添加到队列：" << filePath;
+            }
+            // 更新已存在的文件列表
+            existingFiles.append(file);
+        }
+    }
+    peopleOpenfile=false;
+    //processNextFile();
     // 如果定时器未启动，启动定时器
     if (!fileProcessorTimer.isActive()) {
         fileProcessorTimer.start();
@@ -1141,15 +1172,14 @@ void MainWindow::onFileChanged(const QString &path)
 void MainWindow::processNextFile()
 {
     if (fileQueue.isEmpty()) {
+        peopleOpenfile=true;
         fileProcessorTimer.stop(); // 如果队列为空，停止定时器
         return;
     }
 
-    QString filePath = fileQueue.dequeue();
-    qDebug() << "正在处理文件：" << filePath;
-
-    // 调用 openFile 函数处理文件
-    //openFile(filePath);
+    filePathChange = fileQueue.dequeue();
+    qDebug() << "正在处理文件：" << filePathChange;
+    openFile();
 }
 
 double MainWindow::AxesRotateX()
