@@ -72,6 +72,7 @@ private:
     QQueue<QString> fileQueue; // 用于存储待处理的文件路径
     QTimer fileProcessorTimer; // 用于依次处理文件的定时器
     bool isProcessing = false; // 标记是否正在处理文件
+    QStringList existingFiles; // 用于记录已存在的文件
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
 
@@ -121,6 +122,8 @@ public:
     void onIsometricViewClicked();
 
     //文件传入预处理
+    QString filePathChange;
+    bool peopleOpenfile=true; //判断是否为手动打开文件
     void filechange();
     void onFileChanged(const QString &path);
     void processNextFile();
