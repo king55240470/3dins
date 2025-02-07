@@ -757,8 +757,8 @@ public:
     bool isAlignCloud=false;// 是否是对齐得到的点云
     bool isModelCloud=false;// 是否是模型点云
     bool isMeasureCloud=false; // 是否是实测点云
-    bool isCut=false;
-    bool isOver=false;
+    bool isCut=false; //是否是切割后的点云
+    bool isOver=false; //是否已经完成测量
     static bool haveSaved;
     static bool haveOpened;
 

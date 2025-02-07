@@ -475,27 +475,35 @@ void ElementListWidget::onAddElement(pcl::PointCloud<pcl::PointXYZRGB>::Ptr coul
 
 void ElementListWidget::CompareCloud()
 {
+    bool found=false;
     for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
-        CPointCloud*could=(CPointCloud*)m_pMainWin->getEntityListMgr()->getEntityList()[i];
-        if(i==m_pMainWin->getEntityListMgr()->getEntityList().size()-1){
-            return;
-        }
-        if(could->isModelCloud){
-            m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
-            break;
+        if(m_pMainWin->getEntityListMgr()->getEntityList()[i]->GetUniqueType()==enPointCloud){
+            CPointCloud*could=(CPointCloud*)m_pMainWin->getEntityListMgr()->getEntityList()[i];
+            if(could->isModelCloud){
+                found=true;
+                m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
+                break;
+            }
         }
     }
+    if(found==false){
+        return;
+    }
     bool isHaveShape=false;
+    int CurrentMeasureindex;
     //CPointCloud*could=(CPointCloud*)pointCouldlists.dequeue();
     //could->SetSelected(true);
     for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
-        CPointCloud*could=(CPointCloud*)m_pMainWin->getEntityListMgr()->getEntityList()[i];
-        if(could->isMeasureCloud&&could->isOver==false){
-            m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
-            could->isOver=true;
-            //m_pMainWin->getPWinToolWidget()->setauto(true);
-            //m_pMainWin->getPWinVtkWidget()->onCompare();
-            //m_pMainWin->getPWinToolWidget()->setauto(false);
+        if(m_pMainWin->getEntityListMgr()->getEntityList()[i]->GetUniqueType()==enPointCloud){
+            CPointCloud*could=(CPointCloud*)m_pMainWin->getEntityListMgr()->getEntityList()[i];
+            if(could->isMeasureCloud&&could->isOver==false){
+                m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
+                CurrentMeasureindex=i;
+                could->isOver=true;
+                //m_pMainWin->getPWinToolWidget()->setauto(true);
+                //m_pMainWin->getPWinVtkWidget()->onCompare();
+                //m_pMainWin->getPWinToolWidget()->setauto(false);
+            }
         }
         if(m_pMainWin->getEntityListMgr()->getEntityList()[i]->GetUniqueType()==enCuboid){
             m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
@@ -503,10 +511,17 @@ void ElementListWidget::CompareCloud()
         }
     }
     if(isHaveShape){
+        m_pMainWin->getPWinVtkWidget()->onAlign();
+        m_pMainWin->getEntityListMgr()->getEntityList()[CurrentMeasureindex]->SetSelected(false);
+        m_pMainWin->getEntityListMgr()->getEntityList().back()->SetSelected(true);
         m_pMainWin->getPWinToolWidget()->onConstructPointCloud();
     }else{
         m_pMainWin->getPWinToolWidget()->setauto(true);
+        m_pMainWin->getPWinVtkWidget()->onAlign();
+        m_pMainWin->getEntityListMgr()->getEntityList()[CurrentMeasureindex]->SetSelected(false);
+        m_pMainWin->getEntityListMgr()->getEntityList().back()->SetSelected(true);
         m_pMainWin->getPWinVtkWidget()->onCompare();
+        m_pMainWin->getPWinToolWidget()->onSaveImage();
         m_pMainWin->getPWinToolWidget()->setauto(false);
         return;
     }
@@ -577,6 +592,9 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
         timer->stop();
         delete timer;
         timer=nullptr;
+        m_pMainWin->getPWinToolWidget()->setauto(true);
+        m_pMainWin->getPWinToolWidget()->onSaveTxt();
+        m_pMainWin->getPWinToolWidget()->setauto(false);
         if(!pointCouldlists.empty()){
             CompareCloud();
             updateDistance();
@@ -649,9 +667,6 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
         QString str=distancelist[distancelistIndex]->GetObjectCName()+"测量完成";
         m_pMainWin->getPWinVtkPresetWidget()->setWidget(str);
         m_pMainWin->NotifySubscribe();
-        m_pMainWin->getPWinToolWidget()->setauto(true);
-        m_pMainWin->getPWinToolWidget()->onSaveTxt();
-        m_pMainWin->getPWinToolWidget()->setauto(false);
         distancelistIndex++;
         return;
     }else if(stateMachine->configuration().contains(stoppedState)){
