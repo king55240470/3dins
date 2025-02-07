@@ -235,27 +235,27 @@ void MainWindow::setupUi(){
     //状态栏
     stbar=statusBar();
     setStatusBar(stbar);
-    QLabel *label1=new QLabel("左侧状态栏",this);
-    stbar->addWidget(label1);
+    // QLabel *label1=new QLabel("左侧状态栏",this);
+    // stbar->addWidget(label1);
     // QLabel *label2=new QLabel("右侧状态栏",this);
-    // stbar->addPermanentWidget(label2);
-    // switchRefCsBtn = new QPushButton("参考依赖坐标系");
-    // // switchRefCsBtn->setFixedWidth(100);
-    // switchRefCsBtn->setObjectName("statusSwitchRef");
-    // switchRefCsBtn->setFlat(true); // 设置按钮为平面样式
-    // switchRefCsBtn->installEventFilter(this);  // 为按钮安装事件过滤器
-    // stbar->addPermanentWidget(switchRefCsBtn);
+    // stbar->addWidget(label2);
+    switchRefCsBtn = new QPushButton("依赖坐标系");
+    switchRefCsBtn->setFixedWidth(100);
+    switchRefCsBtn->setObjectName("statusSwitchRef");
+    switchRefCsBtn->setFlat(true); // 设置按钮为平面样式
+    switchRefCsBtn->installEventFilter(this);  // 为按钮安装事件过滤器
+    stbar->addWidget(switchRefCsBtn);
 
-    // stbar->addPermanentWidget(line);
+    stbar->addWidget(line);
 
-    // switchCsBtn = new QPushButton("机械坐标系");
-    // // switchCsBtn->setFixedWidth(100);
-    // // switchCsBtn->setFlat(true); // 设置按钮为平面样式
-    // // switchCsBtn->installEventFilter(this);  // 为按钮安装事件过滤器
-    // switchCsBtn->setObjectName("statusSwitchCs");
-    // stbar->addPermanentWidget(switchCsBtn);
+    switchCsBtn = new QPushButton("机械坐标系");
+    switchCsBtn->setFixedWidth(100);
+    switchCsBtn->setFlat(true); // 设置按钮为平面样式
+    switchCsBtn->installEventFilter(this);  // 为按钮安装事件过滤器
+    switchCsBtn->setObjectName("statusSwitchCs");
+    stbar->addWidget(switchCsBtn);
 
-    stbar->addPermanentWidget(line);
+    // stbar->addWidget(line);
 
 
     spMainWindow=new QSplitter(Qt::Horizontal,this);
@@ -456,8 +456,9 @@ void MainWindow::saveFile(){
         out<<modelCloudExist;
         for(int i=0;i<getEntityListMgr()->getEntityList().size();i++){
             CPointCloud*could=(CPointCloud*)getEntityListMgr()->getEntityList()[i];
-            if(could->isModelCloud){               
+            if(could->isModelCloud){
                 QString file_path = "D:/modelCloud.ply";
+                //QString file_path = "D:/source/3dins/build/modelCloud.ply";
                 out << file_path;
                 int result = pcl::io::savePLYFile(file_path.toStdString(), could->m_pointCloud);
                 if (result != 0) {
@@ -1286,6 +1287,7 @@ void MainWindow::onConvertLighBlueTheme()
     MainWindow::InfoTextColor[1] = 1;
 
     pWinVtkWidget->getRenderer()->SetBackground(0.2, 0.3, 0.5);
+    pWinVtkWidget->getRenderer()->SetGradientBackground(true);
     pWinVtkWidget->UpdateInfo();
 }
 
@@ -1312,6 +1314,7 @@ void MainWindow::onConvertDarkBlueTheme()
     MainWindow::InfoTextColor[1] = 1;
 
     pWinVtkWidget->getRenderer()->SetBackground(0.1, 0.2, 0.3);
+    pWinVtkWidget->getRenderer()->SetGradientBackground(true);
     pWinVtkWidget->UpdateInfo();
 }
 
