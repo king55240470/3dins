@@ -964,10 +964,14 @@ void VtkWidget::onAlign()
         CEntity* entity = entityList[i];
         if (!entity->IsSelected()) continue;
         if (entity->GetUniqueType() == enPointCloud) {
+            auto cloud=(CPointCloud*)entity;
             auto& temp = ((CPointCloud*)entity)->m_pointCloud;
-            clouds.append(temp.makeShared());
+            if(cloud->isModelCloud){
+                clouds.prepend(temp.makeShared());
+            }else{
+                clouds.append(temp.makeShared());
+            }
             //删除选中点云
-
         }
     }
 
@@ -983,7 +987,7 @@ void VtkWidget::onAlign()
         return;
     }
 
-    pcl::copyPointCloud( *clouds[0], *cloud1);
+    pcl::copyPointCloud( *clouds[0], *cloud1);//模型点云
     pcl::copyPointCloud( *clouds[1], *cloud2);
 
     for(int i = 0;i < 2;i++)
@@ -1058,8 +1062,8 @@ void VtkWidget::onAlign()
 
     // ICP精配准
     pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
-    icp.setInputSource(cloud1);
-    icp.setInputTarget(cloud2);
+    icp.setInputSource(cloud2);
+    icp.setInputTarget(cloud1);
     icp.setMaximumIterations(50);  // 设置最大迭代次数
     icp.setTransformationEpsilon(1e-8);  // 设置变换容差
     icp.setMaxCorrespondenceDistance(0.05);  // 设置最大对应点距离
