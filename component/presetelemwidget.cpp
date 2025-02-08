@@ -37,6 +37,7 @@ PresetElemWidget::PresetElemWidget(QWidget *parent)
     pointEditZ->setText("0");
     pointEditZ->setMaximumWidth(150);
     pointBtn=new QPushButton("预置（点）");
+    pointBtn->setStyleSheet("QPushButton { padding: 8px;}");
 
     // 将标签和文本框添加到布局中
     firstLayout->addWidget(pointLabelX, 0, 0); // 第一行，第一列
@@ -82,6 +83,7 @@ PresetElemWidget::PresetElemWidget(QWidget *parent)
     lineEditZ2->setText("0");
     lineEditZ2->setMaximumWidth(150);
     lineBtn=new QPushButton("预置（线）");
+    lineBtn->setStyleSheet("QPushButton { padding: 8px;}");
 
     // 将标签和文本框添加到布局中
     QGroupBox *groupBoxLeft = new QGroupBox("起点");
@@ -181,6 +183,7 @@ PresetElemWidget::PresetElemWidget(QWidget *parent)
 
     // 添加按钮
     circleBtn = new QPushButton("预置（圆）");
+    circleBtn->setStyleSheet("QPushButton { padding: 8px;}");
     thirdLayout->addWidget(circleBtn, 1, 0, 1, 2);
 
     connect(circleBtn, &QPushButton::clicked, this, &PresetElemWidget::btnCircleClicked);
@@ -266,6 +269,7 @@ PresetElemWidget::PresetElemWidget(QWidget *parent)
     forthLayout->addWidget(groupBoxLeftDown, 1, 0);
     forthLayout->addWidget(groupBoxRightDown,1, 1);
     planeBtn=new QPushButton("预置（平面）");
+    planeBtn->setStyleSheet("QPushButton { padding: 8px;}");
     forthLayout->addWidget(planeBtn, 2, 0, 1, 2);
     connect(planeBtn, &QPushButton::clicked, this, &PresetElemWidget::btnplaneClicked);
 
@@ -300,6 +304,7 @@ PresetElemWidget::PresetElemWidget(QWidget *parent)
     fifthLayout->addWidget(sphereLabelD, 3, 0);
     fifthLayout->addWidget(sphereEditD, 3, 1);
     sphereBtn=new QPushButton("预置（球）");
+    sphereBtn->setStyleSheet("QPushButton { padding: 8px;}");
     fifthLayout->addWidget(sphereBtn,4, 0, 1, 2);
 
     connect(sphereBtn, &QPushButton::clicked, this, &PresetElemWidget::btnSphereClicked);
@@ -361,6 +366,7 @@ PresetElemWidget::PresetElemWidget(QWidget *parent)
     sixthLayout->addWidget(cylinderEditH, 2, 1);
 
     cylinderBtn=new QPushButton("预置（圆柱体）");
+    cylinderBtn->setStyleSheet("QPushButton { padding: 8px;}");
     sixthLayout->addWidget(cylinderBtn,3, 0, 1, 2);
 
     connect(cylinderBtn, &QPushButton::clicked, this, &PresetElemWidget::btnCylinderClicked);
@@ -427,6 +433,7 @@ PresetElemWidget::PresetElemWidget(QWidget *parent)
     seventhLayout->addWidget(coneEditAngle, 3, 1);
 
     coneBtn=new QPushButton("预置（圆锥）");
+    coneBtn->setStyleSheet("QPushButton { padding: 8px;}");
     seventhLayout->addWidget(coneBtn,4, 0, 1, 2);
 
     connect(coneBtn, &QPushButton::clicked, this, &PresetElemWidget::btnConeClicked);
@@ -508,6 +515,7 @@ PresetElemWidget::PresetElemWidget(QWidget *parent)
 
     // 添加确认按钮
     boxBtn = new QPushButton("预置（长方体）");
+    boxBtn->setStyleSheet("QPushButton { padding: 8px;}");
     eighthLayout->addWidget(boxBtn, 2, 0, 1, 2);
 
     connect(boxBtn, &QPushButton::clicked, this, &PresetElemWidget::btnBoxClicked);
