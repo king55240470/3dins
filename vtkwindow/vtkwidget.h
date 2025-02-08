@@ -18,6 +18,7 @@
 #include <QImage>
 #include <QTimer>
 #include <QPixmap>
+#include <boost/make_shared.hpp>
 
 
 #include <pcl/common/common.h>
@@ -27,6 +28,7 @@
 #include <pcl/registration/icp.h>
 #include <pcl/kdtree/kdtree_flann.h>
 #include <pcl/filters/voxel_grid.h>
+#include <pcl/filters/uniform_sampling.h>
 #include <pcl/features/normal_3d.h>
 #include <pcl/features/fpfh.h>
 #include <pcl/registration/sample_consensus_prerejective.h>
@@ -183,7 +185,6 @@ private:
     double textWidth, textHeight;
     double* position; // infoTextActor 的位置
     double textBox[4];
-
 public slots:
 
 };
