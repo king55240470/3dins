@@ -329,9 +329,9 @@ vtkSmartPointer<vtkActor2D> VtkWidget::createLine(CEntity* entity, vtkSmartPoint
         CPlane* plane = static_cast<CPlane*>(obj11);
         QVector4D plane_normal = plane->getNormal();
         plane_normal.normalize();
-        b.x = dis->getbegin().x - (distance * plane_normal.x()) / 2;
-        b.y = dis->getbegin().y - (distance * plane_normal.y()) / 2;
-        b.z = dis->getbegin().z - (distance * plane_normal.z()) / 2;
+        b.x = dis->getbegin().x - (distance * plane_normal.x());
+        b.y = dis->getbegin().y - (distance * plane_normal.y());
+        b.z = dis->getbegin().z - (distance * plane_normal.z());
     }
     else if (entity->getEntityType() == enPoint)
     {

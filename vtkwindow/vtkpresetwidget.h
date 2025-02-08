@@ -37,10 +37,12 @@ public:
         timeLabel->setStyleSheet("font-size: 8pt; color: gray; background-color: white;");
 
         QLabel *messageLabel = new QLabel(a);
-        messageLabel->setStyleSheet("font-size: 10pt");
+        messageLabel->setStyleSheet("font-size: 10pt; color: black;");
 
         messageLayout->addWidget(timeLabel);
         messageLayout->addWidget(messageLabel);
+
+        setAttribute(Qt::WA_TransparentForMouseEvents); // 透明化鼠标事件
 
         setLayout(messageLayout);  // 设置布局
     }
