@@ -17,7 +17,8 @@ FileManagerWidget::FileManagerWidget(QWidget *parent)
     layout=new QVBoxLayout(this);
 
     filetree=new QTreeView(this);
-    filetree->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    filetree->setEditTriggers(QAbstractItemView::NoEditTriggers); // 禁用编辑
+    filetree->setSelectionMode(QAbstractItemView::NoSelection); // 禁用选中
     //设置QTreeView的字体大小
     int width = filetree->width();
     int height = filetree->height();
@@ -403,13 +404,18 @@ void ButtonDelegate::paint(QPainter *painter,const QStyleOptionViewItem &option,
         bool isOpen=index.data(Qt::UserRole+1).toBool();//根据索引的数据决定给按钮添加哪种图标
         QStyleOptionButton btn;
         QRect itemRect  = option.rect;
-        int buttonHeight = itemRect.height();
-        int buttonWidth = buttonHeight + 10;
-        int buttonX = itemRect.right() - buttonWidth - 10;//按钮水平位置的起始点
+        int buttonHeight = itemRect.height()-4;
+        int buttonWidth = buttonHeight + 15;
+        int buttonX = itemRect.right() - buttonWidth - 15;//按钮水平位置的起始点
+        int buttonY = itemRect.top() + (itemRect.height() - buttonHeight) / 2; // 垂直居中
             //获取itemRect的y坐标,确保按钮在项的顶部对齐
-        QRect buttonRect(buttonX, itemRect.top(), buttonWidth, buttonHeight);
+        QRect buttonRect(buttonX, buttonY, buttonWidth, buttonHeight);
         btn.rect = buttonRect;
-        btn.icon=isOpen ? QIcon(":/component/eye/openeye.png") : QIcon(":/component/eye/closeeye.png");
+        // 加载图标并根据按钮的大小进行缩放
+        QPixmap iconPixmap = isOpen ? QPixmap(":/component/eye/openeye.png") : QPixmap(":/component/eye/closeeye.png");
+        iconPixmap = iconPixmap.scaled(buttonWidth, buttonHeight, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation); // 缩放图标
+        btn.icon = QIcon(iconPixmap); // 设置缩放后的图标
+        //btn.icon=isOpen ? QIcon(":/component/eye/openeye.png") : QIcon(":/component/eye/closeeye.png");
         btn.iconSize = QSize(buttonWidth, buttonHeight);
         QApplication::style()->drawControl(QStyle::CE_PushButton, &btn, painter);//绘制按钮
     }
@@ -419,10 +425,11 @@ bool ButtonDelegate::editorEvent(QEvent *event, QAbstractItemModel *model, const
     if(event->type()==QEvent::MouseButtonRelease&&index.parent().isValid()){
         QMouseEvent *mouseEvent=static_cast<QMouseEvent*>(event);
         QRect itemRect = option.rect;
-        int buttonHeight = itemRect.height();
-        int buttonWidth = buttonHeight + 10;
-        int buttonX = itemRect.right() - buttonWidth - 10;
-        QRect buttonRect(buttonX, itemRect.top(), buttonWidth, buttonHeight);
+        int buttonHeight = itemRect.height()-4;
+        int buttonWidth = buttonHeight + 15;
+        int buttonX = itemRect.right() - buttonWidth - 15;
+        int buttonY = itemRect.top() + (itemRect.height() - buttonHeight) / 2;
+        QRect buttonRect(buttonX, buttonY, buttonWidth, buttonHeight);
         //buttonRect.moveRight(option.rect.right());//将按钮移动到右侧
         if(buttonRect.contains(mouseEvent->pos())){
             bool isOpen=index.data(Qt::UserRole+1).toBool();
