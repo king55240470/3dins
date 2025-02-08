@@ -49,11 +49,16 @@ ElementListWidget::ElementListWidget(QWidget *parent)
     QIcon icon1(":/component/construct/start.png");
     QIcon icon2(":/component/construct/stop.png");
     QIcon icon3(":/component/construct/end.png");
+    startButton->setFixedSize(40, 40);
+    pauseButton->setFixedSize(40, 40);
+    terminateButton->setFixedSize(40, 40);
     startButton->setIcon(icon1);
     pauseButton->setIcon(icon3);
     terminateButton->setIcon(icon2);
     toolBar->addWidget(startButton);
+    toolBar->addSeparator();
     toolBar->addWidget(pauseButton);
+    toolBar->addSeparator();
     toolBar->addWidget(terminateButton);
 
     // 布局

@@ -112,16 +112,16 @@ void VtkWidget::OnLeftButtonPress()
     // 遍历所有文本框，检查点击位置是否在某个文本框内
     for (auto it = entityToTextActors.begin(); it != entityToTextActors.end(); ++it)
     {
-        vtkSmartPointer<vtkTextActor> textActor = it.value();
+        infoTextActor = it.value();
 
         double bbox[4];
-        textActor->GetBoundingBox(renderer, bbox);
+        infoTextActor->GetBoundingBox(renderer, bbox);
         textWidth = bbox[1] - bbox[0];
         textHeight = bbox[3] - bbox[2];
 
         double width = textWidth + 20; // 加上边距
         double height = textHeight + 10; // 加上边距
-        position = textActor->GetPosition();
+        position = infoTextActor->GetPosition();
         double* titlePosition = titleTextActor->GetPosition();
         double titleSize[2];
         titleTextActor->GetSize(renderer, titleSize);
@@ -141,7 +141,6 @@ void VtkWidget::OnLeftButtonPress()
             clickPos[1] >= position[1] && clickPos[1] <= position[1] + height)
         {
             // 设置当前拖动的所有actor
-            infoTextActor = textActor;
             rectangleActor = entityToTextBoxs[it.key()];
             iconActor = entityToIcons[it.key()];
             lineActor = entityToLines[it.key()];
@@ -997,19 +996,19 @@ void VtkWidget::onAlign()
             return;
         }
 
-    // // 下采样：提高效率
-    // pcl::PointCloud<pcl::PointXYZ>::Ptr downsampledCloud1(new pcl::PointCloud<pcl::PointXYZ>());
-    // pcl::PointCloud<pcl::PointXYZ>::Ptr downsampledCloud2(new pcl::PointCloud<pcl::PointXYZ>());
-    // pcl::VoxelGrid<pcl::PointXYZ> voxelGrid;
-    // voxelGrid.setLeafSize(0.05f, 0.05f, 0.05f);  // 设置叶子大小为 5cm
-    // voxelGrid.setInputCloud(cloud1);
-    // voxelGrid.filter(*downsampledCloud1);
-    // voxelGrid.setInputCloud(cloud2);
-    // voxelGrid.filter(*downsampledCloud2);
-    // if (downsampledCloud1->empty() || downsampledCloud2->empty()) {
-    //     QMessageBox::warning(this, "警告", "下采样后的点云为空！");
-    //     return;
-    // }
+    // 下采样：提高效率
+    pcl::PointCloud<pcl::PointXYZ>::Ptr downsampledCloud1(new pcl::PointCloud<pcl::PointXYZ>());
+    pcl::PointCloud<pcl::PointXYZ>::Ptr downsampledCloud2(new pcl::PointCloud<pcl::PointXYZ>());
+    pcl::VoxelGrid<pcl::PointXYZ> voxelGrid;
+    voxelGrid.setLeafSize(0.05f, 0.05f, 0.05f);  // 设置叶子大小为 5cm
+    voxelGrid.setInputCloud(cloud1);
+    voxelGrid.filter(*downsampledCloud1);
+    voxelGrid.setInputCloud(cloud2);
+    voxelGrid.filter(*downsampledCloud2);
+    if (downsampledCloud1->empty() || downsampledCloud2->empty()) {
+        QMessageBox::warning(this, "警告", "下采样后的点云为空！");
+        return;
+    }
 
     // // FPFH特征提取
     // pcl::PointCloud<pcl::FPFHSignature33>::Ptr fpfh1(new pcl::PointCloud<pcl::FPFHSignature33>());
@@ -1062,8 +1061,8 @@ void VtkWidget::onAlign()
 
     // ICP精配准
     pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
-    icp.setInputSource(cloud2);
-    icp.setInputTarget(cloud1);
+    icp.setInputSource(downsampledCloud1);
+    icp.setInputTarget(downsampledCloud2);
     icp.setMaximumIterations(50);  // 设置最大迭代次数
     icp.setTransformationEpsilon(1e-8);  // 设置变换容差
     icp.setMaxCorrespondenceDistance(0.05);  // 设置最大对应点距离

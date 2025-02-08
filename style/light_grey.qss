@@ -39,7 +39,7 @@ QPushButton {
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #e6e6e6, stop: 1 #cccccc); /* 浅灰色渐变背景 */
     border: 1px solid #cccccc; /* 浅灰色边框 */
     border-radius: 5px;
-    padding: 10px;
+    padding: 1px;
     color: #333;
 }
 
@@ -105,7 +105,8 @@ QToolBar {
 }
 
 QToolBar::separator {
-    background: #cccccc;
+    width: 3px;
+    background-color: transparent;
 }
 
 /* QTreeWidget的样式 */
@@ -117,7 +118,7 @@ QTreeWidget {
 }
 
 QTreeWidget::item {
-    padding: 5px;
+    padding: 1px;
 }
 
 QTreeWidget::item:selected {

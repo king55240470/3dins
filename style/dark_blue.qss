@@ -43,7 +43,7 @@ QPushButton,QToolButton{
     border-width: 1px;
     border-radius: 5px;
     border-color: #11223F;
-    padding: 10px;
+    padding: 1px;
 }
 
 QPushButton::hover,QToolButton::hover{
@@ -774,7 +774,7 @@ QTreeWidget{
     background:#18202E;
     border-style: outset;
     border-color: #11223F;
-    padding: 5px;
+    padding: 1px;
 }
 /*
 QTreeWidget::branch:has-siblings:!adjoins-item {
@@ -805,12 +805,12 @@ QTreeWidget::branch:has-siblings:!adjoins-item {
  QTreeWidget::item {
       border: 1px solid #d9d9d9;
       border-color: transparent;
-      padding: 5px;
+      padding: 3px;
  }
 QTreeWidget::item:hover {
      background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #598892, stop: 1 #189BAB);
      border: 1px solid #bfcde4;
-     padding: 5px;
+     padding: 3px;
  }
 
 QTreeWidget::item:selected {
@@ -818,7 +818,7 @@ QTreeWidget::item:selected {
      /*border:none; */
      background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                                  stop: 0 #6A848C,  stop: 1.0 #0F9EAF);
-     padding:5px;
+     padding:3px;
      margin:3px;
 }
 

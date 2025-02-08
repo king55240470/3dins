@@ -50,7 +50,7 @@ QPushButton {
     background-color: #ffffff;
     border: 1px solid #3570b2;
     border-radius: 5px;
-    padding: 10px;
+    padding: 1px;
     color: #000000;
 }
 
@@ -71,8 +71,8 @@ QToolBar {
 }
 
 QToolBar::separator {
-    width: 1px;
-    background: #bbbbbb;
+    width: 3px;
+    background-color: transparent;
 }
 
 /* QTreeWidget的样式 */
@@ -84,7 +84,7 @@ QTreeWidget {
 }
 
 QTreeWidget::item {
-    padding: 3px;
+    padding: 1px;
 }
 
 QTreeWidget::item:selected {
