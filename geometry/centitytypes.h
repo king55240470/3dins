@@ -830,6 +830,10 @@ public:
         m_pointCloud=pointCloud;
     }
 
+    void setPointCloud(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud) {
+        this->m_pointCloud = *cloud;  //  共享 `shared_ptr`
+    }
+
     CPosition GetPt()
     {
         return m_pt;
