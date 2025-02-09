@@ -983,19 +983,21 @@ void VtkWidget::onAlign()
         return;
     }
 
-    // 下采样：使用正确的点云类型
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledCloud1(new pcl::PointCloud<pcl::PointXYZRGB>());
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledCloud2(new pcl::PointCloud<pcl::PointXYZRGB>());
-    std::shared_ptr<pcl::UniformSampling<pcl::PointXYZRGB>> uniformSampling =
-        std::make_shared<pcl::UniformSampling<pcl::PointXYZRGB>>();
-    uniformSampling->setRadiusSearch(0.05f);
-    uniformSampling->setInputCloud(cloud1);
-    uniformSampling->filter(*downsampledCloud1);
-    uniformSampling->setInputCloud(cloud2);
-    uniformSampling->filter(*downsampledCloud2);
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledCloud1 = pcl::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>();
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledCloud2 = pcl::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>();
+
+    // 使用pcl::UniformSampling进行下采样
+    pcl::UniformSampling<pcl::PointXYZRGB> uniformSampling;
+    uniformSampling.setRadiusSearch(0.05f); // 设置搜索半径
+    uniformSampling.setInputCloud(cloud1);  // 设置输入点云
+    uniformSampling.filter(*downsampledCloud1); // 执行下采样
+    uniformSampling.setInputCloud(cloud2);  // 重置输入点云为另一个
+    uniformSampling.filter(*downsampledCloud2); // 对第二个点云执行下采样
+
+    // 检查下采样后的点云是否为空
     if (downsampledCloud1->empty() || downsampledCloud2->empty()) {
         QMessageBox::warning(this, "警告", "下采样后的点云为空");
-        return;
+        return; // 或者其他适当的错误处理
     }
 
     // 使用XYZRGB类型进行ICP配准
