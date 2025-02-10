@@ -29,7 +29,7 @@ VtkWidget::VtkWidget(QWidget *parent)
 
 void VtkWidget::setUpVtk(QVBoxLayout *layout){
     vtkMenu = new QMenu(m_pMainWin); // 创建菜单
-    auto clearAction = new QAction("清除标注");
+    auto clearAction = new QAction("清除文本标注");
     vtkMenu->addAction(clearAction);
     connect(clearAction, &QAction::triggered, this, [&](){
         this->closeText();
@@ -37,7 +37,7 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
 
     // 初始化渲染器和交互器
     renderer = vtkSmartPointer<vtkRenderer>::New();
-    renderer->SetBackground(0.1, 0.2, 0.4);
+    renderer->SetBackground(0.2, 0.3, 0.5);
     renderer->SetBackground(1, 1, 1);
     renderer->SetGradientBackground(true);
     renWin = vtkSmartPointer<vtkGenericOpenGLRenderWindow>::New();
@@ -515,15 +515,28 @@ void VtkWidget::closeTextActor(CEntity* entity)
     if (entityToTextActors.contains(entity))
     {
         // 移除文本
-        renderer->RemoveActor(entityToTextActors[entity]);
-        // 移除文本框
-        renderer->RemoveActor(entityToTextBoxs[entity]);
+        if(entityToTextActors[entity]){
+            renderer->RemoveActor(entityToTextActors[entity]);
+        }
         // 移除指向线段
-        renderer->RemoveActor(entityToLines[entity]);
+        if(entityToLines[entity]){
+            renderer->RemoveActor(entityToLines[entity]);
+        }
+        // 移除图标
+        if (entityToIcons.contains(entity))
+        {
+            renderer->RemoveActor(entityToIcons[entity]);
+        }
+        // 移除背景矩形框
+        if (entityToTextBoxs.contains(entity))
+        {
+            renderer->RemoveActor(entityToTextBoxs[entity]);
+        }
         // 移除标题文本演员
-        renderer->RemoveActor(entityToTitleTextActors[entity]);
-        // 移除关闭图标
-        renderer->RemoveActor(entityToIcons[entity]);
+        if (entityToTitleTextActors.contains(entity))
+        {
+            renderer->RemoveActor(entityToTitleTextActors[entity]);
+        }
 
         // 从映射中移除
         entityToTextActors.remove(entity);
@@ -927,7 +940,6 @@ void VtkWidget::onCompare()
 
     // 由RGB点云生成cpointcloud对象，并存入entitylist
     auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateCompareCloud(*comparisonCloud);
-    cloudEntity->isComparsionCloud = true;
     cloudEntity->parent=parentlist;
     m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
     m_pMainWin->NotifySubscribe();
@@ -983,27 +995,25 @@ void VtkWidget::onAlign()
         return;
     }
 
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledCloud1 = pcl::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>();
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledCloud2 = pcl::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>();
-
-    // 使用pcl::UniformSampling进行下采样
-    pcl::UniformSampling<pcl::PointXYZRGB> uniformSampling;
-    uniformSampling.setRadiusSearch(0.05f); // 设置搜索半径
-    uniformSampling.setInputCloud(cloud1);  // 设置输入点云
-    uniformSampling.filter(*downsampledCloud1); // 执行下采样
-    uniformSampling.setInputCloud(cloud2);  // 重置输入点云为另一个
-    uniformSampling.filter(*downsampledCloud2); // 对第二个点云执行下采样
-
-    // 检查下采样后的点云是否为空
-    if (downsampledCloud1->empty() || downsampledCloud2->empty()) {
-        QMessageBox::warning(this, "警告", "下采样后的点云为空");
-        return; // 或者其他适当的错误处理
-    }
+    // 下采样：使用正确的点云类型
+    // pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledCloud1(new pcl::PointCloud<pcl::PointXYZRGB>());
+    // pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledCloud2(new pcl::PointCloud<pcl::PointXYZRGB>());
+    // std::shared_ptr<pcl::UniformSampling<pcl::PointXYZRGB>> uniformSampling =
+    //     std::make_shared<pcl::UniformSampling<pcl::PointXYZRGB>>();
+    // uniformSampling->setRadiusSearch(0.05f);
+    // uniformSampling->setInputCloud(cloud1);
+    // uniformSampling->filter(*downsampledCloud1);
+    // uniformSampling->setInputCloud(cloud2);
+    // uniformSampling->filter(*downsampledCloud2);
+    // if (downsampledCloud1->empty() || downsampledCloud2->empty()) {
+    //     QMessageBox::warning(this, "警告", "下采样后的点云为空");
+    //     return;
+    // }
 
     // 使用XYZRGB类型进行ICP配准
     pcl::IterativeClosestPoint<pcl::PointXYZRGB, pcl::PointXYZRGB> icp;
-    icp.setInputSource(downsampledCloud1);
-    icp.setInputTarget(downsampledCloud2);
+    icp.setInputSource(cloud2);
+    icp.setInputTarget(cloud1);
     icp.setMaximumIterations(50);
     icp.setTransformationEpsilon(1e-8);
     icp.setMaxCorrespondenceDistance(0.05);
@@ -1017,7 +1027,7 @@ void VtkWidget::onAlign()
     // fpfh.setInputNormals(normals2);
     // fpfh.compute(*fpfh2);
     // if (fpfh1->empty()) {
-    //     QMessageBox::warning(this, "警告", "特征提取失败，特征点云为空！");
+    //     QMessageBox::warning(this, "警告", "特征提取失败，特征点云为空！");z
     //     return;
     // }
 
@@ -1054,11 +1064,11 @@ void VtkWidget::onAlign()
     }
 
     // 处理对齐后的点云
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr alignedCloud(new pcl::PointCloud<pcl::PointXYZRGB>(*icpFinalCloudPtr));
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr alignedCloud(new pcl::PointCloud<pcl::PointXYZRGB>());
+    *alignedCloud = *icpFinalCloudPtr;
     auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateAlignCloud(alignedCloud);
     m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
     m_pMainWin->NotifySubscribe();
-    delete cloudEntity;
 
     double rmse = icp.getFitnessScore();
     QMessageBox::information(this, "配准结果", QString("配准误差: %1").arg(rmse));
