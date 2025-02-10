@@ -969,6 +969,7 @@ void VtkWidget::onAlign()
 {
     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
     QVector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> clouds;
+    QString logInfo;
 
     // 收集选中的点云（确保不修改原始实体）
     for (int i = 0; i < entityList.size(); i++) {
@@ -978,6 +979,7 @@ void VtkWidget::onAlign()
             // 获取点云的共享指针，确保原数据不被释放
             auto pcEntity = static_cast<CPointCloud*>(entity);
             clouds.append(pcl::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>(pcEntity->m_pointCloud));
+            logInfo += ((CPointCloud*)entity)->m_strAutoName + ' '; //添加对比的点云编号
         }
     }
 
@@ -1058,7 +1060,6 @@ void VtkWidget::onAlign()
         icp.setMaximumIterations(150);
         icp.align(*icpFinalCloudPtr);
         if (!icp.hasConverged()) {
-            QMessageBox::critical(this, "错误", "ICP未收敛");
             return;
         }
     }
@@ -1069,8 +1070,10 @@ void VtkWidget::onAlign()
     auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateAlignCloud(alignedCloud);
     m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
     m_pMainWin->NotifySubscribe();
-
     double rmse = icp.getFitnessScore();
-    QMessageBox::information(this, "配准结果", QString("配准误差: %1").arg(rmse));
+    // 添加日志输出
+    logInfo += "对齐完成，误差:";
+    logInfo += std::to_string(rmse);
+    m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
 }
 

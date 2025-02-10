@@ -3,5 +3,9 @@
         <file>style/light_blue.qss</file>
         <file>style/light_grey.qss</file>
         <file>style/dark_blue.qss</file>
+        <file>style/openfile.png</file>
+        <file>style/ruler.png</file>
+        <file>style/savefile.png</file>
+        <file>style/exit.png</file>
     </qresource>
 </RCC>
