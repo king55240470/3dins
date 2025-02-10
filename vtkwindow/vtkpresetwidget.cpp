@@ -12,7 +12,7 @@ VtkPresetWidget::VtkPresetWidget(QWidget *parent)
     layout=new QVBoxLayout(this);
 
     treeWidget=new QTreeWidget(this);
-    treeWidget->setSelectionMode(QAbstractItemView::NoSelection);//禁用选中
+    // treeWidget->setSelectionMode(QAbstractItemView::NoSelection);//禁用选中
     treeWidget->setHeaderHidden(true);//隐藏标题栏
     treeWidget->setWordWrap(true);//自动换行
 

@@ -117,7 +117,7 @@ QTreeView {
 }
 
 QTreeView::item {
-    padding: 3px;
+    padding: 1px;
 }
 
 QTreeView::item:selected {
