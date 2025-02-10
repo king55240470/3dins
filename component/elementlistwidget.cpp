@@ -522,9 +522,13 @@ void ElementListWidget::CompareCloud()
         m_pMainWin->getPWinToolWidget()->onConstructPointCloud();
     }else{
         m_pMainWin->getPWinToolWidget()->setauto(true);
+        qDebug()<<"进入对齐之前";
         m_pMainWin->getPWinVtkWidget()->onAlign();
+        qDebug()<<"进入对齐之后";
+        qDebug()<<CurrentMeasureindex;
         m_pMainWin->getEntityListMgr()->getEntityList()[CurrentMeasureindex]->SetSelected(false);
         m_pMainWin->getEntityListMgr()->getEntityList().back()->SetSelected(true);
+        qDebug()<<"进入对比之前";
         m_pMainWin->getPWinVtkWidget()->onCompare();
         m_pMainWin->getPWinToolWidget()->onSaveImage();
         m_pMainWin->getPWinToolWidget()->setauto(false);
