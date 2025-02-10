@@ -50,13 +50,6 @@ CPointCloud *PointCloudListMgr::CreateCompareCloud(pcl::PointCloud<pcl::PointXYZ
     return CloudEntity;
 }
 
-// CPointCloud *PointCloudListMgr::CreateAlignCloud(pcl::PointCloud<pcl::PointXYZRGB> cloud)
-// {
-//     CPointCloud* CloudEntity=new CPointCloud();
-//     CloudEntity->isAlignCloud = true; // 对齐生成的点云
-//     CloudEntity->setPointCloud(cloud);
-//     return CloudEntity;
-// }
 
 CPointCloud *PointCloudListMgr::CreateAlignCloud(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud)
 {
