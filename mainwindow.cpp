@@ -46,17 +46,23 @@ void MainWindow::setupUi(){
     //菜单栏
     bar=menuBar();
     setMenuBar(bar);
+    QIcon openFile(":/style/openfile.png");
+    QIcon saveFile(":/style/savefile.png");
+    QIcon exitIcon(":/style/exit.png");
     QMenu *fileMenu=bar->addMenu("文件");
     QAction *openAction=fileMenu->addAction("打开文件");
+    openAction->setIcon(openFile);
     connect(openAction, &QAction::triggered, this, &MainWindow::openFile); // 连接打开文件的信号与槽
     //fileMenu->addAction(openAction);
     QAction *saveAction=fileMenu->addAction("保存文件");
+    saveAction->setIcon(saveFile);
     connect(saveAction, &QAction::triggered, this, &MainWindow::saveFile); // 连接保存文件的信号与槽
     //fileMenu->addAction(saveAction);
     fileMenu->addSeparator();
     QAction *exitAction=fileMenu->addAction("退出");
-    //connect(exitAction, SIGNAL(triggered()), this, SLOT(close())); // 连接退出的信号与槽
-    //fileMenu->addAction(exitAction);
+    exitAction->setIcon(exitIcon);
+    connect(exitAction, SIGNAL(triggered()), this, SLOT(close())); // 连接退出的信号与槽
+    fileMenu->addAction(exitAction);
 
     QAction * contralAction=new QAction("控制图标");
     bar->addAction(contralAction);
