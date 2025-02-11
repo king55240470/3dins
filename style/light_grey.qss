@@ -56,7 +56,6 @@ QTabWidget {
     font-size: 14px "微软雅黑";
     color: #333; /* 标签文字颜色 */
     background-color: #f2f2f2; /* 标签页背景 */
-    border: 1px solid #dcdcdc; /* 标签页边框 */
 }
 
 /* 标签页的样式 */
@@ -64,10 +63,7 @@ QTabBar::tab {
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                                  stop: 0 #e6e6e6, stop: 1 #cccccc);
     border: 1px solid #dcdcdc; /* 标签边框 */
-    border-top-left-radius: 5px; /* 标签左上边圆角 */
-    border-top-right-radius: 5px; /* 标签右边圆角 */
-    padding: 3px; /* 标签内边距 */
-    min-width: 80px; /* 标签最小宽度 */
+    padding: 2px; /* 标签内边距 */
 }
 
 QTabBar::tab:selected {
@@ -89,7 +85,6 @@ QTabBar::tab:!selected {
 QTabWidget::pane {
     border-top: 1px solid #dcdcdc; /* 标签页顶部边框 */
     background-color: #ffffff; /* 标签页内容背景 */
-    padding: 10px; /* 标签页内容内边距 */
 }
 
 /* QTabBar的指示器样式 */
