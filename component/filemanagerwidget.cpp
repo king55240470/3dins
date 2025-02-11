@@ -65,9 +65,14 @@ FileManagerWidget::FileManagerWidget(QWidget *parent)
 }
 
 void FileManagerWidget::openModelFile(QString fileName,QString filePath){
-    QStandardItem *newFileItem = new QStandardItem(fileName);
+    QStandardItem *newFileItem = new QStandardItem();
     newFileItem->setData(filePath, Qt::UserRole);//在QTreeView的子节点中存储文件路径（Qt::UserRole用来存储用户第一个定义的数据：文件路径）
     newFileItem->setData(true, Qt::UserRole+1); //设置初始数据以便按钮绘制（Qt::UserRole+1用来存储用户第二个定义的数据：按钮状态）
+
+    QIcon icon(":/component/eye/file.png");
+    newFileItem->setIcon(icon);
+    newFileItem->setText(fileName);
+
     modelFile->appendRow(newFileItem);
 
     //在modelFileMap中添加添加新文件，并分配新的cloud
@@ -93,9 +98,14 @@ void FileManagerWidget::openModelFile(QString fileName,QString filePath){
 }
 
 void FileManagerWidget::openMeasuredFile(QString fileName,QString filePath){
-    QStandardItem *newFileItem = new QStandardItem(fileName);
+    QStandardItem *newFileItem = new QStandardItem();
     newFileItem->setData(filePath, Qt::UserRole);//在QTreeView的子节点中存储文件路径
     newFileItem->setData(true, Qt::UserRole+1);
+
+    QIcon icon(":/component/eye/file.png");
+    newFileItem->setIcon(icon);
+    newFileItem->setText(fileName);
+
     measuredFile->appendRow(newFileItem);
 
     //在measuredFileMap中添加新文件，并分配新的cloud
@@ -125,9 +135,49 @@ void FileManagerWidget::createContentItem(){
     QList<QString> keys = m_pMainWin->getpWinFileMgr()->getContentItemMap().keys();
     // 遍历所有的键
     for (const QString &key : keys) {
-        QStandardItem *newContentItem = new QStandardItem(key);
+        QStandardItem *newContentItem = new QStandardItem();
         newContentItem->setData(key, Qt::UserRole);
         newContentItem->setData(m_pMainWin->getpWinFileMgr()->getContentItemMap()[key], Qt::UserRole+1);
+
+        if(key.contains("点")){
+            QIcon icon(":/component/construct/point_.png");
+            newContentItem->setIcon(icon);
+        }
+        if(key.contains("线")){
+            QIcon icon(":/component/construct/line_.png");
+            newContentItem->setIcon(icon);
+        }
+        if(key.contains("圆")){
+            QIcon icon(":/component/construct/circle_.png");
+            newContentItem->setIcon(icon);
+        }
+        if(key.contains("平面")){
+            QIcon icon(":/component/construct/plane_.png");
+            newContentItem->setIcon(icon);
+        }
+        if(key.contains("球")){
+            QIcon icon(":/component/construct/sphere_.png");
+            newContentItem->setIcon(icon);
+        }
+        if(key.contains("圆锥")){
+            QIcon icon(":/component/construct/cone_.png");
+            newContentItem->setIcon(icon);
+        }
+        if(key.contains("圆柱")){
+            QIcon icon(":/component/construct/cylinder_.png");
+            newContentItem->setIcon(icon);
+        }
+        if(key.contains("距离")){
+            QIcon icon(":/component/construct/distance.png");
+            newContentItem->setIcon(icon);
+        }
+        if(key.contains("点云")){
+            QIcon icon(":/component/construct/pointCloud.png");
+            newContentItem->setIcon(icon);
+        }
+
+        newContentItem->setText(key);
+
         contentItem->appendRow(newContentItem);
 
         qDebug() << "Key:" << key << ", Value:" << m_pMainWin->getpWinFileMgr()->getContentItemMap()[key];
@@ -146,9 +196,49 @@ void FileManagerWidget::createIdentifyItem(){
     QList<QString> keys = m_pMainWin->getpWinFileMgr()->getIdentifyItemMap().keys();
     // 遍历所有的键
     for (const QString &key : keys) {
-        QStandardItem *newIentifyItem = new QStandardItem(key);
+        QStandardItem *newIentifyItem = new QStandardItem();
         newIentifyItem->setData(key, Qt::UserRole);
         newIentifyItem->setData(m_pMainWin->getpWinFileMgr()->getIdentifyItemMap()[key], Qt::UserRole+1);
+
+        if(key.contains("点")){
+            QIcon icon(":/component/find/point.jpg");
+            newIentifyItem->setIcon(icon);
+        }
+        if(key.contains("线")){
+            QIcon icon(":/component/find/line.jpg");
+            newIentifyItem->setIcon(icon);
+        }
+        if(key.contains("圆")){
+            QIcon icon(":/component/find/circle.jpg");
+            newIentifyItem->setIcon(icon);
+        }
+        if(key.contains("平面")){
+            QIcon icon(":/component/find/plan.jpg");
+            newIentifyItem->setIcon(icon);
+        }
+        if(key.contains("球")){
+            QIcon icon(":/component/find/sphere.jpg");
+            newIentifyItem->setIcon(icon);
+        }
+        if(key.contains("圆锥")){
+            QIcon icon(":/component/find/cone.jpg");
+            newIentifyItem->setIcon(icon);
+        }
+        if(key.contains("圆柱")){
+            QIcon icon(":/component/find/cylinder.jpg");
+            newIentifyItem->setIcon(icon);
+        }
+        if(key.contains("距离")){
+            QIcon icon(":/component/construct/distance.png");
+            newIentifyItem->setIcon(icon);
+        }
+        if(key.contains("点云")){
+            QIcon icon(":/component/construct/pointCloud.png");
+            newIentifyItem->setIcon(icon);
+        }
+
+        newIentifyItem->setText(key);
+
         identifyItem->appendRow(newIentifyItem);
 
         qDebug() << "Key:" << key << ", Value:" << m_pMainWin->getpWinFileMgr()->getIdentifyItemMap()[key];

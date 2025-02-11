@@ -15,6 +15,18 @@ VtkPresetWidget::VtkPresetWidget(QWidget *parent)
     // treeWidget->setSelectionMode(QAbstractItemView::NoSelection);//禁用选中
     treeWidget->setHeaderHidden(true);//隐藏标题栏
     treeWidget->setWordWrap(true);//自动换行
+    treeWidget->setIndentation(0);//设置子节点前方的间距
+
+    // 设置样式表，增大 MessageItemWidget 之间的间距
+    treeWidget->setStyleSheet(
+        "QTreeWidget::item { "
+        "   padding-bottom: 10px; "   // 下间距
+        "}"
+        "QTreeWidget{"
+        "background-color:#f0f0f0;"
+        "}"
+        );
+
 
     layout->addWidget(treeWidget);
     layout->setContentsMargins(0, 0, 0, 0);//消除边距
@@ -31,6 +43,7 @@ void VtkPresetWidget::setWidget(QString a){
     QString time=currentDateTime.toString("yyyy-MM-dd HH:mm:ss");   // 格式化为指定的字符串格式
 
     QTreeWidgetItem *item = new QTreeWidgetItem(treeWidget);
+    item->setSizeHint(0, QSize(0, 70)); //设置每个item的高度
     QWidget *itemWidget = new MessageItemWidget(time,a);
     treeWidget->setItemWidget(item, 0, itemWidget);
 

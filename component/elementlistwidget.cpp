@@ -50,11 +50,14 @@ ElementListWidget::ElementListWidget(QWidget *parent)
     QIcon icon2(":/component/construct/stop.png");
     QIcon icon3(":/component/construct/end.png");
     startButton->setFixedSize(40, 40);
-    pauseButton->setFixedSize(40, 40);
-    terminateButton->setFixedSize(40, 40);
+    startButton->setIconSize(QSize(35, 35));
     startButton->setIcon(icon1);
+    pauseButton->setFixedSize(40, 40);
     pauseButton->setIcon(icon3);
+    pauseButton->setIconSize(QSize(40, 40));
+    terminateButton->setFixedSize(40, 40);
     terminateButton->setIcon(icon2);
+    terminateButton->setIconSize(QSize(35, 35));
     toolBar->addWidget(startButton);
     toolBar->addSeparator();
     toolBar->addWidget(pauseButton);
