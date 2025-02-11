@@ -331,7 +331,10 @@ void FileManagerWidget::changeContentItem(const QModelIndex &index){
     // }
     QStandardItem *item = model->itemFromIndex(index);
     QString key = item->data(Qt::UserRole).toString();
-    m_pMainWin->getpWinFileMgr()->getContentItemMap()[key]=!m_pMainWin->getpWinFileMgr()->getContentItemMap()[key];
+    if (m_pMainWin->getpWinFileMgr()->getContentItemMap().contains(key)) {
+        m_pMainWin->getpWinFileMgr()->getContentItemMap()[key] = !m_pMainWin->getpWinFileMgr()->getContentItemMap()[key];
+    }
+    // m_pMainWin->getpWinFileMgr()->getContentItemMap()[key]=!m_pMainWin->getpWinFileMgr()->getContentItemMap()[key];
     QMap<QString, bool>& contentList = m_pMainWin->getpWinFileMgr()->getContentItemMap();  // 获取 QMap 的引用
     QMap<QString, bool>::const_iterator it;
     for (it = contentList.cbegin(); it != contentList.cend(); ++it) {
