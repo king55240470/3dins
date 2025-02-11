@@ -896,7 +896,7 @@ void VtkWidget::onCompare()
 
     // 创建KD-Tree用于点云2
     pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
-    kdtree.setInputCloud(cloud2);
+    kdtree.setInputCloud(cloud1);
 
     // 将比较结果存在comparisonCloud，并设置点云大小
     comparisonCloud->clear(); // 清除上次比较的结果
@@ -913,9 +913,9 @@ void VtkWidget::onCompare()
     std::vector<int> pointIdxNKNSearch(1);
     std::vector<float> pointNKNSquaredDistance(1);
 
-    // 遍历点云1中的每个点，找到与点云2中最近点的距离
-    for (size_t i = 0; i < cloud1->size(); ++i) {
-        if (kdtree.nearestKSearch(cloud1->at(i), 1, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
+    // 遍历点云2中的每个点，找到与点云1中最近点的距离
+    for (size_t i = 0; i < cloud2->size(); ++i) {
+        if (kdtree.nearestKSearch(cloud2->at(i), 1, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
             float dist = std::sqrt(pointNKNSquaredDistance[0]);
             // 更新最大和最小距离
             if (dist > maxDistance) {
@@ -929,9 +929,9 @@ void VtkWidget::onCompare()
             float normalizedDistance = (dist - minDistance) / (maxDistance - minDistance); // 归一化距离到0-1之间
             int r = static_cast<int>(255 * normalizedDistance);
             int b = 255 - r;
-            point.x = cloud1->at(i).x;
-            point.y = cloud1->at(i).y;
-            point.z = cloud1->at(i).z;
+            point.x = cloud2->at(i).x;
+            point.y = cloud2->at(i).y;
+            point.z = cloud2->at(i).z;
             point.r = r;
             point.g = 0;  // 中间色为0，只显示红蓝变化
             point.b = b;
