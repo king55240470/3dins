@@ -762,33 +762,33 @@ public:
     static bool haveSaved;
     static bool haveOpened;
 
-    // QDataStream& serialize(QDataStream& out) const override {
-    //     CEntity::serialize(out);  // 先序列化基类部分
-    //     out <<m_pt << pointCloudCount<< currentPointCloudId;
-    //     out <<isFileCloud  <<isComparsionCloud ;
+    QDataStream& serialize(QDataStream& out) const override {
+        CEntity::serialize(out);  // 先序列化基类部分
+        out <<m_pt <<pointCloudSize <<pointCloudCount<< currentPointCloudId;
+        out <<isFileCloud  <<isComparsionCloud <<isAlignCloud<<isModelCloud<<isMeasureCloud<<isCut<<isOver;
 
-    //     if(!haveSaved){
-    //         std::string file_path = std::getenv("USERPROFILE") + std::string("/Desktop/output_") + std::to_string(currentPointCloudId) + ".ply";
-    //         out<< QString::fromStdString(file_path);
-    //         pcl::io::savePLYFile(file_path, m_pointCloud);
-    //     }
-    //     return out;
-    // }
+        if(!haveSaved){
+            std::string file_path = "D:/source/3dins/build/modelCloud.ply";
+            out<< QString::fromStdString(file_path);
+            pcl::io::savePLYFile(file_path, m_pointCloud);
+        }
+        return out;
+    }
 
-    // QDataStream& deserialize(QDataStream& in) override {
-    //     CEntity::deserialize(in);  // 先反序列化基类部分
-    //     in >>m_pt >> pointCloudCount >> currentPointCloudId;
-    //     in>>isFileCloud  >>isComparsionCloud ;
+    QDataStream& deserialize(QDataStream& in) override {
+        CEntity::deserialize(in);  // 先反序列化基类部分
+        in >>m_pt >>pointCloudSize>> pointCloudCount >> currentPointCloudId;
+        in>>isFileCloud  >>isComparsionCloud >>isAlignCloud>>isModelCloud>>isMeasureCloud>>isCut>>isOver;
 
-    //     if(!haveOpened){
-    //         QString path;
-    //         in>> path;
-    //         std::string file_path=path.toStdString();
-    //         pcl::io::loadPLYFile<pcl::PointXYZRGB>(file_path, m_pointCloud);
-    //     }
+        if(!haveOpened){
+            QString path;
+            in>> path;
+            std::string file_path=path.toStdString();
+            pcl::io::loadPLYFile<pcl::PointXYZRGB>(file_path, m_pointCloud);
+        }
 
-    //     return in;
-    // }
+        return in;
+    }
 public:
     CPointCloud()
     {

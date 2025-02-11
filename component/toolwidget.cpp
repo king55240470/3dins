@@ -2261,13 +2261,8 @@ QString ToolWidget::getOutputPath(QString kind){
 QDataStream& ToolWidget::serializeEntityList(QDataStream& out, const QVector<CEntity*>& entityList){
     out << static_cast<int>(entityList.size());
     for (const auto& entity : entityList) {
-        int typeInt = entity->GetUniqueType();  // 获取对象的类型标识符
-        ENTITY_TYPE type=static_cast<ENTITY_TYPE>(typeInt);
-        out << type;  // 序列化类型标识符
-
-        if(type!=enPointCloud){
-            entity->serialize(out);
-        }
+        const CObject* en = dynamic_cast<const CObject*>(entity);
+        en->CObject::serialize(out);
     }
     return out;
 }
@@ -2276,55 +2271,10 @@ QDataStream& ToolWidget::deserializeEntityList(QDataStream& in, QVector<CEntity*
     int size;
     in >> size;
     entityList.clear();
-    for (int i = 0; i < size; ++i) {
-        int typeInt=0;
-        in >> typeInt;
-        ENTITY_TYPE type = static_cast<ENTITY_TYPE>(typeInt);
-
-        CEntity* entity = nullptr;
-        switch (type) {
-        case enCircle:
-            entity = new CCircle();
-            break;
-        case enLine:
-            entity = new CLine();
-            break;
-        case enPoint:
-            entity=new CPoint();
-            break;
-        case enPlane:
-            entity=new CPlane();
-            break;
-        case enSphere:
-            entity=new CSphere();
-            break;
-        case enCylinder:
-            entity=new CCylinder();
-            break;
-        case enCone:
-            entity=new CCone();
-            break;
-        case enCuboid:
-            entity=new CCuboid();
-            break;
-        case enDistance:
-            entity=new CDistance();
-            break;
-        case enPointCloud:
-            entity=new CPointCloud();
-            break;
-        case enAngle:
-            entity=new CAngle();
-            break;
-        default:
-            entity = new CEntity();
-            break;
-        }
-
-        if(type!=enPointCloud){
-            entity->deserialize(in);
-            entityList.append(entity);
-        }
+    for(int i=0;i<size;i++){
+        CEntity* obj=new CEntity();
+        obj->CObject::deserialize(in);
+        entityList.append(obj);
     }
     return in;
 }
