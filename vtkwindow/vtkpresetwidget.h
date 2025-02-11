@@ -3,6 +3,7 @@
 
 #include <QTreeWidget>
 #include <QVBoxLayout>
+#include <QStyledItemDelegate>
 
 class MainWindow;
 class VtkPresetWidget : public QWidget
@@ -34,10 +35,10 @@ public:
         QVBoxLayout *messageLayout=new QVBoxLayout(this);
 
         QLabel *timeLabel = new QLabel(time);
-        timeLabel->setStyleSheet("font-size: 8pt; color: gray; background-color: white;");
+        timeLabel->setStyleSheet("font-size: 8pt; color: gray;");
 
         QLabel *messageLabel = new QLabel(a);
-        messageLabel->setStyleSheet("font-size: 10pt; color: black;");
+        messageLabel->setStyleSheet("font-size: 10pt;");
 
         messageLayout->addWidget(timeLabel);
         messageLayout->addWidget(messageLabel);
@@ -45,6 +46,7 @@ public:
         setAttribute(Qt::WA_TransparentForMouseEvents); // 透明化鼠标事件
 
         setLayout(messageLayout);  // 设置布局
+        setStyleSheet("background-color: white;");//设置颜色
     }
 };
 
