@@ -467,9 +467,13 @@ void MainWindow::saveFile(){
         //保存模型点云
         out<<modelCloudExist;
         for(int i=0;i<getEntityListMgr()->getEntityList().size();i++){
-            CPointCloud*could=(CPointCloud*)getEntityListMgr()->getEntityList()[i];
-            if(could->isModelCloud){
-                could->serialize(out);
+            if(getEntityListMgr()->getEntityList()[i]->GetUniqueType()==enPointCloud){
+                CPointCloud*could=(CPointCloud*)getEntityListMgr()->getEntityList()[i];
+                if(could->isModelCloud){
+                    could->serialize(out);
+                    break;
+                }
+            }
                 // QString file_path = "D:/modelCloud.ply";
                 // //QString file_path = "D:/source/3dins/build/modelCloud.ply";
                 // out << file_path;
@@ -479,8 +483,6 @@ void MainWindow::saveFile(){
                 // }else {
                 //     qDebug() << "PLY file saved successfully!";
                 // }
-                // break;
-            }
         }
 
         //序列化toolWidget中的list

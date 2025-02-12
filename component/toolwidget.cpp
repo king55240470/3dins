@@ -2260,6 +2260,7 @@ QString ToolWidget::getOutputPath(QString kind){
 }
 QDataStream& ToolWidget::serializeEntityList(QDataStream& out, const QVector<CEntity*>& entityList){
     out << static_cast<int>(entityList.size());
+    qDebug()<<"out size:"<<static_cast<int>(entityList.size());
     for (const auto& entity : entityList) {
         const CObject* en = dynamic_cast<const CObject*>(entity);
         en->CObject::serialize(out);
@@ -2268,8 +2269,9 @@ QDataStream& ToolWidget::serializeEntityList(QDataStream& out, const QVector<CEn
 }
 
 QDataStream& ToolWidget::deserializeEntityList(QDataStream& in, QVector<CEntity*>& entityList){
-    int size;
+    int size=0;
     in >> size;
+    qDebug()<<"in size:"<<size;
     entityList.clear();
     for(int i=0;i<size;i++){
         CEntity* obj=new CEntity();
