@@ -268,11 +268,12 @@ void MainWindow::setupUi(){
 
     QMenu * switchTheme = bar->addMenu("主题(T)");
     QAction* showThemeMenu = new QAction();
-    showThemeMenu->setShortcut(QKeySequence(Qt::Key_S));
+    showThemeMenu->setShortcut(QKeySequence(Qt::Key_T));
     connect(showThemeMenu, &QAction::triggered, this, [this,switchTheme]() {
-        QPoint globalPos = mapToGlobal(QPoint(420, 22));
+        QPoint globalPos = mapToGlobal(QPoint(430, 22));
         switchTheme->exec(globalPos);
     });
+    addAction(showThemeMenu);
     QAction* lightBlue = switchTheme->addAction("简约蓝(默认)");
     lightBlue->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_D));
     connect(lightBlue, &QAction::triggered, this, &MainWindow::onConvertLighBlueTheme);

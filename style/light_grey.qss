@@ -108,7 +108,7 @@ QToolBar::separator {
 QTreeWidget {
     font-size: 14px "微软雅黑";
     background-color: #ffffff; /* 白色背景 */
-    border: 1px solid #dcdcdc; /* 浅灰色边框 */
+    border: 1px solid #dcdcdc;
     alternate-background-color: #f2f2f2; /* 交替行的浅灰色背景 */
 }
 
@@ -128,14 +128,13 @@ QHeaderView {
 
 QHeaderView::section {
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #e6e6e6, stop: 1 #cccccc); /* 浅灰色渐变背景 */
-    border: 1px solid #dcdcdc; /* 浅灰色边框 */
-    padding: 5px; /* 单元格内边距 */
+    border: 1px solid #dcdcdc;
 }
 
 /* QTreeView的样式 */
 QTreeView {
     background-color: #ffffff; /* 白色背景 */
-    border: 1px solid #dcdcdc; /* 浅灰色边框 */
+    /*border: 1px solid #dcdcdc; */
     alternate-background-color: #f2f2f2; /* 交替行的浅灰色背景 */
 }
 
