@@ -9,6 +9,7 @@
 #include<QTableWidget>
 #include <QMessageBox>
 #include<QMenuBar>
+#include <QDesktopServices>
 
 // 打开文件
 
@@ -547,12 +548,19 @@ void ToolWidget::connectActionWithF(){
     connect(construct_actions_[construct_action_name_list_.indexOf("构造点云")],&QAction::triggered,this,&  ToolWidget::onConstructPointCloud);
     connect(construct_actions_[construct_action_name_list_.indexOf("构造角度")],&QAction::triggered,this,&  ToolWidget::onConstructAngle);
 
-    //保存
-    connect(save_actions_[save_action_name_list_.indexOf("excel")],&QAction::triggered,this,&  ToolWidget::onSaveExcel);
-    connect(save_actions_[save_action_name_list_.indexOf("word")],&QAction::triggered,this,&  ToolWidget::onSaveWord);
-    connect(save_actions_[save_action_name_list_.indexOf("txt")],&QAction::triggered,this,&  ToolWidget::onSaveTxt);
-    connect(save_actions_[save_action_name_list_.indexOf("pdf")],&QAction::triggered,this,&  ToolWidget::onSavePdf);
-    connect(save_actions_[save_action_name_list_.indexOf("image")],&QAction::triggered,this,&  ToolWidget::onSaveImage);
+    // //保存
+    // connect(save_actions_[save_action_name_list_.indexOf("excel")],&QAction::triggered,this,&  ToolWidget::onSaveExcel);
+    // connect(save_actions_[save_action_name_list_.indexOf("word")],&QAction::triggered,this,&  ToolWidget::onSaveWord);
+    // connect(save_actions_[save_action_name_list_.indexOf("txt")],&QAction::triggered,this,&  ToolWidget::onSaveTxt);
+    // connect(save_actions_[save_action_name_list_.indexOf("pdf")],&QAction::triggered,this,&  ToolWidget::onSavePdf);
+    // connect(save_actions_[save_action_name_list_.indexOf("image")],&QAction::triggered,this,&  ToolWidget::onSaveImage);
+
+    //打开
+    connect(save_actions_[save_action_name_list_.indexOf("excel")], &QAction::triggered, this, &ToolWidget::onOpenExcel);
+    connect(save_actions_[save_action_name_list_.indexOf("word")], &QAction::triggered, this, &ToolWidget::onOpenWord);
+    connect(save_actions_[save_action_name_list_.indexOf("txt")], &QAction::triggered, this, &ToolWidget::onOpenTxt);
+    connect(save_actions_[save_action_name_list_.indexOf("pdf")], &QAction::triggered, this, &ToolWidget::onOpenPdf);
+    connect(save_actions_[save_action_name_list_.indexOf("image")], &QAction::triggered, this, &ToolWidget::onOpenImage);
 
     // connect(save_actions_[save_action_name_list_.indexOf("txt")],&QAction::triggered,this,&  ToolWidget::onSaveTxt);
 
@@ -603,6 +611,51 @@ void   onCreateCoord(){qDebug()<<"点击了创建坐标系";}
 void   onSpinCoord(){qDebug()<<"点击了旋转坐标系";}
 void   onSaveCoord(){qDebug()<<"点击了保存坐标系";}
 }
+
+//open
+void ToolWidget::onOpenExcel() {
+    if (!QDesktopServices::openUrl(QUrl::fromLocalFile(lastCreatedExcelFile))) {
+        QString log="无法打开Excel文件";
+        m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
+    }
+}
+
+void ToolWidget::onOpenWord() {
+    if (!QDesktopServices::openUrl(QUrl::fromLocalFile(lastCreatedWordFile))) {
+        QString log="无法打开Word文件";
+        m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
+    }
+}
+
+void ToolWidget::onOpenTxt() {
+    if (!QDesktopServices::openUrl(QUrl::fromLocalFile(lastCreatedTxtFile))) {
+        QString log="无法打开Txt文件";
+        m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
+    }
+}
+
+void ToolWidget::onOpenPdf() {
+    if (!QDesktopServices::openUrl(QUrl::fromLocalFile(lastCreatedPdfFile))) {
+        QString log="无法打开Pdf文件";
+        m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
+    }
+}
+
+void ToolWidget::onOpenImage() {
+    if (!QDesktopServices::openUrl(QUrl::fromLocalFile(lastCreatedImageFileFront))) {
+        QString log="无法打开Image文件";
+        m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
+    }
+    if (!QDesktopServices::openUrl(QUrl::fromLocalFile(lastCreatedImageFileTop))) {
+        ;// QString log="无法打开Image(Top)文件";
+        // m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
+    }
+    if (!QDesktopServices::openUrl(QUrl::fromLocalFile(lastCreatedImageFileRight))) {
+        ;// QString log="无法打开Image(Right)文件";
+        // m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
+    }
+}
+
 //Save
 //从列表中提取数据转换为 QList<QList<QString>> 类型的二维列表
 void   ExtractData(QVector<CEntity *>& entitylist,QList<QList<QString>>& dataAll){
@@ -785,7 +838,8 @@ void   ToolWidget::onSavePdf(){
    }
 
    painter.end();
-QMessageBox::information(nullptr, "提示", "保存成功");
+   QMessageBox::information(nullptr, "提示", "保存成功");
+   lastCreatedPdfFile=filePath;
 
 }
 // void ToolWidget::onSaveExcel() {
@@ -934,6 +988,7 @@ void   ToolWidget::onSaveExcel(){
     workBook->dynamicCall("Close()");	//关闭工作簿
     excel.dynamicCall("Quit()");		//关闭excel
     QMessageBox::information(nullptr, "提示", "保存成功");
+    lastCreatedExcelFile=filePath;
 }
 
 void ToolWidget::onSaveTxt(){
@@ -1090,7 +1145,7 @@ void ToolWidget::onSaveTxt(){
     // 关闭文件
     file.close();
     QMessageBox::information(nullptr, "提示", "保存成功");
-
+    lastCreatedTxtFile=filePath;
 }
 
 
@@ -1147,7 +1202,7 @@ void   ToolWidget::onSaveWord(){
         file.close();
         QMessageBox::information(nullptr, "提示", "保存成功");
     }
-
+    lastCreatedWordFile=filePath;
 
 }
 
@@ -1207,6 +1262,9 @@ void   ToolWidget::onSaveImage(){
         SaveImage(fileNameFront,format);}
 
     QMessageBox::information(nullptr, "提示", "保存成功");
+    lastCreatedImageFileFront=fileNameFront;
+    lastCreatedImageFileTop=fileNameTop;
+    lastCreatedImageFileRight=fileNameRight;
 }
 
 void ToolWidget::setauto(bool Auto)

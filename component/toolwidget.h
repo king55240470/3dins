@@ -124,6 +124,14 @@ public slots:
     void onSaveTxt();
     void onSaveWord();
     void onSaveImage();
+
+    //打开文件
+    void onOpenExcel();
+    void onOpenWord();
+    void onOpenTxt();
+    void onOpenPdf();
+    void onOpenImage();
+
     //设置是否自动化
     void setauto(bool Auto);
 
@@ -182,6 +190,14 @@ private:
     //存储对比过程中产生图片路径
     QVector<QString> imagePaths;
 
+    //最新文件路径
+    QString lastCreatedExcelFile;
+    QString lastCreatedWordFile;
+    QString lastCreatedTxtFile;
+    QString lastCreatedPdfFile;
+    QString lastCreatedImageFileFront;
+    QString lastCreatedImageFileTop;
+    QString lastCreatedImageFileRight;
 
     //是否自动化保存内容
     bool IsAuto=false;
