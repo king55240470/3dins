@@ -137,16 +137,16 @@ QTreeView {
     background-color: #ffffff; /* 白色背景 */
     border: 1px solid #dcdcdc; /* 浅灰色边框 */
     alternate-background-color: #f2f2f2; /* 交替行的浅灰色背景 */
-    show-decoration-selected: 1; /* 确保选中时显示装饰 */
 }
 
 QTreeView::item {
-    padding: 3px;
+    padding: 1px;
 }
 
 QTreeView::item:selected {
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #cccccc, stop: 1 #bcbcbc); /* 选中项的浅灰色渐变背景 */
     color: #333;
+    padding: 1px;
 }
 
 QTreeView::branch {
