@@ -100,12 +100,12 @@ QTreeWidget::branch {
 /* QTreeWidget的头部样式 */
 QHeaderView {
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f0f0f0, stop: 1 #e0e0e0);
-    padding: 5px;
+    padding: 2px;
 }
 
 QHeaderView::section {
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f0f0f0, stop: 1 #e0e0e0);
-    padding: 5px;
+    padding: 2px;
 }
 
 QTreeView {
@@ -121,6 +121,7 @@ QTreeView::item {
 QTreeView::item:selected {
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #3570b2, stop: 1 #4a90e2);
     color: #ffffff;
+    padding: 1px;
 }
 
 QTreeView::branch {
