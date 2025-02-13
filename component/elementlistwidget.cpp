@@ -23,8 +23,6 @@ ElementListWidget::ElementListWidget(QWidget *parent)
     QStringList headers;
     headers << "元素" << "元素别名";
     QTreeWidgetItem *headerItem = new QTreeWidgetItem(headers);
-
-    // 设置头部项
     treeWidgetNames->setHeaderItem(headerItem);
     //设置为多选模式
     //treeWidgetNames->setSelectionMode(QAbstractItemView::MultiSelection);
@@ -32,7 +30,9 @@ ElementListWidget::ElementListWidget(QWidget *parent)
     // 元素信息列表
     treeWidgetInfo = new QTreeWidget(this);
     treeWidgetInfo->setColumnCount(2);
-    treeWidgetInfo->setHeaderLabel("源");
+    QStringList Infoheaders;
+    Infoheaders << "构造来源" << "来源情况";
+    treeWidgetInfo->setHeaderLabels(Infoheaders);
 
     //工具栏
     toolBar = new QToolBar(this);
@@ -212,6 +212,7 @@ void ElementListWidget::onCustomContextMenuRequested(const QPoint &pos)
     QAction *action2 = menu.addAction("全部选中");
     QAction *action3 = menu.addAction("遍历列表");
     QAction *action4 = menu.addAction("设置公差");
+    QAction *action7 = menu.addAction("设置别称");
     QAction *action5 = menu.addAction("显示元素信息");
     QAction *action6 = menu.addAction("关闭元素信息");
     connect(action1, &QAction::triggered, this, &ElementListWidget::onDeleteEllipse);
@@ -220,6 +221,7 @@ void ElementListWidget::onCustomContextMenuRequested(const QPoint &pos)
     connect(action4, &QAction::triggered, this, &ElementListWidget::setTolerance);
     connect(action5, &QAction::triggered, this, &ElementListWidget::showInfotext);
     connect(action6, &QAction::triggered, this, &ElementListWidget::closeInfotext);
+    connect(action7, &QAction::triggered, this, &ElementListWidget::changeName);
     menu.exec(mapToGlobal(pos));
 }
 
@@ -328,12 +330,12 @@ void ElementListWidget::BtnClicked()
     }
     uper = up->text().toDouble(&ok);
     if (!ok) {
-        QMessageBox::critical(this, "输入错误", "圆柱体-底面中心坐标X需要是双精度浮点类型数。");
+        QMessageBox::critical(this, "输入错误", "需要是双精度浮点类型数。");
         return;
     }
     downer = down->text().toDouble(&ok);
     if (!ok) {
-        QMessageBox::critical(this, "输入错误", "圆柱体-底面中心坐标Y需要是双精度浮点类型数。");
+        QMessageBox::critical(this, "输入错误", "需要是双精度浮点类型数。");
         return;
     }
     for(QTreeWidgetItem*item:selectedItems){
@@ -924,6 +926,41 @@ QList<QTreeWidgetItem*> ElementListWidget:: getSelectedItems(){
 }
 QVector<CObject*> ElementListWidget::getEleobjlist(){
     return eleobjlist;
+}
+
+void ElementListWidget::changeName()
+{
+    if(getSelectedItems().size()!=1)
+    {
+        QMessageBox::information(nullptr, "提示", "请选中一个元素");
+        return;
+    }
+    QTreeWidgetItem *selectedItem=getSelectedItems()[0];
+    CObject *obj = selectedItem->data(0, Qt::UserRole).value<CObject*>();
+    dialog = new QDialog(this);
+    dialog->setWindowTitle("设置元素别名");
+    dialog->resize(200,100);
+    QVBoxLayout *layout = new QVBoxLayout(dialog);
+    QLabel *Name = new QLabel("别名:");
+    name = new QLineEdit();
+    name->setText(obj->GetObjectAutoName());
+    name->setMaximumWidth(150);
+    updownBtn=new QPushButton("确定");
+    layout->addWidget(Name, 0);
+    layout->addWidget(name, 0);
+    layout->addWidget(updownBtn);
+    dialog->setLayout(layout);
+    connect(updownBtn, &QPushButton::clicked, this, &ElementListWidget::setAutoName);
+    dialog->exec();
+}
+
+void ElementListWidget::setAutoName()
+{
+    QTreeWidgetItem *selectedItem=getSelectedItems()[0];
+    CObject *obj = selectedItem->data(0, Qt::UserRole).value<CObject*>();
+    obj->SetObjectAutoName(name->text());
+    m_pMainWin->NotifySubscribe();
+    dialog->close();
 }
 
 void ElementListWidget::starttime()

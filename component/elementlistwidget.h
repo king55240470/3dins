@@ -54,6 +54,8 @@ public:
     void upadteelementlist();
     QList<QTreeWidgetItem*> getSelectedItems();
     QVector<CObject*> getEleobjlist();
+    void changeName();
+    void setAutoName();
     void starttime();
     void selectall();
     void showDialog();
@@ -92,6 +94,7 @@ private:
     QVector<CObject*>eleobjlist;
     //std::unordered_map<QTreeWidgetItem*, size_t> itemToIndexMap;
     bool ctrlPressed = false;
+    QLineEdit* name;
     QLineEdit* up;
     QLineEdit* down;
     QPushButton *updownBtn;
