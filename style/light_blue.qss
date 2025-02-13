@@ -49,7 +49,7 @@ QPushButton {
     text-align: center;
     background-color: #ffffff;
     /*border: 1px solid #3570b2;*/
-    border-radius: 5px;
+    border-radius: 3px;
     padding: 1px;
     color: #000000;
 }
@@ -79,7 +79,7 @@ QToolBar::separator {
 QTreeWidget {
     font-size: 14px "微软雅黑";
     background-color: #ffffff;
-    /*border: 1px solid #cccccc;*/
+    border: 1px solid #cccccc;
     alternate-background-color: #f0f0f0;
 }
 
@@ -90,25 +90,22 @@ QTreeWidget::item {
 QTreeWidget::item:selected {
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #3570b2, stop: 1 #4a90e2);
     color: #ffffff;
+    padding: 1px;
 }
 
 QTreeWidget::branch {
-    background-color: transparent;
     color: #333;
 }
 
 /* QTreeWidget的头部样式 */
 QHeaderView {
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f0f0f0, stop: 1 #e0e0e0);
-    padding: 3px;
-    border-radius: 2px;
-    padding: 2px;
+    padding: 5px;
 }
 
 QHeaderView::section {
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f0f0f0, stop: 1 #e0e0e0);
-    border: 1px solid #cccccc;
-    padding: 2px;
+    padding: 5px;
 }
 
 QTreeView {

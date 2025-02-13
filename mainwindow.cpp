@@ -21,6 +21,7 @@
 #include "manager/cpcsmgr.h"
 #include <QListWidget>
 #include <QIODevice>
+#include <QShortcut>
 
 class PresetElemWidget;
 
@@ -49,25 +50,44 @@ void MainWindow::setupUi(){
     QIcon openFile(":/style/openfile.png");
     QIcon saveFile(":/style/savefile.png");
     QIcon exitIcon(":/style/exit.png");
-    QMenu *fileMenu=bar->addMenu("文件");
+    QMenu *fileMenu=bar->addMenu("文件(F)");
     QAction *openAction=fileMenu->addAction("打开文件");
     openAction->setIcon(openFile);
+    openAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_O));
     connect(openAction, &QAction::triggered, this, &MainWindow::openFile); // 连接打开文件的信号与槽
-    //fileMenu->addAction(openAction);
+    fileMenu->addAction(openAction);
     QAction *saveAction=fileMenu->addAction("保存文件");
     saveAction->setIcon(saveFile);
+    saveAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_S));
     connect(saveAction, &QAction::triggered, this, &MainWindow::saveFile); // 连接保存文件的信号与槽
-    //fileMenu->addAction(saveAction);
+    fileMenu->addAction(saveAction);
     fileMenu->addSeparator();
     QAction *exitAction=fileMenu->addAction("退出");
     exitAction->setIcon(exitIcon);
+    exitAction->setShortcut(QKeySequence(Qt::Key_Escape));
     connect(exitAction, SIGNAL(triggered()), this, SLOT(close())); // 连接退出的信号与槽
     fileMenu->addAction(exitAction);
+    // 创建一个隐藏的 QAction，用于触发菜单
+    QAction* showMenuAction = new QAction();
+    showMenuAction->setShortcut(QKeySequence(Qt::Key_F)); // 设置快捷键为 F
+    connect(showMenuAction, &QAction::triggered, this, [fileMenu,this]() {
+        QPoint globalPos = mapToGlobal(QPoint(0, 22));
+        fileMenu->popup(globalPos);
+    });
+    addAction(showMenuAction);
 
-    QAction * contralAction=new QAction("控制图标");
+    QAction * contralAction=new QAction("控制图标(Z)");
+    contralAction->setShortcut(QKeySequence(Qt::Key_Z));
     bar->addAction(contralAction);
 
-    QMenu *presetMenu=bar->addMenu("预置元素");
+    QMenu *presetMenu=bar->addMenu("预置(P)");
+    QAction* showPresetMenu = new QAction();
+    showPresetMenu->setShortcut(QKeySequence(Qt::Key_P));
+    connect(showPresetMenu, &QAction::triggered, this, [this,presetMenu]() {
+        QPoint globalPos = mapToGlobal(QPoint(150, 22));
+        presetMenu->exec(globalPos);
+    });
+    addAction(showPresetMenu);
     // 创建图标，用于构造、拟合、预置等功能的指示
     QIcon pointIcon(":/component/construct/point.jpg");
     QIcon lineIcon(":/component/construct/line.jpg");
@@ -123,19 +143,9 @@ void MainWindow::setupUi(){
         showPresetElemWidget(7);
     });
 
-    QMenu *cloudOperation=bar->addMenu("点云操作");
-    QAction* compareAction=cloudOperation->addAction("点云对比");
-    connect(compareAction,&QAction::triggered,this,[&](){
-        pWinVtkWidget->onCompare();
-    });
-    QAction* alignAction=cloudOperation->addAction("点云对齐");
-    connect(alignAction,&QAction::triggered,this,[&](){
-        pWinVtkWidget->onAlign();
-    });
-
-    QMenu* dateOperation=bar->addMenu("配置");
-    QAction* storeAction=dateOperation->addAction("数据记录");
-    connect(storeAction,&QAction::triggered,this,&MainWindow::SaveIniFile);
+    // QMenu* dateOperation=bar->addMenu("配置");
+    // QAction* storeAction=dateOperation->addAction("数据记录");
+    // connect(storeAction,&QAction::triggered,this,&MainWindow::SaveIniFile);
 
     // QMenu *fittingMenu=bar->addMenu("拟合参数设置");
     // QAction* fittingPlaneAction=fittingMenu->addAction("拟合平面");
@@ -149,7 +159,14 @@ void MainWindow::setupUi(){
     // QAction* fittingLineAction=fittingMenu->addAction("拟合直线");
     // connect(fittingLineAction, &QAction::triggered, this, &setDataWidget::setLineData);
 
-    QMenu* constructorMenu = bar->addMenu("构造");
+    QMenu* constructorMenu = bar->addMenu("构造(C)");
+    QAction* showConsMenu = new QAction();
+    showConsMenu->setShortcut(QKeySequence(Qt::Key_C));
+    connect(showConsMenu, &QAction::triggered, this, [this,constructorMenu]() {
+        QPoint globalPos = mapToGlobal(QPoint(215, 22));
+        constructorMenu->exec(globalPos);
+    });
+    addAction(showConsMenu);
     QAction* constructPoint = constructorMenu->addAction("点");
     QAction* constructLine = constructorMenu->addAction("线");
     QAction* constructPlane = constructorMenu->addAction("平面");
@@ -195,7 +212,14 @@ void MainWindow::setupUi(){
     connect(constructAngle, &QAction::triggered, this, [&](){ pWinToolWidget->onConstructAngle();});
     connect(constructRect, &QAction::triggered, this, [&](){ pWinToolWidget->onConstructRectangle();});
 
-    QMenu* fittingMenu = bar->addMenu("识别");
+    QMenu* fittingMenu = bar->addMenu("识别(S)");
+    QAction* showFitMenu = new QAction();
+    showFitMenu->setShortcut(QKeySequence(Qt::Key_S));
+    connect(showFitMenu, &QAction::triggered, this, [this,fittingMenu]() {
+        QPoint globalPos = mapToGlobal(QPoint(280, 22));
+        fittingMenu->exec(globalPos);
+    });
+    addAction(showFitMenu);
     QAction* findPoint = fittingMenu->addAction("点");
     QAction* findLine = fittingMenu->addAction("线");
     QAction* findPlane = fittingMenu->addAction("平面");
@@ -223,12 +247,40 @@ void MainWindow::setupUi(){
     connect(findCylinder, &QAction::triggered, this, [&](){ pWinToolWidget->onFindCylinder(); });
     connect(findCone, &QAction::triggered, this, [&](){ pWinToolWidget->onFindCone(); });
 
-    QMenu * switchTheme = bar->addMenu("主题");
-    QAction* lightBlue = switchTheme->addAction("浅蓝色(默认)");
+    QMenu *cloudOperation=bar->addMenu("点云操作(V)");
+    QAction* showCloudMenu = new QAction();
+    showCloudMenu->setShortcut(QKeySequence(Qt::Key_V));
+    connect(showCloudMenu, &QAction::triggered, this, [this,cloudOperation]() {
+        QPoint globalPos = mapToGlobal(QPoint(340, 22));
+        cloudOperation->exec(globalPos);
+    });
+    addAction(showCloudMenu);
+    QAction* compareAction=cloudOperation->addAction("点云对比");
+    compareAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_C));
+    connect(compareAction,&QAction::triggered,this,[&](){
+        pWinVtkWidget->onCompare();
+    });
+    QAction* alignAction=cloudOperation->addAction("点云对齐");
+    alignAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_A));
+    connect(alignAction,&QAction::triggered,this,[&](){
+        pWinVtkWidget->onAlign();
+    });
+
+    QMenu * switchTheme = bar->addMenu("主题(T)");
+    QAction* showThemeMenu = new QAction();
+    showThemeMenu->setShortcut(QKeySequence(Qt::Key_S));
+    connect(showThemeMenu, &QAction::triggered, this, [this,switchTheme]() {
+        QPoint globalPos = mapToGlobal(QPoint(420, 22));
+        switchTheme->exec(globalPos);
+    });
+    QAction* lightBlue = switchTheme->addAction("简约蓝(默认)");
+    lightBlue->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_D));
     connect(lightBlue, &QAction::triggered, this, &MainWindow::onConvertLighBlueTheme);
     QAction* lightGrey = switchTheme->addAction("浅灰色");
+    lightGrey->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_F));
     connect(lightGrey, &QAction::triggered, this, &MainWindow::onConvertLightGreyTheme);
     QAction* darkBlue = switchTheme->addAction("科技蓝");
+    darkBlue->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_G));
     connect(darkBlue, &QAction::triggered, this, &MainWindow::onConvertDarkBlueTheme);
 
     // 添加竖线分隔符
@@ -246,8 +298,8 @@ void MainWindow::setupUi(){
     // QLabel *label2=new QLabel("右侧状态栏",this);
     // stbar->addWidget(label2);
     switchRefCsBtn = new QPushButton("依赖坐标系");
-    switchRefCsBtn->setStyleSheet("QPushButton { padding: 2px;border-radius: 3px;}");
-    switchRefCsBtn->setFixedSize(120, 30);
+    switchRefCsBtn->setStyleSheet("QPushButton { padding: 1px;}");
+    switchRefCsBtn->setFixedSize(100, 20);
     switchRefCsBtn->setObjectName("statusSwitchRef");
     switchRefCsBtn->setFlat(true); // 设置按钮为平面样式
     switchRefCsBtn->installEventFilter(this);  // 为按钮安装事件过滤器
@@ -256,8 +308,8 @@ void MainWindow::setupUi(){
     stbar->addWidget(line);
 
     switchCsBtn = new QPushButton("机械坐标系");
-    switchCsBtn->setStyleSheet("QPushButton { padding: 2px;border-radius: 3px;}");
-    switchCsBtn->setFixedSize(120, 30);
+    switchCsBtn->setStyleSheet("QPushButton { padding: 1px;}");
+    switchCsBtn->setFixedSize(100, 20);
     switchCsBtn->setFlat(true); // 设置按钮为平面样式
     switchCsBtn->installEventFilter(this);  // 为按钮安装事件过滤器
     switchCsBtn->setObjectName("statusSwitchCs");

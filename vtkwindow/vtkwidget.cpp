@@ -76,24 +76,33 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
 
 void VtkWidget::OnMouseMove()
 {
-    if (!isDragging) {
-        return;
+    if (!isDragging && !isMiddleDragging) {
+        return; // 如果没有拖动且没有按住鼠标中键，则直接返回
     }
 
     int clickPos[2];
     renWin->GetInteractor()->GetEventPosition(clickPos);
 
-    // 更新当前拖动的文本演员
-    infoTextActor->SetPosition(clickPos[0] - 30, clickPos[1] - 20);
-    position = infoTextActor->GetPosition();
+    if(isDragging){
+        // 更新当前拖动的文本演员
+        infoTextActor->SetPosition(clickPos[0] - 30, clickPos[1] - 20);
+        position = infoTextActor->GetPosition();
 
-    // 更新对应的文本框、标题行和叉号的位置
-    rectangleActor->SetPosition(position[0], position[1]);
-    titleTextActor->SetPosition(position[0], position[1] + textHeight);
-    iconActor->SetPosition(position[0] + textWidth, position[1] + textHeight + 20);
+        // 更新对应的文本框、标题行和叉号的位置
+        rectangleActor->SetPosition(position[0], position[1]);
+        titleTextActor->SetPosition(position[0], position[1] + textHeight);
+        iconActor->SetPosition(position[0] + textWidth - 5, position[1] + textHeight + 15);
 
-    // 更新对应的指向线段
-    Linechange();
+        // 更新对应的指向线段
+        Linechange();
+    }
+    // if(isMiddleDragging){
+    //     // 更新指向线段的终点位置
+    //     CEntity* entity = getEntityFromTextActor(infoTextActor);
+    //     if (entity) {
+    //         updateEndPoint(entity, clickPos[0], clickPos[1]);
+    //     }
+    // }
 
     // 限制渲染频率
     static double lastRenderTime = vtkTimerLog::GetUniversalTime();
@@ -164,7 +173,7 @@ void VtkWidget::setCentity(CEntity* entity)
 {
     if (!entity) return;
 
-    // 如果已经存在该实体的信息，直接返回
+    // 如果已经存在该图形的信息，直接返回
     if (entityToTextActors.contains(entity)) return;
 
     elementEntity = entity;
@@ -256,11 +265,13 @@ void VtkWidget::createText(CEntity* entity)
     renderer->AddActor(titleTextActor);
     renderer->AddActor(closeIcon);
 
-    // 设置事件回调
+    // 绑定鼠标事件
     renWin->GetInteractor()->AddObserver(vtkCommand::LeftButtonPressEvent, this, &VtkWidget::OnLeftButtonPress);
     renWin->GetInteractor()->AddObserver(vtkCommand::MouseMoveEvent, this, &VtkWidget::OnMouseMove);
     renWin->GetInteractor()->AddObserver(vtkCommand::LeftButtonReleaseEvent, this, &VtkWidget::OnLeftButtonRelease);
     renWin->GetInteractor()->AddObserver(vtkCommand::RightButtonPressEvent, this, &VtkWidget::OnRightButtonPress);
+    renWin->GetInteractor()->AddObserver(vtkCommand::MiddleButtonPressEvent, this, &VtkWidget::OnMiddleButtonPress);
+    renWin->GetInteractor()->AddObserver(vtkCommand::MiddleButtonReleaseEvent, this, &VtkWidget::OnMiddleButtonRelease);
 
     renWin->Render();
 }
@@ -369,7 +380,7 @@ vtkSmartPointer<vtkActor2D> VtkWidget::createLine(CEntity* entity, vtkSmartPoint
     }
     entityToEndPoints[entity] = b;
 
-    vtkSmartPointer<vtkCoordinate> coordinate = vtkSmartPointer<vtkCoordinate>::New();
+    coordinate = vtkSmartPointer<vtkCoordinate>::New();
     coordinate->SetValue(b.x, b.y, b.z);
     coordinate->SetCoordinateSystemToWorld();
     int* viewportMidPoint = coordinate->GetComputedViewportValue(renderer);
@@ -437,9 +448,9 @@ vtkSmartPointer<vtkActor2D> VtkWidget::createCloseIcon(vtkSmartPointer<vtkTextAc
     // 创建叉号演员
     iconActor = vtkSmartPointer<vtkActor2D>::New();
     iconActor->SetMapper(crossMapper);
-    iconActor->GetProperty()->SetLineWidth(5);
+    iconActor->GetProperty()->SetLineWidth(4);
     iconActor->GetProperty()->SetColor(MainWindow::HighLightColor);
-    iconActor->SetPosition(x + width - 20, y + height - 20);
+    iconActor->SetPosition(x + width - 25, y + height - 25);
 
     return iconActor;
 }
@@ -473,6 +484,23 @@ void VtkWidget::Linechange()
     lineMapper->SetInputData(linePolyData);
     lineMapper->Update();
     lineActor->SetMapper(lineMapper);
+}
+
+void VtkWidget::updateEndPoint(CEntity *entity, int x, int y)
+{
+    // 将鼠标位置转换为世界坐标
+    vtkSmartPointer<vtkCoordinate> coordinate = vtkSmartPointer<vtkCoordinate>::New();
+    coordinate->SetValue(x, y, 0);
+    coordinate->SetCoordinateSystemToViewport();
+    double* worldPos = coordinate->GetComputedWorldValue(renderer);
+
+    // 更新终点位置
+    entityToEndPoints[entity].x = worldPos[0];
+    entityToEndPoints[entity].y = worldPos[1];
+    entityToEndPoints[entity].z = worldPos[2];
+
+    // 更新指向线段
+    Linechange();
 }
 
 void VtkWidget::closeText()
@@ -544,12 +572,14 @@ void VtkWidget::closeTextActor(CEntity* entity)
         entityToLines.remove(entity);
         entityToIcons.remove(entity);
         entityToTitleTextActors.remove(entity);
+        entityToEndPoints.remove(entity);
 
         // 去掉该文本框占用的位置
-        if(increaseDis[1] != 0){
+        if (increaseDis[1] >= 200) {
             increaseDis[1] -= 200;
+        } else {
+            increaseDis[1] = 0;
         }
-
         // 重新渲染窗口
         renWin->Render();
     }
@@ -648,6 +678,16 @@ void VtkWidget::ShowColorBar(double minDistance, double maxDistance){
 void VtkWidget::OnRightButtonPress()
 {
     vtkMenu->showTearOffMenu(); // 弹出菜单栏
+}
+
+void VtkWidget::OnMiddleButtonPress()
+{
+    isMiddleDragging = true;
+}
+
+void VtkWidget::OnMiddleButtonRelease()
+{
+    isMiddleDragging = false;
 }
 
 vtkSmartPointer<vtkRenderWindow> VtkWidget::getRenderWindow(){
