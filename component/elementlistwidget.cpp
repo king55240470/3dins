@@ -55,6 +55,10 @@ ElementListWidget::ElementListWidget(QWidget *parent)
     pauseButton->setFixedSize((treeWidgetNames->width())/2, 40);
     continueButton->setFixedSize((treeWidgetNames->width())/2, 40);
     terminateButton->setFixedSize((treeWidgetNames->width())/2, 40);
+    startButton->setIconSize(QSize(25, 25));
+    pauseButton->setIconSize(QSize(25, 25));
+    continueButton->setIconSize(QSize(25, 25));
+    terminateButton->setIconSize(QSize(25, 25));
     startButton->setIcon(icon1);
     pauseButton->setIcon(icon3);
     terminateButton->setIcon(icon2);
@@ -526,6 +530,7 @@ void ElementListWidget::CompareCloud()
         return;
     }
     bool isHaveShape=false;
+    QVector<CEntity*>Shapelist;
     int CurrentMeasureindex;
     //CPointCloud*could=(CPointCloud*)pointCouldlists.dequeue();
     //could->SetSelected(true);
@@ -542,15 +547,21 @@ void ElementListWidget::CompareCloud()
             }
         }
         if(m_pMainWin->getEntityListMgr()->getEntityList()[i]->GetUniqueType()==enCuboid){
-            m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
+            Shapelist.push_back(m_pMainWin->getEntityListMgr()->getEntityList()[i]);
+            //m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
             isHaveShape=true;
         }
     }
     if(isHaveShape){
         m_pMainWin->getPWinVtkWidget()->onAlign();
-        m_pMainWin->getEntityListMgr()->getEntityList()[CurrentMeasureindex]->SetSelected(false);
-        m_pMainWin->getEntityListMgr()->getEntityList().back()->SetSelected(true);
-        m_pMainWin->getPWinToolWidget()->onConstructPointCloud();
+        int size=m_pMainWin->getEntityListMgr()->getEntityList().size()-1;
+        for(CEntity*entity:Shapelist){
+            m_pMainWin->getEntityListMgr()->getEntityList()[CurrentMeasureindex]->SetSelected(false);
+            m_pMainWin->getEntityListMgr()->getEntityList()[size]->SetSelected(true);
+            entity->SetSelected(true);
+            m_pMainWin->getPWinToolWidget()->onConstructPointCloud();
+            entity->SetSelected(false);
+        }
     }else{
         m_pMainWin->getPWinToolWidget()->setauto(true);
         qDebug()<<"进入对齐之前";
@@ -568,15 +579,25 @@ void ElementListWidget::CompareCloud()
     for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
         m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
     }
+    int size=0;
     for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
         CPointCloud*could=(CPointCloud*)m_pMainWin->getEntityListMgr()->getEntityList()[i];
         if(could->isCut&&could->isOver==false){
             m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
             could->isOver=true;
+            size++;
+        }
+        qDebug()<<"size:"<<size;
+        if(size==2){
+            m_pMainWin->getPWinVtkWidget()->onCompare();
+            for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
+                m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
+            }
+            size=0;
         }
     }
+    m_pMainWin->NotifySubscribe();
     m_pMainWin->getPWinToolWidget()->setauto(true);
-    m_pMainWin->getPWinVtkWidget()->onCompare();
     m_pMainWin->getPWinToolWidget()->onSaveImage();
     m_pMainWin->getPWinToolWidget()->setauto(false);
     return;

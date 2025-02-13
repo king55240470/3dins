@@ -896,7 +896,7 @@ void VtkWidget::onCompare()
 
     // 创建KD-Tree用于点云2
     pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
-    kdtree.setInputCloud(cloud2);
+    kdtree.setInputCloud(cloud1);
 
     // 将比较结果存在comparisonCloud，并设置点云大小
     comparisonCloud->clear(); // 清除上次比较的结果
@@ -913,9 +913,9 @@ void VtkWidget::onCompare()
     std::vector<int> pointIdxNKNSearch(1);
     std::vector<float> pointNKNSquaredDistance(1);
 
-    // 遍历点云1中的每个点，找到与点云2中最近点的距离
-    for (size_t i = 0; i < cloud1->size(); ++i) {
-        if (kdtree.nearestKSearch(cloud1->at(i), 1, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
+    // 遍历点云2中的每个点，找到与点云1中最近点的距离
+    for (size_t i = 0; i < cloud2->size(); ++i) {
+        if (kdtree.nearestKSearch(cloud2->at(i), 1, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
             float dist = std::sqrt(pointNKNSquaredDistance[0]);
             // 更新最大和最小距离
             if (dist > maxDistance) {
@@ -929,9 +929,9 @@ void VtkWidget::onCompare()
             float normalizedDistance = (dist - minDistance) / (maxDistance - minDistance); // 归一化距离到0-1之间
             int r = static_cast<int>(255 * normalizedDistance);
             int b = 255 - r;
-            point.x = cloud1->at(i).x;
-            point.y = cloud1->at(i).y;
-            point.z = cloud1->at(i).z;
+            point.x = cloud2->at(i).x;
+            point.y = cloud2->at(i).y;
+            point.z = cloud2->at(i).z;
             point.r = r;
             point.g = 0;  // 中间色为0，只显示红蓝变化
             point.b = b;
@@ -969,6 +969,7 @@ void VtkWidget::onAlign()
 {
     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
     QVector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> clouds;
+    QString logInfo;
 
     // 收集选中的点云（确保不修改原始实体）
     for (int i = 0; i < entityList.size(); i++) {
@@ -978,6 +979,7 @@ void VtkWidget::onAlign()
             // 获取点云的共享指针，确保原数据不被释放
             auto pcEntity = static_cast<CPointCloud*>(entity);
             clouds.append(pcl::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>(pcEntity->m_pointCloud));
+            logInfo += ((CPointCloud*)entity)->m_strAutoName + ' '; //添加对比的点云编号
         }
     }
 
@@ -1058,7 +1060,6 @@ void VtkWidget::onAlign()
         icp.setMaximumIterations(150);
         icp.align(*icpFinalCloudPtr);
         if (!icp.hasConverged()) {
-            QMessageBox::critical(this, "错误", "ICP未收敛");
             return;
         }
     }
@@ -1069,8 +1070,10 @@ void VtkWidget::onAlign()
     auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateAlignCloud(alignedCloud);
     m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
     m_pMainWin->NotifySubscribe();
-
     double rmse = icp.getFitnessScore();
-    QMessageBox::information(this, "配准结果", QString("配准误差: %1").arg(rmse));
+    // 添加日志输出
+    logInfo += "对齐完成，误差:";
+    logInfo += std::to_string(rmse);
+    m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
 }
 

@@ -46,17 +46,23 @@ void MainWindow::setupUi(){
     //菜单栏
     bar=menuBar();
     setMenuBar(bar);
+    QIcon openFile(":/style/openfile.png");
+    QIcon saveFile(":/style/savefile.png");
+    QIcon exitIcon(":/style/exit.png");
     QMenu *fileMenu=bar->addMenu("文件");
     QAction *openAction=fileMenu->addAction("打开文件");
+    openAction->setIcon(openFile);
     connect(openAction, &QAction::triggered, this, &MainWindow::openFile); // 连接打开文件的信号与槽
     //fileMenu->addAction(openAction);
     QAction *saveAction=fileMenu->addAction("保存文件");
+    saveAction->setIcon(saveFile);
     connect(saveAction, &QAction::triggered, this, &MainWindow::saveFile); // 连接保存文件的信号与槽
     //fileMenu->addAction(saveAction);
     fileMenu->addSeparator();
     QAction *exitAction=fileMenu->addAction("退出");
-    //connect(exitAction, SIGNAL(triggered()), this, SLOT(close())); // 连接退出的信号与槽
-    //fileMenu->addAction(exitAction);
+    exitAction->setIcon(exitIcon);
+    connect(exitAction, SIGNAL(triggered()), this, SLOT(close())); // 连接退出的信号与槽
+    fileMenu->addAction(exitAction);
 
     QAction * contralAction=new QAction("控制图标");
     bar->addAction(contralAction);
@@ -240,8 +246,8 @@ void MainWindow::setupUi(){
     // QLabel *label2=new QLabel("右侧状态栏",this);
     // stbar->addWidget(label2);
     switchRefCsBtn = new QPushButton("依赖坐标系");
-    switchRefCsBtn->setStyleSheet("QPushButton { padding: 1px;}");
-    switchRefCsBtn->setFixedWidth(100);
+    switchRefCsBtn->setStyleSheet("QPushButton { padding: 2px;border-radius: 3px;}");
+    switchRefCsBtn->setFixedSize(120, 30);
     switchRefCsBtn->setObjectName("statusSwitchRef");
     switchRefCsBtn->setFlat(true); // 设置按钮为平面样式
     switchRefCsBtn->installEventFilter(this);  // 为按钮安装事件过滤器
@@ -250,8 +256,8 @@ void MainWindow::setupUi(){
     stbar->addWidget(line);
 
     switchCsBtn = new QPushButton("机械坐标系");
-    switchCsBtn->setStyleSheet("QPushButton { padding: 1px;}");
-    switchCsBtn->setFixedWidth(100);
+    switchCsBtn->setStyleSheet("QPushButton { padding: 2px;border-radius: 3px;}");
+    switchCsBtn->setFixedSize(120, 30);
     switchCsBtn->setFlat(true); // 设置按钮为平面样式
     switchCsBtn->installEventFilter(this);  // 为按钮安装事件过滤器
     switchCsBtn->setObjectName("statusSwitchCs");
@@ -382,15 +388,19 @@ void MainWindow::openFile(){
             in>>pWinFileMgr->getContentItemMap();
             // in>>pWinFileMgr->getIdentifyItemMap();
 
-            //去除原来构建的点云
-            pWinFileMgr->removePointCloudKeys(pWinFileMgr->getContentItemMap());
+            // //去除原来构建的点云
+            // pWinFileMgr->removePointCloudKeys(pWinFileMgr->getContentItemMap());
 
             //打开模型点云
             in>>modelCloudExist;
             if(modelCloudExist){
-                QString path;
-                in>> path;
-                pWinFileManagerWidget->openModelFile("modelCloud.ply", path);
+                CEntity* entity=new CPointCloud();
+                entity->deserialize(in);
+                m_EntityListMgr->m_entityList.append(entity);
+                m_ObjectListMgr->getObjectList().append(entity);
+                // QString path;
+                // in>> path;
+                // pWinFileManagerWidget->openModelFile("modelCloud.ply", path);
             }
 
             //反序列化toolWidget中的list
@@ -457,19 +467,22 @@ void MainWindow::saveFile(){
         //保存模型点云
         out<<modelCloudExist;
         for(int i=0;i<getEntityListMgr()->getEntityList().size();i++){
-            CPointCloud*could=(CPointCloud*)getEntityListMgr()->getEntityList()[i];
-            if(could->isModelCloud){
-                QString file_path = "D:/modelCloud.ply";
-                //QString file_path = "D:/source/3dins/build/modelCloud.ply";
-                out << file_path;
-                int result = pcl::io::savePLYFile(file_path.toStdString(), could->m_pointCloud);
-                if (result != 0) {
-                    qDebug() << "Failed to save PLY file. Error code:" << result;
-                }else {
-                    qDebug() << "PLY file saved successfully!";
+            if(getEntityListMgr()->getEntityList()[i]->GetUniqueType()==enPointCloud){
+                CPointCloud*could=(CPointCloud*)getEntityListMgr()->getEntityList()[i];
+                if(could->isModelCloud){
+                    could->serialize(out);
+                    break;
                 }
-                break;
             }
+                // QString file_path = "D:/modelCloud.ply";
+                // //QString file_path = "D:/source/3dins/build/modelCloud.ply";
+                // out << file_path;
+                // int result = pcl::io::savePLYFile(file_path.toStdString(), could->m_pointCloud);
+                // if (result != 0) {
+                //     qDebug() << "Failed to save PLY file. Error code:" << result;
+                // }else {
+                //     qDebug() << "PLY file saved successfully!";
+                // }
         }
 
         //序列化toolWidget中的list

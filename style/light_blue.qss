@@ -48,7 +48,7 @@ QPushButton {
     font-size: 14px "微软雅黑";
     text-align: center;
     background-color: #ffffff;
-    border: 1px solid #3570b2;
+    /*border: 1px solid #3570b2;*/
     border-radius: 5px;
     padding: 1px;
     color: #000000;
@@ -102,6 +102,7 @@ QHeaderView {
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f0f0f0, stop: 1 #e0e0e0);
     padding: 3px;
     border-radius: 2px;
+    padding: 2px;
 }
 
 QHeaderView::section {
@@ -152,7 +153,6 @@ QMenu:hover {
 
 QMenu::item {
     padding: 3px;
-    border: 1px solid #d3d3d3 ; /* 用于鼠标悬停时的边框 */
 }
 
 QMenu::item:selected {
@@ -195,21 +195,11 @@ QTabBar::tab {
     border: 1px solid #cccccc;
     /*border-bottom-style: none;*/
     padding: 5px;
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
 }
 
 QTabBar::tab:selected, QTabBar::tab:hover {
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #3570b2, stop: 1 #4a90e2);
     color: #ffffff;
-}
-
-QTabBar::tab:selected {
-   border-bottom: 2px solid #ffffff; /* 选中标签的底部边框 */
-}
-
-QTabBar::tab:only-one {
-    border-bottom-style: solid;
 }
 
 /* QSplitter的样式 */
