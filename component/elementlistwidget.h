@@ -54,6 +54,8 @@ public:
     void upadteelementlist();
     QList<QTreeWidgetItem*> getSelectedItems();
     QVector<CObject*> getEleobjlist();
+    void changeName();
+    void setAutoName();
     void starttime();
     void selectall();
     void showDialog();
@@ -66,10 +68,11 @@ public:
     void closeInfotext();
     void mousePressEvent(QMouseEvent *event) override;
     void setupStateMachine();
+    void continueUpdate();
     void onAddElement(pcl::PointCloud<pcl::PointXYZRGB>::Ptr could);
     void CompareCloud();
     void updateDistance();
-    void startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree, QVector<CEntity*>distancelist, int distanceCount);
+    void startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree, QVector<CEntity*>distancelist);
     void isAdd();
 
 protected:
@@ -91,20 +94,25 @@ private:
     QVector<CObject*>eleobjlist;
     //std::unordered_map<QTreeWidgetItem*, size_t> itemToIndexMap;
     bool ctrlPressed = false;
+    QLineEdit* name;
     QLineEdit* up;
     QLineEdit* down;
     QPushButton *updownBtn;
     QPushButton *startButton;
     QPushButton *pauseButton;
     QPushButton *terminateButton;
+    QPushButton *continueButton;
     QDialog *dialog;
     QStateMachine *stateMachine;
     QState *stoppedState;
     QState *runningState;
     QState *pausedState;
+    QState *continueState;
     int Treelistsize=0;
     int currentIndex;
     int distancelistIndex;
+    pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree;
+    QVector<CEntity*>disAndanglelist;
     QTimer* timer=nullptr;
     QQueue<pcl::PointCloud<pcl::PointXYZRGB>::Ptr>pointCouldlists;
     bool isProcessing=false;
