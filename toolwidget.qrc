@@ -42,5 +42,6 @@
         <file>component/construct/point_.png</file>
         <file>component/construct/rectangle_.png</file>
         <file>component/construct/sphere_.png</file>
+        <file>component/construct/continue.png</file>
     </qresource>
 </RCC>

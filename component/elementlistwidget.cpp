@@ -23,8 +23,6 @@ ElementListWidget::ElementListWidget(QWidget *parent)
     QStringList headers;
     headers << "元素" << "元素别名";
     QTreeWidgetItem *headerItem = new QTreeWidgetItem(headers);
-
-    // 设置头部项
     treeWidgetNames->setHeaderItem(headerItem);
     //设置为多选模式
     //treeWidgetNames->setSelectionMode(QAbstractItemView::MultiSelection);
@@ -32,7 +30,9 @@ ElementListWidget::ElementListWidget(QWidget *parent)
     // 元素信息列表
     treeWidgetInfo = new QTreeWidget(this);
     treeWidgetInfo->setColumnCount(2);
-    treeWidgetInfo->setHeaderLabel("源");
+    QStringList Infoheaders;
+    Infoheaders << "构造来源" << "来源情况";
+    treeWidgetInfo->setHeaderLabels(Infoheaders);
 
     //工具栏
     toolBar = new QToolBar(this);
@@ -45,24 +45,39 @@ ElementListWidget::ElementListWidget(QWidget *parent)
     // 工具栏中添加控件
     startButton = new QPushButton("",this);
     pauseButton = new QPushButton("",this);
+    continueButton = new QPushButton("",this);
     terminateButton = new QPushButton("",this);
     QIcon icon1(":/component/construct/start.png");
     QIcon icon2(":/component/construct/stop.png");
     QIcon icon3(":/component/construct/end.png");
-    startButton->setFixedSize(40, 40);
-    startButton->setIconSize(QSize(35, 35));
+    QIcon icon4(":/component/construct/continue.png");
+    startButton->setFixedSize((treeWidgetNames->width())/2, 40);
+    pauseButton->setFixedSize((treeWidgetNames->width())/2, 40);
+    continueButton->setFixedSize((treeWidgetNames->width())/2, 40);
+    terminateButton->setFixedSize((treeWidgetNames->width())/2, 40);
+    startButton->setIconSize(QSize(25, 25));
+    pauseButton->setIconSize(QSize(25, 25));
+    continueButton->setIconSize(QSize(25, 25));
+    terminateButton->setIconSize(QSize(25, 25));
     startButton->setIcon(icon1);
-    pauseButton->setFixedSize(40, 40);
     pauseButton->setIcon(icon3);
-    pauseButton->setIconSize(QSize(40, 40));
-    terminateButton->setFixedSize(40, 40);
     terminateButton->setIcon(icon2);
-    terminateButton->setIconSize(QSize(35, 35));
+    continueButton->setIcon(icon4);
+    // 设置按钮没有边框，背景颜色与周围颜色一致
+    startButton->setStyleSheet("QPushButton { border: none; background-color: #f0f0f0; }");
+    pauseButton->setStyleSheet("QPushButton { border: none; background-color: #f0f0f0; }");
+    continueButton->setStyleSheet("QPushButton { border: none; background-color: #f0f0f0; }");
+    terminateButton->setStyleSheet("QPushButton { border: none; background-color: #f0f0f0; }");
+
     toolBar->addWidget(startButton);
     toolBar->addSeparator();
     toolBar->addWidget(pauseButton);
     toolBar->addSeparator();
+    toolBar->addWidget(continueButton);
+    toolBar->addSeparator();
     toolBar->addWidget(terminateButton);
+    connect(continueButton, &QPushButton::clicked, this, &ElementListWidget::continueUpdate);
+
 
     // 布局
     layout->addWidget(toolBar);
@@ -197,6 +212,7 @@ void ElementListWidget::onCustomContextMenuRequested(const QPoint &pos)
     QAction *action2 = menu.addAction("全部选中");
     QAction *action3 = menu.addAction("遍历列表");
     QAction *action4 = menu.addAction("设置公差");
+    QAction *action7 = menu.addAction("设置别称");
     QAction *action5 = menu.addAction("显示元素信息");
     QAction *action6 = menu.addAction("关闭元素信息");
     connect(action1, &QAction::triggered, this, &ElementListWidget::onDeleteEllipse);
@@ -205,6 +221,7 @@ void ElementListWidget::onCustomContextMenuRequested(const QPoint &pos)
     connect(action4, &QAction::triggered, this, &ElementListWidget::setTolerance);
     connect(action5, &QAction::triggered, this, &ElementListWidget::showInfotext);
     connect(action6, &QAction::triggered, this, &ElementListWidget::closeInfotext);
+    connect(action7, &QAction::triggered, this, &ElementListWidget::changeName);
     menu.exec(mapToGlobal(pos));
 }
 
@@ -313,12 +330,12 @@ void ElementListWidget::BtnClicked()
     }
     uper = up->text().toDouble(&ok);
     if (!ok) {
-        QMessageBox::critical(this, "输入错误", "圆柱体-底面中心坐标X需要是双精度浮点类型数。");
+        QMessageBox::critical(this, "输入错误", "需要是双精度浮点类型数。");
         return;
     }
     downer = down->text().toDouble(&ok);
     if (!ok) {
-        QMessageBox::critical(this, "输入错误", "圆柱体-底面中心坐标Y需要是双精度浮点类型数。");
+        QMessageBox::critical(this, "输入错误", "需要是双精度浮点类型数。");
         return;
     }
     for(QTreeWidgetItem*item:selectedItems){
@@ -427,6 +444,7 @@ void ElementListWidget::setupStateMachine()
     stoppedState = new QState();
     runningState = new QState();
     pausedState = new QState();
+    continueState = new QState();
 
     // 配置状态间的切换
     stoppedState->addTransition(startButton, &QPushButton::clicked, runningState);
@@ -434,24 +452,33 @@ void ElementListWidget::setupStateMachine()
     pausedState->addTransition(startButton, &QPushButton::clicked, runningState);
     runningState->addTransition(terminateButton, &QPushButton::clicked, stoppedState);
     pausedState->addTransition(terminateButton, &QPushButton::clicked, stoppedState);
+    pausedState->addTransition(continueButton, &QPushButton::clicked, continueState);
+    continueState->addTransition(startButton, &QPushButton::clicked, runningState);
+    continueState->addTransition(terminateButton, &QPushButton::clicked, stoppedState);
 
     // 状态进入时的行为
     connect(stoppedState, &QState::entered, [this]() {
         startButton->setEnabled(true);
         pauseButton->setEnabled(false);
+        continueButton->setEnabled(false);
         terminateButton->setEnabled(false);
     });
 
     connect(runningState, &QState::entered, [this]() {
         startButton->setEnabled(false);
         pauseButton->setEnabled(true);
+        continueButton->setEnabled(false);
         terminateButton->setEnabled(true);
+        if(timer){
+            timer->start();
+        }
         Treelistsize=m_pMainWin->getEntityListMgr()->getEntityList().size();
     });
 
     connect(pausedState, &QState::entered, [this]() {
         startButton->setEnabled(true);
         pauseButton->setEnabled(false);
+        continueButton->setEnabled(true);
         terminateButton->setEnabled(true);
     });
 
@@ -459,6 +486,7 @@ void ElementListWidget::setupStateMachine()
     stateMachine->addState(stoppedState);
     stateMachine->addState(runningState);
     stateMachine->addState(pausedState);
+    stateMachine->addState(continueState);
 
     // 设置初始状态
     stateMachine->setInitialState(stoppedState);
@@ -466,6 +494,12 @@ void ElementListWidget::setupStateMachine()
     // 启动状态机
     stateMachine->start();
 
+}
+
+void ElementListWidget::continueUpdate()
+{
+    qDebug()<<"进行下一个";
+    startupdateData(kdtree,disAndanglelist);
 }
 
 void ElementListWidget::onAddElement(pcl::PointCloud<pcl::PointXYZRGB>::Ptr could)
@@ -498,6 +532,7 @@ void ElementListWidget::CompareCloud()
         return;
     }
     bool isHaveShape=false;
+    QVector<CEntity*>Shapelist;
     int CurrentMeasureindex;
     //CPointCloud*could=(CPointCloud*)pointCouldlists.dequeue();
     //could->SetSelected(true);
@@ -514,20 +549,30 @@ void ElementListWidget::CompareCloud()
             }
         }
         if(m_pMainWin->getEntityListMgr()->getEntityList()[i]->GetUniqueType()==enCuboid){
-            m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
+            Shapelist.push_back(m_pMainWin->getEntityListMgr()->getEntityList()[i]);
+            //m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
             isHaveShape=true;
         }
     }
     if(isHaveShape){
         m_pMainWin->getPWinVtkWidget()->onAlign();
-        m_pMainWin->getEntityListMgr()->getEntityList()[CurrentMeasureindex]->SetSelected(false);
-        m_pMainWin->getEntityListMgr()->getEntityList().back()->SetSelected(true);
-        m_pMainWin->getPWinToolWidget()->onConstructPointCloud();
+        int size=m_pMainWin->getEntityListMgr()->getEntityList().size()-1;
+        for(CEntity*entity:Shapelist){
+            m_pMainWin->getEntityListMgr()->getEntityList()[CurrentMeasureindex]->SetSelected(false);
+            m_pMainWin->getEntityListMgr()->getEntityList()[size]->SetSelected(true);
+            entity->SetSelected(true);
+            m_pMainWin->getPWinToolWidget()->onConstructPointCloud();
+            entity->SetSelected(false);
+        }
     }else{
         m_pMainWin->getPWinToolWidget()->setauto(true);
+        qDebug()<<"进入对齐之前";
         m_pMainWin->getPWinVtkWidget()->onAlign();
+        qDebug()<<"进入对齐之后";
+        qDebug()<<CurrentMeasureindex;
         m_pMainWin->getEntityListMgr()->getEntityList()[CurrentMeasureindex]->SetSelected(false);
         m_pMainWin->getEntityListMgr()->getEntityList().back()->SetSelected(true);
+        qDebug()<<"进入对比之前";
         m_pMainWin->getPWinVtkWidget()->onCompare();
         m_pMainWin->getPWinToolWidget()->onSaveImage();
         m_pMainWin->getPWinToolWidget()->setauto(false);
@@ -536,15 +581,25 @@ void ElementListWidget::CompareCloud()
     for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
         m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
     }
+    int size=0;
     for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
         CPointCloud*could=(CPointCloud*)m_pMainWin->getEntityListMgr()->getEntityList()[i];
         if(could->isCut&&could->isOver==false){
             m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
             could->isOver=true;
+            size++;
+        }
+        qDebug()<<"size:"<<size;
+        if(size==2){
+            m_pMainWin->getPWinVtkWidget()->onCompare();
+            for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
+                m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
+            }
+            size=0;
         }
     }
+    m_pMainWin->NotifySubscribe();
     m_pMainWin->getPWinToolWidget()->setauto(true);
-    m_pMainWin->getPWinVtkWidget()->onCompare();
     m_pMainWin->getPWinToolWidget()->onSaveImage();
     m_pMainWin->getPWinToolWidget()->setauto(false);
     return;
@@ -560,19 +615,19 @@ void ElementListWidget::updateDistance()
     }
     qDebug()<<"判断时间是否存在后";
     //CPointCloud*could=static_cast<CPointCloud*>(entity);
-    pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree;
+    //pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree;
     //kdtree.setInputCloud(could->GetmyCould().makeShared());
     //kdtree.setInputCloud(m_pMainWin->getpWinFileMgr()->cloudptr);
     kdtree.setInputCloud(pointCouldlists.dequeue());
     qDebug()<<"队列的大小"<<pointCouldlists.size();
     //QVector<CEntity*>distancelist;
     //QVector<CEntity*>anglelist;
-    QVector<CEntity*>disAndanglelist;
-    int distanceCount=0;
+    //QVector<CEntity*>disAndanglelist;
+    //int distanceCount=0;
     for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
         if(m_pMainWin->getEntityListMgr()->getEntityList()[i]->GetObjectCName().left(2)=="距离"){
             disAndanglelist.push_back(m_pMainWin->getEntityListMgr()->getEntityList()[i]);
-            distanceCount++;
+            //distanceCount++;
         }else if(m_pMainWin->getEntityListMgr()->getEntityList()[i]->GetUniqueType()==enAngle){
             disAndanglelist.push_back(m_pMainWin->getEntityListMgr()->getEntityList()[i]);
         }
@@ -585,24 +640,27 @@ void ElementListWidget::updateDistance()
     list.clear();
     currentIndex=0;
     distancelistIndex=0;
-    connect(timer, &QTimer::timeout, [this,kdtree,disAndanglelist,distanceCount](){
-        startupdateData(kdtree,disAndanglelist,distanceCount);
+    connect(timer, &QTimer::timeout, [this](){
+        startupdateData(kdtree,disAndanglelist);
     });
     timer->start(1000);
     qDebug()<<"时间开始后";
 }
 
-void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree,QVector<CEntity*>distancelist,int distanceCount)
+void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree,QVector<CEntity*>distancelist)
 {
     qDebug()<<"时间进行1秒";
     QVector<CObject*>objlist=m_pMainWin->getObjectListMgr()->getObjectList();
     if(distancelistIndex>distancelist.size()-1){
-        timer->stop();
-        delete timer;
-        timer=nullptr;
-        m_pMainWin->getPWinToolWidget()->setauto(true);
-        m_pMainWin->getPWinToolWidget()->onSaveTxt();
-        m_pMainWin->getPWinToolWidget()->setauto(false);
+        if(timer){
+            timer->stop();
+            delete timer;
+            timer=nullptr;
+            m_pMainWin->getPWinToolWidget()->setauto(true);
+            m_pMainWin->getPWinToolWidget()->onSaveTxt();
+            m_pMainWin->getPWinToolWidget()->setauto(false);
+        }
+
         if(!pointCouldlists.empty()){
             CompareCloud();
             updateDistance();
@@ -613,6 +671,11 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
 
     }
     if(currentIndex>distancelist[distancelistIndex]->parent.size()-1){
+        /*if(list.size()<2){
+            QString str=distancelist[distancelistIndex]->GetObjectCName()+"测量失败，数据测量缺失";
+            m_pMainWin->getPWinVtkPresetWidget()->setWidget(str);
+            return;
+        }*/
         qDebug()<<list.size();
         QVector<CPoint *>position;
         QVector<CPlane*>plane;
@@ -684,10 +747,13 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
         qDebug()<<"结束时间";
         return;
     }else if(stateMachine->configuration().contains(pausedState)){
+        timer->stop();
         qDebug()<<"暂停时间";
         return;
+    }else if(stateMachine->configuration().contains(continueState)){
+        qDebug()<<"执行一次";
     }
-    if(stateMachine->configuration().contains(runningState)){
+    if(stateMachine->configuration().contains(runningState)||stateMachine->configuration().contains(continueState)){
         CObject* obj=nullptr;
         for( CObject* ob: m_pMainWin->getObjectListMgr()->getObjectList()){
             if(distancelist[distancelistIndex]->parent[currentIndex]->GetObjectCName()==ob->GetObjectCName()){
@@ -762,6 +828,38 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
                 QString str=obj->GetObjectCName()+"测量完成";
                 m_pMainWin->getPWinVtkPresetWidget()->setWidget(str);
                 list.push_back(plane);
+            }else if(planelist.size()==2){
+                QVector<CPlane*>planeparentlist;
+                for(CObject*planePlane:planelist){
+                    QVector<CPosition>positionlist;
+                    for(CObject*planePt:planePlane->parent){
+                        CPoint*point=static_cast<CPoint*>(planePt);
+                        searchPoint.x=point->GetPt().x;
+                        searchPoint.y=point->GetPt().y;
+                        searchPoint.z=point->GetPt().z;
+                        if (kdtree.nearestKSearch(searchPoint, 1, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
+                            int nearestIdx = pointIdxNKNSearch[0];
+                            pcl::PointXYZRGB nearestPoint = m_pMainWin->getpWinFileMgr()->cloudptr->points[nearestIdx];
+                            CPosition pt;
+                            pt.x=nearestPoint.x;
+                            pt.y=nearestPoint.y;
+                            pt.z=nearestPoint.z;
+                            point->SetPosition(pt);
+                            positionlist.push_back(pt);
+                        }
+                    }
+                    PlaneConstructor constructor;
+                    CPlane*plane1=constructor.createPlane(positionlist[0],positionlist[1],positionlist[2]);
+                    planePlane=plane1;
+                    planeparentlist.push_back(plane1);
+                }
+                PlaneConstructor constructor;
+                CPlane*plane1=constructor.createPlane(planeparentlist[0],planeparentlist[1]);
+                plane=plane1;
+                qDebug()<<"plane"<<plane1->getCenter().x;
+                QString str=obj->GetObjectCName()+"测量完成";
+                m_pMainWin->getPWinVtkPresetWidget()->setWidget(str);
+                list.push_back(plane);
             }
         }else if(obj->GetUniqueType()==enLine){
             QVector<CPosition>positionlists;
@@ -828,6 +926,41 @@ QList<QTreeWidgetItem*> ElementListWidget:: getSelectedItems(){
 }
 QVector<CObject*> ElementListWidget::getEleobjlist(){
     return eleobjlist;
+}
+
+void ElementListWidget::changeName()
+{
+    if(getSelectedItems().size()!=1)
+    {
+        QMessageBox::information(nullptr, "提示", "请选中一个元素");
+        return;
+    }
+    QTreeWidgetItem *selectedItem=getSelectedItems()[0];
+    CObject *obj = selectedItem->data(0, Qt::UserRole).value<CObject*>();
+    dialog = new QDialog(this);
+    dialog->setWindowTitle("设置元素别名");
+    dialog->resize(200,100);
+    QVBoxLayout *layout = new QVBoxLayout(dialog);
+    QLabel *Name = new QLabel("别名:");
+    name = new QLineEdit();
+    name->setText(obj->GetObjectAutoName());
+    name->setMaximumWidth(150);
+    updownBtn=new QPushButton("确定");
+    layout->addWidget(Name, 0);
+    layout->addWidget(name, 0);
+    layout->addWidget(updownBtn);
+    dialog->setLayout(layout);
+    connect(updownBtn, &QPushButton::clicked, this, &ElementListWidget::setAutoName);
+    dialog->exec();
+}
+
+void ElementListWidget::setAutoName()
+{
+    QTreeWidgetItem *selectedItem=getSelectedItems()[0];
+    CObject *obj = selectedItem->data(0, Qt::UserRole).value<CObject*>();
+    obj->SetObjectAutoName(name->text());
+    m_pMainWin->NotifySubscribe();
+    dialog->close();
 }
 
 void ElementListWidget::starttime()
