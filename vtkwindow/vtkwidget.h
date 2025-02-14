@@ -3,7 +3,6 @@
 
 #include "mainwindow.h"
 #include "clickhighlightstyle.h"
-#include "mousedragcommand.h"
 #include "manager/filemgr.h"
 #include "component/toolwidget.h"
 #include"vtkwindow/vtkpresetwidget.h"
@@ -19,7 +18,6 @@
 #include <QTimer>
 #include <QPixmap>
 #include <boost/make_shared.hpp>
-
 
 #include <pcl/common/common.h>
 #include <pcl/io/ply_io.h>

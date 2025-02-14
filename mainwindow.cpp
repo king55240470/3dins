@@ -26,8 +26,8 @@
 class PresetElemWidget;
 
 double MainWindow::ActorColor[3] = {0.5, 0.5, 0.5};
-double MainWindow::HighLightColor[3] = {1, 0, 0};
-double MainWindow::InfoTextColor[3] = {1, 1, 0};
+double MainWindow::HighLightColor[3] = {1, 1, 0};
+double MainWindow::InfoTextColor[3] = {0.9, 0.9, 0.9};
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -54,19 +54,18 @@ void MainWindow::setupUi(){
     QAction *openAction=fileMenu->addAction("打开文件");
     openAction->setIcon(openFile);
     openAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_O));
+    openAction->setShortcutContext(Qt::ApplicationShortcut);
     connect(openAction, &QAction::triggered, this, &MainWindow::openFile); // 连接打开文件的信号与槽
-    fileMenu->addAction(openAction);
     QAction *saveAction=fileMenu->addAction("保存文件");
     saveAction->setIcon(saveFile);
     saveAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_S));
+    saveAction->setShortcutContext(Qt::ApplicationShortcut);
     connect(saveAction, &QAction::triggered, this, &MainWindow::saveFile); // 连接保存文件的信号与槽
-    fileMenu->addAction(saveAction);
     fileMenu->addSeparator();
     QAction *exitAction=fileMenu->addAction("退出");
     exitAction->setIcon(exitIcon);
     exitAction->setShortcut(QKeySequence(Qt::Key_Escape));
     connect(exitAction, SIGNAL(triggered()), this, SLOT(close())); // 连接退出的信号与槽
-    fileMenu->addAction(exitAction);
     // 创建一个隐藏的 QAction，用于触发菜单
     QAction* showMenuAction = new QAction();
     showMenuAction->setShortcut(QKeySequence(Qt::Key_F)); // 设置快捷键为 F
@@ -257,11 +256,13 @@ void MainWindow::setupUi(){
     addAction(showCloudMenu);
     QAction* compareAction=cloudOperation->addAction("点云对比");
     compareAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_C));
+    compareAction->setShortcutContext(Qt::ApplicationShortcut);
     connect(compareAction,&QAction::triggered,this,[&](){
         pWinVtkWidget->onCompare();
     });
     QAction* alignAction=cloudOperation->addAction("点云对齐");
     alignAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_A));
+    alignAction->setShortcutContext(Qt::ApplicationShortcut);
     connect(alignAction,&QAction::triggered,this,[&](){
         pWinVtkWidget->onAlign();
     });
@@ -276,12 +277,15 @@ void MainWindow::setupUi(){
     addAction(showThemeMenu);
     QAction* lightBlue = switchTheme->addAction("简约蓝(默认)");
     lightBlue->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_D));
+    lightBlue->setShortcutContext(Qt::ApplicationShortcut);
     connect(lightBlue, &QAction::triggered, this, &MainWindow::onConvertLighBlueTheme);
     QAction* lightGrey = switchTheme->addAction("浅灰色");
     lightGrey->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_F));
+    lightGrey->setShortcutContext(Qt::ApplicationShortcut);
     connect(lightGrey, &QAction::triggered, this, &MainWindow::onConvertLightGreyTheme);
     QAction* darkBlue = switchTheme->addAction("科技蓝");
     darkBlue->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_G));
+    darkBlue->setShortcutContext(Qt::ApplicationShortcut);
     connect(darkBlue, &QAction::triggered, this, &MainWindow::onConvertDarkBlueTheme);
 
     // 添加竖线分隔符
@@ -527,15 +531,15 @@ void MainWindow::saveFile(){
                     break;
                 }
             }
-                // QString file_path = "D:/modelCloud.ply";
-                // //QString file_path = "D:/source/3dins/build/modelCloud.ply";
-                // out << file_path;
-                // int result = pcl::io::savePLYFile(file_path.toStdString(), could->m_pointCloud);
-                // if (result != 0) {
-                //     qDebug() << "Failed to save PLY file. Error code:" << result;
-                // }else {
-                //     qDebug() << "PLY file saved successfully!";
-                // }
+            // QString file_path = "D:/modelCloud.ply";
+            // //QString file_path = "D:/source/3dins/build/modelCloud.ply";
+            // out << file_path;
+            // int result = pcl::io::savePLYFile(file_path.toStdString(), could->m_pointCloud);
+            // if (result != 0) {
+            //     qDebug() << "Failed to save PLY file. Error code:" << result;
+            // }else {
+            //     qDebug() << "PLY file saved successfully!";
+            // }
         }
 
         //序列化toolWidget中的list
@@ -1327,8 +1331,9 @@ void MainWindow::onConvertLightGreyTheme()
     MainWindow::InfoTextColor[0] = 0;
     MainWindow::InfoTextColor[1] = 0;
 
+    pWinVtkWidget->getRenderer()->SetBackground(0.5, 0.5, 0.5);
     pWinVtkWidget->getRenderer()->SetBackground(1, 1, 1);
-    pWinVtkWidget->getRenderer()->SetGradientBackground(false);
+    pWinVtkWidget->getRenderer()->SetGradientBackground(true);
     pWinVtkWidget->UpdateInfo();
 }
 

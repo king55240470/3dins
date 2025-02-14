@@ -22,7 +22,7 @@ VtkWidget::VtkWidget(QWidget *parent)
     QVBoxLayout *mainlayout = new QVBoxLayout(this);
     mainlayout->setContentsMargins(0, 0, 0, 0); // 去除布局的边距
     mainlayout->setSpacing(0); // 去除布局内部的间距
-    setUpVtk(mainlayout); // 配置vtk窗口
+    setUpVtk(mainlayout); // 配置vtk窗口XX
     this->setLayout(mainlayout);
 
 }
@@ -89,7 +89,7 @@ void VtkWidget::OnMouseMove()
         position = infoTextActor->GetPosition();
 
         // 更新对应的文本框、标题行和叉号的位置
-        rectangleActor->SetPosition(position[0], position[1]);
+        rectangleActor->SetPosition(position[0] - 5, position[1] - 5);
         titleTextActor->SetPosition(position[0], position[1] + textHeight);
         iconActor->SetPosition(position[0] + textWidth - 5, position[1] + textHeight + 15);
 
@@ -107,7 +107,7 @@ void VtkWidget::OnMouseMove()
     // 限制渲染频率
     static double lastRenderTime = vtkTimerLog::GetUniversalTime();
     double currentTime = vtkTimerLog::GetUniversalTime();
-    if (currentTime - lastRenderTime > 0.1) {
+    if (currentTime - lastRenderTime > 0.05) {
         getRenderWindow()->Render();
         lastRenderTime = currentTime;
     }
@@ -195,14 +195,14 @@ void VtkWidget::createText(CEntity* entity)
     infoTextActor->SetInput(remainingText.toUtf8().constData()); // 设置去掉第一行后的文本
     infoTextActor->GetTextProperty()->SetFontSize(16);
     infoTextActor->GetTextProperty()->SetFontFamilyToTimes();
-    infoTextActor->GetTextProperty()->SetColor(0, 0, 0);
+    infoTextActor->GetTextProperty()->SetColor(MainWindow::InfoTextColor);
     infoTextActor->GetTextProperty()->SetJustificationToLeft();
     infoTextActor->GetTextProperty()->SetBold(1);
     infoTextActor->SetLayerNumber(1);
 
     // 计算文本框的位置
-    double x = renWin->GetSize()[0] - 250 - increaseDis[0];
-    double y = renWin->GetSize()[1] - 150 - increaseDis[1];
+    double x = renWin->GetSize()[0] - 320 - increaseDis[0];
+    double y = renWin->GetSize()[1] - 170 - increaseDis[1];
     infoTextActor->SetPosition(x, y);
     if(increaseDis[1]  <= renWin->GetSize()[1] - 300){
         increaseDis[1] += 200;
@@ -237,7 +237,7 @@ void VtkWidget::createText(CEntity* entity)
     titleTextActor = vtkSmartPointer<vtkTextActor>::New();
     titleTextActor->GetTextProperty()->SetFontSize(18); // 设置字体大小
     titleTextActor->GetTextProperty()->SetFontFamilyToTimes(); // 设置字体样式
-    titleTextActor->GetTextProperty()->SetColor(MainWindow::InfoTextColor); // 设置字体颜色
+    titleTextActor->GetTextProperty()->SetColor(1, 1, 0);
     titleTextActor->GetTextProperty()->SetBold(1); // 设置加粗
     titleTextActor->SetInput(firstLine.toUtf8().constData()); // 设置输入文本
     titleTextActor->SetPosition(x, y + textHeight); // 设置标题文本的位置
@@ -284,8 +284,8 @@ vtkSmartPointer<vtkActor2D> VtkWidget::createTextBox(vtkSmartPointer<vtkTextActo
     textActor->GetBoundingBox(renderer, bbox);
     double textWidth = bbox[1] - bbox[0];
     double textHeight = bbox[3] - bbox[2];
-    double width = textWidth + 20;
-    double height = textHeight + 40; // 加上标题行的高度
+    double width = textWidth + 25;
+    double height = textHeight + 45; // 加上标题行的高度
 
     points->InsertNextPoint(0, 0, 0);
     points->InsertNextPoint(width, 0, 0);
@@ -317,10 +317,11 @@ vtkSmartPointer<vtkActor2D> VtkWidget::createTextBox(vtkSmartPointer<vtkTextActo
 
     rectangleActor = vtkSmartPointer<vtkActor2D>::New();
     rectangleActor->SetMapper(rectangleMapper);
-    rectangleActor->GetProperty()->SetColor(0.8, 0.8, 0.8);
-    rectangleActor->GetProperty()->SetOpacity(0.3);
+    rectangleActor->GetProperty()->SetColor(0.6902, 0.8784, 0.9020);
+    rectangleActor->GetProperty()->SetOpacity(0.15);
     rectangleActor->GetProperty()->SetLineWidth(4);
-    rectangleActor->SetPosition(x, y);
+    rectangleActor->SetPosition(x - 5, y - 5);
+    rectangleActor->SetLayerNumber(3);
 
     return rectangleActor;
 }
@@ -403,7 +404,7 @@ vtkSmartPointer<vtkActor2D> VtkWidget::createLine(CEntity* entity, vtkSmartPoint
 
     lineActor = vtkSmartPointer<vtkActor2D>::New();
     lineActor->SetMapper(lineMapper);
-    lineActor->GetProperty()->SetColor(MainWindow::InfoTextColor);
+    lineActor->GetProperty()->SetColor(1, 1, 0);
     lineActor->GetProperty()->SetLineWidth(2);
 
     return lineActor;
