@@ -20,6 +20,7 @@
 #include <vtkMath.h>
 #include <vtkCubeSource.h>
 #include <vtkDistancePolyDataFilter.h>
+#include <vtkTransformPolyDataFilter.h>
 
 // 定义 getActorToPointCloud 和 actorToPointCloud;
 QMap<vtkActor*, pcl::PointCloud<pcl::PointXYZRGB>> CPointCloud::actorToPointCloud;
@@ -402,23 +403,26 @@ vtkSmartPointer<vtkActor> CCuboid::draw() {
 
     // 创建长方体
     auto cuboid = vtkSmartPointer<vtkCubeSource>::New();
-    cuboid->SetCenter(globalPos.x, globalPos.y, globalPos.z); // 设置长方体中心点
-    cuboid->SetXLength(getLength());  // 设置长方体长度
-    cuboid->SetYLength(getWidth());   // 设置长方体宽度
-    cuboid->SetZLength(getHeight()); // 设置长方体高度
+    cuboid->SetXLength(getLength());
+    cuboid->SetYLength(getWidth());
+    cuboid->SetZLength(getHeight());
 
     // 获取法向量并归一化
-    QVector4D normal = getNormal(); // 法向量 (QVector4D)
+    QVector4D normal = getNormal();
     QVector3D normalVec(normal.x(), normal.y(), normal.z());
-    normalVec.normalize(); // 标准化法向量
+    normalVec.normalize();
 
     // 构造局部坐标系
-    QVector3D up(0, 0, 1); // 默认参考向量，通常是 Z 轴方向
-    if (qFuzzyCompare(normalVec, up)) {
-        up = QVector3D(1, 0, 0); // 若法向量接近 Z 轴，改用 X 轴作为参考
+    QVector3D up(0, 0, 1);
+    if (qFuzzyCompare(normalVec, up) || normalVec.lengthSquared() < 1e-6) {
+        up = QVector3D(1, 0, 0);
     }
-    QVector3D right = QVector3D::crossProduct(up, normalVec).normalized(); // 局部 X 轴
-    QVector3D newUp = QVector3D::crossProduct(normalVec, right).normalized(); // 局部 Y 轴
+    QVector3D right = QVector3D::crossProduct(up, normalVec).normalized();
+    if (right.lengthSquared() < 1e-6) {
+        up = QVector3D(1, 0, 0);
+        right = QVector3D::crossProduct(up, normalVec).normalized();
+    }
+    QVector3D newUp = QVector3D::crossProduct(normalVec, right).normalized();
 
     // 构造旋转矩阵
     vtkSmartPointer<vtkMatrix4x4> rotationMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
@@ -433,20 +437,26 @@ vtkSmartPointer<vtkActor> CCuboid::draw() {
     rotationMatrix->SetElement(1, 2, normalVec.y());
     rotationMatrix->SetElement(2, 2, normalVec.z());
 
-    // 创建变换对象并设置旋转矩阵
+    // 创建变换对象并设置旋转矩阵 & 平移
     vtkSmartPointer<vtkTransform> transform = vtkSmartPointer<vtkTransform>::New();
-    transform->SetMatrix(rotationMatrix);
+    transform->Translate(globalPos.x, globalPos.y, globalPos.z);
+    transform->Concatenate(rotationMatrix);
+
+    // 应用变换到 PolyData
+    vtkSmartPointer<vtkTransformPolyDataFilter> transformFilter = vtkSmartPointer<vtkTransformPolyDataFilter>::New();
+    transformFilter->SetInputConnection(cuboid->GetOutputPort());
+    transformFilter->SetTransform(transform);
+    transformFilter->Update();
 
     // 创建映射器
     auto mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-    mapper->SetInputConnection(cuboid->GetOutputPort());
+    mapper->SetInputConnection(transformFilter->GetOutputPort());
 
     // 创建执行器
     auto actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
-    actor->GetProperty()->SetColor(MainWindow::InfoTextColor); // 设置颜色
-    actor->SetUserTransform(transform); // 应用变换
-    actor->GetProperty()->SetRepresentationToWireframe(); // 改为线框绘制
+    actor->GetProperty()->SetColor(MainWindow::InfoTextColor);
+    actor->GetProperty()->SetRepresentationToWireframe();
     actor->GetProperty()->SetLineWidth(3);
 
     return actor;

@@ -455,9 +455,6 @@ void MainWindow::openFile(){
                 entity->deserialize(in);
                 m_EntityListMgr->m_entityList.append(entity);
                 m_ObjectListMgr->getObjectList().append(entity);
-                // QString path;
-                // in>> path;
-                // pWinFileManagerWidget->openModelFile("modelCloud.ply", path);
             }
 
             //反序列化toolWidget中的list
@@ -531,15 +528,6 @@ void MainWindow::saveFile(){
                     break;
                 }
             }
-            // QString file_path = "D:/modelCloud.ply";
-            // //QString file_path = "D:/source/3dins/build/modelCloud.ply";
-            // out << file_path;
-            // int result = pcl::io::savePLYFile(file_path.toStdString(), could->m_pointCloud);
-            // if (result != 0) {
-            //     qDebug() << "Failed to save PLY file. Error code:" << result;
-            // }else {
-            //     qDebug() << "PLY file saved successfully!";
-            // }
         }
 
         //序列化toolWidget中的list
