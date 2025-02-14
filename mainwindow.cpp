@@ -22,6 +22,7 @@
 #include <QListWidget>
 #include <QIODevice>
 #include <QShortcut>
+#include <QStackedWidget>
 
 class PresetElemWidget;
 
@@ -75,9 +76,25 @@ void MainWindow::setupUi(){
     });
     addAction(showMenuAction);
 
-    QAction * contralAction=new QAction("控制图标(Z)");
+    QAction* contralAction=new QAction("控制图标(Z)");
     contralAction->setShortcut(QKeySequence(Qt::Key_Z));
     bar->addAction(contralAction);
+
+    QMenu* windowMenu = bar->addMenu("窗口(W)");
+    QAction* showWinMenu = new QAction();
+    showWinMenu->setShortcut(QKeySequence(Qt::Key_W));
+    connect(showWinMenu, &QAction::triggered, this, [this,windowMenu]() {
+        QPoint globalPos = mapToGlobal(QPoint(150, 22));
+        windowMenu->exec(globalPos);
+    });
+    addAction(showWinMenu);
+    QAction* showVtkWin = windowMenu->addAction("主窗口");
+    showVtkWin->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_W));
+    showVtkWin->setShortcutContext(Qt::ApplicationShortcut);
+
+    QAction* showReportWin = windowMenu->addAction("报表窗口");
+    showReportWin->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_R));
+    showReportWin->setShortcutContext(Qt::ApplicationShortcut);
 
     QMenu *presetMenu=bar->addMenu("预置(P)");
     QAction* showPresetMenu = new QAction();
@@ -322,7 +339,6 @@ void MainWindow::setupUi(){
 
     // stbar->addWidget(line);
 
-
     spMainWindow=new QSplitter(Qt::Horizontal,this);
     spLeft=new QSplitter(Qt::Vertical,spMainWindow);
     spMiddleup=new QSplitter(Qt::Vertical,spMainWindow);
@@ -330,11 +346,18 @@ void MainWindow::setupUi(){
 
     spLeft->addWidget(pWinElementListWidget);
 
-    QTabWidget *mainTabWidget=new QTabWidget(spMiddleup);
-    mainTabWidget->setTabPosition(QTabWidget::South);
-    mainTabWidget->addTab(pWinVtkWidget,"图形");
-    mainTabWidget->addTab(pWinReportWidget,"报表");
-    spMiddleup->addWidget(mainTabWidget);
+    pWinReportWidget->hide();
+    QStackedWidget* centralWidget = new QStackedWidget(this);
+    centralWidget->addWidget(pWinVtkWidget);
+    centralWidget->addWidget(pWinReportWidget);
+    spMiddleup->addWidget(centralWidget);
+    // 连接切换窗口菜单
+    connect(showVtkWin, &QAction::triggered, this, [centralWidget]() {
+        centralWidget->setCurrentIndex(0); // 显示主窗口
+    });
+    connect(showReportWin, &QAction::triggered, this, [centralWidget]() {
+        centralWidget->setCurrentIndex(1); // 显示报表窗口
+    });
 
     spRightup->addWidget(pWinFileManagerWidget);
 
