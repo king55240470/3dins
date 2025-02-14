@@ -129,7 +129,7 @@ public:
     vtkSmartPointer<vtkActor2D> createLine(CEntity* entity, vtkSmartPointer<vtkTextActor> textActor);
     vtkSmartPointer<vtkActor2D> createCloseIcon(vtkSmartPointer<vtkTextActor> textActor, double x, double y);
     void Linechange();
-    void updateEndPoint(CEntity* entity, int x, int y);
+    void updateEndPoint(CEntity* entity);
     void closeText();
     void closeTextActor(CEntity* entity);
     void GetScreenCoordinates(vtkRenderer* renderer, double pt[3], double screenCoord[2]);
@@ -187,6 +187,10 @@ private:
     double textWidth, textHeight;
     double* position; // infoTextActor 的位置
     double textBox[4];
+    // 以下变量用于中键平移窗口时改变指向线段
+    int initialMousePos[2];
+    std::map<CEntity*, std::array<double, 2>> initialPositions;
+
 public slots:
 
 };

@@ -97,10 +97,11 @@ void VtkWidget::OnMouseMove()
         Linechange();
     }
     // if(isMiddleDragging){
-    //     // 更新指向线段的终点位置
-    //     CEntity* entity = getEntityFromTextActor(infoTextActor);
-    //     if (entity) {
-    //         updateEndPoint(entity, clickPos[0], clickPos[1]);
+    //     // 更新所有线段的终点
+    //     for (auto it = entityToTextActors.begin(); it != entityToTextActors.end(); ++it)
+    //     {
+    //         infoTextActor = it.value();
+    //         updateEndPoint(it.key());
     //     }
     // }
 
@@ -167,6 +168,28 @@ void VtkWidget::OnLeftButtonRelease()
 {
     isDragging = false; // 关闭拖动状态
     renWin->GetInteractor()->SetInteractorStyle(m_highlightstyle);
+}
+
+void VtkWidget::OnMiddleButtonPress()
+{
+    // 记录初始鼠标位置
+    initialMousePos[0] = renWin->GetInteractor()->GetEventPosition()[0];
+    initialMousePos[1] = renWin->GetInteractor()->GetEventPosition()[1];
+
+    // 记录所有文本演员的初始位置
+    for (auto it = entityToTextActors.begin(); it != entityToTextActors.end(); ++it)
+    {
+        vtkSmartPointer<vtkTextActor> textActor = it.value();
+        double* position = textActor->GetPosition();
+        initialPositions[it.key()] = {position[0], position[1]};
+    }
+
+    isMiddleDragging = true; // 开启中键拖动状态
+}
+
+void VtkWidget::OnMiddleButtonRelease()
+{
+    isMiddleDragging = false;
 }
 
 void VtkWidget::setCentity(CEntity* entity)
@@ -379,7 +402,7 @@ vtkSmartPointer<vtkActor2D> VtkWidget::createLine(CEntity* entity, vtkSmartPoint
         CCone* s = static_cast<CCone*>(entity);
         b = s->getVertex();
     }
-    entityToEndPoints[entity] = b;
+    entityToEndPoints[entity] = b; // 将该线段的终点存入map
 
     coordinate = vtkSmartPointer<vtkCoordinate>::New();
     coordinate->SetValue(b.x, b.y, b.z);
@@ -479,19 +502,20 @@ void VtkWidget::Linechange()
     points->InsertNextPoint(textPosition[0], textPosition[1], 0.0); // 起点为文本框位置
     points->InsertNextPoint(viewportMidPoint[0], viewportMidPoint[1], viewportMidPoint[2]); // 终点为视口坐标
 
-    linePolyData->SetPoints(points);
-
     // 更新线段的映射数据
+    linePolyData->SetPoints(points);
     lineMapper->SetInputData(linePolyData);
-    lineMapper->Update();
     lineActor->SetMapper(lineMapper);
 }
 
-void VtkWidget::updateEndPoint(CEntity *entity, int x, int y)
+void VtkWidget::updateEndPoint(CEntity *entity)
 {
+    // 获取指向线段的终点
+    CPosition end = entityToEndPoints[getEntityFromTextActor(infoTextActor)];
+
     // 将鼠标位置转换为世界坐标
-    vtkSmartPointer<vtkCoordinate> coordinate = vtkSmartPointer<vtkCoordinate>::New();
-    coordinate->SetValue(x, y, 0);
+    coordinate = vtkSmartPointer<vtkCoordinate>::New();
+    coordinate->SetValue(end.x, end.y, end.z);
     coordinate->SetCoordinateSystemToViewport();
     double* worldPos = coordinate->GetComputedWorldValue(renderer);
 
@@ -679,16 +703,6 @@ void VtkWidget::ShowColorBar(double minDistance, double maxDistance){
 void VtkWidget::OnRightButtonPress()
 {
     vtkMenu->showTearOffMenu(); // 弹出菜单栏
-}
-
-void VtkWidget::OnMiddleButtonPress()
-{
-    isMiddleDragging = true;
-}
-
-void VtkWidget::OnMiddleButtonRelease()
-{
-    isMiddleDragging = false;
 }
 
 vtkSmartPointer<vtkRenderWindow> VtkWidget::getRenderWindow(){
@@ -916,13 +930,7 @@ void VtkWidget::onCompare()
     }
 
     if(clouds.size()!=2){
-        QString message="点云数目异常(只允许两个点云数据))";
-        QMessageBox msgBox;
-        msgBox.setWindowTitle("错误");
-        msgBox.setText(message);
-        msgBox.setIcon(QMessageBox::Critical); // 设置对话框图标为错误
-        msgBox.setStandardButtons(QMessageBox::Ok); // 只显示“确定”按钮
-        msgBox.exec(); // 显示对话框
+        QMessageBox::critical(this, "错误", "点云数目异常(只允许两个点云)");
         return ;
     }
 
