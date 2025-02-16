@@ -96,14 +96,13 @@ void VtkWidget::OnMouseMove()
         // 更新对应的指向线段
         Linechange();
     }
-    // if(isMiddleDragging){
-    //     // 更新所有线段的终点
-    //     for (auto it = entityToTextActors.begin(); it != entityToTextActors.end(); ++it)
-    //     {
-    //         infoTextActor = it.value();
-    //         updateEndPoint(it.key());
-    //     }
-    // }
+    if(isMiddleDragging){
+        // 更新所有线段的终点
+        for (auto it = entityToTextActors.begin(); it != entityToTextActors.end(); ++it)
+        {
+            updateEndPoint(it.key());
+        }
+    }
 
     // 限制渲染频率
     static double lastRenderTime = vtkTimerLog::GetUniversalTime();
@@ -122,7 +121,9 @@ void VtkWidget::OnLeftButtonPress()
     // 遍历所有文本框，检查点击位置是否在某个文本框内
     for (auto it = entityToTextActors.begin(); it != entityToTextActors.end(); ++it)
     {
+        // 更新文本和标题演员
         infoTextActor = it.value();
+        titleTextActor = entityToTitleTextActors[it.key()];
 
         double bbox[4];
         infoTextActor->GetBoundingBox(renderer, bbox);
@@ -172,18 +173,6 @@ void VtkWidget::OnLeftButtonRelease()
 
 void VtkWidget::OnMiddleButtonPress()
 {
-    // 记录初始鼠标位置
-    initialMousePos[0] = renWin->GetInteractor()->GetEventPosition()[0];
-    initialMousePos[1] = renWin->GetInteractor()->GetEventPosition()[1];
-
-    // 记录所有文本演员的初始位置
-    for (auto it = entityToTextActors.begin(); it != entityToTextActors.end(); ++it)
-    {
-        vtkSmartPointer<vtkTextActor> textActor = it.value();
-        double* position = textActor->GetPosition();
-        initialPositions[it.key()] = {position[0], position[1]};
-    }
-
     isMiddleDragging = true; // 开启中键拖动状态
 }
 

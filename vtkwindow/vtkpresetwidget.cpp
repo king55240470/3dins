@@ -22,9 +22,9 @@ VtkPresetWidget::VtkPresetWidget(QWidget *parent)
         "QTreeWidget::item { "
         "   padding-bottom: 10px; "   // 下间距
         "}"
-        "QTreeWidget{"
-        "background-color:#f0f0f0;"
-        "}"
+        // "QTreeWidget{"
+        // "background-color:#f0f0f0;"
+        // "}"
         );
 
 
