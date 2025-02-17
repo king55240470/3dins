@@ -79,8 +79,7 @@ QToolBar::separator {
 QTreeWidget {
     font-size: 14px "微软雅黑";
     background-color: #ffffff;
-    border: 1px solid #cccccc;
-    alternate-background-color: #f0f0f0;
+    /*border: 1px solid #cccccc;*/
 }
 
 QTreeWidget::item {
@@ -100,12 +99,13 @@ QTreeWidget::branch {
 /* QTreeWidget的头部样式 */
 QHeaderView {
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f0f0f0, stop: 1 #e0e0e0);
-    padding: 2px;
+    padding: 1px;
 }
 
 QHeaderView::section {
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f0f0f0, stop: 1 #e0e0e0);
-    padding: 2px;
+    border: 1px solid #cccccc;
+    padding: 1px;
 }
 
 QTreeView {
@@ -114,19 +114,12 @@ QTreeView {
     alternate-background-color: #444;
 }
 
-QTreeView::item {
-    padding: 1px;
-}
-
 QTreeView::item:selected {
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #3570b2, stop: 1 #4a90e2);
     color: #ffffff;
     padding: 1px;
 }
 
-QTreeView::branch {
-    color: rgb(0, 0, 0);
-}
 
 QTreeView QStandardItem {
     background-color: transparent;

@@ -143,6 +143,10 @@ void ElementListWidget::CreateEllipse(CObject*obj)
         QIcon icon(":/component/construct/distance.png");
         item->setIcon(0, icon);
     }
+    if(obj->GetUniqueType()==enPointCloud){
+        QIcon icon(":/component/construct/pointCloud.png");
+        item->setIcon(0, icon);
+    }
 }
 
 void ElementListWidget::onDeleteEllipse()
@@ -377,6 +381,34 @@ void ElementListWidget::ShowParent(CObject*obj)
     treeWidgetInfo->clear();
     if(obj->Form=="预制"){
         QTreeWidgetItem *infoItem = new QTreeWidgetItem(treeWidgetInfo);
+        if(obj->GetUniqueType()==enPoint){
+            QIcon icon(":/component/find/point.jpg");
+            infoItem->setIcon(0, icon);
+        }
+        if(obj->GetUniqueType()==enLine){
+            QIcon icon(":/component/find/line.jpg");
+            infoItem->setIcon(0, icon);
+        }
+        if(obj->GetUniqueType()==enCircle){
+            QIcon icon(":/component/find/circle.jpg");
+            infoItem->setIcon(0, icon);
+        }
+        if(obj->GetUniqueType()==enPlane){
+            QIcon icon(":/component/find/plan.jpg");
+            infoItem->setIcon(0, icon);
+        }
+        if(obj->GetUniqueType()==enSphere){
+            QIcon icon(":/component/find/sphere.jpg");
+            infoItem->setIcon(0, icon);
+        }
+        if(obj->GetUniqueType()==enCone){
+            QIcon icon(":/component/find/cone.jpg");
+            infoItem->setIcon(0, icon);
+        }
+        if(obj->GetUniqueType()==enCylinder){
+            QIcon icon(":/component/find/cylinder.jpg");
+            infoItem->setIcon(0, icon);
+        }
         infoItem->setText(0,obj->m_strCName);
         infoItem->setText(1,obj->Form);
         return;
@@ -397,6 +429,42 @@ void ElementListWidget::ShowParent(CObject*obj)
     }
     for(CObject*obj1:obj->parent){
         QTreeWidgetItem *infoItem = new QTreeWidgetItem(treeWidgetInfo);
+        if(obj->GetUniqueType()==enPoint){
+            QIcon icon(":/component/find/point.jpg");
+            infoItem->setIcon(0, icon);
+        }
+        if(obj->GetUniqueType()==enLine){
+            QIcon icon(":/component/find/line.jpg");
+            infoItem->setIcon(0, icon);
+        }
+        if(obj->GetUniqueType()==enCircle){
+            QIcon icon(":/component/find/circle.jpg");
+            infoItem->setIcon(0, icon);
+        }
+        if(obj->GetUniqueType()==enPlane){
+            QIcon icon(":/component/find/plan.jpg");
+            infoItem->setIcon(0, icon);
+        }
+        if(obj->GetUniqueType()==enSphere){
+            QIcon icon(":/component/find/sphere.jpg");
+            infoItem->setIcon(0, icon);
+        }
+        if(obj->GetUniqueType()==enCone){
+            QIcon icon(":/component/find/cone.jpg");
+            infoItem->setIcon(0, icon);
+        }
+        if(obj->GetUniqueType()==enCylinder){
+            QIcon icon(":/component/find/cylinder.jpg");
+            infoItem->setIcon(0, icon);
+        }
+        if(obj->GetUniqueType()==enDistance){
+            QIcon icon(":/component/construct/distance.png");
+            infoItem->setIcon(0, icon);
+        }
+        if(obj->GetUniqueType()==enPointCloud){
+            QIcon icon(":/component/construct/pointCloud.png");
+            infoItem->setIcon(0, icon);
+        }
         infoItem->setText(0,obj1->m_strCName);
         infoItem->setText(1,obj1->Form);
     }

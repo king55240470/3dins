@@ -457,7 +457,7 @@ vtkSmartPointer<vtkActor> CCuboid::draw() {
     actor->SetMapper(mapper);
     actor->GetProperty()->SetColor(MainWindow::InfoTextColor);
     actor->GetProperty()->SetRepresentationToWireframe();
-    actor->GetProperty()->SetLineWidth(3);
+    actor->GetProperty()->SetLineWidth(2);
 
     return actor;
 }
