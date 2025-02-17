@@ -519,14 +519,14 @@ public:
 
     QDataStream& serialize(QDataStream& out) const override {
         CEntity::serialize(out);  // 先序列化基类部分
-        out <<center << length<< width << normal;
+        out <<center << length<< width <<height<< normal;
         out <<cuboidCount<<currentCuboidId;
         return out;
     }
 
     QDataStream& deserialize(QDataStream& in) override {
         CEntity::deserialize(in);  // 先反序列化基类部分
-        in >>center >> length >> width >> normal;
+        in >>center >> length >> width >>height>> normal;
         in>>cuboidCount>>currentCuboidId;
         return in;
     }
