@@ -20,7 +20,7 @@ VtkPresetWidget::VtkPresetWidget(QWidget *parent)
     // 设置样式表，增大 MessageItemWidget 之间的间距
     treeWidget->setStyleSheet(
         "QTreeWidget::item { "
-        "   padding-bottom: 10px; "   // 下间距
+        "   margin-right: 0; "
         "}"
         // "QTreeWidget{"
         // "background-color:#f0f0f0;"
