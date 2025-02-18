@@ -64,63 +64,121 @@ FileManagerWidget::FileManagerWidget(QWidget *parent)
 
 }
 
-void FileManagerWidget::openModelFile(QString fileName,QString filePath){
-    QStandardItem *newFileItem = new QStandardItem();
-    newFileItem->setData(filePath, Qt::UserRole);//在QTreeView的子节点中存储文件路径（Qt::UserRole用来存储用户第一个定义的数据：文件路径）
-    newFileItem->setData(true, Qt::UserRole+1); //设置初始数据以便按钮绘制（Qt::UserRole+1用来存储用户第二个定义的数据：按钮状态）
+void FileManagerWidget::openModelFile(/*QString fileName,QString filePath*/){
+    // QStandardItem *newFileItem = new QStandardItem();
+    // newFileItem->setData(filePath, Qt::UserRole);//在QTreeView的子节点中存储文件路径（Qt::UserRole用来存储用户第一个定义的数据：文件路径）
+    // newFileItem->setData(true, Qt::UserRole+1); //设置初始数据以便按钮绘制（Qt::UserRole+1用来存储用户第二个定义的数据：按钮状态）
 
-    QIcon icon(":/component/eye/file.png");
-    newFileItem->setIcon(icon);
-    newFileItem->setText(fileName);
+    // QIcon icon(":/component/eye/file.png");
+    // newFileItem->setIcon(icon);
+    // newFileItem->setText(fileName);
 
-    modelFile->appendRow(newFileItem);
+    // modelFile->appendRow(newFileItem);
 
-    //在modelFileMap中添加添加新文件，并分配新的cloud
-    m_pMainWin->getpWinFileMgr()->getModelFileMap().insert(filePath, true);
-    auto cloud = m_pMainWin->getPointCloudListMgr()->CreateCloudFromFile(filePath);
-    cloud->isModelCloud=true;
-    cloud->m_strAutoName += "(标准)";
-    m_pMainWin->getPWinToolWidget()->addToList(cloud);
-
-    // 给拟合的临时点云指针赋值
-    auto newcloud = new pcl::PointCloud<pcl::PointXYZRGB>(cloud->m_pointCloud);
-
-    auto tmpCloud=m_pMainWin->getPointCloudListMgr()->getTempCloud();
-    pcl::copyPointCloud(*newcloud, tmpCloud);
-
-    m_pMainWin->getpWinFileMgr()->cloudptr = pcl::PointCloud<pcl::PointXYZRGB>::Ptr(newcloud);
-    if(!m_pMainWin->getpWinFileMgr()->cloudptr){
-        qDebug() << "拟合用的点云为空!";
+    //删除modelFile中的所有子项
+    int childCount = modelFile->rowCount(); // 获取子项数量
+    for (int i=childCount-1;i>=0;i--) {
+        modelFile->removeRow(i); // 删除子项
     }
-    m_pMainWin->NotifySubscribe();
-    m_pMainWin->getPWinVtkWidget()->onTopView();
+
+    //添加子项
+    //获取所有键值
+    QList<QString> keys = m_pMainWin->getpWinFileMgr()->getModelFileMap().keys();
+    // 遍历所有的键
+    for (const QString &key : keys) {
+
+        QString filePath=key;
+        QFileInfo fileInfo(filePath);
+        QString fileName = fileInfo.fileName();
+
+        QStandardItem *newFileItem = new QStandardItem();
+        newFileItem->setData(key, Qt::UserRole);
+        newFileItem->setData(m_pMainWin->getpWinFileMgr()->getModelFileMap()[key], Qt::UserRole+1);
+
+        QIcon icon(":/component/eye/file.png");
+        newFileItem->setIcon(icon);
+        newFileItem->setText(fileName);
+
+        modelFile->appendRow(newFileItem);
+
+        qDebug() << "Key:" << key << ", Value:" << m_pMainWin->getpWinFileMgr()->getModelFileMap()[key];
+    }
+
+    // //在modelFileMap中添加添加新文件，并分配新的cloud
+    // m_pMainWin->getpWinFileMgr()->getModelFileMap().insert(filePath, true);
+    // auto cloud = m_pMainWin->getPointCloudListMgr()->CreateCloudFromFile(filePath);
+    // cloud->isModelCloud=true;
+    // cloud->m_strAutoName += "(标准)";
+    // m_pMainWin->getPWinToolWidget()->addToList(cloud);
+
+    // // 给拟合的临时点云指针赋值
+    // auto newcloud = new pcl::PointCloud<pcl::PointXYZRGB>(cloud->m_pointCloud);
+
+    // auto tmpCloud=m_pMainWin->getPointCloudListMgr()->getTempCloud();
+    // pcl::copyPointCloud(*newcloud, tmpCloud);
+
+    // m_pMainWin->getpWinFileMgr()->cloudptr = pcl::PointCloud<pcl::PointXYZRGB>::Ptr(newcloud);
+    // if(!m_pMainWin->getpWinFileMgr()->cloudptr){
+    //     qDebug() << "拟合用的点云为空!";
+    // }
+    // m_pMainWin->NotifySubscribe();
+    // m_pMainWin->getPWinVtkWidget()->onTopView();
 
 }
 
-void FileManagerWidget::openMeasuredFile(QString fileName,QString filePath){
-    QStandardItem *newFileItem = new QStandardItem();
-    newFileItem->setData(filePath, Qt::UserRole);//在QTreeView的子节点中存储文件路径
-    newFileItem->setData(true, Qt::UserRole+1);
+void FileManagerWidget::openMeasuredFile(/*QString fileName,QString filePath*/){
+    // QStandardItem *newFileItem = new QStandardItem();
+    // newFileItem->setData(filePath, Qt::UserRole);//在QTreeView的子节点中存储文件路径
+    // newFileItem->setData(true, Qt::UserRole+1);
 
-    QIcon icon(":/component/eye/file.png");
-    newFileItem->setIcon(icon);
-    newFileItem->setText(fileName);
+    // QIcon icon(":/component/eye/file.png");
+    // newFileItem->setIcon(icon);
+    // newFileItem->setText(fileName);
 
-    measuredFile->appendRow(newFileItem);
+    // measuredFile->appendRow(newFileItem);
 
-    //在measuredFileMap中添加新文件，并分配新的cloud
-    m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().insert(filePath, true);
-    auto cloud = m_pMainWin->getPointCloudListMgr()->CreateCloudFromFile(filePath);
-    cloud->isMeasureCloud=true;
-    cloud->m_strAutoName += "(实测)";
-    m_pMainWin->getPWinToolWidget()->addToList(cloud);
+    // //在measuredFileMap中添加新文件，并分配新的cloud
+    // m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().insert(filePath, true);
+    // auto cloud = m_pMainWin->getPointCloudListMgr()->CreateCloudFromFile(filePath);
+    // cloud->isMeasureCloud=true;
+    // cloud->m_strAutoName += "(实测)";
+    // m_pMainWin->getPWinToolWidget()->addToList(cloud);
 
-    // 给拟合的临时点云指针赋值
-    auto newcloud = new pcl::PointCloud<pcl::PointXYZRGB>(cloud->m_pointCloud);
-    m_pMainWin->getpWinFileMgr()->cloudptr = pcl::PointCloud<pcl::PointXYZRGB>::Ptr(newcloud);
-    m_pMainWin->NotifySubscribe();
-    m_pMainWin->getPWinVtkWidget()->onTopView();
-    m_pMainWin->getPWinElementListWidget()->onAddElement(m_pMainWin->getpWinFileMgr()->cloudptr);
+    // // 给拟合的临时点云指针赋值
+    // auto newcloud = new pcl::PointCloud<pcl::PointXYZRGB>(cloud->m_pointCloud);
+    // m_pMainWin->getpWinFileMgr()->cloudptr = pcl::PointCloud<pcl::PointXYZRGB>::Ptr(newcloud);
+    // m_pMainWin->NotifySubscribe();
+    // m_pMainWin->getPWinVtkWidget()->onTopView();
+    // m_pMainWin->getPWinElementListWidget()->onAddElement(m_pMainWin->getpWinFileMgr()->cloudptr);
+
+    //删除measuredFile中的所有子项
+    int childCount = measuredFile->rowCount(); // 获取子项数量
+    for (int i=childCount-1;i>=0;i--) {
+        measuredFile->removeRow(i); // 删除子项
+    }
+
+    //添加子项
+    //获取所有键值
+    QList<QString> keys = m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().keys();
+    // 遍历所有的键
+    for (const QString &key : keys) {
+
+        QString filePath=key;
+        QFileInfo fileInfo(filePath);
+        QString fileName = fileInfo.fileName();
+
+        QStandardItem *newFileItem = new QStandardItem();
+        newFileItem->setData(key, Qt::UserRole);
+        newFileItem->setData(m_pMainWin->getpWinFileMgr()->getMeasuredFileMap()[key], Qt::UserRole+1);
+
+        QIcon icon(":/component/eye/file.png");
+        newFileItem->setIcon(icon);
+        newFileItem->setText(fileName);
+
+        measuredFile->appendRow(newFileItem);
+
+        qDebug() << "Key:" << key << ", Value:" << m_pMainWin->getpWinFileMgr()->getMeasuredFileMap()[key];
+    }
 }
 
 void FileManagerWidget::createContentItem(){
@@ -492,6 +550,8 @@ void FileManagerWidget::UpdateInfo(){
     //         qDebug()<<"打开";
     //     }
     // }
+    openModelFile();
+    openMeasuredFile();
     createContentItem();
     createIdentifyItem();
 }
