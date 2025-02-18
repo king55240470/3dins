@@ -20,7 +20,7 @@ VtkPresetWidget::VtkPresetWidget(QWidget *parent)
     // 设置样式表，增大 MessageItemWidget 之间的间距
     treeWidget->setStyleSheet(
         "QTreeWidget::item { "
-        "   margin-right: 0; "
+        //"   margin-right: 0; "
         "}"
         // "QTreeWidget{"
         // "background-color:#f0f0f0;"
@@ -49,14 +49,20 @@ void VtkPresetWidget::setWidget(QString a){
     treeWidget->setItemWidget(item, 0, itemWidget);
 
     treeWidget->addTopLevelItem(item);
+
+    treeWidget->scrollToBottom();// 滚动到底部
 }
 
 //显示右键菜单
 void VtkPresetWidget::showContextMenu(const QPoint &pos){
+
     //列表没有内容，不显示右键菜单
     if (treeWidget->topLevelItemCount() == 0) {
         return;
     }
+
+    // 取消选中当前项
+    treeWidget->clearSelection();
 
     contextMenu = new QMenu(this);
     deleteAction = new QAction("清空", this);
