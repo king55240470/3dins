@@ -1114,8 +1114,8 @@ QString CDistance::getCEntityInfo()
     QString q;
     // 给文本添加字符串
     type_str = QString("distance \nactual  %1\n").arg(QString::number(getdistance(), 'f',  6));
-    upTol_str = QString("max  %1\n").arg(QString::number(getUptolerance() + getdistance(), 'f',  6));
-    underTol_str = QString("min  %1\n").arg(QString::number(getdistance() - getUndertolerance(), 'f',  6));
+    upTol_str = QString("max  %1\n").arg(QString::number(getUptolerance(), 'f',  6));
+    underTol_str = QString("min  %1\n").arg(QString::number(getUndertolerance(), 'f',  6));
     q = QString("quality  %1").arg(judge());
     return type_str + upTol_str + underTol_str+q;
 }
