@@ -43,7 +43,7 @@ void VtkPresetWidget::setWidget(QString a){
     QString time=currentDateTime.toString("yyyy-MM-dd HH:mm:ss");   // 格式化为指定的字符串格式
 
     QTreeWidgetItem *item = new QTreeWidgetItem(treeWidget);
-    item->setSizeHint(0, QSize(0, 70)); //设置每个item的高度
+    item->setSizeHint(0, QSize(0, 60)); //设置每个item的高度
     QWidget *itemWidget = new MessageItemWidget(time,a);
     itemWidget->setFixedWidth(treeWidget->width()); // 设置 MessageItemWidget 的宽度
     treeWidget->setItemWidget(item, 0, itemWidget);
