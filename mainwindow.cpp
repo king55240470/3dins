@@ -444,10 +444,46 @@ void MainWindow::openFile(){
         // 根据文件扩展名进行判断
         if (filePath.endsWith("ply")) {
             modelCloudExist=true; // 用于保证后续序列化文件
-            pWinFileManagerWidget->openModelFile(fileName, filePath);
+
+            //在modelFileMap中添加添加新文件，并分配新的cloud
+            getpWinFileMgr()->getModelFileMap().insert(filePath, true);
+            auto cloud = getPointCloudListMgr()->CreateCloudFromFile(filePath);
+            cloud->isModelCloud=true;
+            cloud->m_strAutoName += "(标准)";
+            getPWinToolWidget()->addToList(cloud);
+
+            // 给拟合的临时点云指针赋值
+            auto newcloud = new pcl::PointCloud<pcl::PointXYZRGB>(cloud->m_pointCloud);
+
+            auto tmpCloud=getPointCloudListMgr()->getTempCloud();
+            pcl::copyPointCloud(*newcloud, tmpCloud);
+
+            getpWinFileMgr()->cloudptr = pcl::PointCloud<pcl::PointXYZRGB>::Ptr(newcloud);
+            if(!getpWinFileMgr()->cloudptr){
+                qDebug() << "拟合用的点云为空!";
+            }
+            NotifySubscribe();
+            getPWinVtkWidget()->onTopView();
+
+            //pWinFileManagerWidget->openModelFile(fileName, filePath);
             pWinVtkPresetWidget->setWidget(fileName+"文件已打开");
         } else if (filePath.endsWith("pcd")) {
-            pWinFileManagerWidget->openMeasuredFile(fileName, filePath);
+
+            //在measuredFileMap中添加新文件，并分配新的cloud
+            getpWinFileMgr()->getMeasuredFileMap().insert(filePath, true);
+            auto cloud = getPointCloudListMgr()->CreateCloudFromFile(filePath);
+            cloud->isMeasureCloud=true;
+            cloud->m_strAutoName += "(实测)";
+            getPWinToolWidget()->addToList(cloud);
+
+            // 给拟合的临时点云指针赋值
+            auto newcloud = new pcl::PointCloud<pcl::PointXYZRGB>(cloud->m_pointCloud);
+            getpWinFileMgr()->cloudptr = pcl::PointCloud<pcl::PointXYZRGB>::Ptr(newcloud);
+            NotifySubscribe();
+            getPWinVtkWidget()->onTopView();
+            getPWinElementListWidget()->onAddElement(getpWinFileMgr()->cloudptr);
+
+            //pWinFileManagerWidget->openMeasuredFile(fileName, filePath);
             pWinVtkPresetWidget->setWidget(fileName+"文件已打开");
             //pWinElementListWidget->onAddElement();
         }else if(filePath.endsWith("qins")){

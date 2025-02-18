@@ -45,8 +45,8 @@ private:
     QModelIndex selectedIndex;//保存右键删除时选中的索引
     QStandardItem *selectedItem;//保存右键删除时选中的子项
 public:
-    void openModelFile(QString,QString);
-    void openMeasuredFile(QString,QString);
+    void openModelFile(/*QString,QString*/);
+    void openMeasuredFile(/*QString,QString*/);
     void createContentItem();
     void createIdentifyItem();
     // void createPresetOpen(CEntity*);
