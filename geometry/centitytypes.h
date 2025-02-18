@@ -782,7 +782,7 @@ public:
 
         if(!haveOpened){
             QString path;
-            in>> path;
+            in>> path;    
             std::string file_path=path.toStdString();
             pcl::io::loadPLYFile<pcl::PointXYZRGB>(file_path, m_pointCloud);
         }

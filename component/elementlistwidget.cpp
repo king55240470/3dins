@@ -147,6 +147,14 @@ void ElementListWidget::CreateEllipse(CObject*obj)
         QIcon icon(":/component/construct/pointCloud.png");
         item->setIcon(0, icon);
     }
+    if(obj->GetUniqueType()==enAngle){
+        QIcon icon(":/component/construct/angle.png");
+        item->setIcon(0, icon);
+    }
+    if(obj->GetUniqueType()==enCuboid){
+        QIcon icon(":/component/viewangle/isometric.png");
+        item->setIcon(0, icon);
+    }
 }
 
 void ElementListWidget::onDeleteEllipse()
@@ -1037,20 +1045,10 @@ void ElementListWidget::starttime()
 
 void ElementListWidget::selectall()
 {
-    /*int ItemCount = treeWidgetNames->topLevelItemCount();
-    qDebug()<<ItemCount;
-    for(int i=0;i<ItemCount;i++){
+    for(int i=0;i<m_pMainWin->getObjectListMgr()->getObjectList().size();i++){
         QTreeWidgetItem *item = treeWidgetNames->topLevelItem(i);
         item->setSelected(true);
         m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(true);
-    }*/
-
-    if(currentIndex < treeWidgetNames->topLevelItemCount()) {
-        QTreeWidgetItem *item = treeWidgetNames->topLevelItem(currentIndex);
-        treeWidgetNames->setCurrentItem(item);
-        currentIndex++;
-    }else{
-        timer->stop();
     }
 }
 
