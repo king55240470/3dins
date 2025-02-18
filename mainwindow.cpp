@@ -467,7 +467,7 @@ void MainWindow::openFile(){
             pWinSetDataWidget->deserialize(in);
             in>>pWinFileMgr->getContentItemMap();
             // in>>pWinFileMgr->getIdentifyItemMap();
-            // in>>pWinFileMgr->getModelFileMap();
+            in>>pWinFileMgr->getModelFileMap();
 
             // //去除原来构建的点云
             // pWinFileMgr->removePointCloudKeys(pWinFileMgr->getContentItemMap());
@@ -541,7 +541,7 @@ void MainWindow::saveFile(){
         pWinSetDataWidget->serialize(out);
         out<<pWinFileMgr->getContentItemMap();
         // out<<pWinFileMgr->getIdentifyItemMap();
-        // out<<pWinFileMgr->getModelFileMap();
+        out<<pWinFileMgr->getModelFileMap();
 
         //保存模型点云
         out<<modelCloudExist;
