@@ -175,6 +175,10 @@ void FileManagerWidget::createContentItem(){
             QIcon icon(":/component/construct/pointCloud.png");
             newContentItem->setIcon(icon);
         }
+        if(key.contains("角度")){
+            QIcon icon(":/component/construct/angle.png");
+            newContentItem->setIcon(icon);
+        }
 
         newContentItem->setText(key);
 
@@ -234,6 +238,10 @@ void FileManagerWidget::createIdentifyItem(){
         }
         if(key.contains("点云")){
             QIcon icon(":/component/construct/pointCloud.png");
+            newIentifyItem->setIcon(icon);
+        }
+        if(key.contains("角度")){
+            QIcon icon(":/component/construct/angle.png");
             newIentifyItem->setIcon(icon);
         }
 
