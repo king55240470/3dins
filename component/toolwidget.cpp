@@ -1128,8 +1128,16 @@ void ToolWidget::onSaveTxt(){
 
         }else if(object->GetUniqueType()==enDistance){
             CDistance* Distance=(CDistance*) object;
-            out<<"类型：距离 名称:"<<Distance->m_strCName<<Qt::endl;
-            out<<"大小:"<<Distance->getdistance()<<" 上公差："<<Distance->getUptolerance()<<" 下公差:"<<Distance->getUndertolerance();
+            out<<"类型：距离 名称："<<Distance->m_strCName<<Qt::endl;
+            out<<"大小："<<Distance->getdistance()<<"  上公差："<<Distance->getUptolerance()<<"  下公差："<<Distance->getUndertolerance()<<Qt::endl;
+            QString qua;
+            if(Distance->judge())
+            {
+                qua="合格";
+            }else{
+                qua="不合格";
+            }
+            out<<"是否合格："<<qua<<Qt::endl;
             out<<Qt::endl;
         }else if(object->GetUniqueType()==enPointCloud){
             continue;
@@ -1138,8 +1146,16 @@ void ToolWidget::onSaveTxt(){
             // out<<Qt::endl;
         }else if(object->GetUniqueType()==enAngle){
             CAngle* Angle=(CAngle*)object;
-            out<<"类型：角度 名称:"<<Angle->m_strCName<<Qt::endl;
-            out<<"大小:"<<Angle->getAngle();
+            out<<"类型：角度 名称："<<Angle->m_strCName<<Qt::endl;
+            out<<"大小："<<Angle->getAngle()<<Qt::endl;
+            QString qua;
+            if(Angle->judge())
+            {
+                qua="合格";
+            }else{
+                qua="不合格";
+            }
+            out<<"是否合格："<<qua<<Qt::endl;
             out<<Qt::endl;
         }
         ;
