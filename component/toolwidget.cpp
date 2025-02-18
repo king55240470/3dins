@@ -838,7 +838,8 @@ void   ToolWidget::onSavePdf(){
    }
 
    painter.end();
-   QMessageBox::information(nullptr, "提示", "保存成功");
+   QString logInfo="Pdf保存成功";
+   m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
    lastCreatedPdfFile=filePath;
 
 }
@@ -987,7 +988,8 @@ void   ToolWidget::onSaveExcel(){
     workBook->dynamicCall("SaveAs(const QString&)", QDir::toNativeSeparators(filePath));
     workBook->dynamicCall("Close()");	//关闭工作簿
     excel.dynamicCall("Quit()");		//关闭excel
-    QMessageBox::information(nullptr, "提示", "保存成功");
+    QString logInfo="Excel保存成功";
+    m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
     lastCreatedExcelFile=filePath;
 }
 
@@ -1144,7 +1146,8 @@ void ToolWidget::onSaveTxt(){
     }
     // 关闭文件
     file.close();
-    QMessageBox::information(nullptr, "提示", "保存成功");
+    QString logInfo="Txt保存成功";
+    m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
     lastCreatedTxtFile=filePath;
 }
 
@@ -1200,7 +1203,8 @@ void   ToolWidget::onSaveWord(){
         QTextStream stream(&file);
         stream << doc.toPlainText();
         file.close();
-        QMessageBox::information(nullptr, "提示", "保存成功");
+        QString logInfo="Word保存成功";
+        m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
     }
     lastCreatedWordFile=filePath;
 
@@ -1261,7 +1265,9 @@ void   ToolWidget::onSaveImage(){
         renderWindow->Render();
         SaveImage(fileNameFront,format);}
 
-    QMessageBox::information(nullptr, "提示", "保存成功");
+    QString logInfo="对比图片保存成功";
+    m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
+
     lastCreatedImageFileFront=fileNameFront;
     lastCreatedImageFileTop=fileNameTop;
     lastCreatedImageFileRight=fileNameRight;
