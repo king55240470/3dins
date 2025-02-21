@@ -1017,25 +1017,16 @@ void VtkWidget::onAlign()
 {
     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
     QVector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> clouds;
-<<<<<<< HEAD
     QString logInfo;
-=======
-    QString logInfo; // 用于在右下角输出日志
->>>>>>> e4f509f (调整文本显示)
 
     // 收集选中的点云（确保不修改原始实体）
     for (int i = 0; i < entityList.size(); i++) {
         CEntity* entity = entityList[i];
         if (!entity->IsSelected()) continue;
         if (entity->GetUniqueType() == enPointCloud) {
-<<<<<<< HEAD
             // 获取点云的共享指针，确保原数据不被释放
             auto pcEntity = static_cast<CPointCloud*>(entity);
             clouds.append(pcl::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>(pcEntity->m_pointCloud));
-=======
-            auto& temp = ((CPointCloud*)entity)->m_pointCloud;
-            clouds.append(temp.makeShared());
->>>>>>> e4f509f (调整文本显示)
             logInfo += ((CPointCloud*)entity)->m_strAutoName + ' '; //添加对比的点云编号
         }
     }
@@ -1054,7 +1045,6 @@ void VtkWidget::onAlign()
         return;
     }
 
-<<<<<<< HEAD
     // 下采样：使用正确的点云类型
     // pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledCloud1(new pcl::PointCloud<pcl::PointXYZRGB>());
     // pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledCloud2(new pcl::PointCloud<pcl::PointXYZRGB>());
@@ -1069,21 +1059,6 @@ void VtkWidget::onAlign()
     //     QMessageBox::warning(this, "警告", "下采样后的点云为空");
     //     return;
     // }
-=======
-    // 下采样：提高效率
-    pcl::PointCloud<pcl::PointXYZ> downsampledCloud1;
-    pcl::PointCloud<pcl::PointXYZ>downsampledCloud2;
-    pcl::VoxelGrid<pcl::PointXYZ> voxelGrid;
-    voxelGrid.setLeafSize(0.05f, 0.05f, 0.05f);  // 设置叶子大小为 5cm
-    voxelGrid.setInputCloud(cloud1);
-    voxelGrid.filter(downsampledCloud1);
-    voxelGrid.setInputCloud(cloud2);
-    voxelGrid.filter(downsampledCloud2);
-    if (downsampledCloud1.empty() || downsampledCloud2.empty()) {
-        QMessageBox::warning(this, "警告", "下采样后的点云为空！");
-        return;
-    }
->>>>>>> e4f509f (调整文本显示)
 
     // 使用XYZRGB类型进行ICP配准
     pcl::IterativeClosestPoint<pcl::PointXYZRGB, pcl::PointXYZRGB> icp;
@@ -1124,7 +1099,6 @@ void VtkWidget::onAlign()
     // }
     // auto initialTransformation = std::make_shared<Eigen::Matrix4f>(sac_ia.getFinalTransformation());
 
-<<<<<<< HEAD
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr icpFinalCloudPtr(new pcl::PointCloud<pcl::PointXYZRGB>());
     icp.align(*icpFinalCloudPtr);
     //auto alignedCloud = icpFinalCloudPtr;  // 直接赋值，不要重新 make_shared
@@ -1133,34 +1107,11 @@ void VtkWidget::onAlign()
         icp.setMaxCorrespondenceDistance(0.1);
         icp.setMaximumIterations(150);
         icp.align(*icpFinalCloudPtr);
-=======
-    // ICP精配准
-    pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
-    icp.setInputSource(downsampledCloud1.makeShared());
-    icp.setInputTarget(downsampledCloud2.makeShared());
-    // icp.setInputSource(cloud1);
-    // icp.setInputTarget(cloud2);
-    icp.setMaximumIterations(50);  // 设置最大迭代次数
-    icp.setTransformationEpsilon(1e-8);  // 设置变换容差
-    icp.setMaxCorrespondenceDistance(0.05);  // 设置最大对应点距离
-
-    pcl::PointCloud<pcl::PointXYZ>::Ptr icpFinalCloud(new pcl::PointCloud<pcl::PointXYZ>);
-    // icp.align(icpFinalCloud, *initialTransformation);  // 使用FPFH的变换矩阵作为初始对齐
-    icp.align(*icpFinalCloud);
-
-    if (!icp.hasConverged()) {
-        icp.setMaxCorrespondenceDistance(0.1);  // 增加最大对应点距离
-        icp.setMaximumIterations(100);  // 增加最大迭代次数
-        // icp.align(icpFinalCloud, *initialTransformation);
-        icp.align(*icpFinalCloud);
-
->>>>>>> e4f509f (调整文本显示)
         if (!icp.hasConverged()) {
             return;
         }
     }
 
-<<<<<<< HEAD
     // 处理对齐后的点云
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr alignedCloud(new pcl::PointCloud<pcl::PointXYZRGB>());
     *alignedCloud = *icpFinalCloudPtr;
@@ -1172,24 +1123,4 @@ void VtkWidget::onAlign()
     logInfo += "对齐完成，误差:";
     logInfo += std::to_string(rmse);
     m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
-=======
-    if (icp.hasConverged()) {
-        pcl::copyPointCloud(*icpFinalCloud, *alignedCloud);
-
-        // 显示对齐后的点云
-        auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateAlignCloud(*alignedCloud);
-        m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
-        m_pMainWin->NotifySubscribe();
-
-        // 输出 RMSE（均方根误差）
-        double rmse = icp.getFitnessScore();
-        QMessageBox::information(this, "Alignment Result", QString("Fine alignment RMSE: %1").arg(rmse));
-        // 添加日志输出
-        logInfo += "对齐完成";
-        m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
-    } else {
-        QMessageBox::critical(this, "Error", "ICP 配准未收敛！");
-    }
->>>>>>> e4f509f (调整文本显示)
 }
-
