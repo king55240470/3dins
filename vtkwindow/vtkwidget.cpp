@@ -691,7 +691,13 @@ void VtkWidget::ShowColorBar(double minDistance, double maxDistance){
 
 void VtkWidget::OnRightButtonPress()
 {
+    renWin->GetInteractor()->SetInteractorStyle(0); // 使用vtkwidget自定义事件
     vtkMenu->showTearOffMenu(); // 弹出菜单栏
+}
+
+void VtkWidget::OnRightButtonRelease()
+{
+    renWin->GetInteractor()->SetInteractorStyle(m_highlightstyle); // 恢复高亮点击事件
 }
 
 vtkSmartPointer<vtkRenderWindow> VtkWidget::getRenderWindow(){
