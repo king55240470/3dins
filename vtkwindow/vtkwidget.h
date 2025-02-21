@@ -165,7 +165,6 @@ private:
     vtkSmartPointer<vtkPNGReader> pngReader; //储存图片信息
     vtkSmartPointer<vtkActor2D> iconActor; //图片演员
     vtkSmartPointer<vtkCoordinate> coordinate; // 世界坐标，即vtk窗口的坐标系
-    CEntity* elementEntity;//储存传入的entity
     bool isDragging=false;  //判断注释是否能移动
     bool isMiddleDragging = false; // 判断是否在用中键拖动窗口
     CPosition endPoint; // 储存指向箭头的终点
