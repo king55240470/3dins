@@ -1116,7 +1116,11 @@ QString CDistance::getCEntityInfo()
     type_str = QString("distance \nactual  %1\n").arg(QString::number(getdistance(), 'f',  6));
     upTol_str = QString("max  %1\n").arg(QString::number(getUptolerance(), 'f',  6));
     underTol_str = QString("min  %1\n").arg(QString::number(getUndertolerance(), 'f',  6));
-    q = QString("quality  %1").arg(judge());
+    if(judge())
+        q = QString("IsQualified  True");
+    else {
+        q = QString("IsQualified  False");
+    }
     return type_str + upTol_str + underTol_str+q;
 }
 

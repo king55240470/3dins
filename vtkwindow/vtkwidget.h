@@ -122,6 +122,7 @@ public:
     void OnLeftButtonPress();
     void OnLeftButtonRelease();
     void OnRightButtonPress();
+    void OnRightButtonRelease();
     void OnMiddleButtonPress();
     void OnMiddleButtonRelease();
     void createText(CEntity* entity);
