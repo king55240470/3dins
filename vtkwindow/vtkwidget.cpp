@@ -328,13 +328,8 @@ vtkSmartPointer<vtkActor2D> VtkWidget::createTextBox(vtkSmartPointer<vtkTextActo
 
     rectangleActor = vtkSmartPointer<vtkActor2D>::New();
     rectangleActor->SetMapper(rectangleMapper);
-<<<<<<< HEAD
     rectangleActor->GetProperty()->SetColor(0.6902, 0.8784, 0.9020);
     rectangleActor->GetProperty()->SetOpacity(0.15);
-=======
-    rectangleActor->GetProperty()->SetColor(0.8, 0.8, 0.8);
-    rectangleActor->GetProperty()->SetOpacity(0.4);
->>>>>>> e4f509f (调整文本显示)
     rectangleActor->GetProperty()->SetLineWidth(4);
     rectangleActor->SetPosition(x - 5, y - 5);
     rectangleActor->SetLayerNumber(3);
