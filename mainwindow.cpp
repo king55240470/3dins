@@ -441,8 +441,8 @@ void MainWindow::openFile(){
     for (const QString &filePath : filePaths) {
         QFileInfo fileInfo(filePath);
         QString fileName = fileInfo.fileName();
-        // 根据文件扩展名进行判断
-        if (filePath.endsWith("ply")) {
+        // 根据文件名是否含有关键词来判断
+        if (fileName.contains("stand") || fileName.contains("标准")) {
             modelCloudExist=true; // 用于保证后续序列化文件
 
             //在modelFileMap中添加添加新文件，并分配新的cloud
@@ -467,8 +467,7 @@ void MainWindow::openFile(){
 
             //pWinFileManagerWidget->openModelFile(fileName, filePath);
             pWinVtkPresetWidget->setWidget(fileName+"文件已打开");
-        } else if (filePath.endsWith("pcd")) {
-
+        } else{
             //在measuredFileMap中添加新文件，并分配新的cloud
             getpWinFileMgr()->getMeasuredFileMap().insert(filePath, true);
             auto cloud = getPointCloudListMgr()->CreateCloudFromFile(filePath);
@@ -486,7 +485,8 @@ void MainWindow::openFile(){
             //pWinFileManagerWidget->openMeasuredFile(fileName, filePath);
             pWinVtkPresetWidget->setWidget(fileName+"文件已打开");
             //pWinElementListWidget->onAddElement();
-        }else if(filePath.endsWith("qins")){
+        }
+        if(filePath.endsWith("qins")){
             QFile file(filePath);
             if (!file.open(QIODevice::ReadOnly)) {
                 // 如果文件无法打开，输出错误信息
