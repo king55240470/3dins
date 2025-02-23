@@ -29,30 +29,38 @@ CEntity* DistanceConstructor::create(QVector<CEntity*>& entitylist){
     }
     if(points.size()==1&&planes.size()==1){
         CDistance*dis=createDistance(points[0],planes[0]);
+        dis->setCurrentId();
         dis->parent.push_back(points[0]);
         dis->parent.push_back(planes[0]);
         return dis;
     }
     if(points.size()==2){
         CDistance*dis=createDistance(points[0],points[1]);
+        CObject*obj=(CObject*)dis;
+        qDebug()<<"id为:"<<obj->GetObjectCName();
+        qDebug()<<dis->getcount();
+        dis->setCurrentId();
         dis->parent.push_back(points[0]);
         dis->parent.push_back(points[1]);
         return dis;
     }
     if(points.size()==1&&circles.size()==1){
         CDistance*dis=createDistance(points[0],circles[0]);
+        dis->setCurrentId();
         dis->parent.push_back(points[0]);
         dis->parent.push_back(circles[0]);
-         return dis;
+        return dis;
     }
     if(points.size()==1&&lines.size()==1){
         CDistance*dis=createDistance(points[0],lines[0]);
+        dis->setCurrentId();
         dis->parent.push_back(points[0]);
         dis->parent.push_back(lines[0]);
         return dis;
     }
     if(planes.size()==2){
         CDistance*dis=createDistance(planes[0],planes[1]);
+        dis->setCurrentId();
         dis->parent.push_back(planes[0]);
         dis->parent.push_back(planes[1]);
         return dis;

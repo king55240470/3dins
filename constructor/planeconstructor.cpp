@@ -86,6 +86,7 @@ CEntity* PlaneConstructor::create(QVector<CEntity*>& entitylist){
     //QVector<CPosition>&positions=Constructor::getPositions();//存储有效点
     if(points.size()==3){
         CPlane*plane=createPlane(*points[0],*points[1],*points[2]);
+        plane->setCurrentId();
         plane->parent.push_back(points[0]);
         plane->parent.push_back(points[1]);
         plane->parent.push_back(points[2]);
@@ -93,6 +94,7 @@ CEntity* PlaneConstructor::create(QVector<CEntity*>& entitylist){
     }
     if(planes.size()==2){
         CPlane* plane=createPlane(planes[0],planes[1]);
+        plane->setCurrentId();
         plane->parent.push_back(planes[0]);
         plane->parent.push_back(planes[1]);
         return plane;

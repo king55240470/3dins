@@ -80,6 +80,7 @@ CEntity* SphereConstructor::create(QVector<CEntity*>& entitylist){
     qDebug()<<positions.size();
      if(positions.size()==4){
         CSphere*sphere=createSphere(positions[0],positions[1],positions[2],positions[3]);
+        sphere->setCurrentId();
         sphere->parent.push_back(points[0]);
         sphere->parent.push_back(points[1]);
         sphere->parent.push_back(points[2]);

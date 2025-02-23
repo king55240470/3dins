@@ -108,6 +108,11 @@ public:
     CPosition getEnd() const;
     void setEnd(const CPosition &newEnd);
     QString getCEntityInfo() override;
+    void setCurrentId(){
+        currentLineId++;
+        m_strAutoName = QString("线%1").arg(currentLineId);
+        m_strCName = QString("线%1").arg(currentLineId);
+    }
 };
 
 class CPoint : public CEntity
@@ -170,6 +175,8 @@ public:
         return GetWorldPcsPos(m_pt);
     }
     QString getCEntityInfo() override;
+
+
 };
 
 class CCircle  : public CEntity
@@ -203,9 +210,9 @@ public:
         m_pt.z=0;
         m_d =0 ;
         normal=QVector4D(0,0,0,1);
-        currentCircleId = ++circleCount;
-        m_strAutoName = QString("圆%1").arg(currentCircleId);
-        m_strCName = QString("圆%1").arg(currentCircleId);
+        //currentCircleId = ++circleCount;
+        //m_strAutoName = QString("圆%1").arg(currentCircleId);
+        //m_strCName = QString("圆%1").arg(currentCircleId);
     }
     void SetDiameter(double d);
     void SetCenter(CPosition pt);
@@ -246,6 +253,12 @@ public:
 
     // 圆类的draw()
     vtkSmartPointer<vtkActor> draw() override;
+
+    void setCurrentId(){
+        currentCircleId = ++circleCount;
+        m_strAutoName = QString("圆%1").arg(currentCircleId);
+        m_strCName = QString("圆%1").arg(currentCircleId);
+    }
 
 };
 
@@ -296,9 +309,9 @@ public:
         dir_long_edge=QVector4D(0,0,0,1);
         length=0;
         width=0;
-        currentPlainId = ++plainCount;
-        m_strAutoName = QString("平面%1").arg(currentPlainId);
-        m_strCName = QString("平面%1").arg(currentPlainId);
+        //currentPlainId = ++plainCount;
+       // m_strAutoName = QString("平面%1").arg(currentPlainId);
+        //m_strCName = QString("平面%1").arg(currentPlainId);
     }
     int GetUniqueType() override{
         return enPlane;
@@ -316,6 +329,12 @@ public:
 
     // 平面的draw()
     vtkSmartPointer<vtkActor> draw() override;
+
+    void setCurrentId(){
+        currentPlainId = ++plainCount;
+        m_strAutoName = QString("平面%1").arg(currentPlainId);
+        m_strCName = QString("平面%1").arg(currentPlainId);
+    }
 
 };
 
@@ -352,9 +371,9 @@ public:
         center.y=0;
         center.z=0;
         diameter=0;
-        currentSphereId = ++sphereCount;
-        m_strAutoName = QString("球%1").arg(currentSphereId);
-        m_strCName = QString("球%1").arg(currentSphereId);
+        //currentSphereId = ++sphereCount;
+        //m_strAutoName = QString("球%1").arg(currentSphereId);
+        //m_strCName = QString("球%1").arg(currentSphereId);
     }
     int GetUniqueType() override{
 
@@ -372,6 +391,11 @@ public:
     QString getCEntityInfo() override;
     // 球类的draw()
     vtkSmartPointer<vtkActor> draw() override;
+    void setCurrentId(){
+        currentSphereId = ++sphereCount;
+        m_strAutoName = QString("球%1").arg(currentSphereId);
+        m_strCName = QString("球%1").arg(currentSphereId);
+    }
 
 };
 
@@ -409,9 +433,9 @@ public:
         diameter=0;
         height=0;
         axis=QVector4D(0,0,0,1);
-        currentCylinderId = ++cylinderCount;
-        m_strAutoName = QString("圆柱%1").arg(currentCylinderId);
-        m_strCName = QString("圆柱%1").arg(currentCylinderId);
+        //currentCylinderId = ++cylinderCount;
+        //m_strAutoName = QString("圆柱%1").arg(currentCylinderId);
+        //m_strCName = QString("圆柱%1").arg(currentCylinderId);
     }
 
     QVector4D getAxis() const;
@@ -437,6 +461,11 @@ public:
     QString getCEntityInfo() override; // 获取图形的信息，在浮动窗口显示
     // 圆柱体的draw()
     vtkSmartPointer<vtkActor> draw() override;
+    void setCurrentId(){
+        currentCylinderId = ++cylinderCount;
+        m_strAutoName = QString("圆柱%1").arg(currentCylinderId);
+        m_strCName = QString("圆柱%1").arg(currentCylinderId);
+    }
 
 };
 
@@ -474,9 +503,9 @@ public:
         radian=0;
         height=0;
         cone_height=0;
-        currentConeId = ++coneCount;
-        m_strAutoName = QString("圆锥%1").arg(currentConeId);
-        m_strCName = QString("圆锥%1").arg(currentConeId);
+        //currentConeId = ++coneCount;
+        //m_strAutoName = QString("圆锥%1").arg(currentConeId);
+        //m_strCName = QString("圆锥%1").arg(currentConeId);
     }
     int GetUniqueType() override{
         return enCone;
@@ -504,6 +533,11 @@ public:
     void setCone_height(double newCone_height);
     CPosition getVertex() const;
     void setVertex(const CPosition &newVertex);
+    void setCurrentId(){
+        currentConeId = ++coneCount;
+        m_strAutoName = QString("圆锥%1").arg(currentConeId);
+        m_strCName = QString("圆锥%1").arg(currentConeId);
+    }
 };
 
 class CCuboid : public CEntity{
@@ -540,9 +574,9 @@ public:
         length=0;
         width=0;
         height=0;
-        currentCuboidId= ++cuboidCount;
-        m_strAutoName = QString("长方体%1").arg(currentCuboidId);
-        m_strCName = QString("长方体%1").arg(currentCuboidId);
+        //currentCuboidId= ++cuboidCount;
+       // m_strAutoName = QString("长方体%1").arg(currentCuboidId);
+        //m_strCName = QString("长方体%1").arg(currentCuboidId);
     }
 
     CPosition getCenter() const;
@@ -571,6 +605,11 @@ public:
     }
     QString getCEntityInfo() override;// 获取图形的信息，在浮动窗口显示
     vtkSmartPointer<vtkActor> draw() override;
+    void setCurrentId(){
+        currentCuboidId= ++cuboidCount;
+        m_strAutoName = QString("长方体%1").arg(currentCuboidId);
+        m_strCName = QString("长方体%1").arg(currentCuboidId);
+    }
 };
 
 class CDistance : public CEntity{
@@ -623,13 +662,16 @@ public:
         plane=CPlane();
         circle=CCircle();
         line=CLine();
-        m_strAutoName = QString("距离%1").arg(currentCdistacneId);
-        m_strCName = QString("距离%1").arg(currentCdistacneId);
-        currentCdistacneId++;
+        //m_strAutoName = QString("距离%1").arg(currentCdistacneId);
+        //m_strCName = QString("距离%1").arg(currentCdistacneId);
+        //currentCdistacneId++;
     }
     QString getCEntityInfo() override; // 获取图形的信息，在浮动窗口显示
     int GetUniqueType() override{
         return enDistance;
+    }
+    int getcount(){
+        return currentCdistacneId;
     }
     double getUptolerance();
     double getUndertolerance();
@@ -665,6 +707,12 @@ public:
     vtkSmartPointer<vtkActor> pointToCircle();
     vtkSmartPointer<vtkActor> pointToPoint();
     vtkSmartPointer<vtkActor> planeToPlane();
+
+    void setCurrentId(){
+        currentCdistacneId++;
+        m_strAutoName = QString("距离%1").arg(currentCdistacneId);
+        m_strCName = QString("距离%1").arg(currentCdistacneId);
+    }
 };
 
 class CAngle : public CEntity {
@@ -709,9 +757,9 @@ public:
         qualified=false;
         line1=CLine();
         line2=CLine();
-        m_strAutoName = QString("角度%1").arg(currentCAngleId);
-        m_strCName = QString("角度%1").arg(currentCAngleId);
-        currentCAngleId++;
+        //m_strAutoName = QString("角度%1").arg(currentCAngleId);
+        //m_strCName = QString("角度%1").arg(currentCAngleId);
+        //currentCAngleId++;
     }
 
     QString getCEntityInfo() override; // 获取图形的信息，在浮动窗口显示
@@ -741,6 +789,12 @@ public:
     double getAngle() const;
 
     vtkSmartPointer<vtkActor> draw() override;
+
+    void setCurrentId(){
+        m_strAutoName = QString("角度%1").arg(currentCAngleId);
+        m_strCName = QString("角度%1").arg(currentCAngleId);
+        currentCAngleId++;
+    }
 };
 
 class CPointCloud : public CEntity
@@ -849,6 +903,12 @@ public:
     }
     pcl::PointCloud<pcl::PointXYZRGB> GetmyCould(){
         return m_pointCloud;
+    }
+
+    void setCurrentId(){
+        m_strAutoName = QString("点云%1").arg(currentPointCloudId);
+        m_strCName = QString("点云%1").arg(currentPointCloudId);
+        currentPointCloudId = ++pointCloudCount;
     }
 };
 class CSS  : public CEntity

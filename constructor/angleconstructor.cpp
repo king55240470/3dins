@@ -235,6 +235,7 @@ CEntity* AngleConstructor::create(QVector<CEntity*>& entitylist){
     }
     if(points.size()==3){
         CAngle * angle=createAngle(points[0],points[1],points[2]);
+        angle->setCurrentId();
         angle->parent.append(points[0]);
         angle->parent.append(points[1]);
         angle->parent.append(points[2]);
@@ -242,18 +243,21 @@ CEntity* AngleConstructor::create(QVector<CEntity*>& entitylist){
     }
     if(lines.size()==2){
          CAngle * angle=createAngle(lines[0],lines[1]);
+        angle->setCurrentId();
         angle->parent.append(lines[0]);
          angle->parent.append(lines[1]);
         return  angle;
     }
     if(lines.size()==1&&planes.size()==1){
         CAngle * angle=createAngle(lines[0],planes[0]);
+        angle->setCurrentId();
         angle->parent.append(lines[0]);
         angle->parent.append(planes[0]);
         return angle;
     }
     if(planes.size()==2){
         CAngle * angle=createAngle(planes[0],planes[1]);
+        angle->setCurrentId();
         angle->parent.append(planes[0]);
         angle->parent.append(planes[1]);
         return angle;
