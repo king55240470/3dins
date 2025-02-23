@@ -780,6 +780,7 @@ void MainWindow::OnPresetCircle(CPosition pt, double diameter,QVector4D normal)
     //double diameter = 1.5;
 
     CCircle *pCircle = (CCircle *)CreateEntity(enCircle);
+    pCircle->setCurrentId();
     pCircle->Form="预制";
     pCircle->SetCenter(pt);
     pCircle->SetDiameter(diameter);
@@ -821,6 +822,7 @@ void MainWindow::OnPresetCircle(CPosition pt, double diameter,QVector4D normal)
 void MainWindow::OnPresetPlane(CPosition posCenter, QVector4D normal, QVector4D direction, double length, double width)
 {
     CPlane *pPlane = (CPlane *)CreateEntity(enPlane);
+    pPlane->setCurrentId();
     pPlane->Form="预制";
     pPlane->setCenter(posCenter);
     pPlane->setDir_long_edge(direction);
@@ -845,6 +847,7 @@ void MainWindow::OnPresetPlane(CPosition posCenter, QVector4D normal, QVector4D 
 void MainWindow::OnPresetSphere(CPosition posCenter, double diametre)
 {
     CSphere *pSphere = (CSphere *)CreateEntity(enSphere);
+    pSphere->setCurrentId();
     pSphere->Form="预制";
     pSphere->setCenter(posCenter);
     pSphere->setDiameter(diametre);
@@ -865,6 +868,7 @@ void MainWindow::OnPresetSphere(CPosition posCenter, double diametre)
 void MainWindow::OnPresetCylinder(CPosition pos, QVector4D vec, double height, double diametre)
 {
     CCylinder *pCylinder = (CCylinder *)CreateEntity(enCylinder);
+    pCylinder->setCurrentId();
     pCylinder->Form="预制";
     pCylinder->setAxis(vec);
     pCylinder->setBtm_center(pos);
@@ -891,6 +895,7 @@ void MainWindow::OnPresetCone(CPosition posCenter, QVector4D axis, double partH,
 
 {
     CCone *pCone = (CCone *)CreateEntity(enCone);
+    pCone->setCurrentId();
     pCone->Form="预制";
     pCone->setCone_height(partH);
     pCone->setHeight(fullH);
@@ -915,6 +920,7 @@ void MainWindow::OnPresetCone(CPosition posCenter, QVector4D axis, double partH,
 void MainWindow::OnPresetCuboid(CPosition posCenter,double length,double width,double height,QVector4D normal)
 {
     CCuboid *pCuboid=(CCuboid *)CreateEntity(enCuboid);
+    pCuboid->setCurrentId();
     pCuboid->Form="预制";
     pCuboid->setCenter(posCenter);;
     pCuboid->setLength(length);

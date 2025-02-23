@@ -25,6 +25,7 @@ public:
     CEntity* FindEntityById(int);
     CEntity* FindEntityByName(QString);
     int GetCount();
+
     void RemoveAll();
     QVector<CEntity*>& getEntityList();
     QVector<bool> &getMarkList();

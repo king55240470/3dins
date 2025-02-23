@@ -23,6 +23,7 @@ CEntity* CylinderConstructor::create(QVector<CEntity*>& entitylist){
 
     if(positions.size()==4){
         CCylinder*cylinder=createCylinder(positions[0],positions[1],positions[2],positions[3]);
+        cylinder->setCurrentId();
         cylinder->parent.push_back(points[0]);
         cylinder->parent.push_back(points[1]);
         cylinder->parent.push_back(points[2]);

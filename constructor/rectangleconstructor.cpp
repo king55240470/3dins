@@ -106,12 +106,14 @@ CEntity* RectangleConstructor::create(QVector<CEntity*>& entitylist){
     QVector<CPosition>&positions=Constructor::getPositions();//存储有效点
     if(point.size()==3&&positions.size()==3){
         CPlane*rectangle=createRectangle(positions[0],positions[1],positions[2]);
+        rectangle->setCurrentId();
         rectangle->parent.push_back(point[0]);
         rectangle->parent.push_back(point[1]);
         rectangle->parent.push_back(point[2]);
         return rectangle;
     }else if(point.size()==4&&positions.size()==4){
         CPlane*rectangle=createRectangle(positions[0],positions[1],positions[2],positions[3]);
+        rectangle->setCurrentId();
         rectangle->parent.push_back(point[0]);
         rectangle->parent.push_back(point[1]);
         rectangle->parent.push_back(point[2]);

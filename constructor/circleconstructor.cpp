@@ -102,6 +102,7 @@ CEntity* CircleConstructor::create(QVector<CEntity*>& entitylist){
     QVector<CPosition>&positions=Constructor::getPositions();//存储有效点
     if(points.size()==3&&positions.size()==3){
         CCircle*circle=createCircle(positions[0],positions[1],positions[2]);
+        circle->setCurrentId();
         circle->parent.push_back(points[0]);
         circle->parent.push_back(points[1]);
         circle->parent.push_back(points[2]);
