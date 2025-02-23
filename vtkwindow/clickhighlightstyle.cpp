@@ -36,9 +36,6 @@ void MouseInteractorHighlightActor::OnLeftButtonDown()
 
         QMap<vtkSmartPointer<vtkActor>, CEntity*>& actorToEntity=m_pMainWin->getactorToEntityMap();
         CEntity* entity=actorToEntity[newPickedActor];
-        if(entity!=nullptr){
-            qDebug()<<entity->m_strAutoName;
-        }
 
         // 如果选中的是点云类型的actor，则转成CPointCloud，然后给拟合用的cloudptr赋值
         if(entity->GetUniqueType() == enPointCloud){

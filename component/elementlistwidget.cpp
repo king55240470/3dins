@@ -437,39 +437,39 @@ void ElementListWidget::ShowParent(CObject*obj)
     }
     for(CObject*obj1:obj->parent){
         QTreeWidgetItem *infoItem = new QTreeWidgetItem(treeWidgetInfo);
-        if(obj->GetUniqueType()==enPoint){
-            QIcon icon(":/component/find/point.jpg");
+        if(obj1->GetUniqueType()==enPoint){
+            QIcon icon(":/component/construct/point.jpg");
             infoItem->setIcon(0, icon);
         }
-        if(obj->GetUniqueType()==enLine){
-            QIcon icon(":/component/find/line.jpg");
+        if(obj1->GetUniqueType()==enLine){
+            QIcon icon(":/component/construct/line.jpg");
             infoItem->setIcon(0, icon);
         }
-        if(obj->GetUniqueType()==enCircle){
-            QIcon icon(":/component/find/circle.jpg");
+        if(obj1->GetUniqueType()==enCircle){
+            QIcon icon(":/component/construct/circle.jpg");
             infoItem->setIcon(0, icon);
         }
-        if(obj->GetUniqueType()==enPlane){
-            QIcon icon(":/component/find/plan.jpg");
+        if(obj1->GetUniqueType()==enPlane){
+            QIcon icon(":/component/construct/plan.jpg");
             infoItem->setIcon(0, icon);
         }
-        if(obj->GetUniqueType()==enSphere){
-            QIcon icon(":/component/find/sphere.jpg");
+        if(obj1->GetUniqueType()==enSphere){
+            QIcon icon(":/component/construct/sphere.jpg");
             infoItem->setIcon(0, icon);
         }
-        if(obj->GetUniqueType()==enCone){
-            QIcon icon(":/component/find/cone.jpg");
+        if(obj1->GetUniqueType()==enCone){
+            QIcon icon(":/component/construct/cone.jpg");
             infoItem->setIcon(0, icon);
         }
-        if(obj->GetUniqueType()==enCylinder){
-            QIcon icon(":/component/find/cylinder.jpg");
+        if(obj1->GetUniqueType()==enCylinder){
+            QIcon icon(":/component/construct/cylinder.jpg");
             infoItem->setIcon(0, icon);
         }
-        if(obj->GetUniqueType()==enDistance){
+        if(obj1->GetUniqueType()==enDistance){
             QIcon icon(":/component/construct/distance.png");
             infoItem->setIcon(0, icon);
         }
-        if(obj->GetUniqueType()==enPointCloud){
+        if(obj1->GetUniqueType()==enPointCloud){
             QIcon icon(":/component/construct/pointCloud.png");
             infoItem->setIcon(0, icon);
         }

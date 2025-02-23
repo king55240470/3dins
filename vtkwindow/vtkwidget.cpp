@@ -143,7 +143,7 @@ void VtkWidget::OnLeftButtonPress()
             clickPos[0] <= titlePosition[0] + width &&
             clickPos[1] >= titlePosition[1] + titleSize[1] - closeBoxSize &&
             clickPos[1] <= titlePosition[1] + titleSize[1])
-        {
+        {            
             closeTextActor(it.key()); // 关闭文本框
             return;
         }
@@ -188,7 +188,6 @@ void VtkWidget::setCentity(CEntity* entity)
     // 如果已经存在该图形的信息，直接返回
     if (entityToTextActors.contains(entity)) return;
 
-    elementEntity = entity;
     createText(entity);
 }
 
@@ -691,7 +690,13 @@ void VtkWidget::ShowColorBar(double minDistance, double maxDistance){
 
 void VtkWidget::OnRightButtonPress()
 {
+    renWin->GetInteractor()->SetInteractorStyle(0); // 使用vtkwidget自定义事件
     vtkMenu->showTearOffMenu(); // 弹出菜单栏
+}
+
+void VtkWidget::OnRightButtonRelease()
+{
+    renWin->GetInteractor()->SetInteractorStyle(m_highlightstyle); // 恢复高亮点击事件
 }
 
 vtkSmartPointer<vtkRenderWindow> VtkWidget::getRenderWindow(){
@@ -1114,4 +1119,3 @@ void VtkWidget::onAlign()
     logInfo += std::to_string(rmse);
     m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
 }
-
