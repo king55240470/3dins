@@ -114,6 +114,10 @@ QTreeView {
     alternate-background-color: #444;
 }
 
+QTreeView::item {
+    padding: 2px;
+}
+
 QTreeView::item:selected {
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #3570b2, stop: 1 #4a90e2);
     color: #ffffff;
