@@ -96,13 +96,13 @@ void VtkWidget::OnMouseMove()
         // 更新对应的指向线段
         Linechange();
     }
-    if(isMiddleDragging){
-        // 更新所有线段的终点
-        for (auto it = entityToTextActors.begin(); it != entityToTextActors.end(); ++it)
-        {
-            updateEndPoint(it.key());
-        }
-    }
+    // if(isMiddleDragging){
+    //     // 更新所有线段的终点
+    //     for (auto it = entityToTextActors.begin(); it != entityToTextActors.end(); ++it)
+    //     {
+    //         updateEndPoint(it.key());
+    //     }
+    // }
 
     // 限制渲染频率
     static double lastRenderTime = vtkTimerLog::GetUniversalTime();
@@ -345,7 +345,7 @@ vtkSmartPointer<vtkActor2D> VtkWidget::createLine(CEntity* entity, vtkSmartPoint
 
     if (entity->getEntityType() == enDistance)
     {
-        CDistance* dis = static_cast<CDistance*>(entity);
+        CDistance* dis = static_cast<CDistance*>(entity); // 安全转换类型
         double distance = dis->getdistanceplane();
         CObject* obj11 = dis->parent[1];
         CPlane* plane = static_cast<CPlane*>(obj11);
@@ -389,6 +389,10 @@ vtkSmartPointer<vtkActor2D> VtkWidget::createLine(CEntity* entity, vtkSmartPoint
     {
         CCone* s = static_cast<CCone*>(entity);
         b = s->getVertex();
+    }
+    else if(entity->getEntityType() == enAngle){
+        CAngle* angle = static_cast<CAngle*>(entity);
+        b = angle->getVertex(); // 指向线段终点是两条线的 "交点"
     }
     entityToEndPoints[entity] = b; // 将该线段的终点存入map
 
