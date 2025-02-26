@@ -56,9 +56,9 @@ public:
         end.x=0;
         end.y=0;
         end.z=0;
-        currentLineId = ++lineCount;
-        m_strAutoName = QString("线%1").arg(currentLineId);
-        m_strCName = QString("线%1").arg(currentLineId);
+        //currentLineId = ++lineCount;
+        //m_strAutoName = QString("线%1").arg(currentLineId);
+        //m_strCName = QString("线%1").arg(currentLineId);
     }
 
     // 线类的draw()
@@ -108,10 +108,10 @@ public:
     CPosition getEnd() const;
     void setEnd(const CPosition &newEnd);
     QString getCEntityInfo() override;
-    void setCurrentId(){
-        currentLineId++;
+    void setCurrentId(){currentLineId++;
         m_strAutoName = QString("线%1").arg(currentLineId);
         m_strCName = QString("线%1").arg(currentLineId);
+
     }
 };
 
@@ -254,10 +254,10 @@ public:
     // 圆类的draw()
     vtkSmartPointer<vtkActor> draw() override;
 
-    void setCurrentId(){
-        currentCircleId = ++circleCount;
+    void setCurrentId(){currentCircleId = ++circleCount;
         m_strAutoName = QString("圆%1").arg(currentCircleId);
         m_strCName = QString("圆%1").arg(currentCircleId);
+
     }
 
 };
@@ -334,6 +334,7 @@ public:
         currentPlainId = ++plainCount;
         m_strAutoName = QString("平面%1").arg(currentPlainId);
         m_strCName = QString("平面%1").arg(currentPlainId);
+
     }
 
 };
@@ -391,10 +392,10 @@ public:
     QString getCEntityInfo() override;
     // 球类的draw()
     vtkSmartPointer<vtkActor> draw() override;
-    void setCurrentId(){
-        currentSphereId = ++sphereCount;
+    void setCurrentId(){currentSphereId = ++sphereCount;
         m_strAutoName = QString("球%1").arg(currentSphereId);
         m_strCName = QString("球%1").arg(currentSphereId);
+
     }
 
 };
@@ -791,9 +792,10 @@ public:
     vtkSmartPointer<vtkActor> draw() override;
 
     void setCurrentId(){
+        currentCAngleId++;
         m_strAutoName = QString("角度%1").arg(currentCAngleId);
         m_strCName = QString("角度%1").arg(currentCAngleId);
-        currentCAngleId++;
+
     }
 };
 
@@ -906,9 +908,10 @@ public:
     }
 
     void setCurrentId(){
+        currentPointCloudId = ++pointCloudCount;
         m_strAutoName = QString("点云%1").arg(currentPointCloudId);
         m_strCName = QString("点云%1").arg(currentPointCloudId);
-        currentPointCloudId = ++pointCloudCount;
+
     }
 };
 class CSS  : public CEntity

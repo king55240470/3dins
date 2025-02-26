@@ -147,6 +147,7 @@ CCircle* CircleConstructor::createCircle(CPoint *p1,CPoint *p2,CPoint *p3){
 }
 CCircle* CircleConstructor::createCircle(CPosition center,double diameter,QVector4D normal){
     CCircle* newCircle=new CCircle();
+    newCircle->setCurrentId();
     newCircle->SetCenter(center);
     newCircle->SetDiameter(diameter);
     newCircle->setNormal(normal);
