@@ -2195,6 +2195,7 @@ void ToolWidget::onFindSphere(){
     center.z=sphere->getCenter()[2];
     double radius=sphere->getRad();
     newSphere=constructor.createSphere(center,radius);
+    newSphere->setCurrentId();
     if(newSphere==nullptr){
         qDebug()<<"拟合球生成错误";
         return ;

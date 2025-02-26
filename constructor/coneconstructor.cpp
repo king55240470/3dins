@@ -104,6 +104,7 @@ CCone* ConeConstructor::createCone(CPosition p1,CPosition p2,CPosition p3,CPosit
 }
 CCone* ConeConstructor::createCone(CPosition posCenter, QVector4D axis, double partH, double fullH, double angle){
     CCone* newCone=new CCone();
+    newCone->setCurrentId();
     newCone->setCone_height(partH);
     newCone->setHeight(fullH);
     newCone->setAxis(axis);
