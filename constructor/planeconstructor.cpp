@@ -86,7 +86,7 @@ CEntity* PlaneConstructor::create(QVector<CEntity*>& entitylist){
     //QVector<CPosition>&positions=Constructor::getPositions();//存储有效点
     if(points.size()==3){
         CPlane*plane=createPlane(*points[0],*points[1],*points[2]);
-        plane->setCurrentId();
+        //plane->setCurrentId();
         plane->parent.push_back(points[0]);
         plane->parent.push_back(points[1]);
         plane->parent.push_back(points[2]);
@@ -171,6 +171,7 @@ CPlane* PlaneConstructor::createPlane(CPosition p1,CPosition p2,CPosition p3){
             long_edge_dir=SquareEdge2;
         }
         CPlane* newplane=new CPlane();
+        newplane->setCurrentId();
         newplane->setCenter(center);
         newplane->setNormal(normal);
         newplane->setDir_long_edge(long_edge_dir);
@@ -229,6 +230,8 @@ CPlane* PlaneConstructor::createPlane(CPoint p1,CPoint p2,CPoint p3){
 }
 CPlane* PlaneConstructor::createPlane(CPosition posCenter, QVector4D normal, QVector4D direction, double length, double width){
     CPlane* newplane=new CPlane();
+    newplane->setCurrentId();
+    newplane->setCurrentId();
     newplane->setCenter(posCenter);
     newplane->setNormal(normal);
     newplane->setDir_long_edge(direction);

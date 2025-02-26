@@ -71,6 +71,7 @@ CCylinder* CylinderConstructor::createCylinder(CPosition p1,CPosition p2,CPositi
 
 CCylinder* CylinderConstructor::createCylinder(CPosition pos, QVector4D vec, double height, double diametre){
     CCylinder* newCylinder=new CCylinder();
+    newCylinder->setCurrentId();
     newCylinder->setBtm_center(pos);
     newCylinder->setDiameter(diametre);
     newCylinder->setAxis(vec);
