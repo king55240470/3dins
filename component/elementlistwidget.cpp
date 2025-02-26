@@ -593,6 +593,9 @@ void ElementListWidget::onAddElement(pcl::PointCloud<pcl::PointXYZRGB>::Ptr coul
 
 void ElementListWidget::CompareCloud()
 {
+    for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
+        m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
+    }
     bool found=false;
     for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
         if(m_pMainWin->getEntityListMgr()->getEntityList()[i]->GetUniqueType()==enPointCloud){
@@ -804,6 +807,7 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
                 }
                 //qDebug()<<"距离"<<dis->getdistancepoint();
                 QTreeWidgetItem *item = treeWidgetNames->topLevelItem(i);
+                m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
                 treeWidgetNames->setCurrentItem(item);
                 break;
             }
@@ -964,6 +968,7 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
         }
         for(int i=0;i<objlist.size();i++){
             if(obj->GetObjectCName()==objlist[i]->GetObjectCName()){
+                m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
                 QTreeWidgetItem *item = treeWidgetNames->topLevelItem(i);
                 treeWidgetNames->setCurrentItem(item);
                 break;
