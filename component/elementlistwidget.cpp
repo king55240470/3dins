@@ -808,6 +808,7 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
                 //qDebug()<<"距离"<<dis->getdistancepoint();
                 QTreeWidgetItem *item = treeWidgetNames->topLevelItem(i);
                 m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
+                m_pMainWin->getPWinVtkWidget()->onHighLightActor(m_pMainWin->getEntityListMgr()->getEntityList()[i]);
                 treeWidgetNames->setCurrentItem(item);
                 break;
             }
@@ -969,6 +970,7 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
         for(int i=0;i<objlist.size();i++){
             if(obj->GetObjectCName()==objlist[i]->GetObjectCName()){
                 m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
+                m_pMainWin->getPWinVtkWidget()->onHighLightActor(m_pMainWin->getEntityListMgr()->getEntityList()[i]);
                 QTreeWidgetItem *item = treeWidgetNames->topLevelItem(i);
                 treeWidgetNames->setCurrentItem(item);
                 break;
