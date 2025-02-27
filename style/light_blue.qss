@@ -108,6 +108,12 @@ QHeaderView::section {
     padding: 1px;
 }
 
+QStandardItem {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #3570b2, stop: 1 #4a90e2);
+    color: #ffffff;
+    padding: 1px;
+}
+
 QTreeView {
     font-size: 14px "微软雅黑";
     background-color: #ffffff;
