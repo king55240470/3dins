@@ -47,8 +47,8 @@ ElementListWidget::ElementListWidget(QWidget *parent)
     pauseButton = new QPushButton("",this);
     continueButton = new QPushButton("",this);
     terminateButton = new QPushButton("",this);
-    QIcon icon1(":/component/construct/start.png");
-    QIcon icon2(":/component/construct/stop.png");
+    QIcon icon1(":/component/construct/greenstart.jpg");
+    QIcon icon2(":/component/construct/redstop.jpg");
     QIcon icon3(":/component/construct/end.png");
     QIcon icon4(":/component/construct/continue.png");
     startButton->setFixedSize((treeWidgetNames->width())/2, 40);
