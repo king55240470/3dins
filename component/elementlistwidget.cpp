@@ -47,27 +47,27 @@ ElementListWidget::ElementListWidget(QWidget *parent)
     pauseButton = new QPushButton("",this);
     continueButton = new QPushButton("",this);
     terminateButton = new QPushButton("",this);
-    QIcon icon1(":/component/construct/start.png");
-    QIcon icon2(":/component/construct/stop.png");
+    QIcon icon1(":/component/eye/start.png");
+    QIcon icon2(":/component/eye/stop.png");
     QIcon icon3(":/component/construct/end.png");
     QIcon icon4(":/component/construct/continue.png");
     startButton->setFixedSize((treeWidgetNames->width())/2, 40);
     pauseButton->setFixedSize((treeWidgetNames->width())/2, 40);
     continueButton->setFixedSize((treeWidgetNames->width())/2, 40);
     terminateButton->setFixedSize((treeWidgetNames->width())/2, 40);
-    startButton->setIconSize(QSize(25, 25));
+    startButton->setIconSize(QSize(30, 30));
     pauseButton->setIconSize(QSize(25, 25));
     continueButton->setIconSize(QSize(25, 25));
-    terminateButton->setIconSize(QSize(25, 25));
+    terminateButton->setIconSize(QSize(30, 30));
     startButton->setIcon(icon1);
     pauseButton->setIcon(icon3);
     terminateButton->setIcon(icon2);
     continueButton->setIcon(icon4);
     // 设置按钮没有边框，背景颜色与周围颜色一致
-    startButton->setStyleSheet("QPushButton { border: none; background-color: #f0f0f0; }");
-    pauseButton->setStyleSheet("QPushButton { border: none; background-color: #f0f0f0; }");
-    continueButton->setStyleSheet("QPushButton { border: none; background-color: #f0f0f0; }");
-    terminateButton->setStyleSheet("QPushButton { border: none; background-color: #f0f0f0; }");
+    startButton->setStyleSheet("QPushButton { border: none; background-color: transparent; }");
+    pauseButton->setStyleSheet("QPushButton { border: none; background-color: transparent; }");
+    continueButton->setStyleSheet("QPushButton { border: none; background-color: transparent; }");
+    terminateButton->setStyleSheet("QPushButton { border: none; background-color: transparent; }");
 
     toolBar->addWidget(startButton);
     toolBar->addSeparator();

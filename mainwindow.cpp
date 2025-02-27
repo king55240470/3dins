@@ -84,7 +84,7 @@ void MainWindow::setupUi(){
     QAction* showWinMenu = new QAction();
     showWinMenu->setShortcut(QKeySequence(Qt::Key_W));
     connect(showWinMenu, &QAction::triggered, this, [this,windowMenu]() {
-        QPoint globalPos = mapToGlobal(QPoint(100, 22));
+        QPoint globalPos = mapToGlobal(QPoint(150, 22));
         windowMenu->exec(globalPos);
     });
     addAction(showWinMenu);
@@ -100,7 +100,7 @@ void MainWindow::setupUi(){
     QAction* showPresetMenu = new QAction();
     showPresetMenu->setShortcut(QKeySequence(Qt::Key_P));
     connect(showPresetMenu, &QAction::triggered, this, [this,presetMenu]() {
-        QPoint globalPos = mapToGlobal(QPoint(215, 22));
+        QPoint globalPos = mapToGlobal(QPoint(210, 22));
         presetMenu->exec(globalPos);
     });
     addAction(showPresetMenu);
@@ -179,7 +179,7 @@ void MainWindow::setupUi(){
     QAction* showConsMenu = new QAction();
     showConsMenu->setShortcut(QKeySequence(Qt::Key_C));
     connect(showConsMenu, &QAction::triggered, this, [this,constructorMenu]() {
-        QPoint globalPos = mapToGlobal(QPoint(280, 22));
+        QPoint globalPos = mapToGlobal(QPoint(275, 22));
         constructorMenu->exec(globalPos);
     });
     addAction(showConsMenu);
@@ -288,7 +288,7 @@ void MainWindow::setupUi(){
     QAction* showThemeMenu = new QAction();
     showThemeMenu->setShortcut(QKeySequence(Qt::Key_T));
     connect(showThemeMenu, &QAction::triggered, this, [this,switchTheme]() {
-        QPoint globalPos = mapToGlobal(QPoint(470, 22));
+        QPoint globalPos = mapToGlobal(QPoint(465, 22));
         switchTheme->exec(globalPos);
     });
     addAction(showThemeMenu);

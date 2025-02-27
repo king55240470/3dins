@@ -54,6 +54,9 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
     m_highlightstyle->SetUpMainWin(m_pMainWin);
     renWin->GetInteractor()->SetInteractorStyle(m_highlightstyle);
 
+    //renderWindowInteractor = vtkSmartPointer<vtkRenderWindowInteractor>::New();
+    //renderWindowInteractor->SetRenderWindow(renWin);
+
     createAxes();// 创建左下角全局坐标系
 
     // 创建初始视角相机
@@ -70,8 +73,15 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
         renderer->ResetCamera();
         renWin->Render();
     }
+    createScaleBar();
+    attachInteractor();
 
+    //renderer->GetActiveCamera()->AddObserver(vtkCommand::ModifiedEvent, this, &VtkWidget::UpdateScaleBar);
     getRenderWindow()->Render();
+    QTimer::singleShot(100, [this](){
+        UpdateScaleBar();
+        renWin->Render();
+    });
 }
 
 void VtkWidget::OnMouseMove()
@@ -672,13 +682,13 @@ void VtkWidget::ShowColorBar(double minDistance, double maxDistance){
     minTextMapper->SetInput(std::to_string(minDistance).c_str());
     vtkSmartPointer<vtkActor2D> minTextActor = vtkSmartPointer<vtkActor2D>::New();
     minTextActor->SetMapper(minTextMapper);
-    minTextActor->SetPosition(Width - barWidth - 100, barHeight + 7); // 调整位置以适应显示
+    minTextActor->SetPosition(Width - barWidth - 110, barHeight + 7); // 调整位置以适应显示
 
     vtkSmartPointer<vtkTextMapper> maxTextMapper = vtkSmartPointer<vtkTextMapper>::New();
     maxTextMapper->SetInput(std::to_string(maxDistance).c_str());
     vtkSmartPointer<vtkActor2D> maxTextActor = vtkSmartPointer<vtkActor2D>::New();
     maxTextActor->SetMapper(maxTextMapper);
-    maxTextActor->SetPosition(Width - 100, barHeight + 7); // 调整位置以适应显示
+    maxTextActor->SetPosition(Width - 110, barHeight + 7); // 调整位置以适应显示
     minTextMapper->GetTextProperty()->SetFontSize(15);
     maxTextMapper->GetTextProperty()->SetFontSize(15);
 
@@ -690,6 +700,102 @@ void VtkWidget::ShowColorBar(double minDistance, double maxDistance){
 
     // 刷新渲染窗口
     renderer->Render();
+}
+
+void VtkWidget::createScaleBar()
+{
+    vtkSmartPointer<vtkLineSource> lineSource = vtkSmartPointer<vtkLineSource>::New();
+    lineSource->SetPoint1(0, 0, 0);
+    lineSource->SetPoint2(100, 0, 0);
+    vtkSmartPointer<vtkPolyDataMapper2D> scaleBarMapper=vtkSmartPointer<vtkPolyDataMapper2D>::New();
+    scaleBarMapper->SetInputConnection(lineSource->GetOutputPort());
+    //vtkNew<vtkActor> scaleBarActor;
+    // 设置坐标转换规则（关键！）
+    vtkNew<vtkCoordinate> coordinate;
+    coordinate->SetCoordinateSystemToDisplay();
+    // scaleBarMapper->SetTransformCoordinate(coordinate);
+    scaleBarActor=vtkSmartPointer<vtkActor2D>::New();
+    scaleBarActor->SetMapper(scaleBarMapper);
+    scaleBarActor->GetProperty()->SetColor(1,0,0);
+    scaleBarActor->GetProperty()->SetLineWidth(3);  // 线宽
+    scaleBarActor->SetPosition(renWin->GetSize()[0]-100, renWin->GetSize()[1]-100);
+
+    scaleText = vtkSmartPointer<vtkTextActor>::New();
+    //scaleText->SetTextScaleModeToViewport();
+    scaleText->GetTextProperty()->SetFontSize(20);
+    scaleText->GetTextProperty()->SetColor(1.0, 1.0, 0);
+    scaleText->SetInput("Scale : 1.0 units");
+    double x=renWin->GetSize()[0]-320;
+    double y=renWin->GetSize()[1]-170;
+    scaleText->SetPosition(x,y); // 视口中的位置
+    qDebug()<<x<<y;
+    renderer->AddActor2D(scaleText);
+    renderer->AddActor2D(scaleBarActor);
+}
+
+void VtkWidget::UpdateScaleBar()
+{
+    qDebug()<<"触发标尺更新";
+    int* winSize = renWin->GetSize();
+    qDebug()<<*winSize;
+    if (winSize[0] <= 0 || winSize[1] <= 0) return;
+
+    // 设置标尺位置（右下角）
+    const int margin = 20;
+    int lineX = winSize[0] - 100 - margin;
+    int lineY = margin;
+    scaleBarActor->SetPosition(lineX, lineY);
+
+    // 设置文本位置为标尺上方
+    scaleText->SetPosition(lineX, lineY + 25);
+
+    // 计算实际物理长度
+    vtkCamera* camera = renderer->GetActiveCamera();
+    double physicalLength = 0.0;
+
+    if (camera->GetParallelProjection()) {
+        // 平行投影计算
+        double height = camera->GetParallelScale() * 2;
+        double pixelPerUnit = winSize[1] / height;
+        physicalLength = 100 / pixelPerUnit;
+    } else {
+        // 透视投影近似计算
+        double fp[3], pos[3];
+        camera->GetFocalPoint(fp);
+        camera->GetPosition(pos);
+        double distance = sqrt(vtkMath::Distance2BetweenPoints(fp, pos));
+
+        double viewAngle = vtkMath::RadiansFromDegrees(camera->GetViewAngle());
+        double visibleHeight = 2.0 * distance * tan(viewAngle / 2.0);
+        physicalLength = (100 * visibleHeight) / winSize[1];
+    }
+
+    // 更新文本内容
+    std::ostringstream ss;
+    ss << "Scale: " << std::fixed << std::setprecision(2) << physicalLength << " units";
+    scaleText->SetInput(ss.str().c_str());
+    scaleBarActor->SetVisibility(true);
+    scaleText->SetVisibility(true);
+    renWin->Render();
+}
+
+void VtkWidget::attachInteractor()
+{
+    // 监听所有可能影响视图的操作
+    auto callback = vtkSmartPointer<vtkCallbackCommand>::New();
+    callback->SetClientData(this);
+    callback->SetCallback([](vtkObject*, unsigned long, void* clientData, void*) {
+        static_cast<VtkWidget*>(clientData)->UpdateScaleBar();
+    });
+
+    // 绑定事件类型
+    vtkRenderWindowInteractor* interactor = renWin->GetInteractor();
+    interactor->AddObserver(vtkCommand::InteractionEvent, callback);
+    interactor->AddObserver(vtkCommand::EndInteractionEvent, callback);
+    renWin->AddObserver(vtkCommand::WindowResizeEvent, callback);
+
+    // 相机变化时也更新
+    renderer->GetActiveCamera()->AddObserver(vtkCommand::ModifiedEvent, callback);
 }
 
 void VtkWidget::OnRightButtonPress()
@@ -913,6 +1019,7 @@ void VtkWidget::onCompare()
     auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
     auto marksMap = m_pMainWin->getpWinFileMgr()->getContentItemMap();
     QString logInfo; // 用于在右下角输出调用日志
+    bool isCut=false;
 
     QVector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> clouds;
     QVector<CObject*>parentlist;
@@ -920,6 +1027,8 @@ void VtkWidget::onCompare()
         CEntity* entity=entityList[i];
         if(!entity->IsSelected())continue;
         if(entity->GetUniqueType()==enPointCloud){
+            CPointCloud* cloud=(CPointCloud*)entity;
+            if(cloud->isCut)isCut=true;
             auto & temp=((CPointCloud*)entity)->m_pointCloud;
             parentlist.append(entity);
             clouds.append(temp.makeShared());
@@ -991,19 +1100,26 @@ void VtkWidget::onCompare()
     m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
     m_pMainWin->NotifySubscribe();
 
-    //得到时间编号
-    QString TimeString=m_pMainWin->getPWinToolWidget()->getTimeString();
-    //得到存放对比图片的路径
-    QString CompareImagePath=m_pMainWin->getPWinToolWidget()->getCompareImagePath();
+    //调用保存图像函数
+    m_pMainWin->getPWinToolWidget()->onSaveImage();
+    QString path_front=m_pMainWin->getPWinToolWidget()->getlastCreatedImageFileFront();
+    QString path_top=m_pMainWin->getPWinToolWidget()->getlastCreatedImageFileTop();
+    QString path_right=m_pMainWin->getPWinToolWidget()->getlastCreatedImageFileRight();
 
-    //总路径
-    QString path=CompareImagePath+TimeString+".png";
-    qDebug()<<path;
-    //保存
-    m_pMainWin->getPWinToolWidget()->SaveImage(path);
-    //存储在toolwidget中以便在输出报告中使用
-    QVector<QString>& PathList=m_pMainWin->getPWinToolWidget()->getImagePaths();
-    PathList.append(path);
+    if(isCut){
+        //存储局部对比点云图像的路径
+        QVector<QString>& PathList=m_pMainWin->getPWinToolWidget()->getImagePaths_part();
+        PathList.append( path_front);
+        PathList.append( path_top);
+        PathList.append( path_right);
+    }else{
+        //存储全局对比点云图像的路径
+        QVector<QString>& PathList=m_pMainWin->getPWinToolWidget()->getImagePaths();
+        PathList.append( path_front);
+        PathList.append( path_top);
+        PathList.append( path_right);
+    }
+
 
     ShowColorBar(minDistance, maxDistance);
     // 添加日志输出
