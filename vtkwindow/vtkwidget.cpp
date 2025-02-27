@@ -672,13 +672,13 @@ void VtkWidget::ShowColorBar(double minDistance, double maxDistance){
     minTextMapper->SetInput(std::to_string(minDistance).c_str());
     vtkSmartPointer<vtkActor2D> minTextActor = vtkSmartPointer<vtkActor2D>::New();
     minTextActor->SetMapper(minTextMapper);
-    minTextActor->SetPosition(Width - barWidth - 100, barHeight + 7); // 调整位置以适应显示
+    minTextActor->SetPosition(Width - barWidth - 110, barHeight + 7); // 调整位置以适应显示
 
     vtkSmartPointer<vtkTextMapper> maxTextMapper = vtkSmartPointer<vtkTextMapper>::New();
     maxTextMapper->SetInput(std::to_string(maxDistance).c_str());
     vtkSmartPointer<vtkActor2D> maxTextActor = vtkSmartPointer<vtkActor2D>::New();
     maxTextActor->SetMapper(maxTextMapper);
-    maxTextActor->SetPosition(Width - 100, barHeight + 7); // 调整位置以适应显示
+    maxTextActor->SetPosition(Width - 110, barHeight + 7); // 调整位置以适应显示
     minTextMapper->GetTextProperty()->SetFontSize(15);
     maxTextMapper->GetTextProperty()->SetFontSize(15);
 
