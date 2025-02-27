@@ -713,12 +713,12 @@ void VtkWidget::createScaleBar()
     // 设置坐标转换规则（关键！）
     vtkNew<vtkCoordinate> coordinate;
     coordinate->SetCoordinateSystemToDisplay();
-    scaleBarMapper->SetTransformCoordinate(coordinate);
+    // scaleBarMapper->SetTransformCoordinate(coordinate);
     scaleBarActor=vtkSmartPointer<vtkActor2D>::New();
     scaleBarActor->SetMapper(scaleBarMapper);
     scaleBarActor->GetProperty()->SetColor(1,0,0);
     scaleBarActor->GetProperty()->SetLineWidth(3);  // 线宽
-    //scaleBarActor->SetPosition(renWin->GetSize()[0]-100, renWin->GetSize()[1]-100);
+    scaleBarActor->SetPosition(renWin->GetSize()[0]-100, renWin->GetSize()[1]-100);
 
     scaleText = vtkSmartPointer<vtkTextActor>::New();
     //scaleText->SetTextScaleModeToViewport();
@@ -727,7 +727,7 @@ void VtkWidget::createScaleBar()
     scaleText->SetInput("Scale : 1.0 units");
     double x=renWin->GetSize()[0]-320;
     double y=renWin->GetSize()[1]-170;
-    //scaleText->SetPosition(x,y); // 视口中的位置
+    scaleText->SetPosition(x,y); // 视口中的位置
     qDebug()<<x<<y;
     renderer->AddActor2D(scaleText);
     renderer->AddActor2D(scaleBarActor);
@@ -746,8 +746,8 @@ void VtkWidget::UpdateScaleBar()
     int lineY = margin;
     scaleBarActor->SetPosition(lineX, lineY);
 
-    // 设置文本位置（标尺下方）
-    scaleText->SetPosition(lineX, lineY - 25);
+    // 设置文本位置为标尺上方
+    scaleText->SetPosition(lineX, lineY + 25);
 
     // 计算实际物理长度
     vtkCamera* camera = renderer->GetActiveCamera();
