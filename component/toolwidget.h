@@ -84,6 +84,11 @@ public:
 
     //获得保存图片路片路径
     QVector<QString>& getImagePaths();
+    QVector<QString>& getImagePaths_part();
+    //获得最近保存图片路径
+    QString getlastCreatedImageFileFront();
+    QString getlastCreatedImageFileTop();
+    QString getlastCreatedImageFileRight();
     //获得当前时间编号
     QString getTimeString();
     //保存图片
@@ -95,6 +100,8 @@ public:
     QString getParentPath(int step=1);//获得上级路径
     void createFolder(QString path);//创建文件夹
     QString getOutputPath(QString kind);//获得输出路径
+
+
 
 public slots:
               //构造
@@ -187,8 +194,10 @@ private:
     QVector<CEntity*> constructEntityList;
     QVector<CEntity*> identifyEntityList;
 
-    //存储对比过程中产生图片路径
+    //存储全局对比过程中产生图片路径
     QVector<QString> imagePaths;
+    //存储局部对比过程中产生的图片路径
+    QVector<QString> imagePaths_part;
 
     //最新文件路径
     QString lastCreatedExcelFile;
@@ -201,6 +210,10 @@ private:
 
     //是否自动化保存内容
     bool IsAuto=false;
+    bool m_savePdf=false;
+    bool m_saveWord=false;
+
+
 
 };
 #endif // TOOLWIDGET_H
