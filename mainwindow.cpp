@@ -762,6 +762,7 @@ void MainWindow::OnPresetLine(CPosition ptStart, CPosition ptEnd)
     pLine->Form="预制";
     pLine->setBegin(ptStart);
     pLine->setEnd(ptEnd);
+    pLine->setCurrentId();
     pLine->m_CreateForm = ePreset;
     pLine->m_pRefCoord = m_pcsListMgr->m_pPcsCurrent;
     pLine->m_pCurCoord = m_pcsListMgr->m_pPcsCurrent;
