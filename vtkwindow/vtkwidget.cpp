@@ -913,6 +913,7 @@ void VtkWidget::onCompare()
     auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
     auto marksMap = m_pMainWin->getpWinFileMgr()->getContentItemMap();
     QString logInfo; // 用于在右下角输出调用日志
+    bool isCut=false;
 
     QVector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> clouds;
     QVector<CObject*>parentlist;
@@ -920,6 +921,8 @@ void VtkWidget::onCompare()
         CEntity* entity=entityList[i];
         if(!entity->IsSelected())continue;
         if(entity->GetUniqueType()==enPointCloud){
+            CPointCloud* cloud=(CPointCloud*)entity;
+            if(cloud->isCut)isCut=true;
             auto & temp=((CPointCloud*)entity)->m_pointCloud;
             parentlist.append(entity);
             clouds.append(temp.makeShared());
@@ -991,19 +994,26 @@ void VtkWidget::onCompare()
     m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
     m_pMainWin->NotifySubscribe();
 
-    //得到时间编号
-    QString TimeString=m_pMainWin->getPWinToolWidget()->getTimeString();
-    //得到存放对比图片的路径
-    QString CompareImagePath=m_pMainWin->getPWinToolWidget()->getCompareImagePath();
+    //调用保存图像函数
+    m_pMainWin->getPWinToolWidget()->onSaveImage();
+    QString path_front=m_pMainWin->getPWinToolWidget()->getlastCreatedImageFileFront();
+    QString path_top=m_pMainWin->getPWinToolWidget()->getlastCreatedImageFileTop();
+    QString path_right=m_pMainWin->getPWinToolWidget()->getlastCreatedImageFileRight();
 
-    //总路径
-    QString path=CompareImagePath+TimeString+".png";
-    qDebug()<<path;
-    //保存
-    m_pMainWin->getPWinToolWidget()->SaveImage(path);
-    //存储在toolwidget中以便在输出报告中使用
-    QVector<QString>& PathList=m_pMainWin->getPWinToolWidget()->getImagePaths();
-    PathList.append(path);
+    if(isCut){
+        //存储局部对比点云图像的路径
+        QVector<QString>& PathList=m_pMainWin->getPWinToolWidget()->getImagePaths_part();
+        PathList.append( path_front);
+        PathList.append( path_top);
+        PathList.append( path_right);
+    }else{
+        //存储全局对比点云图像的路径
+        QVector<QString>& PathList=m_pMainWin->getPWinToolWidget()->getImagePaths();
+        PathList.append( path_front);
+        PathList.append( path_top);
+        PathList.append( path_right);
+    }
+
 
     ShowColorBar(minDistance, maxDistance);
     // 添加日志输出
