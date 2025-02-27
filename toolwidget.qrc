@@ -43,5 +43,7 @@
         <file>component/construct/rectangle_.png</file>
         <file>component/construct/sphere_.png</file>
         <file>component/construct/continue.png</file>
+        <file>component/construct/greenstart.jpg</file>
+        <file>component/construct/redstop.jpg</file>
     </qresource>
 </RCC>
