@@ -79,6 +79,7 @@
 #include <vtkImageMapper3D.h>
 #include <vtkImageProperty.h>
 #include <vtkImageViewer2.h>
+#include <vtkLineSource.h>
 VTK_MODULE_INIT(vtkRenderingOpenGL2);
 VTK_MODULE_INIT(vtkInteractionStyle);
 VTK_MODULE_INIT(vtkRenderingVolumeOpenGL2);
@@ -137,6 +138,10 @@ public:
     CEntity* getEntityFromTextActor(vtkSmartPointer<vtkTextActor> textActor); // 从文本演员找到对应的entity
 
     void ShowColorBar(double minDistance, double maxDistance);
+    //标度尺
+    void createScaleBar();
+    void UpdateScaleBar();
+    void attachInteractor();
 private:
     QVTKOpenGLNativeWidget* vtkWidget; // vtk窗口
     MainWindow *m_pMainWin = nullptr; // mainwindow指针
@@ -190,6 +195,12 @@ private:
     // 以下变量用于中键平移窗口时改变指向线段
     int initialMousePos[2];
     std::map<CEntity*, std::array<double, 2>> initialPositions;
+    //标度尺
+    vtkSmartPointer<vtkRenderWindowInteractor> renderWindowInteractor;
+    vtkSmartPointer<vtkActor2D> scaleBarActor;
+    vtkSmartPointer<vtkTextActor> scaleText;
+    double baseLength = 1.0;     // 初始标度尺长度
+    double baseDistance = 500.0; // 参考初始相机距离
 
 public slots:
 
