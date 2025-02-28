@@ -602,7 +602,7 @@ void MainWindow::saveFile(){
 
     // 关闭文件
     file.close();
-    QMessageBox::information(nullptr, "提示", "保存成功");
+    QMessageBox::information(nullptr, "提示", "qins文件保存成功");
 }
 /*void MainWindow::open_clicked() {
     // 打开文件对话框，允许用户选择文件
