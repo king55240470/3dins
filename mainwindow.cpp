@@ -65,7 +65,7 @@ void MainWindow::setupUi(){
     fileMenu->addSeparator();
     QAction *exitAction=fileMenu->addAction("退出");
     exitAction->setIcon(exitIcon);
-    exitAction->setShortcut(QKeySequence(Qt::Key_Escape));
+    exitAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Escape));
     connect(exitAction, SIGNAL(triggered()), this, SLOT(close())); // 连接退出的信号与槽
     // 创建一个隐藏的 QAction，用于触发菜单
     QAction* showMenuAction = new QAction();
@@ -278,7 +278,7 @@ void MainWindow::setupUi(){
         pWinVtkWidget->onCompare();
     });
     QAction* alignAction=cloudOperation->addAction("点云对齐");
-    alignAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_A));
+    alignAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Q));
     alignAction->setShortcutContext(Qt::ApplicationShortcut);
     connect(alignAction,&QAction::triggered,this,[&](){
         pWinVtkWidget->onAlign();
