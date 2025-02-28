@@ -197,6 +197,7 @@ private:
     std::map<CEntity*, std::array<double, 2>> initialPositions;
     //标度尺
     vtkSmartPointer<vtkRenderWindowInteractor> renderWindowInteractor;
+    vtkSmartPointer<vtkPolyDataMapper2D> scaleBarMapper;
     vtkSmartPointer<vtkActor2D> scaleBarActor;
     vtkSmartPointer<vtkTextActor> scaleText;
     double baseLength = 1.0;     // 初始标度尺长度
