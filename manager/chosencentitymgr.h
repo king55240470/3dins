@@ -15,6 +15,7 @@ public:
     QVector<CEntity*>& getChosenCEntityList(){
         return chosenCEntityList;
     }
+    QMap<vtkSmartPointer<vtkActor>, CEntity*>& getTempEntityMap();
 
     // 根据选中的坐标创建一个CPosition，并存入ChosenCEntityList
     void CreatPosition(double pos[3]);
@@ -25,6 +26,7 @@ public:
 private:
     QVector<CPosition> chosenActorAxes; // 存储从窗口中选中actor时的点击坐标
     QVector<CEntity*> chosenCEntityList; // 存储从窗口中选中的图形
+    QMap<vtkSmartPointer<vtkActor>, CEntity*> tempEntityMap; // 存储识别功能产生的临时对象
 };
 
 #endif // CHOSENCENTITYMGR_H
