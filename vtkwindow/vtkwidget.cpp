@@ -54,9 +54,6 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
     m_highlightstyle->SetUpMainWin(m_pMainWin);
     renWin->GetInteractor()->SetInteractorStyle(m_highlightstyle);
 
-    //renderWindowInteractor = vtkSmartPointer<vtkRenderWindowInteractor>::New();
-    //renderWindowInteractor->SetRenderWindow(renWin);
-
     createAxes();// 创建左下角全局坐标系
 
     // 创建初始视角相机
@@ -291,6 +288,7 @@ void VtkWidget::createText(CEntity* entity)
     renWin->GetInteractor()->AddObserver(vtkCommand::MouseMoveEvent, this, &VtkWidget::OnMouseMove);
     renWin->GetInteractor()->AddObserver(vtkCommand::LeftButtonReleaseEvent, this, &VtkWidget::OnLeftButtonRelease);
     renWin->GetInteractor()->AddObserver(vtkCommand::RightButtonPressEvent, this, &VtkWidget::OnRightButtonPress);
+    renWin->GetInteractor()->AddObserver(vtkCommand::RightButtonReleaseEvent, this, &VtkWidget::OnRightButtonRelease);
     renWin->GetInteractor()->AddObserver(vtkCommand::MiddleButtonPressEvent, this, &VtkWidget::OnMiddleButtonPress);
     renWin->GetInteractor()->AddObserver(vtkCommand::MiddleButtonReleaseEvent, this, &VtkWidget::OnMiddleButtonRelease);
 
@@ -624,9 +622,7 @@ CEntity* VtkWidget::getEntityFromTextActor(vtkSmartPointer<vtkTextActor> textAct
 }
 
 void VtkWidget::ShowColorBar(double minDistance, double maxDistance){
-    // 创建一个 PolyData 对象来存储色温尺的几何信息
-    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-    vtkSmartPointer<vtkCellArray> lines = vtkSmartPointer<vtkCellArray>::New();
+    // 保存色温尺颜色信息
     vtkSmartPointer<vtkUnsignedCharArray> colors = vtkSmartPointer<vtkUnsignedCharArray>::New();
     colors->SetNumberOfComponents(3); // RGB
 
@@ -634,23 +630,12 @@ void VtkWidget::ShowColorBar(double minDistance, double maxDistance){
     int barHeight = 20; // 色温尺的高度
     int barWidth = 200; // 色温尺的宽度
     auto Width = renWin->GetSize()[0];
-    points->InsertNextPoint(Width-barWidth-10, 10, 0); // 起点
-    points->InsertNextPoint(Width-barWidth, 10, 0); // 终点
-
-    // 插入线段
-    vtkIdType pointIds[2] = {0, 1};
-    lines->InsertNextCell(2, pointIds);
 
     // 为每个顶点设置颜色
     colors->InsertTuple3(0, 0, 0, 255); // 左下角
     colors->InsertTuple3(1, 255, 0, 0); // 右下角
     colors->InsertTuple3(2, 255, 0, 0); // 右上角
     colors->InsertTuple3(3, 0, 0, 255); // 左上角
-
-    // 创建 PolyData
-    vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
-    polyData->SetPoints(points);
-    polyData->SetLines(lines);
 
     // 将颜色数据绑定到线段上（通过绘制多边形来模拟颜色条）
     vtkSmartPointer<vtkPolyData> colorBarPolyData = vtkSmartPointer<vtkPolyData>::New();
@@ -682,13 +667,13 @@ void VtkWidget::ShowColorBar(double minDistance, double maxDistance){
     minTextMapper->SetInput(std::to_string(minDistance).c_str());
     vtkSmartPointer<vtkActor2D> minTextActor = vtkSmartPointer<vtkActor2D>::New();
     minTextActor->SetMapper(minTextMapper);
-    minTextActor->SetPosition(Width - barWidth - 110, barHeight + 7); // 调整位置以适应显示
+    minTextActor->SetPosition(Width - barWidth - 120, barHeight + 7); // 调整位置以适应显示
 
     vtkSmartPointer<vtkTextMapper> maxTextMapper = vtkSmartPointer<vtkTextMapper>::New();
     maxTextMapper->SetInput(std::to_string(maxDistance).c_str());
     vtkSmartPointer<vtkActor2D> maxTextActor = vtkSmartPointer<vtkActor2D>::New();
     maxTextActor->SetMapper(maxTextMapper);
-    maxTextActor->SetPosition(Width - 110, barHeight + 7); // 调整位置以适应显示
+    maxTextActor->SetPosition(Width - 120, barHeight + 7); // 调整位置以适应显示
     minTextMapper->GetTextProperty()->SetFontSize(15);
     maxTextMapper->GetTextProperty()->SetFontSize(15);
 
@@ -696,7 +681,6 @@ void VtkWidget::ShowColorBar(double minDistance, double maxDistance){
     renderer->AddActor2D(colorBarActor);
     renderer->AddActor2D(minTextActor);
     renderer->AddActor2D(maxTextActor);
-    renderer->AddActor2D(colorBarActor);
 
     // 刷新渲染窗口
     renderer->Render();
@@ -704,21 +688,45 @@ void VtkWidget::ShowColorBar(double minDistance, double maxDistance){
 
 void VtkWidget::createScaleBar()
 {
-    vtkSmartPointer<vtkLineSource> lineSource = vtkSmartPointer<vtkLineSource>::New();
-    lineSource->SetPoint1(0, 0, 0);
-    lineSource->SetPoint2(100, 0, 0);
-    vtkSmartPointer<vtkPolyDataMapper2D> scaleBarMapper=vtkSmartPointer<vtkPolyDataMapper2D>::New();
-    scaleBarMapper->SetInputConnection(lineSource->GetOutputPort());
-    //vtkNew<vtkActor> scaleBarActor;
-    // 设置坐标转换规则（关键！）
-    vtkNew<vtkCoordinate> coordinate;
-    coordinate->SetCoordinateSystemToDisplay();
-    // scaleBarMapper->SetTransformCoordinate(coordinate);
-    scaleBarActor=vtkSmartPointer<vtkActor2D>::New();
+    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+    vtkSmartPointer<vtkCellArray> polys = vtkSmartPointer<vtkCellArray>::New();
+    vtkSmartPointer<vtkUnsignedCharArray> colors = vtkSmartPointer<vtkUnsignedCharArray>::New();
+    colors->SetNumberOfComponents(3);
+    colors->InsertTuple3(0, 255, 255, 255);
+    colors->InsertTuple3(1, 255, 255, 255);
+    colors->InsertTuple3(2, 255, 255, 255);
+    colors->InsertTuple3(3, 255, 255, 255);
+
+    // 定义比例尺的四个点
+    int height = 5; // 高度
+    int width = 200; // 宽度
+    auto winWidth = renWin->GetSize()[0];
+    points->InsertNextPoint(winWidth - width - 10, 5, 0);
+    points->InsertNextPoint(winWidth - 10, 5, 0);
+    points->InsertNextPoint(winWidth - 10, 5 + height, 0);
+    points->InsertNextPoint(winWidth - width - 10, 5 + height, 0);
+
+    vtkIdType pointIds[4] = {0, 1, 2, 3};
+    polys->InsertNextCell(4, pointIds);
+
+    // 创建 polydata ，连接四个顶点
+    auto polyData = vtkSmartPointer<vtkPolyData>::New();
+    polyData->SetPoints(points);
+    polyData->SetPolys(polys);
+
+    // 设置mapper和actor
+    auto scaleBarMapper = vtkSmartPointer<vtkPolyDataMapper2D>::New();
+    scaleBarMapper->SetInputData(polyData);
+    scaleBarActor = vtkSmartPointer<vtkActor2D>::New();
     scaleBarActor->SetMapper(scaleBarMapper);
-    scaleBarActor->GetProperty()->SetColor(1,0,0);
-    scaleBarActor->GetProperty()->SetLineWidth(3);  // 线宽
-    scaleBarActor->SetPosition(renWin->GetSize()[0]-100, renWin->GetSize()[1]-100);
+
+    // 设置坐标转换规则（关键！）
+    // vtkNew<vtkCoordinate> coordinate;
+    // coordinate->SetCoordinateSystemToDisplay();
+    // scaleBarMapper->SetTransformCoordinate(coordinate);
+    scaleBarActor->GetProperty()->SetColor(1, 1, 1);
+    scaleBarActor->GetProperty()->SetLineWidth(3);
+    scaleBarActor->SetPosition(winWidth - 100, 5);
 
     scaleText = vtkSmartPointer<vtkTextActor>::New();
     //scaleText->SetTextScaleModeToViewport();
@@ -731,13 +739,12 @@ void VtkWidget::createScaleBar()
     qDebug()<<x<<y;
     renderer->AddActor2D(scaleText);
     renderer->AddActor2D(scaleBarActor);
+    // renderer->Render();
 }
 
 void VtkWidget::UpdateScaleBar()
 {
-    qDebug()<<"触发标尺更新";
     int* winSize = renWin->GetSize();
-    qDebug()<<*winSize;
     if (winSize[0] <= 0 || winSize[1] <= 0) return;
 
     // 设置标尺位置（右下角）
@@ -789,13 +796,13 @@ void VtkWidget::attachInteractor()
     });
 
     // 绑定事件类型
-    vtkRenderWindowInteractor* interactor = renWin->GetInteractor();
-    interactor->AddObserver(vtkCommand::InteractionEvent, callback);
-    interactor->AddObserver(vtkCommand::EndInteractionEvent, callback);
-    renWin->AddObserver(vtkCommand::WindowResizeEvent, callback);
+    // vtkRenderWindowInteractor* interactor = renWin->GetInteractor();
+    // interactor->AddObserver(vtkCommand::InteractionEvent, callback);
+    // interactor->AddObserver(vtkCommand::EndInteractionEvent, callback);
+    // renWin->AddObserver(vtkCommand::WindowResizeEvent, callback);
 
-    // 相机变化时也更新
-    renderer->GetActiveCamera()->AddObserver(vtkCommand::ModifiedEvent, callback);
+    // // 相机变化时也更新
+    // renderer->GetActiveCamera()->AddObserver(vtkCommand::ModifiedEvent, callback);
 }
 
 void VtkWidget::OnRightButtonPress()
