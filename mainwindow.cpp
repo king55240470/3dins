@@ -1516,6 +1516,12 @@ QMap<vtkSmartPointer<vtkActor>, CEntity*>& MainWindow::getactorToEntityMap(){
     return  actorToEntityMap;
 }
 
+void MainWindow::Createruler()
+{
+    getPWinVtkWidget()->createScaleBar();
+    getPWinVtkWidget()->attachInteractor();
+}
+
 VtkPresetWidget *MainWindow::getPWinVtkPresetWidget(){
     return pWinVtkPresetWidget;
 }

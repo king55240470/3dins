@@ -24,7 +24,6 @@ VtkWidget::VtkWidget(QWidget *parent)
     mainlayout->setSpacing(0); // 去除布局内部的间距
     setUpVtk(mainlayout); // 配置vtk窗口XX
     this->setLayout(mainlayout);
-
 }
 
 void VtkWidget::setUpVtk(QVBoxLayout *layout){
@@ -70,15 +69,14 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
         renderer->ResetCamera();
         renWin->Render();
     }
-    createScaleBar();
-    attachInteractor();
-
-    //renderer->GetActiveCamera()->AddObserver(vtkCommand::ModifiedEvent, this, &VtkWidget::UpdateScaleBar);
+    //createScaleBar();
+    //attachInteractor();
+    //renderer->GetActiveCamera ()->AddObserver(vtkCommand::ModifiedEvent, this, &VtkWidget::UpdateScaleBar);
     getRenderWindow()->Render();
-    QTimer::singleShot(100, [this](){
+    /*QTimer::singleShot(100, [this](){
         UpdateScaleBar();
         renWin->Render();
-    });
+    });*/
 }
 
 void VtkWidget::OnMouseMove()
@@ -688,121 +686,161 @@ void VtkWidget::ShowColorBar(double minDistance, double maxDistance){
 
 void VtkWidget::createScaleBar()
 {
+    if(scaleText){
+        //dreturn;
+    }
+    double x=renWin->GetSize()[0]-320;
+    double y=renWin->GetSize()[1]-170;
+
+    /*// 定义直线的固定长度和位置
+    const int lineLength = 200; // 直线长度
+    const int lineHeight = 70;  // 直线高度（距离窗口底部的距离）
+    const int padding = 70;     // 距离窗口右侧的距离
+
+    // 获取当前窗口大小
+    int winWidth = renWin->GetSize()[0];
+    int winHeight = renWin->GetSize()[1];
+
+    // 创建直线的两个端点
     vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-    vtkSmartPointer<vtkCellArray> polys = vtkSmartPointer<vtkCellArray>::New();
-    vtkSmartPointer<vtkUnsignedCharArray> colors = vtkSmartPointer<vtkUnsignedCharArray>::New();
-    colors->SetNumberOfComponents(3);
-    colors->InsertTuple3(0, 255, 255, 255);
-    colors->InsertTuple3(1, 255, 255, 255);
-    colors->InsertTuple3(2, 255, 255, 255);
-    colors->InsertTuple3(3, 255, 255, 255);
+    points->InsertNextPoint(winWidth - padding - lineLength, lineHeight, 0); // 起点
+    points->InsertNextPoint(winWidth - padding, lineHeight, 0);             // 终点
 
-    // 定义比例尺的四个点
-    int height = 5; // 高度
-    int width = 200; // 宽度
-    auto winWidth = renWin->GetSize()[0];
-    points->InsertNextPoint(winWidth - width - 10, 5, 0);
-    points->InsertNextPoint(winWidth - 10, 5, 0);
-    points->InsertNextPoint(winWidth - 10, 5 + height, 0);
-    points->InsertNextPoint(winWidth - width - 10, 5 + height, 0);
+    // 创建 vtkLine
+    vtkSmartPointer<vtkLine> line = vtkSmartPointer<vtkLine>::New();
+    line->GetPointIds()->SetId(0, 0); // 起点
+    line->GetPointIds()->SetId(1, 1); // 终点
 
-    vtkIdType pointIds[4] = {0, 1, 2, 3};
-    polys->InsertNextCell(4, pointIds);
-
-    // 创建 polydata ，连接四个顶点
-    auto polyData = vtkSmartPointer<vtkPolyData>::New();
+    // 创建 vtkPolyData
+    vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
     polyData->SetPoints(points);
-    polyData->SetPolys(polys);
+    polyData->Allocate(1, 1);
+    polyData->InsertNextCell(line->GetCellType(), line->GetPointIds());
 
-    // 设置mapper和actor
-    auto scaleBarMapper = vtkSmartPointer<vtkPolyDataMapper2D>::New();
-    scaleBarMapper->SetInputData(polyData);
+    // 创建 mapper 和 actor
+    vtkSmartPointer<vtkPolyDataMapper2D> mapper = vtkSmartPointer<vtkPolyDataMapper2D>::New();
+    mapper->SetInputData(polyData);
+
     scaleBarActor = vtkSmartPointer<vtkActor2D>::New();
-    scaleBarActor->SetMapper(scaleBarMapper);
+    scaleBarActor->SetMapper(mapper);
+    scaleBarActor->GetProperty()->SetColor(1.0, 0.0, 0.0); // 设置颜色为红色
+    scaleBarActor->GetProperty()->SetLineWidth(2);*/
 
-    // 设置坐标转换规则（关键！）
-    // vtkNew<vtkCoordinate> coordinate;
-    // coordinate->SetCoordinateSystemToDisplay();
-    // scaleBarMapper->SetTransformCoordinate(coordinate);
-    scaleBarActor->GetProperty()->SetColor(1, 1, 1);
+    // ========== 标尺线配置参数 ==========
+    const int fixedPixelLength = 200;  // 固定像素长度
+    const int marginRight = 70;        // 右侧边距
+    const int marginBottom = 70;       // 底部边距
+
+    // ========== 创建标尺线 ==========
+    vtkNew<vtkLineSource> lineSource;
+    lineSource->SetPoint1(0, 0, 0);
+    lineSource->SetPoint2(fixedPixelLength, 0, 0); // X轴方向线段
+
+    // ========== 坐标系设置（关键） ==========
+    vtkNew<vtkCoordinate> coordinate;
+    coordinate->SetCoordinateSystemToDisplay(); // 显示坐标系
+
+    vtkNew<vtkPolyDataMapper2D> mapper;
+    mapper->SetInputConnection(lineSource->GetOutputPort());
+    mapper->SetTransformCoordinate(coordinate); // 绑定坐标系
+
+    // ========== 标尺线样式 ==========
+    scaleBarActor = vtkSmartPointer<vtkActor2D>::New();
+    scaleBarActor->SetMapper(mapper);
+    scaleBarActor->GetProperty()->SetColor(1, 1, 1); // 红色
     scaleBarActor->GetProperty()->SetLineWidth(3);
-    scaleBarActor->SetPosition(winWidth - 100, 5);
 
     scaleText = vtkSmartPointer<vtkTextActor>::New();
     //scaleText->SetTextScaleModeToViewport();
-    scaleText->GetTextProperty()->SetFontSize(20);
+    scaleText->GetTextProperty()->SetFontSize(15);
     scaleText->GetTextProperty()->SetColor(1.0, 1.0, 0);
-    scaleText->SetInput("Scale : 1.0 units");
-    double x=renWin->GetSize()[0]-320;
-    double y=renWin->GetSize()[1]-170;
-    scaleText->SetPosition(x,y); // 视口中的位置
+    scaleText->SetInput("比例Scale : 1.0 units(mm)");
+
+    scaleText->SetPosition(x+100,y-470); // 视口中的位置
+
+    //scaleBarActor->SetPosition(x+100,y-450);
     qDebug()<<x<<y;
+    scaleBarActor->SetLayerNumber(2); // 置于顶层
+    scaleText->SetLayerNumber(2);
     renderer->AddActor2D(scaleText);
     renderer->AddActor2D(scaleBarActor);
-    // renderer->Render();
+    UpdateScaleBar();
+    //renderer->Render();
 }
 
 void VtkWidget::UpdateScaleBar()
 {
+    if (!renWin || !renderer) return;
+
+    // ========== 获取有效窗口尺寸 ==========
     int* winSize = renWin->GetSize();
     if (winSize[0] <= 0 || winSize[1] <= 0) return;
 
-    // 设置标尺位置（右下角）
-    const int margin = 20;
-    int lineX = winSize[0] - 100 - margin;
-    int lineY = margin;
+    // ========== 标尺位置计算 ==========
+    const int fixedPixelLength = 200;
+    const int marginRight = 70;
+    const int marginBottom = 70;
+
+    int lineX = winSize[0] - marginRight - fixedPixelLength;
+    int lineY = marginBottom;
+
+    // ========== 更新标尺位置 ==========
     scaleBarActor->SetPosition(lineX, lineY);
 
-    // 设置文本位置为标尺上方
-    scaleText->SetPosition(lineX, lineY + 25);
+    // ========== 更新文本位置 ==========
+    scaleText->SetPosition(lineX + 40, lineY - 20); // 文本位于标尺下方20像素
 
-    // 计算实际物理长度
+    // ========== 物理长度计算 ==========
     vtkCamera* camera = renderer->GetActiveCamera();
     double physicalLength = 0.0;
 
     if (camera->GetParallelProjection()) {
-        // 平行投影计算
-        double height = camera->GetParallelScale() * 2;
-        double pixelPerUnit = winSize[1] / height;
-        physicalLength = 100 / pixelPerUnit;
+        // 平行投影精确计算
+        double parallelScale = camera->GetParallelScale();
+        physicalLength = (fixedPixelLength * 2.0 * parallelScale) / winSize[1];
     } else {
         // 透视投影近似计算
-        double fp[3], pos[3];
-        camera->GetFocalPoint(fp);
-        camera->GetPosition(pos);
-        double distance = sqrt(vtkMath::Distance2BetweenPoints(fp, pos));
-
         double viewAngle = vtkMath::RadiansFromDegrees(camera->GetViewAngle());
-        double visibleHeight = 2.0 * distance * tan(viewAngle / 2.0);
-        physicalLength = (100 * visibleHeight) / winSize[1];
+        double distance = camera->GetDistance();
+        physicalLength = (fixedPixelLength * 2.0 * distance * tan(viewAngle/2)) / winSize[1];
     }
 
-    // 更新文本内容
+    // ========== 更新文本内容 ==========
     std::ostringstream ss;
-    ss << "Scale: " << std::fixed << std::setprecision(2) << physicalLength << " units";
+    ss << "比例Scale: " << std::fixed << std::setprecision(2) << physicalLength << " units(mm)";
     scaleText->SetInput(ss.str().c_str());
-    scaleBarActor->SetVisibility(true);
-    scaleText->SetVisibility(true);
-    renWin->Render();
+
+    scaleText->GetTextProperty()->SetFontFamilyToArial(); // 默认字体
+    scaleText->GetTextProperty()->SetFontFile("C:/qcon/3dins/ebrima.ttf");
+    // ========== 安全渲染 ==========
+    if (renWin->GetMapped()) {
+        renWin->Render();
+    }
 }
 
 void VtkWidget::attachInteractor()
 {
-    // 监听所有可能影响视图的操作
+    qDebug()<<"更新尺";
+    // ========== 创建通用回调 ==========
     auto callback = vtkSmartPointer<vtkCallbackCommand>::New();
     callback->SetClientData(this);
     callback->SetCallback([](vtkObject*, unsigned long, void* clientData, void*) {
         static_cast<VtkWidget*>(clientData)->UpdateScaleBar();
     });
 
-    // 绑定事件类型
-    // vtkRenderWindowInteractor* interactor = renWin->GetInteractor();
-    // interactor->AddObserver(vtkCommand::InteractionEvent, callback);
-    // interactor->AddObserver(vtkCommand::EndInteractionEvent, callback);
-    // renWin->AddObserver(vtkCommand::WindowResizeEvent, callback);
+    // ========== 绑定关键事件 ==========
+    // 窗口大小变化
+    renWin->AddObserver(vtkCommand::WindowResizeEvent, callback);
 
-    // // 相机变化时也更新
-    // renderer->GetActiveCamera()->AddObserver(vtkCommand::ModifiedEvent, callback);
+    // 相机参数变化
+    renderer->GetActiveCamera()->AddObserver(vtkCommand::ModifiedEvent, callback);
+
+    // 用户交互操作
+    vtkRenderWindowInteractor* interactor = renWin->GetInteractor();
+    if (interactor) {
+        interactor->AddObserver(vtkCommand::InteractionEvent, callback);
+        interactor->AddObserver(vtkCommand::EndInteractionEvent, callback);
+    }
 }
 
 void VtkWidget::OnRightButtonPress()
@@ -1129,6 +1167,8 @@ void VtkWidget::onCompare()
 
 
     ShowColorBar(minDistance, maxDistance);
+    createScaleBar();
+    attachInteractor();
     // 添加日志输出
     logInfo += "对比完成";
     m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
