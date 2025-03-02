@@ -571,7 +571,7 @@ void ToolWidget::connectActionWithF(){
     connect(construct_actions_[construct_action_name_list_.indexOf("构造角度")],&QAction::triggered,this,&  ToolWidget::onConstructAngle);
 
     // //保存
-    //connect(save_actions_[save_action_name_list_.indexOf("excel")],&QAction::triggered,this,&  ToolWidget::onSaveExcel);
+    // connect(save_actions_[save_action_name_list_.indexOf("excel")],&QAction::triggered,this,&  ToolWidget::onSaveExcel);
     // connect(save_actions_[save_action_name_list_.indexOf("word")],&QAction::triggered,this,&  ToolWidget::onSaveWord);
     // connect(save_actions_[save_action_name_list_.indexOf("txt")],&QAction::triggered,this,&  ToolWidget::onSaveTxt);
     // connect(save_actions_[save_action_name_list_.indexOf("pdf")],&QAction::triggered,this,&  ToolWidget::onSavePdf);
