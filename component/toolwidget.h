@@ -31,7 +31,7 @@ public:
 
     void NotifySubscribe();
 
-    static const int iconsize=25;
+    static const int iconsize=30;
     static const int SingalToolBarActionNum=11;//每行工具栏的图标数目
     static const int ActionKindNum=5;//工具栏的种类数
     //获取图标名称
