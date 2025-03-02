@@ -156,6 +156,8 @@ ToolWidget::ToolWidget(QWidget *parent)
     InitOutputFolder();
 
     m_savePdf=false;
+    Action_Checked=nullptr;
+    Is_FindPoint_Cheked=false;
 
 
     resize(400,250);
@@ -552,100 +554,214 @@ void ToolWidget::connectActionWithF(){
     connect(find_actions_[find_action_name_list_.indexOf("识别点")],&QAction::triggered,this,[&](){
         QAction *action = qobject_cast<QAction *>(sender());
         if (action->isChecked()) {
+            //标注选中状态
+            Is_FindPoint_Cheked=true;
             action->setIcon(QIcon(":/component/find/point_.png"));
             action->setToolTip("已选中");
             ToolWidget::onFindPoint();
-            qDebug()<<"识别点按钮按下";
+            QString log="开始识别点";
+            m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
+            log="开始记录坐标";
+            m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
         } else {
+            Is_FindPoint_Cheked=false;
             action->setIcon(QIcon(":/component/find/point.jpg"));
             action->setToolTip("识别点");
-            qDebug()<<"识别点按钮取消按下状态";
+
+            QString log="结束识别点";
+            m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
         }});
+
+
     connect(find_actions_[find_action_name_list_.indexOf("识别线")],&QAction::triggered,this,[&](){
         QAction *action = qobject_cast<QAction *>(sender());
         if (action->isChecked()) {
+            //若已有选中状态的QAction，则使该QAction退出选中状态
+            if(Action_Checked!=nullptr&&Action_Checked!=action){
+                //Action_Checked->setChecked(false);
+                Action_Checked->trigger();
+            }
+            Action_Checked=(ToolAction*)action;
             action->setIcon(QIcon(":/component/find/line_.png"));
             action->setToolTip("已选中");
             ToolWidget::onFindLine();
-            qDebug()<<"识别线按钮按下";
+
+            QString log="开始识别线";
+            m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
         } else {
+            //若记录的是当前的QAction，则将记录置空
+            if(Action_Checked==action){
+                Action_Checked=nullptr;
+            }
             action->setIcon(QIcon(":/component/find/line.jpg"));
             action->setToolTip("识别线");
-            qDebug()<<"识别线按钮取消按下状态";
+
+            QString log="结束识别线";
+            m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
         }});
     // connect(find_actions_[find_action_name_list_.indexOf("识别圆")],&QAction::triggered,this,&   ToolWidget::onFindCircle);
+
+
     connect(find_actions_[find_action_name_list_.indexOf("识别圆")],&QAction::triggered,this,[&](){
     QAction *action = qobject_cast<QAction *>(sender());
     if (action->isChecked()) {
+        if(Action_Checked!=nullptr&&Action_Checked!=action){
+            //Action_Checked->setChecked(false);
+            Action_Checked->trigger();
+
+        }
+          Action_Checked=(ToolAction*)action;
         action->setIcon(QIcon(":/component/find/circle_.jpg"));
         action->setToolTip("已选中");
         ToolWidget::onFindCircle();
-        qDebug()<<"识别圆按钮按下";
+
+        QString log="开始识别圆";
+        m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
     } else {
+        if(Action_Checked==action){
+            Action_Checked=nullptr;
+        }
         action->setIcon(QIcon(":/component/find/circle.jpg"));
         action->setToolTip("识别圆");
-        qDebug()<<"识别圆按钮取消按下状态";
+
+        QString log="结束识别圆";
+        m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
     }});
+
+
     connect(find_actions_[find_action_name_list_.indexOf("识别平面")],&QAction::triggered,this,[&](){
         QAction *action = qobject_cast<QAction *>(sender());
         if (action->isChecked()) {
+            if(Action_Checked!=nullptr&&Action_Checked!=action){
+               // Action_Checked->setChecked(false);
+                Action_Checked->trigger();
+
+            }
+            Action_Checked=(ToolAction*)action;
             action->setIcon(QIcon(":/component/find/plane_.png"));
             action->setToolTip("已选中");
             ToolWidget::onFindPlane();
-            qDebug()<<"识别平面按钮按下";
+
+            QString log="开始识别平面";
+            m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
         } else {
+            if(Action_Checked==action){
+                Action_Checked=nullptr;
+            }
             action->setIcon(QIcon(":/component/find/plan.jpg"));
             action->setToolTip("识别平面");
-            qDebug()<<"识别平面按钮取消按下状态";
+
+            QString log="结束识别平面";
+            m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
         }});
+
+
     connect(find_actions_[find_action_name_list_.indexOf("识别矩形")],&QAction::triggered,this,[&](){
         QAction *action = qobject_cast<QAction *>(sender());
         if (action->isChecked()) {
+            if(Action_Checked!=nullptr&&Action_Checked!=action){
+               // Action_Checked->setChecked(false);
+                Action_Checked->trigger();
+
+            }
+             Action_Checked=(ToolAction*)action;
             action->setIcon(QIcon(":/component/find/rectangle_.png"));
             action->setToolTip("已选中");
             ToolWidget::onFindPlane();
-            qDebug()<<"识别矩形按钮按下";
+
+            QString log="开始识别矩形";
+            m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
         } else {
+            if(Action_Checked==action){
+                Action_Checked=nullptr;
+            }
             action->setIcon(QIcon(":/component/find/rectangle.jpg"));
             action->setToolTip("识别矩形");
-            qDebug()<<"识别矩形按钮取消按下状态";
+
+            QString log="结束识别矩形";
+            m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
         }});
+
+
     connect(find_actions_[find_action_name_list_.indexOf("识别圆柱")],&QAction::triggered,this,[&](){
         QAction *action = qobject_cast<QAction *>(sender());
         if (action->isChecked()) {
+            if(Action_Checked!=nullptr&&Action_Checked!=action){
+                //Action_Checked->setChecked(false);
+                Action_Checked->trigger();
+            }
+            Action_Checked=(ToolAction*)action;
             action->setIcon(QIcon(":/component/find/cylinder_.jpg"));
             action->setToolTip("已选中");
             ToolWidget::onFindRectangle();
-            qDebug()<<"识别圆柱按钮按下";
+
+            QString log="开始识别圆柱";
+            m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
         } else {
+            if(Action_Checked==action){
+                Action_Checked=nullptr;
+            }
             action->setIcon(QIcon(":/component/find/cylinder.jpg"));
             action->setToolTip("识别圆柱");
-            qDebug()<<"识别圆柱按钮取消按下状态";
+
+            QString log="结束识别圆柱";
+            m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
         }});
+
+
     connect(find_actions_[find_action_name_list_.indexOf("识别圆锥")],&QAction::triggered,this,[&](){
         QAction *action = qobject_cast<QAction *>(sender());
         if (action->isChecked()) {
+            if(Action_Checked!=nullptr&&Action_Checked!=action){
+                //Action_Checked->setChecked(false);
+                Action_Checked->trigger();
+
+            }
+            Action_Checked=(ToolAction*)action;
             action->setIcon(QIcon(":/component/find/cone_.jpg"));
             action->setToolTip("已选中");
             ToolWidget::onFindCone();
-            qDebug()<<"识别圆锥按钮按下";
+
+            QString log="开始识别圆锥";
+            m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
         } else {
+            if(Action_Checked==action){
+                Action_Checked=nullptr;
+            }
             action->setIcon(QIcon(":/component/find/cone.jpg"));
             action->setToolTip("识别圆锥");
-            qDebug()<<"识别圆锥按钮取消按下状态";
+
+            QString log="结束识别圆锥";
+            m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
         }});
+
+
     connect(find_actions_[find_action_name_list_.indexOf("识别球形")],&QAction::triggered,this,[&](){
         QAction *action = qobject_cast<QAction *>(sender());
         if (action->isChecked()) {
+            if(Action_Checked!=nullptr&&Action_Checked!=action){
+               // Action_Checked->setChecked(false);
+                Action_Checked->trigger();
+
+            }
+            Action_Checked=(ToolAction*)action;
             action->setIcon(QIcon(":/component/find/sphere_.png"));
             action->setToolTip("已选中");
             ToolWidget::onFindSphere();
-            qDebug()<<"识别球形按钮按下";
+
+            QString log="开始识别球形";
+            m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
         } else {
-            action->setIcon(QIcon(":/component/find/sphere.png"));
+            if(Action_Checked==action){
+                Action_Checked=nullptr;
+            }
+            action->setIcon(QIcon(":/component/find/sphere.jpg"));
             action->setToolTip("识别球形");
-            qDebug()<<"识别球形按钮取消按下状态";
+            QString log="结束识别球形";
+            m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
         }});
+
+
 
     //构造
     connect(construct_actions_[construct_action_name_list_.indexOf("构造点")],&QAction::triggered,this,& ToolWidget::onConstructPoint);
@@ -1005,7 +1121,7 @@ void   ToolWidget::onSavePdf(){
                painter.drawText(tableX + xDistance*2,  0, "数值");
                painter.drawText(tableX + xDistance*3, 0, "上公差");
                painter.drawText(tableX + xDistance*4,  0, "下公差");
-                painter.drawText(tableX + xDistance*5,  0, "是否合格");
+               painter.drawText(tableX + xDistance*5,  0, "是否合格");
                yPos=30;
                MoreThanOne=true;
            }
@@ -1565,19 +1681,11 @@ void ToolWidget::onConstructPoint(){
 }
 
 void ToolWidget::onConstructLine(){
-    QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenActorAxes();
+
     LineConstructor constructor;
     CLine* newLine;
     bool createLine=false;
-    if(positions.size()==2){
-        newLine=constructor.createLine(positions[0],positions[1]);
-        addToList(newLine);
-        createLine=true;
-        positions.clear();
-        QVector4D pos(positions[0].x-positions[1].x,positions[0].y-positions[1].y,positions[0].z-positions[1].z,0);
-        pos.normalize();
-    }
-    else{
+        {
         auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
         newLine=(CLine*)constructor.create(entityList);
         if(newLine!=nullptr){
@@ -1586,12 +1694,7 @@ void ToolWidget::onConstructLine(){
 
     }
     if(!createLine&&newLine==nullptr){
-        if(positions.size()==1){
-            WrongWidget("识别点的数目不足两个");
-        }
-        else if(positions.size()>=3){
-            WrongWidget("识别点的数目超过两个");
-        }else if(newLine==nullptr){
+        if(newLine==nullptr){
             if(constructor.getWrongInformation()==PointTooMuch){
                 WrongWidget("列表选中的点过多");
             }else if(constructor.getWrongInformation()==PointTooLess){
@@ -1636,18 +1739,12 @@ void ToolWidget::onConstructCircle(){
 
 }
 void ToolWidget::onConstructPlane(){
-    QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenActorAxes();
+
     PlaneConstructor constructor;
     CPlane* newPlane;
     bool createPlane=false;
 
-    if(positions.size()==3){
-        newPlane=constructor.createPlane(positions[0],positions[1],positions[2]);
-        addToList(newPlane);
-        createPlane=true;
-        positions.clear();
-    }
-    else{
+   {
         auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
         newPlane=(CPlane*)constructor.create(entityList);
         if(newPlane!=nullptr){
@@ -1656,11 +1753,7 @@ void ToolWidget::onConstructPlane(){
     }
 
     if(!createPlane&&newPlane==nullptr){
-        if(positions.size()<3){
-            WrongWidget("识别点的数目不足三个");
-        }else if(positions.size()>3){
-            WrongWidget("识别点的数目多余三个");
-        }else{
+        {
             if(constructor.getWrongInformation()==PointTooMuch){
                 WrongWidget("列表选中的点过多");
             }else if(constructor.getWrongInformation()==PointTooLess){
@@ -2582,3 +2675,14 @@ QString ToolWidget::getlastCreatedImageFileTop(){
 QString ToolWidget::getlastCreatedImageFileRight(){
     return lastCreatedImageFileRight;
 }
+
+QAction *  ToolWidget::getAction_Checked(){
+    if(Action_Checked)
+        return(QAction*)Action_Checked;
+    else
+        return nullptr;
+}
+bool ToolWidget::IsFindPoint_Checked(){
+    return Is_FindPoint_Cheked;
+}
+

@@ -8,6 +8,10 @@ void ToolAction::setToolActionKind(ToolActionKind action_kind){
 }
 void ToolAction::setName(QString name) {
     name_=name;
+    setObjectName(name);
+}
+QString ToolAction::getName(){
+    return name_;
 }
 
 UniqueToolBar::UniqueToolBar(){
