@@ -45,5 +45,13 @@
         <file>component/construct/continue.png</file>
         <file>component/construct/greenstart.jpg</file>
         <file>component/construct/redstop.jpg</file>
+        <file>component/find/circle_.jpg</file>
+        <file>component/find/cone_.jpg</file>
+        <file>component/find/cylinder_.jpg</file>
+        <file>component/find/line_.png</file>
+        <file>component/find/plane_.png</file>
+        <file>component/find/point_.png</file>
+        <file>component/find/rectangle_.png</file>
+        <file>component/find/sphere_.png</file>
     </qresource>
 </RCC>

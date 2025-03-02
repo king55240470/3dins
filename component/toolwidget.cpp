@@ -219,7 +219,7 @@ ToolWidget::ToolWidget(QWidget *parent)
         toolBars[i]->setStyleSheet(
             "QToolButton {"
             "    border: 2px solid lightgray;" // 浅灰色边框
-            "    padding: 5px;" // 内部填充
+            "    padding: 0 px;" // 内部填充
             "}"
             "QToolButton:pressed {"
             "    border: 2px solid gray;" // 按下状态下的灰色边框
@@ -275,6 +275,7 @@ ToolWidget::ToolWidget(QWidget *parent)
     for(int i=0;i<m_nFindActionNum;i++){
 
         ToolAction* action=new ToolAction(this);
+        action->setCheckable(true); // 使QAction可切换
         action->setToolActionKind(FindAction);
         action->setName(find_action_name_list_[i]);
         action->setIcon(QIcon(find_action_iconpath_list_[i]));
@@ -548,14 +549,103 @@ void ToolWidget::connectActionWithF(){
 
 
     //识别
-    connect(find_actions_[find_action_name_list_.indexOf("识别点")],&QAction::triggered,this,&   ToolWidget::onFindPoint);
-    connect(find_actions_[find_action_name_list_.indexOf("识别线")],&QAction::triggered,this,&   ToolWidget::onFindLine);
-    connect(find_actions_[find_action_name_list_.indexOf("识别圆")],&QAction::triggered,this,&   ToolWidget::onFindCircle);
-    connect(find_actions_[find_action_name_list_.indexOf("识别平面")],&QAction::triggered,this,&  ToolWidget:: onFindPlane);
-    connect(find_actions_[find_action_name_list_.indexOf("识别矩形")],&QAction::triggered,this,&   ToolWidget::onFindRectangle);
-    connect(find_actions_[find_action_name_list_.indexOf("识别圆柱")],&QAction::triggered,this,&   ToolWidget::onFindCylinder);
-    connect(find_actions_[find_action_name_list_.indexOf("识别圆锥")],&QAction::triggered,this,&   ToolWidget::onFindCone);
-    connect(find_actions_[find_action_name_list_.indexOf("识别球形")],&QAction::triggered,this,&   ToolWidget::onFindSphere);
+    connect(find_actions_[find_action_name_list_.indexOf("识别点")],&QAction::triggered,this,[&](){
+        QAction *action = qobject_cast<QAction *>(sender());
+        if (action->isChecked()) {
+            action->setIcon(QIcon(":/component/find/point_.png"));
+            action->setToolTip("已选中");
+            ToolWidget::onFindPoint();
+            qDebug()<<"识别点按钮按下";
+        } else {
+            action->setIcon(QIcon(":/component/find/point.jpg"));
+            action->setToolTip("识别点");
+            qDebug()<<"识别点按钮取消按下状态";
+        }});
+    connect(find_actions_[find_action_name_list_.indexOf("识别线")],&QAction::triggered,this,[&](){
+        QAction *action = qobject_cast<QAction *>(sender());
+        if (action->isChecked()) {
+            action->setIcon(QIcon(":/component/find/line_.png"));
+            action->setToolTip("已选中");
+            ToolWidget::onFindLine();
+            qDebug()<<"识别线按钮按下";
+        } else {
+            action->setIcon(QIcon(":/component/find/line.jpg"));
+            action->setToolTip("识别线");
+            qDebug()<<"识别线按钮取消按下状态";
+        }});
+    // connect(find_actions_[find_action_name_list_.indexOf("识别圆")],&QAction::triggered,this,&   ToolWidget::onFindCircle);
+    connect(find_actions_[find_action_name_list_.indexOf("识别圆")],&QAction::triggered,this,[&](){
+    QAction *action = qobject_cast<QAction *>(sender());
+    if (action->isChecked()) {
+        action->setIcon(QIcon(":/component/find/circle_.jpg"));
+        action->setToolTip("已选中");
+        ToolWidget::onFindCircle();
+        qDebug()<<"识别圆按钮按下";
+    } else {
+        action->setIcon(QIcon(":/component/find/circle.jpg"));
+        action->setToolTip("识别圆");
+        qDebug()<<"识别圆按钮取消按下状态";
+    }});
+    connect(find_actions_[find_action_name_list_.indexOf("识别平面")],&QAction::triggered,this,[&](){
+        QAction *action = qobject_cast<QAction *>(sender());
+        if (action->isChecked()) {
+            action->setIcon(QIcon(":/component/find/plane_.png"));
+            action->setToolTip("已选中");
+            ToolWidget::onFindPlane();
+            qDebug()<<"识别平面按钮按下";
+        } else {
+            action->setIcon(QIcon(":/component/find/plan.jpg"));
+            action->setToolTip("识别平面");
+            qDebug()<<"识别平面按钮取消按下状态";
+        }});
+    connect(find_actions_[find_action_name_list_.indexOf("识别矩形")],&QAction::triggered,this,[&](){
+        QAction *action = qobject_cast<QAction *>(sender());
+        if (action->isChecked()) {
+            action->setIcon(QIcon(":/component/find/rectangle_.png"));
+            action->setToolTip("已选中");
+            ToolWidget::onFindPlane();
+            qDebug()<<"识别矩形按钮按下";
+        } else {
+            action->setIcon(QIcon(":/component/find/rectangle.jpg"));
+            action->setToolTip("识别矩形");
+            qDebug()<<"识别矩形按钮取消按下状态";
+        }});
+    connect(find_actions_[find_action_name_list_.indexOf("识别圆柱")],&QAction::triggered,this,[&](){
+        QAction *action = qobject_cast<QAction *>(sender());
+        if (action->isChecked()) {
+            action->setIcon(QIcon(":/component/find/cylinder_.jpg"));
+            action->setToolTip("已选中");
+            ToolWidget::onFindRectangle();
+            qDebug()<<"识别圆柱按钮按下";
+        } else {
+            action->setIcon(QIcon(":/component/find/cylinder.jpg"));
+            action->setToolTip("识别圆柱");
+            qDebug()<<"识别圆柱按钮取消按下状态";
+        }});
+    connect(find_actions_[find_action_name_list_.indexOf("识别圆锥")],&QAction::triggered,this,[&](){
+        QAction *action = qobject_cast<QAction *>(sender());
+        if (action->isChecked()) {
+            action->setIcon(QIcon(":/component/find/cone_.jpg"));
+            action->setToolTip("已选中");
+            ToolWidget::onFindCone();
+            qDebug()<<"识别圆锥按钮按下";
+        } else {
+            action->setIcon(QIcon(":/component/find/cone.jpg"));
+            action->setToolTip("识别圆锥");
+            qDebug()<<"识别圆锥按钮取消按下状态";
+        }});
+    connect(find_actions_[find_action_name_list_.indexOf("识别球形")],&QAction::triggered,this,[&](){
+        QAction *action = qobject_cast<QAction *>(sender());
+        if (action->isChecked()) {
+            action->setIcon(QIcon(":/component/find/sphere_.png"));
+            action->setToolTip("已选中");
+            ToolWidget::onFindSphere();
+            qDebug()<<"识别球形按钮按下";
+        } else {
+            action->setIcon(QIcon(":/component/find/sphere.png"));
+            action->setToolTip("识别球形");
+            qDebug()<<"识别球形按钮取消按下状态";
+        }});
 
     //构造
     connect(construct_actions_[construct_action_name_list_.indexOf("构造点")],&QAction::triggered,this,& ToolWidget::onConstructPoint);
@@ -1229,84 +1319,7 @@ void ToolWidget::onSaveTxt(){
 
     for(int i=0;i<objectlist.size();i++){
         CObject* object=objectlist[i];
-        if(object->GetUniqueType()==enPoint){
-            continue;
-            // CPoint * point=(CPoint*)object;
-            // CPosition position =point->GetPt();
-            // out<<"类型：点 名称:"<<point->m_strAutoName<<Qt::endl;
-            // out<<"坐标:("<<position.x<<","<<position.y<<","<<position.z<<")"<<Qt::endl;
-            // out<<Qt::endl;
-        }else if(object->GetUniqueType()==enCircle){
-            continue;
-            // CCircle* circle=(CCircle*)object;
-            // CPosition position=circle->getCenter();
-            // out<<"类型：圆 名称:"<<circle->m_strAutoName<<Qt::endl;
-            // out<<"中心:("<<position.x<<","<<position.y<<","<<position.z<<")"<<Qt::endl;
-            // out<<"直径D:"<<circle->getDiameter();
-            // out<<Qt::endl;
-            // out<<Qt::endl;
-
-        }else if(object->GetUniqueType()==enSphere){
-            continue;
-            // CSphere* sphere=(CSphere*)object;
-            // CPosition position=sphere->getCenter();
-            // out<<"类型：球 名称:"<<sphere->m_strAutoName<<Qt::endl;
-            // out<<"中心:("<<position.x<<","<<position.y<<","<<position.z<<")"<<Qt::endl;
-            // out<<"直径D:"<<sphere->getDiameter();
-            // out<<Qt::endl;
-            // out<<Qt::endl;
-
-        }else if(object->GetUniqueType()==enPlane){
-            continue;
-            // CPlane* plane=(CPlane*)object;
-            // CPosition position=plane->getCenter();
-            // QVector4D normal,dir_long_edge;
-            // normal=plane->getNormal();
-            // dir_long_edge=plane->getDir_long_edge();
-            // out<<"类型：平面 名称:"<<plane->m_strAutoName<<Qt::endl;
-            // out<<"中心:("<<position.x<<","<<position.y<<","<<position.z<<")"<<Qt::endl;
-            // out<<"法线:("<<normal.x()<<","<<normal.y()<<","<<normal.z()<<")"<<Qt::endl;
-            // out<<"边向量:("<<dir_long_edge.x()<<","<<dir_long_edge.y()<<","<<dir_long_edge.z()<<")"<<Qt::endl;
-            // out<<"长:"<<plane->getLength()<<" 宽:"<<plane->getWidth()<<Qt::endl;
-            // out<<Qt::endl;
-
-        }else if(object->GetUniqueType()==enCone){
-            continue;
-            // CCone* cone=(CCone*)object;
-
-            // CPosition position=cone->getVertex();
-            // QVector4D axis;
-            // axis=cone->getAxis();
-            // out<<"类型：圆锥 名称:"<<cone->m_strAutoName<<Qt::endl;
-            // out<<"顶点:("<<position.x<<","<<position.y<<","<<position.z<<")"<<Qt::endl;
-            // out<<"轴线向量:("<<axis.x()<<","<<axis.y()<<","<<axis.z()<<")"<<Qt::endl;
-            // out<<"高:"<<cone->getHeight()<<" 弧度:"<<cone->getRadian()<<" 圆锥高:"<<cone->getCone_height()<<Qt::endl;
-            // out<<Qt::endl;
-
-        }else if(object->GetUniqueType()==enCylinder){
-            continue;
-            // CCylinder* cylinder=(CCylinder*)object;
-            // CPosition position=cylinder->getBtm_center();
-            // QVector4D axis;
-            // axis=cylinder->getAxis();
-            // out<<"类型：圆柱 名称:"<<cylinder->m_strAutoName<<Qt::endl;
-            // out<<"底面中心:("<<position.x<<","<<position.y<<","<<position.z<<")"<<Qt::endl;
-            // out<<"轴线向量:("<<axis.x()<<","<<axis.y()<<","<<axis.z()<<")"<<Qt::endl;
-            // out<<"高:"<<cylinder->getHeight()<<" 直径:"<<cylinder->getDiameter()<<Qt::endl;
-            // out<<Qt::endl;
-
-        }else if(object->GetUniqueType()==enLine){
-            continue;
-            // CLine* line=(CLine*)object;
-            // CPosition position1,position2;
-            // position1=line->getPosition1();
-            // position2=line->getPosition2();
-            // out<<"类型：线 名称:"<<line->m_strAutoName<<Qt::endl;
-            // out<<"起点:("<<position1.x<<","<<position1.y<<","<<position1.z<<")"<<Qt::endl;
-            // out<<"终点:("<<position2.x<<","<<position2.y<<","<<position2.z<<")"<<Qt::endl;
-            // out<<Qt::endl;
-
-        }else if(object->GetUniqueType()==enDistance){
+         if(object->GetUniqueType()==enDistance){
             CDistance* Distance=(CDistance*) object;
             out<<"类型：距离 名称："<<Distance->m_strCName<<Qt::endl;
             out<<"大小："<<Distance->getdistance()<<"  上公差："<<Distance->getUptolerance()<<"  下公差："<<Distance->getUndertolerance()<<Qt::endl;
@@ -1319,11 +1332,6 @@ void ToolWidget::onSaveTxt(){
             }
             out<<"是否合格："<<qua<<Qt::endl;
             out<<Qt::endl;
-        }else if(object->GetUniqueType()==enPointCloud){
-            continue;
-            // CPointCloud* PointCloud=(CPointCloud*) object;
-            // out<<"类型：距离 名称:"<<PointCloud->m_strCName<<Qt::endl;
-            // out<<Qt::endl;
         }else if(object->GetUniqueType()==enAngle){
             CAngle* Angle=(CAngle*)object;
             out<<"类型：角度 名称："<<Angle->m_strCName<<Qt::endl;
