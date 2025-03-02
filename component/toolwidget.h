@@ -9,6 +9,7 @@
 #include <QStandardPaths>
 #include"geometry/globes.h"
 #include"geometry/centitytypes.h"
+#include <QStack>
 //槽函数
 namespace tool_widget{
 //Coord
@@ -101,6 +102,11 @@ public:
     void createFolder(QString path);//创建文件夹
     QString getOutputPath(QString kind);//获得输出路径
 
+    //获得被选中的图标
+    QAction * getAction_Checked(); //通过QAction->getObjectName得到名字
+    //识别点是否选中
+    bool IsFindPoint_Checked();
+
 
 
 public slots:
@@ -146,6 +152,10 @@ private:
     //对比点云保存路径
     QString CompareImagePath;
     //输出保存路径
+    //保存打开的开关状态
+    ToolAction* Action_Checked;
+    bool Is_FindPoint_Cheked;
+
 
     void clearToolBar(QToolBar *toolbar);
     //新的工具栏类
