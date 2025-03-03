@@ -75,6 +75,7 @@ CircleInfor calculateCircle(const CPosition &A, const CPosition &B, const CPosit
     // 计算法向量 N
 
     QVector4D N = crossProduct(AB, AC);
+    N.normalize();
     if(N.length()<=1e-6){
         Circle.radius=0;
     }
@@ -149,7 +150,7 @@ CCircle* CircleConstructor::createCircle(CPosition center,double diameter,QVecto
     newCircle->setCurrentId();
     newCircle->SetCenter(center);
     newCircle->SetDiameter(diameter);
-    newCircle->setNormal(normal);
+    newCircle->setNormal(normal.normalized());
     return newCircle;
 }
 QVector4D CircleConstructor::getNormal(){
