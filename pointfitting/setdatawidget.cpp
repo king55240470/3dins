@@ -303,7 +303,7 @@ void setDataWidget::setLineData(pcl::PointXYZRGB searchPoint,pcl::PointCloud<pcl
     dialog->setWindowTitle("设置邻域和阈值");
     layout = new QGridLayout(dialog);
     lab1 = new QLabel("请输入邻域：");
-    lab2 = new QLabel("请输入距离阈值：");
+    lab2 = new QLabel("请输入距离阈值\n可输入与棱长近似的值：");
     // rad = new QLineEdit();
     // rad->setText("1");
     // dis = new QLineEdit();
