@@ -41,6 +41,12 @@ public:
     QStringList* getFindActionNames();
     QStringList* getCoordActionNames();
     QStringList* getViewAngleActionNames();
+    //获得图标的图片资源路径
+    QStringList* getSaveIconPath();
+    QStringList* getConstructIconPath();
+    QStringList* getFindIconPath();
+    QStringList* getCoordIconPath();
+    QStringList* getViewAngleIconPath();
 
     int getToolbarNum();
     //获取图标数目

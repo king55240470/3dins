@@ -9,6 +9,9 @@
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
 #include<QSettings>
+#include <QMouseEvent>
+
+
 #include"toolwidget.h"
 #include"toolaction.h"
 class ContralWidget : public QDialog {
@@ -19,7 +22,8 @@ public:
     void saveCheckBoxState();
     void loadCheckBoxState();
       ~ContralWidget();
-
+    void addActionItems(int actionIndex, int actionNum, const QStringList *actionNameList,const QStringList *actionIconPathList) ;
+    void mousePressEvent(QMouseEvent *event) override;
 protected:
     QList<UniqueToolBar*> UniqueToolbarList;
 
@@ -32,6 +36,7 @@ protected:
     void createTreeWidgetItem();
     void closeEvent(QCloseEvent* event)override;
 
+
     bool action_is_checked_[ToolWidget::ActionKindNum][12];
 
 
@@ -41,11 +46,23 @@ protected:
     const QStringList* coord_action_name_list_;
     const QStringList * view_angle_action_name_list_;
 
+    const QStringList* save_action_iconpath_list_;
+    const QStringList* find_action_iconpath_list_;
+    const QStringList* construct_action_iconpath_list_;
+    const QStringList* coord_action_iconpath_list_;
+    const QStringList * view_angle_action_iconpath_list_;
+
+
+
     QTreeWidget *treeWidget;
 
     ToolWidget* toolWidget;
 
     QTreeWidgetItem** fatherItems;
+
+
+private slots:
+    void onItemSelectionChanged();
 
 
 };
