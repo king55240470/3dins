@@ -112,13 +112,33 @@
 
 
 //Pdf保存
+#include <QtPrintSupport>
 #include <QApplication>
 #include <QPdfWriter>
 #include <QPainter>
+#include <QPageSize>
 //Excelbaocun
 //#include <QtXlsx>
 //图片保存
 #include <QDateTime>
+
+
+#include <QGuiApplication>
+#include <QPdfWriter>
+#include <QPainter>
+#include <QImage>
+#include <QString>
+#include <QFont>
+#include <QFontDatabase>
+#include <QList>
+#include <QDateTime>
+#include <QPixmap>
+#include <QBrush>
+#include <QPageSize>
+#include <QPen>
+#include <cstdlib>
+
+
 
 
 
@@ -134,6 +154,10 @@ ToolWidget::ToolWidget(QWidget *parent)
 
 
     InitOutputFolder();
+
+    m_savePdf=false;
+    Action_Checked=nullptr;
+    Is_FindPoint_Cheked=false;
 
 
     resize(400,250);
@@ -197,7 +221,7 @@ ToolWidget::ToolWidget(QWidget *parent)
         toolBars[i]->setStyleSheet(
             "QToolButton {"
             "    border: 2px solid lightgray;" // 浅灰色边框
-            "    padding: 5px;" // 内部填充
+            "    padding: 0 px;" // 内部填充
             "}"
             "QToolButton:pressed {"
             "    border: 2px solid gray;" // 按下状态下的灰色边框
@@ -253,6 +277,7 @@ ToolWidget::ToolWidget(QWidget *parent)
     for(int i=0;i<m_nFindActionNum;i++){
 
         ToolAction* action=new ToolAction(this);
+        action->setCheckable(true); // 使QAction可切换
         action->setToolActionKind(FindAction);
         action->setName(find_action_name_list_[i]);
         action->setIcon(QIcon(find_action_iconpath_list_[i]));
@@ -526,14 +551,217 @@ void ToolWidget::connectActionWithF(){
 
 
     //识别
-    connect(find_actions_[find_action_name_list_.indexOf("识别点")],&QAction::triggered,this,&   ToolWidget::onFindPoint);
-    connect(find_actions_[find_action_name_list_.indexOf("识别线")],&QAction::triggered,this,&   ToolWidget::onFindLine);
-    connect(find_actions_[find_action_name_list_.indexOf("识别圆")],&QAction::triggered,this,&   ToolWidget::onFindCircle);
-    connect(find_actions_[find_action_name_list_.indexOf("识别平面")],&QAction::triggered,this,&  ToolWidget:: onFindPlane);
-    connect(find_actions_[find_action_name_list_.indexOf("识别矩形")],&QAction::triggered,this,&   ToolWidget::onFindRectangle);
-    connect(find_actions_[find_action_name_list_.indexOf("识别圆柱")],&QAction::triggered,this,&   ToolWidget::onFindCylinder);
-    connect(find_actions_[find_action_name_list_.indexOf("识别圆锥")],&QAction::triggered,this,&   ToolWidget::onFindCone);
-    connect(find_actions_[find_action_name_list_.indexOf("识别球形")],&QAction::triggered,this,&   ToolWidget::onFindSphere);
+    connect(find_actions_[find_action_name_list_.indexOf("识别点")],&QAction::triggered,this,[&](){
+        QAction *action = qobject_cast<QAction *>(sender());
+        if (action->isChecked()) {
+            //标注选中状态
+            Is_FindPoint_Cheked=true;
+            action->setIcon(QIcon(":/component/find/point_.png"));
+            action->setToolTip("已选中");
+            ToolWidget::onFindPoint();
+            QString log="开始识别点";
+            m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
+            log="开始记录坐标";
+            m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
+        } else {
+            Is_FindPoint_Cheked=false;
+            action->setIcon(QIcon(":/component/find/point.jpg"));
+            action->setToolTip("识别点");
+
+            QString log="结束识别点";
+            m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
+        }});
+
+
+    connect(find_actions_[find_action_name_list_.indexOf("识别线")],&QAction::triggered,this,[&](){
+        QAction *action = qobject_cast<QAction *>(sender());
+        if (action->isChecked()) {
+            //若已有选中状态的QAction，则使该QAction退出选中状态
+            if(Action_Checked!=nullptr&&Action_Checked!=action){
+                //Action_Checked->setChecked(false);
+                Action_Checked->trigger();
+            }
+            Action_Checked=(ToolAction*)action;
+            action->setIcon(QIcon(":/component/find/line_.png"));
+            action->setToolTip("已选中");
+            ToolWidget::onFindLine();
+
+            QString log="开始识别线";
+            m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
+        } else {
+            //若记录的是当前的QAction，则将记录置空
+            if(Action_Checked==action){
+                Action_Checked=nullptr;
+            }
+            action->setIcon(QIcon(":/component/find/line.jpg"));
+            action->setToolTip("识别线");
+
+            QString log="结束识别线";
+            m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
+        }});
+    // connect(find_actions_[find_action_name_list_.indexOf("识别圆")],&QAction::triggered,this,&   ToolWidget::onFindCircle);
+
+
+    connect(find_actions_[find_action_name_list_.indexOf("识别圆")],&QAction::triggered,this,[&](){
+    QAction *action = qobject_cast<QAction *>(sender());
+    if (action->isChecked()) {
+        if(Action_Checked!=nullptr&&Action_Checked!=action){
+            //Action_Checked->setChecked(false);
+            Action_Checked->trigger();
+
+        }
+          Action_Checked=(ToolAction*)action;
+        action->setIcon(QIcon(":/component/find/circle_.jpg"));
+        action->setToolTip("已选中");
+        ToolWidget::onFindCircle();
+
+        QString log="开始识别圆";
+        m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
+    } else {
+        if(Action_Checked==action){
+            Action_Checked=nullptr;
+        }
+        action->setIcon(QIcon(":/component/find/circle.jpg"));
+        action->setToolTip("识别圆");
+
+        QString log="结束识别圆";
+        m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
+    }});
+
+
+    connect(find_actions_[find_action_name_list_.indexOf("识别平面")],&QAction::triggered,this,[&](){
+        QAction *action = qobject_cast<QAction *>(sender());
+        if (action->isChecked()) {
+            if(Action_Checked!=nullptr&&Action_Checked!=action){
+               // Action_Checked->setChecked(false);
+                Action_Checked->trigger();
+
+            }
+            Action_Checked=(ToolAction*)action;
+            action->setIcon(QIcon(":/component/find/plane_.png"));
+            action->setToolTip("已选中");
+            ToolWidget::onFindPlane();
+
+            QString log="开始识别平面";
+            m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
+        } else {
+            if(Action_Checked==action){
+                Action_Checked=nullptr;
+            }
+            action->setIcon(QIcon(":/component/find/plan.jpg"));
+            action->setToolTip("识别平面");
+
+            QString log="结束识别平面";
+            m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
+        }});
+
+
+    connect(find_actions_[find_action_name_list_.indexOf("识别矩形")],&QAction::triggered,this,[&](){
+        QAction *action = qobject_cast<QAction *>(sender());
+        if (action->isChecked()) {
+            if(Action_Checked!=nullptr&&Action_Checked!=action){
+               // Action_Checked->setChecked(false);
+                Action_Checked->trigger();
+
+            }
+             Action_Checked=(ToolAction*)action;
+            action->setIcon(QIcon(":/component/find/rectangle_.png"));
+            action->setToolTip("已选中");
+            ToolWidget::onFindPlane();
+
+            QString log="开始识别矩形";
+            m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
+        } else {
+            if(Action_Checked==action){
+                Action_Checked=nullptr;
+            }
+            action->setIcon(QIcon(":/component/find/rectangle.jpg"));
+            action->setToolTip("识别矩形");
+
+            QString log="结束识别矩形";
+            m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
+        }});
+
+
+    connect(find_actions_[find_action_name_list_.indexOf("识别圆柱")],&QAction::triggered,this,[&](){
+        QAction *action = qobject_cast<QAction *>(sender());
+        if (action->isChecked()) {
+            if(Action_Checked!=nullptr&&Action_Checked!=action){
+                //Action_Checked->setChecked(false);
+                Action_Checked->trigger();
+            }
+            Action_Checked=(ToolAction*)action;
+            action->setIcon(QIcon(":/component/find/cylinder_.jpg"));
+            action->setToolTip("已选中");
+            ToolWidget::onFindRectangle();
+
+            QString log="开始识别圆柱";
+            m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
+        } else {
+            if(Action_Checked==action){
+                Action_Checked=nullptr;
+            }
+            action->setIcon(QIcon(":/component/find/cylinder.jpg"));
+            action->setToolTip("识别圆柱");
+
+            QString log="结束识别圆柱";
+            m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
+        }});
+
+
+    connect(find_actions_[find_action_name_list_.indexOf("识别圆锥")],&QAction::triggered,this,[&](){
+        QAction *action = qobject_cast<QAction *>(sender());
+        if (action->isChecked()) {
+            if(Action_Checked!=nullptr&&Action_Checked!=action){
+                //Action_Checked->setChecked(false);
+                Action_Checked->trigger();
+
+            }
+            Action_Checked=(ToolAction*)action;
+            action->setIcon(QIcon(":/component/find/cone_.jpg"));
+            action->setToolTip("已选中");
+            ToolWidget::onFindCone();
+
+            QString log="开始识别圆锥";
+            m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
+        } else {
+            if(Action_Checked==action){
+                Action_Checked=nullptr;
+            }
+            action->setIcon(QIcon(":/component/find/cone.jpg"));
+            action->setToolTip("识别圆锥");
+
+            QString log="结束识别圆锥";
+            m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
+        }});
+
+
+    connect(find_actions_[find_action_name_list_.indexOf("识别球形")],&QAction::triggered,this,[&](){
+        QAction *action = qobject_cast<QAction *>(sender());
+        if (action->isChecked()) {
+            if(Action_Checked!=nullptr&&Action_Checked!=action){
+               // Action_Checked->setChecked(false);
+                Action_Checked->trigger();
+
+            }
+            Action_Checked=(ToolAction*)action;
+            action->setIcon(QIcon(":/component/find/sphere_.png"));
+            action->setToolTip("已选中");
+            ToolWidget::onFindSphere();
+
+            QString log="开始识别球形";
+            m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
+        } else {
+            if(Action_Checked==action){
+                Action_Checked=nullptr;
+            }
+            action->setIcon(QIcon(":/component/find/sphere.jpg"));
+            action->setToolTip("识别球形");
+            QString log="结束识别球形";
+            m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
+        }});
+
+
 
     //构造
     connect(construct_actions_[construct_action_name_list_.indexOf("构造点")],&QAction::triggered,this,& ToolWidget::onConstructPoint);
@@ -549,7 +777,8 @@ void ToolWidget::connectActionWithF(){
     connect(construct_actions_[construct_action_name_list_.indexOf("构造角度")],&QAction::triggered,this,&  ToolWidget::onConstructAngle);
 
     // //保存
-     connect(save_actions_[save_action_name_list_.indexOf("excel")],&QAction::triggered,this,&  ToolWidget::onSaveExcel);
+
+    //connect(save_actions_[save_action_name_list_.indexOf("excel")],&QAction::triggered,this,&  ToolWidget::onSaveExcel);
     // connect(save_actions_[save_action_name_list_.indexOf("word")],&QAction::triggered,this,&  ToolWidget::onSaveWord);
     // connect(save_actions_[save_action_name_list_.indexOf("txt")],&QAction::triggered,this,&  ToolWidget::onSaveTxt);
     // connect(save_actions_[save_action_name_list_.indexOf("pdf")],&QAction::triggered,this,&  ToolWidget::onSavePdf);
@@ -662,97 +891,29 @@ void   ExtractData(QVector<CEntity *>& entitylist,QList<QList<QString>>& dataAll
     for (int i = 0; i < entitylist.size(); i++) {
         QList<QString> inList;
         CEntity* entity=entitylist[i];
-        if(entity->GetUniqueType()==enPoint){
-            continue;
-            // CPoint* point=(CPoint*)entity;
-            // CPosition position=point->GetPt();
-            // inList<<"点";
-            // inList<<point->m_strCName;
-            // inList<<"坐标:("+QString::number(position.x, 'f', 6)+","+QString::number(position.y, 'f', 6)+","+QString::number(position.z, 'f', 6)+")";
-        }else if(entity->GetUniqueType()==enCircle){
-            continue;
-            // CCircle* circle=(CCircle*)entity;
-            // CPosition position=circle->getCenter();
-            // inList<<"圆"<<circle->m_strAutoName;
-            // inList<<"中心:("+QString::number(position.x, 'f', 6)+","+QString::number(position.y, 'f', 6)+","+QString::number(position.z, 'f', 6)+")";
-            // inList<<"直径D:"+QString::number(circle->getDiameter(),'f',6);
-
-        }else if(entity->GetUniqueType()==enSphere){
-            continue;
-            // CSphere* sphere=(CSphere*)entity;
-            // CPosition position=sphere->getCenter();
-            // inList<<"球"<<sphere->m_strAutoName;
-            // inList<<"中心:("+QString::number(position.x, 'f', 6)+","+QString::number(position.y, 'f', 6)+","+QString::number(position.z, 'f', 6)+")";
-            // inList<<"直径D:"+QString::number(sphere->getDiameter(),'f',6);
-        }else if(entity->GetUniqueType()==enPlane){
-            continue;
-            // CPlane* plane=(CPlane*)entity;
-            // CPosition position=plane->getCenter();
-            // QVector4D normal,dir_long_edge;
-            // normal=plane->getNormal();
-            // dir_long_edge=plane->getDir_long_edge();
-            // inList<<"平面";
-            // inList<<plane->m_strAutoName;
-            // inList<<"中心:("+QString::number(position.x, 'f', 6)+","+QString::number(position.y, 'f', 6)+","+QString::number(position.z, 'f', 6)+")";
-            // inList<<"法线:("+QString::number(normal.x(), 'f', 6)+","+QString::number(normal.y(), 'f', 6)+","+QString::number(normal.z(), 'f', 6)+")";
-            // inList<<"边向量:("+QString::number(dir_long_edge.x(), 'f', 6)+","+QString::number(dir_long_edge.y(), 'f', 6)+","+QString::number(dir_long_edge.z(), 'f', 6)+")";
-            // inList<<"长:"+QString::number(plane->getLength(), 'f', 6)<<" 宽:"+QString::number(plane->getWidth(), 'f', 6);
-
-        }else if(entity->GetUniqueType()==enCone){
-            continue;
-            // CCone* cone=(CCone*)entity;
-
-            // CPosition position=cone->getVertex();
-            // QVector4D axis;
-            // axis=cone->getAxis();
-            // inList<<"圆锥";
-            // inList<<cone->m_strAutoName;
-            // inList<<"顶点:("+QString::number(position.x, 'f', 6)+","+QString::number(position.y, 'f', 6)+","+QString::number(position.z, 'f', 6)+")";
-            // inList<<"轴线向量:("+QString::number(axis.x(), 'f', 6)+","+QString::number(axis.y(), 'f', 6)+","+QString::number(axis.z(), 'f', 6)+")";
-            // inList<<"高:"+QString::number(cone->getHeight(), 'f', 6)<<" 弧度:"+QString::number(cone->getRadian(), 'f', 6)<<" 圆锥高:"+QString::number(cone->getCone_height(), 'f', 6);
-        }
-        else if(entity->GetUniqueType()==enCylinder){
-            continue;
-            // CCylinder* cylinder=(CCylinder*)entity;
-            // CPosition position=cylinder->getBtm_center();
-            // QVector4D axis;
-            // axis=cylinder->getAxis();
-            // inList<<"圆柱";
-            // inList<<cylinder->m_strAutoName;
-            // inList<<"底面中心:("+QString::number(position.x, 'f', 6)+","+QString::number(position.y, 'f', 6)+","+QString::number(position.z, 'f', 6)+")";
-            // inList<<"轴线向量:("+QString::number(axis.x(), 'f', 6)+","+QString::number(axis.y(), 'f', 6)+","+QString::number(axis.z(), 'f', 6)+")";
-            // inList<<"高:"+QString::number(cylinder->getHeight(),'f',6)<<" 直径:"+QString::number(cylinder->getDiameter(),'f',6);
-
-        }else if(entity->GetUniqueType()==enLine){
-            continue;
-            // CLine* line=(CLine*)entity;
-            // CPosition position1,position2;
-            // position1=line->getPosition1();
-            // position2=line->getPosition2();
-            // inList<<"线";
-            // inList<<line->m_strCName;
-            // inList<<"起点：("+QString::number(position1.x, 'f', 6)+","+QString::number(position1.y, 'f', 6)+","+QString::number(position1.z, 'f', 6)+")";
-            // inList<<"终点：("+QString::number(position2.x, 'f', 6)+","+QString::number(position2.y, 'f', 6)+","+QString::number(position2.z, 'f', 6)+")";
-        }else if(entity->GetUniqueType()==enDistance){
+        if(entity->GetUniqueType()==enDistance){
             CDistance* Distance=(CDistance*) entity;
             inList<<"距离";
             inList<<Distance->m_strCName;
             inList<<QString::number(Distance->getdistance(),'f',6);
-            inList<<"上公差"+QString::number(Distance->getUptolerance(),'f',6);
-            inList<<"下公差"+QString::number(Distance->getUndertolerance(),'f',6);
-        }else if(entity->GetUniqueType()==enPointCloud){
-            continue;
-            // CPointCloud* PointCloud=(CPointCloud*) entity;
-            // inList<<"点云";
-            // inList<<PointCloud->m_strCName;
+            inList<<QString::number(Distance->getUptolerance(),'f',6);
+            inList<<QString::number(Distance->getUndertolerance(),'f',6);
+            if (Distance->judge())
+                inList<<"合格";
+            else
+                inList<<"不合格";
         }
         else if (entity->GetUniqueType()==enAngle){
             CAngle* Angle=(CAngle*)entity;
             inList<<"角度";
             inList<<Angle->m_strCName;
             inList<<QString::number(Angle->getAngleValue(),'f',6);
-            inList<<"上公差"+QString::number(Angle->getUptolerance(),'f',6);
-            inList<<"下公差"+QString::number(Angle->getUndertolerance(),'f',6);
+            inList<<QString::number(Angle->getUptolerance(),'f',6);
+            inList<<QString::number(Angle->getUndertolerance(),'f',6);
+            if (Angle->judge())
+                inList<<"合格";
+            else
+                inList<<"不合格";
         }
         dataAll.append(inList);
     }
@@ -786,98 +947,324 @@ void   ToolWidget::onSavePdf(){
 
    QString path= getOutputPath("pdf");
    QString name=getTimeString();
-
    QString filePath=path+"/"+name+".pdf";
-   // QString filePath = QFileDialog::getSaveFileName(nullptr, "Save PDF", "", "PDF Files (*.pdf)");
-   // if (filePath.isEmpty()) {
-   //     return; // 用户取消了保存操作
-   // }
 
-   QPdfWriter pdfWriter(filePath);
-   pdfWriter.setPageSize(QPageSize::A4);
-   pdfWriter.setResolution(300);
+   if(m_savePdf==true)
+       filePath=lastCreatedPdfFile;
 
-   QPainter painter(&pdfWriter);
 
-   // 插入文字
-   painter.setFont(QFont("Arial", 12));
-   painter.drawText(100, 100, "3dins");
-
-   // 插入纯文本数据
+   // // 插入纯文本数据
    auto& entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
    QList<QList<QString>> dataAll;
-   QList<QString> header;
-   header << "类型" << "名称" << "数据1" << "数据2" << "数据3" << "数据4" << "数据5";
-   dataAll.append(header);
+
    ExtractData(entitylist, dataAll);
 
-   int yPos = 150; // 初始y坐标
-   for (int i = 0; i < dataAll.size(); ++i) {
-       QString line;
-       for (int j = 0; j < dataAll[i].size(); ++j) {
-           line += dataAll[i][j] + " "; // 用空格分隔列数据
-       }
-       painter.drawText(100, yPos, line);
-       yPos += 80; // 每行间隔80像素
+   QPdfWriter pdf(filePath);
+
+   pdf.setPageSize(QPageSize(QPageSize::A4));
+   pdf.setResolution(300);
+   pdf.setTitle("专业测量报告");
+
+   QPainter painter;
+   if (painter.begin(&pdf)==false){
+       QString logInfo="Pdf打开失败,请关闭Pdf重试";
+       m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
+       return ;
+   }
+   painter.setRenderHint(QPainter::Antialiasing);
+
+
+
+   int PDFheight= pdf.height();
+   int PDFwidth=pdf.width();
+
+
+   // 设置字体
+   QFont font;
+   font.setFamily("Arial");
+   font.setPointSize(12);
+   painter.setFont(font);
+   int yDistance=60;
+   int xDistance=300;
+
+   // 封面页
+   {
+       painter.translate(50, 50); // 左上角偏移
+       painter.setPen(Qt::black);
+
+       int PDFwidth = pdf.width();
+       int yDistance = 240;
+
+       // 设置标题
+       QFont titleFont("Arial", 35, QFont::Bold);
+       painter.setFont(titleFont);
+       QString title = "工业测量报告";
+       QFontMetrics titleMetrics(titleFont);
+       int titleWidth = titleMetrics.horizontalAdvance(title)*3;
+
+       // 绘制图片
+       QImage image(":/style/ruler.png");
+       QImage scaledImage = image.scaled(200, 100);
+       int imageWidth = scaledImage.width();
+       int imageHeight = scaledImage.height();
+
+       // 计算标题和图片的总宽度
+       int totalWidth = titleWidth + imageWidth + 20; // 20是标题和图片之间的间距
+       int startX = (PDFwidth - totalWidth) / 2;
+       int startY=500;
+
+       painter.drawText(startX, startY, title);
+       painter.drawImage(startX + titleWidth + 20, startY-imageHeight/2 , scaledImage);
+       int moreY=500;
+       // 设置副标题
+       QFont subtitleFont("Arial", 20);
+       painter.setFont(subtitleFont);
+       QFontMetrics subtitleMetrics(subtitleFont);
+       QString project = "测量项目: 3D 测量系统";
+       QString date = "测量日期: " + QDateTime::currentDateTime().toString("yyyy-MM-dd");
+       QString unit = "测量单位: 三维工业测量软件开发组";
+       QString Description1="";
+
+       int projectWidth = subtitleMetrics.horizontalAdvance(project)*3;
+       int dateWidth = subtitleMetrics.horizontalAdvance(date)*3;
+       int unitWidth = subtitleMetrics.horizontalAdvance(unit)*3;
+
+       painter.drawText((PDFwidth - unitWidth) / 2, yDistance+startY+moreY, project);
+       painter.drawText((PDFwidth - unitWidth) / 2, 2 * yDistance+startY+moreY, date);
+       painter.drawText((PDFwidth - unitWidth) / 2, 3 * yDistance+startY+moreY, unit);
+       int lessY=300;
+       // 为了使内容美观，增加一个水平线
+       painter.drawLine(0, PDFheight-yDistance/2*4-lessY, PDFwidth - 100, PDFheight-yDistance/2*4-lessY);
+
+       // 添加一些描述性文本
+       QFont contentFont("Arial", 16);
+       painter.setFont(contentFont);
+       QFontMetrics contentMetrics(contentFont);
+       QString description1 = "本报告详细记录了使用3D测量系统进行的测量项目。";
+       QString description2 = "测量日期为" + QDateTime::currentDateTime().toString("yyyy-MM-dd") + "，";
+       QString description3 = "由三维工业测量软件开发组负责执行和分析。";
+
+       int description1Width = contentMetrics.horizontalAdvance(description1)*3;
+       int description2Width = contentMetrics.horizontalAdvance(description2)*3;
+       int description3Width = contentMetrics.horizontalAdvance(description3)*3;
+
+       painter.drawText((PDFwidth - description1Width) / 2, PDFheight-yDistance/2*3-lessY, description1);
+       painter.drawText((PDFwidth - description2Width) / 2, PDFheight-yDistance/2*2-lessY, description2);
+       painter.drawText((PDFwidth - description3Width) / 2, PDFheight-yDistance/2-lessY, description3);
+
+       pdf.newPage();
    }
 
-   // 插入图片
-   QImage image;
-   for (int i = 0; i < imagePaths.size(); ++i) {
-       image = QImage(imagePaths[i]);
-       if (!image.isNull()) {
-           // 检查图片高度是否会超出页面
-           if (yPos + image.height() > pdfWriter.height()) {
-               // 超出页面高度时，添加新的一页
-               pdfWriter.newPage();
-               yPos = 0; // 重置y坐标
+   // 目录
+   {
+       QFont subtitleFont("Arial", 20);
+       painter.setFont(subtitleFont);
+       QFontMetrics subtitleMetrics(subtitleFont);
+       QString description="目录";
+       int descrtptionWidth=subtitleMetrics.horizontalAdvance(description)*3;
+       painter.resetTransform();
+       painter.translate(50, 50);
+       painter.setFont(QFont("Arial", 25, QFont::Bold));
+
+       int startY=500;
+       int startX=300;
+       painter.drawText((PDFwidth- descrtptionWidth)/2, startY, "目录");
+       painter.setFont(QFont("Arial", 20));
+       int moreY=500;
+       int yDistance=240;
+
+       painter.drawText(startX, startY+moreY, "1. 测量数据概览");
+       painter.drawText(startX,startY+moreY+ yDistance, "2. 数据分析");
+       painter.drawText(startX,startY+moreY+ yDistance*2, "3. 测量结果图");
+       painter.drawText(startX,startY+moreY + yDistance*3, "4. 结论与建议");
+       painter.drawText(startX,startY+moreY + yDistance*4, "5. 附录");
+
+       pdf.newPage();
+   }
+
+   // 测量数据概览
+   {
+       painter.resetTransform();
+       painter.translate(50, 50);
+       painter.setFont(QFont("Arial", 14, QFont::Bold));
+       painter.drawText(0, 0, "1. 测量数据概览");
+
+       int tableX = 0;
+       int tableY = 40;
+
+
+       // 绘制表格边框
+       painter.setPen(Qt::black);
+
+
+       // 绘制表头
+       painter.setFont(QFont("Arial", 12, QFont::Bold));
+       painter.drawText(tableX + 20, tableY + 30, "类型");
+       painter.drawText(tableX + xDistance+ 20, tableY + 30, "名称");
+       painter.drawText(tableX + xDistance*2+ 20, tableY + 30, "数值");
+       painter.drawText(tableX + xDistance*3+ 20, tableY + 30, "上公差");
+       painter.drawText(tableX + xDistance*4+ 20, tableY + 30, "下公差");
+       painter.drawText(tableX + xDistance*5+ 20,tableY + 30,"是否合格");
+
+       painter.setFont(QFont("Arial", 12));
+       int yPos = 30;
+       bool MoreThanOne=false;
+       for (const QList<QString>& rowData : dataAll) {
+           if(yPos+yDistance>PDFheight){
+               if(MoreThanOne==false)
+                   painter.drawRect(tableX, tableY+40,tableX + xDistance*6+40,PDFheight-20);
+               else
+                   painter.drawRect(tableX, 10,tableX + xDistance*6+40, yPos);
+
+               pdf.newPage();
+               painter.drawText(tableX ,  0, "类型");
+               painter.drawText(tableX + xDistance, 0, "名称");
+               painter.drawText(tableX + xDistance*2,  0, "数值");
+               painter.drawText(tableX + xDistance*3, 0, "上公差");
+               painter.drawText(tableX + xDistance*4,  0, "下公差");
+               painter.drawText(tableX + xDistance*5,  0, "是否合格");
+               yPos=30;
+               MoreThanOne=true;
            }
-           painter.drawImage(100, yPos, image);
-           yPos += image.height() + 20; // 图片下方留出20像素的间隔
+           int count=0;
+           for (const QString& cellData : rowData) {
+                painter.drawText(tableX + 20+count*xDistance, tableY +yPos-120, cellData);
+                count++;
+           }
+
+           yPos += yDistance;
        }
+       if(MoreThanOne){
+           painter.drawRect(tableX, 10,tableX + xDistance*6+40, yPos);
+       }else{
+           painter.drawRect(tableX, tableY+40,tableX + xDistance*6+40, yPos-100);
+       }
+
+       pdf.newPage();
+   }
+
+   // 数据分析
+   {
+       painter.resetTransform();
+       painter.translate(50, 50);
+       painter.setFont(QFont("Arial", 14, QFont::Bold));
+       painter.drawText(0, 0, "2. 数据分析");
+
+       painter.setFont(QFont("Arial", 12));
+       painter.drawText(0, yDistance, "根据测量数据，我们对以下指标进行了分析:");
+       painter.drawText(0, yDistance*2, "- 数据1: 平均值为 50.00，标准差为 10.00");
+       painter.drawText(0, yDistance*3, "- 数据2: 最大值为 98.50，最小值为 12.30");
+       painter.drawText(0, yDistance*4, "- 数据3: 中位数为 45.20，范围为 10.50 - 89.70");
+
+       pdf.newPage();
+   }
+
+   // 测量结果图
+   {
+       painter.resetTransform();
+       painter.translate(50, 50);
+       painter.setFont(QFont("Arial", 14, QFont::Bold));
+       painter.drawText(0, 0, "3. 测量结果图");
+       painter.drawText(0, 60, "（1）全局对比");
+       int imageX = 0;
+       int imageY = 50+60;
+       int imageWidth = 1422;
+       int imageHeight = 1002;
+       int count=1;
+       for (const QString &imagePath : imagePaths) {
+           QImage image(imagePath);
+           if (!image.isNull()) {
+               if (imageY + image.height() > pdf.height() - 100) {
+                   pdf.newPage();
+                   painter.resetTransform();
+                   painter.translate(50, 50);
+                   painter.setFont(QFont("Arial", 12));
+                   imageY = 50;
+               }
+               painter.drawImage((PDFwidth-imageWidth)/2, imageY, image.scaled(imageWidth, imageHeight));
+               painter.drawText((PDFwidth-imageWidth)/2+400, imageY + imageHeight + 50, "图 " + QString::number(count) + ": 全局对比结果图");
+               imageY += imageHeight + 60;
+               count++;
+           }
+       }
+
+       pdf.newPage();
+   }
+   {
+       painter.resetTransform();
+       painter.translate(50, 50);
+       painter.setFont(QFont("Arial", 14, QFont::Bold));
+       painter.drawText(0, 0, "（2）局部对比");
+
+       int imageX = 0;
+       int imageY = 50;
+       int imageWidth = 1422;
+       int imageHeight = 1002;
+       int count=1;
+       for (const QString &imagePath : imagePaths_part) {
+           QImage image(imagePath);
+           if (!image.isNull()) {
+               if (imageY + image.height() > pdf.height() - 100) {
+                   pdf.newPage();
+                   painter.resetTransform();
+                   painter.translate(50, 50);
+                   painter.setFont(QFont("Arial", 12));
+                   imageY = 50;
+               }
+               painter.drawImage((PDFwidth-imageWidth)/2, imageY, image.scaled(imageWidth, imageHeight));
+               painter.drawText((PDFwidth-imageWidth)/2+400, imageY + imageHeight + 50, "图 " + QString::number(count) + ": 局部对比结果图");
+               imageY += imageHeight + 60;
+               count++;
+           }
+       }
+
+       pdf.newPage();
+   }
+
+   // 结论与建议
+   {
+       painter.resetTransform();
+       painter.translate(50, 50);
+       painter.setFont(QFont("Arial", 14, QFont::Bold));
+       painter.drawText(0, 0, "4. 结论与建议");
+
+       painter.setFont(QFont("Arial", 12));
+       painter.drawText(0, yDistance, "根据测量数据和分析结果，我们得出以下结论:");
+       painter.drawText(0, yDistance*2, "- 数据整体符合预期，波动范围在合理范围内");
+       painter.drawText(0, yDistance*3, "- 数据3的异常点需要进一步检查和验证");
+       painter.drawText(0, yDistance*4, "建议:");
+       painter.drawText(0, yDistance*5, "- 对异常点进行详细检查");
+       painter.drawText(0, yDistance*6, "- 定期进行测量系统校准");
+
+       pdf.newPage();
+   }
+
+   // 附录
+   {
+       painter.resetTransform();
+       painter.translate(50, 50);
+       painter.setFont(QFont("Arial", 14, QFont::Bold));
+       painter.drawText(0, 0, "5. 附录");
+
+       painter.setFont(QFont("Arial", 12));
+       painter.drawText(0, yDistance, "参考文献:");
+       painter.drawText(0, yDistance*2, "- 3d工业测量软件开发组测量标准");
+       painter.drawText(0, yDistance*3, "- 测量系统用户手册");
+
+       pdf.newPage();
    }
 
    painter.end();
+
    QString logInfo="Pdf保存成功";
    m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
    lastCreatedPdfFile=filePath;
-
+   m_savePdf=true;
 }
-// void ToolWidget::onSaveExcel() {
-//     QString path = getOutputPath("xlsx");
-//     QString name = getTimeString();
-//     QString filePath = path + "/" + name + ".xlsx";
 
-//     QStringList headers;
-//     headers << "类型" << "名称" << "数据1" << "数据2" << "数据3" << "数据4" << "数据5";
-//     QList<QList<QString>> dataAll;
-//     auto& entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
-//     ExtractData(entitylist, dataAll);
 
-//     QXlsx::Document xlsx;
-//     xlsx.write("A1", "entitylist 数据输出");
-//     xlsx.mergeCells("A1:G1");
-//     xlsx.setRowHeight(1, 30);
 
-//     // 写入列标题
-//     for (int i = 0; i < headers.size(); ++i) {
-//         xlsx.write(2, i + 1, headers[i]);
-//     }
 
-//     // 写入数据
-//     for (int row = 0; row < dataAll.size(); ++row) {
-//         for (int col = 0; col < dataAll[row].size(); ++col) {
-//             xlsx.write(row + 3, col + 1, dataAll[row][col]);
-//         }
-//     }
-
-//     // 保存文件
-//     if (xlsx.saveAs(filePath)) {
-//         QMessageBox::information(nullptr, "提示", "保存成功");
-//     } else {
-//         QMessageBox::warning(nullptr, "提示", "保存失败");
-//     }
-// }
 
 void   ToolWidget::onSaveExcel(){
     QString path= getOutputPath("xlsx");
@@ -1049,84 +1436,7 @@ void ToolWidget::onSaveTxt(){
 
     for(int i=0;i<objectlist.size();i++){
         CObject* object=objectlist[i];
-        if(object->GetUniqueType()==enPoint){
-            continue;
-            // CPoint * point=(CPoint*)object;
-            // CPosition position =point->GetPt();
-            // out<<"类型：点 名称:"<<point->m_strAutoName<<Qt::endl;
-            // out<<"坐标:("<<position.x<<","<<position.y<<","<<position.z<<")"<<Qt::endl;
-            // out<<Qt::endl;
-        }else if(object->GetUniqueType()==enCircle){
-            continue;
-            // CCircle* circle=(CCircle*)object;
-            // CPosition position=circle->getCenter();
-            // out<<"类型：圆 名称:"<<circle->m_strAutoName<<Qt::endl;
-            // out<<"中心:("<<position.x<<","<<position.y<<","<<position.z<<")"<<Qt::endl;
-            // out<<"直径D:"<<circle->getDiameter();
-            // out<<Qt::endl;
-            // out<<Qt::endl;
-
-        }else if(object->GetUniqueType()==enSphere){
-            continue;
-            // CSphere* sphere=(CSphere*)object;
-            // CPosition position=sphere->getCenter();
-            // out<<"类型：球 名称:"<<sphere->m_strAutoName<<Qt::endl;
-            // out<<"中心:("<<position.x<<","<<position.y<<","<<position.z<<")"<<Qt::endl;
-            // out<<"直径D:"<<sphere->getDiameter();
-            // out<<Qt::endl;
-            // out<<Qt::endl;
-
-        }else if(object->GetUniqueType()==enPlane){
-            continue;
-            // CPlane* plane=(CPlane*)object;
-            // CPosition position=plane->getCenter();
-            // QVector4D normal,dir_long_edge;
-            // normal=plane->getNormal();
-            // dir_long_edge=plane->getDir_long_edge();
-            // out<<"类型：平面 名称:"<<plane->m_strAutoName<<Qt::endl;
-            // out<<"中心:("<<position.x<<","<<position.y<<","<<position.z<<")"<<Qt::endl;
-            // out<<"法线:("<<normal.x()<<","<<normal.y()<<","<<normal.z()<<")"<<Qt::endl;
-            // out<<"边向量:("<<dir_long_edge.x()<<","<<dir_long_edge.y()<<","<<dir_long_edge.z()<<")"<<Qt::endl;
-            // out<<"长:"<<plane->getLength()<<" 宽:"<<plane->getWidth()<<Qt::endl;
-            // out<<Qt::endl;
-
-        }else if(object->GetUniqueType()==enCone){
-            continue;
-            // CCone* cone=(CCone*)object;
-
-            // CPosition position=cone->getVertex();
-            // QVector4D axis;
-            // axis=cone->getAxis();
-            // out<<"类型：圆锥 名称:"<<cone->m_strAutoName<<Qt::endl;
-            // out<<"顶点:("<<position.x<<","<<position.y<<","<<position.z<<")"<<Qt::endl;
-            // out<<"轴线向量:("<<axis.x()<<","<<axis.y()<<","<<axis.z()<<")"<<Qt::endl;
-            // out<<"高:"<<cone->getHeight()<<" 弧度:"<<cone->getRadian()<<" 圆锥高:"<<cone->getCone_height()<<Qt::endl;
-            // out<<Qt::endl;
-
-        }else if(object->GetUniqueType()==enCylinder){
-            continue;
-            // CCylinder* cylinder=(CCylinder*)object;
-            // CPosition position=cylinder->getBtm_center();
-            // QVector4D axis;
-            // axis=cylinder->getAxis();
-            // out<<"类型：圆柱 名称:"<<cylinder->m_strAutoName<<Qt::endl;
-            // out<<"底面中心:("<<position.x<<","<<position.y<<","<<position.z<<")"<<Qt::endl;
-            // out<<"轴线向量:("<<axis.x()<<","<<axis.y()<<","<<axis.z()<<")"<<Qt::endl;
-            // out<<"高:"<<cylinder->getHeight()<<" 直径:"<<cylinder->getDiameter()<<Qt::endl;
-            // out<<Qt::endl;
-
-        }else if(object->GetUniqueType()==enLine){
-            continue;
-            // CLine* line=(CLine*)object;
-            // CPosition position1,position2;
-            // position1=line->getPosition1();
-            // position2=line->getPosition2();
-            // out<<"类型：线 名称:"<<line->m_strAutoName<<Qt::endl;
-            // out<<"起点:("<<position1.x<<","<<position1.y<<","<<position1.z<<")"<<Qt::endl;
-            // out<<"终点:("<<position2.x<<","<<position2.y<<","<<position2.z<<")"<<Qt::endl;
-            // out<<Qt::endl;
-
-        }else if(object->GetUniqueType()==enDistance){
+         if(object->GetUniqueType()==enDistance){
             CDistance* Distance=(CDistance*) object;
             out<<"类型：距离 名称："<<Distance->m_strCName<<Qt::endl;
             out<<"大小："<<Distance->getdistance()<<"  上公差："<<Distance->getUptolerance()<<"  下公差："<<Distance->getUndertolerance()<<Qt::endl;
@@ -1139,11 +1449,6 @@ void ToolWidget::onSaveTxt(){
             }
             out<<"是否合格："<<qua<<Qt::endl;
             out<<Qt::endl;
-        }else if(object->GetUniqueType()==enPointCloud){
-            continue;
-            // CPointCloud* PointCloud=(CPointCloud*) object;
-            // out<<"类型：距离 名称:"<<PointCloud->m_strCName<<Qt::endl;
-            // out<<Qt::endl;
         }else if(object->GetUniqueType()==enAngle){
             CAngle* Angle=(CAngle*)object;
             out<<"类型：角度 名称："<<Angle->m_strCName<<Qt::endl;
@@ -1234,8 +1539,10 @@ void   ToolWidget::onSaveImage(){
     QString filter = "PNG (*.png);;JPEG (*.jpg *.jpeg);;TIFF (*.tif *.tiff);;BMP (*.bmp)";
     QString fileName;
     if (!IsAuto) {
-        // 如果不是自动保存，弹出文件选择对话框
-        fileName = QFileDialog::getSaveFileName(this, "Save Screenshot", "", filter, &filter);
+        QString path= getOutputPath("image");
+        QString name=getTimeString();
+        fileName=path+"/"+name+".png";
+
     } else {
         // 如果是自动保存，设置默认保存路径
         fileName = "C:/Users/Lenovo/Desktop/imageSave";
@@ -1375,19 +1682,11 @@ void ToolWidget::onConstructPoint(){
 }
 
 void ToolWidget::onConstructLine(){
-    QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenActorAxes();
+
     LineConstructor constructor;
     CLine* newLine;
     bool createLine=false;
-    if(positions.size()==2){
-        newLine=constructor.createLine(positions[0],positions[1]);
-        addToList(newLine);
-        createLine=true;
-        positions.clear();
-        QVector4D pos(positions[0].x-positions[1].x,positions[0].y-positions[1].y,positions[0].z-positions[1].z,0);
-        pos.normalize();
-    }
-    else{
+        {
         auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
         newLine=(CLine*)constructor.create(entityList);
         if(newLine!=nullptr){
@@ -1396,12 +1695,7 @@ void ToolWidget::onConstructLine(){
 
     }
     if(!createLine&&newLine==nullptr){
-        if(positions.size()==1){
-            WrongWidget("识别点的数目不足两个");
-        }
-        else if(positions.size()>=3){
-            WrongWidget("识别点的数目超过两个");
-        }else if(newLine==nullptr){
+        if(newLine==nullptr){
             if(constructor.getWrongInformation()==PointTooMuch){
                 WrongWidget("列表选中的点过多");
             }else if(constructor.getWrongInformation()==PointTooLess){
@@ -1446,18 +1740,12 @@ void ToolWidget::onConstructCircle(){
 
 }
 void ToolWidget::onConstructPlane(){
-    QVector<CPosition>& positions= m_pMainWin->getChosenListMgr()->getChosenActorAxes();
+
     PlaneConstructor constructor;
     CPlane* newPlane;
     bool createPlane=false;
 
-    if(positions.size()==3){
-        newPlane=constructor.createPlane(positions[0],positions[1],positions[2]);
-        addToList(newPlane);
-        createPlane=true;
-        positions.clear();
-    }
-    else{
+   {
         auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
         newPlane=(CPlane*)constructor.create(entityList);
         if(newPlane!=nullptr){
@@ -1466,11 +1754,7 @@ void ToolWidget::onConstructPlane(){
     }
 
     if(!createPlane&&newPlane==nullptr){
-        if(positions.size()<3){
-            WrongWidget("识别点的数目不足三个");
-        }else if(positions.size()>3){
-            WrongWidget("识别点的数目多余三个");
-        }else{
+        {
             if(constructor.getWrongInformation()==PointTooMuch){
                 WrongWidget("列表选中的点过多");
             }else if(constructor.getWrongInformation()==PointTooLess){
@@ -2323,7 +2607,9 @@ void ToolWidget::SaveImage(QString Path,std::string format){
 QString ToolWidget::getCompareImagePath(){
     return CompareImagePath;
 }
-
+QVector<QString>& ToolWidget::getImagePaths_part(){
+    return imagePaths_part;
+}
 
 QString  ToolWidget::getParentPath(int step){
     // 获取上一级目录路径
@@ -2381,3 +2667,23 @@ QDataStream& ToolWidget::deserializeEntityList(QDataStream& in, QVector<CEntity*
     }
     return in;
 }
+QString ToolWidget::getlastCreatedImageFileFront(){
+    return lastCreatedImageFileFront;
+}
+QString ToolWidget::getlastCreatedImageFileTop(){
+    return lastCreatedImageFileTop;
+}
+QString ToolWidget::getlastCreatedImageFileRight(){
+    return lastCreatedImageFileRight;
+}
+
+QAction *  ToolWidget::getAction_Checked(){
+    if(Action_Checked)
+        return(QAction*)Action_Checked;
+    else
+        return nullptr;
+}
+bool ToolWidget::IsFindPoint_Checked(){
+    return Is_FindPoint_Cheked;
+}
+

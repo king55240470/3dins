@@ -65,7 +65,7 @@ void MainWindow::setupUi(){
     fileMenu->addSeparator();
     QAction *exitAction=fileMenu->addAction("退出");
     exitAction->setIcon(exitIcon);
-    exitAction->setShortcut(QKeySequence(Qt::Key_Escape));
+    exitAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Escape));
     connect(exitAction, SIGNAL(triggered()), this, SLOT(close())); // 连接退出的信号与槽
     // 创建一个隐藏的 QAction，用于触发菜单
     QAction* showMenuAction = new QAction();
@@ -84,7 +84,7 @@ void MainWindow::setupUi(){
     QAction* showWinMenu = new QAction();
     showWinMenu->setShortcut(QKeySequence(Qt::Key_W));
     connect(showWinMenu, &QAction::triggered, this, [this,windowMenu]() {
-        QPoint globalPos = mapToGlobal(QPoint(100, 22));
+        QPoint globalPos = mapToGlobal(QPoint(150, 22));
         windowMenu->exec(globalPos);
     });
     addAction(showWinMenu);
@@ -100,7 +100,7 @@ void MainWindow::setupUi(){
     QAction* showPresetMenu = new QAction();
     showPresetMenu->setShortcut(QKeySequence(Qt::Key_P));
     connect(showPresetMenu, &QAction::triggered, this, [this,presetMenu]() {
-        QPoint globalPos = mapToGlobal(QPoint(215, 22));
+        QPoint globalPos = mapToGlobal(QPoint(210, 22));
         presetMenu->exec(globalPos);
     });
     addAction(showPresetMenu);
@@ -179,7 +179,7 @@ void MainWindow::setupUi(){
     QAction* showConsMenu = new QAction();
     showConsMenu->setShortcut(QKeySequence(Qt::Key_C));
     connect(showConsMenu, &QAction::triggered, this, [this,constructorMenu]() {
-        QPoint globalPos = mapToGlobal(QPoint(280, 22));
+        QPoint globalPos = mapToGlobal(QPoint(275, 22));
         constructorMenu->exec(globalPos);
     });
     addAction(showConsMenu);
@@ -278,7 +278,7 @@ void MainWindow::setupUi(){
         pWinVtkWidget->onCompare();
     });
     QAction* alignAction=cloudOperation->addAction("点云对齐");
-    alignAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_A));
+    alignAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Q));
     alignAction->setShortcutContext(Qt::ApplicationShortcut);
     connect(alignAction,&QAction::triggered,this,[&](){
         pWinVtkWidget->onAlign();
@@ -288,7 +288,7 @@ void MainWindow::setupUi(){
     QAction* showThemeMenu = new QAction();
     showThemeMenu->setShortcut(QKeySequence(Qt::Key_T));
     connect(showThemeMenu, &QAction::triggered, this, [this,switchTheme]() {
-        QPoint globalPos = mapToGlobal(QPoint(470, 22));
+        QPoint globalPos = mapToGlobal(QPoint(465, 22));
         switchTheme->exec(globalPos);
     });
     addAction(showThemeMenu);
@@ -602,7 +602,7 @@ void MainWindow::saveFile(){
 
     // 关闭文件
     file.close();
-    QMessageBox::information(nullptr, "提示", "保存成功");
+    QMessageBox::information(nullptr, "提示", "qins文件保存成功");
 }
 /*void MainWindow::open_clicked() {
     // 打开文件对话框，允许用户选择文件
@@ -762,6 +762,7 @@ void MainWindow::OnPresetLine(CPosition ptStart, CPosition ptEnd)
     pLine->Form="预制";
     pLine->setBegin(ptStart);
     pLine->setEnd(ptEnd);
+    pLine->setCurrentId();
     pLine->m_CreateForm = ePreset;
     pLine->m_pRefCoord = m_pcsListMgr->m_pPcsCurrent;
     pLine->m_pCurCoord = m_pcsListMgr->m_pPcsCurrent;
@@ -1513,6 +1514,12 @@ setDataWidget *MainWindow::getPWinSetDataWidget(){
 }
 QMap<vtkSmartPointer<vtkActor>, CEntity*>& MainWindow::getactorToEntityMap(){
     return  actorToEntityMap;
+}
+
+void MainWindow::Createruler()
+{
+    getPWinVtkWidget()->createScaleBar();
+    getPWinVtkWidget()->attachInteractor();
 }
 
 VtkPresetWidget *MainWindow::getPWinVtkPresetWidget(){

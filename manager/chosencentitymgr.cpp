@@ -2,6 +2,11 @@
 
 ChosenCEntityMgr::ChosenCEntityMgr() {}
 
+QMap<vtkSmartPointer<vtkActor>, CEntity *> &ChosenCEntityMgr::getTempEntityMap()
+{
+    return tempEntityMap;
+}
+
 // 根据选中的坐标创建点，并存入ChosenCEntityList
 void ChosenCEntityMgr::CreatPosition(double pos[3])
 {
