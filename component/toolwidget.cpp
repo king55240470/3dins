@@ -899,7 +899,7 @@ void   ToolWidget::onSaveExcel(){
 
     QAxObject excel("Excel.Application");						  //加载Excel驱动
     excel.dynamicCall("SetVisible (bool Visible)", "false");	  //不显示窗体
-    excel.setProperty("DisplayAlerts", true);					  //不显示任何警告信息。如果为true那么在关闭是会出现类似“文件已修改，是否保存”的提示
+    excel.setProperty("DisplayAlerts", false);					  //不显示任何警告信息。如果为true那么在关闭是会出现类似“文件已修改，是否保存”的提示
 
     QAxObject *workBooks = excel.querySubObject("WorkBooks");	  //获取工作簿集合
     workBooks->dynamicCall("Add");								  //新建一个工作簿
