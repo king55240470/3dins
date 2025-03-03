@@ -34,6 +34,7 @@ void MouseInteractorHighlightActor::OnLeftButtonDown()
         // 如果拾取成功，输出拾取点的世界坐标
         m_pMainWin->getChosenListMgr()->CreatPosition(pos); // 将选中的坐标传入管理器
 
+        // 得到点中的centity
         QMap<vtkSmartPointer<vtkActor>, CEntity*>& actorToEntity=m_pMainWin->getactorToEntityMap();
         CEntity* entity=actorToEntity[newPickedActor];
 

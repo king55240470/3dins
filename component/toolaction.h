@@ -80,6 +80,7 @@ public:
     ToolAction(QWidget* parent=nullptr);
     void setToolActionKind(ToolActionKind);
     void setName(QString ) ;
+    QString getName();
 private:
     ToolActionKind action_kind_;
     QString name_;

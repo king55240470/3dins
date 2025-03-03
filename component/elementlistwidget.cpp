@@ -47,27 +47,27 @@ ElementListWidget::ElementListWidget(QWidget *parent)
     pauseButton = new QPushButton("",this);
     continueButton = new QPushButton("",this);
     terminateButton = new QPushButton("",this);
-    QIcon icon1(":/component/construct/start.png");
-    QIcon icon2(":/component/construct/stop.png");
+    QIcon icon1(":/component/eye/start.png");
+    QIcon icon2(":/component/eye/stop.png");
     QIcon icon3(":/component/construct/end.png");
     QIcon icon4(":/component/construct/continue.png");
     startButton->setFixedSize((treeWidgetNames->width())/2, 40);
     pauseButton->setFixedSize((treeWidgetNames->width())/2, 40);
     continueButton->setFixedSize((treeWidgetNames->width())/2, 40);
     terminateButton->setFixedSize((treeWidgetNames->width())/2, 40);
-    startButton->setIconSize(QSize(25, 25));
+    startButton->setIconSize(QSize(30, 30));
     pauseButton->setIconSize(QSize(25, 25));
     continueButton->setIconSize(QSize(25, 25));
-    terminateButton->setIconSize(QSize(25, 25));
+    terminateButton->setIconSize(QSize(30, 30));
     startButton->setIcon(icon1);
     pauseButton->setIcon(icon3);
     terminateButton->setIcon(icon2);
     continueButton->setIcon(icon4);
     // 设置按钮没有边框，背景颜色与周围颜色一致
-    startButton->setStyleSheet("QPushButton { border: none; background-color: #f0f0f0; }");
-    pauseButton->setStyleSheet("QPushButton { border: none; background-color: #f0f0f0; }");
-    continueButton->setStyleSheet("QPushButton { border: none; background-color: #f0f0f0; }");
-    terminateButton->setStyleSheet("QPushButton { border: none; background-color: #f0f0f0; }");
+    startButton->setStyleSheet("QPushButton { border: none; background-color: transparent; }");
+    pauseButton->setStyleSheet("QPushButton { border: none; background-color: transparent; }");
+    continueButton->setStyleSheet("QPushButton { border: none; background-color: transparent; }");
+    terminateButton->setStyleSheet("QPushButton { border: none; background-color: transparent; }");
 
     toolBar->addWidget(startButton);
     toolBar->addSeparator();
@@ -227,6 +227,7 @@ void ElementListWidget::onCustomContextMenuRequested(const QPoint &pos)
     QAction *action7 = menu.addAction("设置别称");
     QAction *action5 = menu.addAction("显示元素信息");
     QAction *action6 = menu.addAction("关闭元素信息");
+    QAction *action8 = menu.addAction("显示标度尺");
     connect(action1, &QAction::triggered, this, &ElementListWidget::onDeleteEllipse);
     connect(action2, &QAction::triggered, this, &ElementListWidget::selectall);
     connect(action3, &QAction::triggered, this, &ElementListWidget::starttime);
@@ -234,6 +235,7 @@ void ElementListWidget::onCustomContextMenuRequested(const QPoint &pos)
     connect(action5, &QAction::triggered, this, &ElementListWidget::showInfotext);
     connect(action6, &QAction::triggered, this, &ElementListWidget::closeInfotext);
     connect(action7, &QAction::triggered, this, &ElementListWidget::changeName);
+    connect(action8, &QAction::triggered, this, &ElementListWidget::createrule);
     menu.exec(mapToGlobal(pos));
 }
 
@@ -808,6 +810,7 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
                 //qDebug()<<"距离"<<dis->getdistancepoint();
                 QTreeWidgetItem *item = treeWidgetNames->topLevelItem(i);
                 m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
+                m_pMainWin->getPWinVtkWidget()->onHighLightActor(m_pMainWin->getEntityListMgr()->getEntityList()[i]);
                 treeWidgetNames->setCurrentItem(item);
                 break;
             }
@@ -969,6 +972,7 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
         for(int i=0;i<objlist.size();i++){
             if(obj->GetObjectCName()==objlist[i]->GetObjectCName()){
                 m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
+                m_pMainWin->getPWinVtkWidget()->onHighLightActor(m_pMainWin->getEntityListMgr()->getEntityList()[i]);
                 QTreeWidgetItem *item = treeWidgetNames->topLevelItem(i);
                 treeWidgetNames->setCurrentItem(item);
                 break;
@@ -987,6 +991,11 @@ void ElementListWidget::isAdd()
     }else if(Nowlistsize<Treelistsize){
         Treelistsize=Nowlistsize;
     }
+}
+
+void ElementListWidget::createrule()
+{
+    m_pMainWin->Createruler();
 }
 
 void ElementListWidget::mouseDoubleClickEvent(QMouseEvent *event)

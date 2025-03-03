@@ -143,15 +143,15 @@ void DataWidget::updateinfo()
 
             if (point != nullptr){
                 //double xx=point->GetPt().x;
-                table->setItem(0, 0, new QTableWidgetItem("X"));
+                table->setItem(0, 0, new QTableWidgetItem("_x"));
                 table->setItem(0, 1, new QTableWidgetItem(QString::number(position.x,'f',6)));
                 table->setItem(0, 2, new QTableWidgetItem("")); // 可选择设置状态
 
-                table->setItem(1, 0, new QTableWidgetItem("Y"));
+                table->setItem(1, 0, new QTableWidgetItem("_y"));
                 table->setItem(1, 1, new QTableWidgetItem(QString::number(position.y,'f',6)));
                 table->setItem(1, 2, new QTableWidgetItem("")); // 可选择设置状态
 
-                table->setItem(2, 0, new QTableWidgetItem("Z"));
+                table->setItem(2, 0, new QTableWidgetItem("_z"));
                 table->setItem(2, 1, new QTableWidgetItem(QString::number(position.z,'f',6)));
                 table->setItem(2, 2, new QTableWidgetItem(""));
             }
@@ -216,27 +216,27 @@ void DataWidget::updateinfo()
             position2=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(gloPosition2,line->m_pExtCoord);
 
             if (line != nullptr){
-                table->setItem(0, 0, new QTableWidgetItem("X1"));
+                table->setItem(0, 0, new QTableWidgetItem("起点_x"));
                 table->setItem(0, 1, new QTableWidgetItem(QString::number(position1.x,'f',6)));
                 table->setItem(0, 2, new QTableWidgetItem("")); // 可选择设置状态
 
-                table->setItem(1, 0, new QTableWidgetItem("Y1"));
+                table->setItem(1, 0, new QTableWidgetItem("起点_y"));
                 table->setItem(1, 1, new QTableWidgetItem(QString::number(position1.y,'f',6)));
                 table->setItem(1, 2, new QTableWidgetItem("")); // 可选择设置状态
 
-                table->setItem(2, 0, new QTableWidgetItem("Z1"));
+                table->setItem(2, 0, new QTableWidgetItem("起点_z"));
                 table->setItem(2, 1, new QTableWidgetItem(QString::number(position1.z,'f',6)));
                 table->setItem(2, 2, new QTableWidgetItem(""));
 
-                table->setItem(3, 0, new QTableWidgetItem("X2"));
+                table->setItem(3, 0, new QTableWidgetItem("终点_x"));
                 table->setItem(3, 1, new QTableWidgetItem(QString::number(position2.x,'f',6)));
                 table->setItem(3, 2, new QTableWidgetItem("")); // 可选择设置状态
 
-                table->setItem(4, 0, new QTableWidgetItem("Y2"));
+                table->setItem(4, 0, new QTableWidgetItem("终点_y"));
                 table->setItem(4, 1, new QTableWidgetItem(QString::number(position2.y,'f',6)));
                 table->setItem(4, 2, new QTableWidgetItem("")); // 可选择设置状态
 
-                table->setItem(5, 0, new QTableWidgetItem("Z2"));
+                table->setItem(5, 0, new QTableWidgetItem("终点_z"));
                 table->setItem(5, 1, new QTableWidgetItem(QString::number(position2.z,'f',6)));
                 table->setItem(5, 2, new QTableWidgetItem(""));
 
@@ -293,31 +293,31 @@ void DataWidget::updateinfo()
             position=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(gloPosition,circle->m_pExtCoord);
 
             if (circle != nullptr){
-                table->setItem(0, 0, new QTableWidgetItem("X"));
+                table->setItem(0, 0, new QTableWidgetItem("圆心_x"));
                 table->setItem(0, 1, new QTableWidgetItem(QString::number(position.x,'f',6)));
                 table->setItem(0, 2, new QTableWidgetItem("")); // 可选择设置状态
 
-                table->setItem(1, 0, new QTableWidgetItem("Y"));
+                table->setItem(1, 0, new QTableWidgetItem("圆心_y"));
                 table->setItem(1, 1, new QTableWidgetItem(QString::number(position.y,'f',6)));
                 table->setItem(1, 2, new QTableWidgetItem("")); // 可选择设置状态
 
-                table->setItem(2, 0, new QTableWidgetItem("Z"));
+                table->setItem(2, 0, new QTableWidgetItem("圆心_z"));
                 table->setItem(2, 1, new QTableWidgetItem(QString::number(position.z,'f',6)));
                 table->setItem(2, 2, new QTableWidgetItem(""));
 
-                table->setItem(3, 0, new QTableWidgetItem("D"));
+                table->setItem(3, 0, new QTableWidgetItem("直径"));
                 table->setItem(3, 1, new QTableWidgetItem(QString::number(circle->getDiameter(),'f',6)));
                 table->setItem(3, 2, new QTableWidgetItem(""));
 
-                table->setItem(4, 0, new QTableWidgetItem("NormalVector_x"));
+                table->setItem(4, 0, new QTableWidgetItem("法向量_x"));
                 table->setItem(4, 1, new QTableWidgetItem(QString::number(circle->getNormal().x(),'f',6)));
                 table->setItem(4, 2, new QTableWidgetItem(""));
 
-                table->setItem(5, 0, new QTableWidgetItem("NormalVector_y"));
+                table->setItem(5, 0, new QTableWidgetItem("法向量_y"));
                 table->setItem(5, 1, new QTableWidgetItem(QString::number(circle->getNormal().y(),'f',6)));
                 table->setItem(5, 2, new QTableWidgetItem(""));
 
-                table->setItem(6, 0, new QTableWidgetItem("NormalVector_z"));
+                table->setItem(6, 0, new QTableWidgetItem("法向量_z"));
                 table->setItem(6, 1, new QTableWidgetItem(QString::number(circle->getNormal().z(),'f',6)));
                 table->setItem(6, 2, new QTableWidgetItem(""));
             }
@@ -373,35 +373,35 @@ void DataWidget::updateinfo()
              position=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(gloPosition,plane->m_pExtCoord);
 
             if (plane != nullptr){
-                table->setItem(0, 0, new QTableWidgetItem("X"));
+                table->setItem(0, 0, new QTableWidgetItem("中心_x"));
                 table->setItem(0, 1, new QTableWidgetItem(QString::number(position.x,'f',6)));
                 table->setItem(0, 2, new QTableWidgetItem("")); // 可选择设置状态
 
-                table->setItem(1, 0, new QTableWidgetItem("Y"));
+                table->setItem(1, 0, new QTableWidgetItem("中心_y"));
                 table->setItem(1, 1, new QTableWidgetItem(QString::number(position.y,'f',6)));
                 table->setItem(1, 2, new QTableWidgetItem("")); // 可选择设置状态
 
-                table->setItem(2, 0, new QTableWidgetItem("Z"));
+                table->setItem(2, 0, new QTableWidgetItem("中心_z"));
                 table->setItem(2, 1, new QTableWidgetItem(QString::number(position.z,'f',6)));
                 table->setItem(2, 2, new QTableWidgetItem(""));
 
-                table->setItem(3, 0, new QTableWidgetItem("Length"));
+                table->setItem(3, 0, new QTableWidgetItem("长度"));
                 table->setItem(3, 1, new QTableWidgetItem(QString::number(plane->getLength(),'f',6)));
                 table->setItem(3, 2, new QTableWidgetItem(""));
 
-                table->setItem(4, 0, new QTableWidgetItem("Width"));
+                table->setItem(4, 0, new QTableWidgetItem("宽度"));
                 table->setItem(4, 1, new QTableWidgetItem(QString::number(plane->getWidth(),'f',6)));
                 table->setItem(4, 2, new QTableWidgetItem(""));
 
-                table->setItem(5, 0, new QTableWidgetItem("NormalVector_x"));
+                table->setItem(5, 0, new QTableWidgetItem("法向量_x"));
                 table->setItem(5, 1, new QTableWidgetItem(QString::number(plane->getNormal().x(),'f',6)));
                 table->setItem(5, 2, new QTableWidgetItem(""));
 
-                table->setItem(6, 0, new QTableWidgetItem("NormalVector_y"));
+                table->setItem(6, 0, new QTableWidgetItem("法向量_y"));
                 table->setItem(6, 1, new QTableWidgetItem(QString::number(plane->getNormal().y(),'f',6)));
                 table->setItem(6, 2, new QTableWidgetItem(""));
 
-                table->setItem(7, 0, new QTableWidgetItem("NormalVector_z"));
+                table->setItem(7, 0, new QTableWidgetItem("法向量_z"));
                 table->setItem(7, 1, new QTableWidgetItem(QString::number(plane->getNormal().z(),'f',6)));
                 table->setItem(7, 2, new QTableWidgetItem(""));
             }
@@ -457,19 +457,19 @@ void DataWidget::updateinfo()
             position=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(gloPosition,sphere->m_pExtCoord);
 
             if (sphere != nullptr){
-                table->setItem(0, 0, new QTableWidgetItem("X"));
+                table->setItem(0, 0, new QTableWidgetItem("_x"));
                 table->setItem(0, 1, new QTableWidgetItem(QString::number(position.x,'f',6)));
                 table->setItem(0, 2, new QTableWidgetItem("")); // 可选择设置状态
 
-                table->setItem(1, 0, new QTableWidgetItem("Y"));
+                table->setItem(1, 0, new QTableWidgetItem("_y"));
                 table->setItem(1, 1, new QTableWidgetItem(QString::number(position.y,'f',6)));
                 table->setItem(1, 2, new QTableWidgetItem("")); // 可选择设置状态
 
-                table->setItem(2, 0, new QTableWidgetItem("Z"));
+                table->setItem(2, 0, new QTableWidgetItem("_z"));
                 table->setItem(2, 1, new QTableWidgetItem(QString::number(position.z,'f',6)));
                 table->setItem(2, 2, new QTableWidgetItem(""));
 
-                table->setItem(3, 0, new QTableWidgetItem("R"));
+                table->setItem(3, 0, new QTableWidgetItem("直径"));
                 table->setItem(3, 1, new QTableWidgetItem(QString::number(sphere->getDiameter(),'f',6)));
                 table->setItem(3, 2, new QTableWidgetItem(""));
             }
@@ -525,23 +525,23 @@ void DataWidget::updateinfo()
             position=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(gloPosition,cylinder->m_pExtCoord);
 
             if (cylinder != nullptr){
-                table->setItem(0, 0, new QTableWidgetItem("X"));
+                table->setItem(0, 0, new QTableWidgetItem("_x"));
                 table->setItem(0, 1, new QTableWidgetItem(QString::number(position.x,'f',6)));
                 table->setItem(0, 2, new QTableWidgetItem("")); // 可选择设置状态
 
-                table->setItem(1, 0, new QTableWidgetItem("Y"));
+                table->setItem(1, 0, new QTableWidgetItem("_y"));
                 table->setItem(1, 1, new QTableWidgetItem(QString::number(position.y,'f',6)));
                 table->setItem(1, 2, new QTableWidgetItem("")); // 可选择设置状态
 
-                table->setItem(2, 0, new QTableWidgetItem("Z"));
+                table->setItem(2, 0, new QTableWidgetItem("_z"));
                 table->setItem(2, 1, new QTableWidgetItem(QString::number(position.z,'f',6)));
                 table->setItem(2, 2, new QTableWidgetItem(""));
 
-                table->setItem(3, 0, new QTableWidgetItem("R"));
+                table->setItem(3, 0, new QTableWidgetItem("直径"));
                 table->setItem(3, 1, new QTableWidgetItem(QString::number(cylinder->getDiameter(),'f',6)));
                 table->setItem(3, 2, new QTableWidgetItem(""));
 
-                table->setItem(4, 0, new QTableWidgetItem("Height"));
+                table->setItem(4, 0, new QTableWidgetItem("高度"));
                 table->setItem(4, 1, new QTableWidgetItem(QString::number(cylinder->getHeight(),'f',6)));
                 table->setItem(4, 2, new QTableWidgetItem(""));
             }
@@ -596,19 +596,19 @@ void DataWidget::updateinfo()
             position=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(gloPosition,cone->m_pExtCoord);
 
             if (cone != nullptr){
-                table->setItem(0, 0, new QTableWidgetItem("X"));
+                table->setItem(0, 0, new QTableWidgetItem("_x"));
                 table->setItem(0, 1, new QTableWidgetItem(QString::number(position.x,'f',6)));
                 table->setItem(0, 2, new QTableWidgetItem("")); // 可选择设置状态
 
-                table->setItem(1, 0, new QTableWidgetItem("Y"));
+                table->setItem(1, 0, new QTableWidgetItem("_y"));
                 table->setItem(1, 1, new QTableWidgetItem(QString::number(position.y,'f',6)));
                 table->setItem(1, 2, new QTableWidgetItem("")); // 可选择设置状态
 
-                table->setItem(2, 0, new QTableWidgetItem("Z"));
+                table->setItem(2, 0, new QTableWidgetItem("_z"));
                 table->setItem(2, 1, new QTableWidgetItem(QString::number(position.z,'f',6)));
                 table->setItem(2, 2, new QTableWidgetItem(""));
 
-                table->setItem(3, 0, new QTableWidgetItem("H"));
+                table->setItem(3, 0, new QTableWidgetItem("高度"));
                 table->setItem(3, 1, new QTableWidgetItem(QString::number(cone->getHeight(),'f',6)));
                 table->setItem(3, 2, new QTableWidgetItem(""));
             }
@@ -663,39 +663,39 @@ void DataWidget::updateinfo()
             position=m_pMainWin->m_pcsListMgr->GetLocalPosOfCertainPcs(gloPosition,cuboid->m_pExtCoord);
 
             if (cuboid != nullptr){
-                table->setItem(0, 0, new QTableWidgetItem("X"));
+                table->setItem(0, 0, new QTableWidgetItem("_x"));
                 table->setItem(0, 1, new QTableWidgetItem(QString::number(position.x,'f',6)));
                 table->setItem(0, 2, new QTableWidgetItem("")); // 可选择设置状态
 
-                table->setItem(1, 0, new QTableWidgetItem("Y"));
+                table->setItem(1, 0, new QTableWidgetItem("_y"));
                 table->setItem(1, 1, new QTableWidgetItem(QString::number(position.y,'f',6)));
                 table->setItem(1, 2, new QTableWidgetItem("")); // 可选择设置状态
 
-                table->setItem(2, 0, new QTableWidgetItem("Z"));
+                table->setItem(2, 0, new QTableWidgetItem("_z"));
                 table->setItem(2, 1, new QTableWidgetItem(QString::number(position.z,'f',6)));
                 table->setItem(2, 2, new QTableWidgetItem(""));
 
-                table->setItem(3, 0, new QTableWidgetItem("Length"));
+                table->setItem(3, 0, new QTableWidgetItem("长度"));
                 table->setItem(3, 1, new QTableWidgetItem(QString::number(cuboid->getLength(),'f',6)));
                 table->setItem(3, 2, new QTableWidgetItem(""));
 
-                table->setItem(4, 0, new QTableWidgetItem("Width"));
+                table->setItem(4, 0, new QTableWidgetItem("宽度"));
                 table->setItem(4, 1, new QTableWidgetItem(QString::number(cuboid->getWidth(),'f',6)));
                 table->setItem(4, 2, new QTableWidgetItem(""));
 
-                table->setItem(5, 0, new QTableWidgetItem("Height"));
+                table->setItem(5, 0, new QTableWidgetItem("高度"));
                 table->setItem(5, 1, new QTableWidgetItem(QString::number(cuboid->getHeight(),'f',6)));
                 table->setItem(5, 2, new QTableWidgetItem(""));
 
-                table->setItem(6, 0, new QTableWidgetItem("NormalX"));
+                table->setItem(6, 0, new QTableWidgetItem("法向量_x"));
                 table->setItem(6, 1, new QTableWidgetItem(QString::number(cuboid->getNormal().x(),'f',6)));
                 table->setItem(6, 2, new QTableWidgetItem(""));
 
-                table->setItem(7, 0, new QTableWidgetItem("NormalY"));
+                table->setItem(7, 0, new QTableWidgetItem("法向量_y"));
                 table->setItem(7, 1, new QTableWidgetItem(QString::number(cuboid->getNormal().y(),'f',6)));
                 table->setItem(7, 2, new QTableWidgetItem(""));
 
-                table->setItem(8, 0, new QTableWidgetItem("NormalZ"));
+                table->setItem(8, 0, new QTableWidgetItem("法向量_z"));
                 table->setItem(8, 1, new QTableWidgetItem(QString::number(cuboid->getNormal().z(),'f',6)));
                 table->setItem(8, 2, new QTableWidgetItem(""));
             }
@@ -725,9 +725,9 @@ void DataWidget::updateinfo()
             CDistance* distance=dynamic_cast<CDistance*>(obj);
             qDebug()<<"data里面的距离"<<distance->getdistance();
             CPosition position;
-            position.x=distance->getUptolerance();
-            position.y=distance->getUndertolerance();
-            position.z=distance->getdistance();
+            position.x= std::fabs(distance->getUptolerance());
+            position.y= std::fabs(distance->getUndertolerance());
+            position.z = std::fabs(distance->getdistance());
             qDebug()<<"data里面的距离"<<position.z;
             if (distance != nullptr){
                 table->setItem(0, 0, new QTableWidgetItem("上公差"));

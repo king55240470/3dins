@@ -9,6 +9,7 @@
 #include <QStandardPaths>
 #include"geometry/globes.h"
 #include"geometry/centitytypes.h"
+#include <QStack>
 //槽函数
 namespace tool_widget{
 //Coord
@@ -31,7 +32,7 @@ public:
 
     void NotifySubscribe();
 
-    static const int iconsize=25;
+    static const int iconsize=30;
     static const int SingalToolBarActionNum=11;//每行工具栏的图标数目
     static const int ActionKindNum=5;//工具栏的种类数
     //获取图标名称
@@ -84,6 +85,11 @@ public:
 
     //获得保存图片路片路径
     QVector<QString>& getImagePaths();
+    QVector<QString>& getImagePaths_part();
+    //获得最近保存图片路径
+    QString getlastCreatedImageFileFront();
+    QString getlastCreatedImageFileTop();
+    QString getlastCreatedImageFileRight();
     //获得当前时间编号
     QString getTimeString();
     //保存图片
@@ -95,6 +101,13 @@ public:
     QString getParentPath(int step=1);//获得上级路径
     void createFolder(QString path);//创建文件夹
     QString getOutputPath(QString kind);//获得输出路径
+
+    //获得被选中的图标
+    QAction * getAction_Checked(); //通过QAction->getObjectName得到名字
+    //识别点是否选中
+    bool IsFindPoint_Checked();
+
+
 
 public slots:
               //构造
@@ -139,6 +152,10 @@ private:
     //对比点云保存路径
     QString CompareImagePath;
     //输出保存路径
+    //保存打开的开关状态
+    ToolAction* Action_Checked;
+    bool Is_FindPoint_Cheked;
+
 
     void clearToolBar(QToolBar *toolbar);
     //新的工具栏类
@@ -187,8 +204,10 @@ private:
     QVector<CEntity*> constructEntityList;
     QVector<CEntity*> identifyEntityList;
 
-    //存储对比过程中产生图片路径
+    //存储全局对比过程中产生图片路径
     QVector<QString> imagePaths;
+    //存储局部对比过程中产生的图片路径
+    QVector<QString> imagePaths_part;
 
     //最新文件路径
     QString lastCreatedExcelFile;
@@ -201,6 +220,10 @@ private:
 
     //是否自动化保存内容
     bool IsAuto=false;
+    bool m_savePdf=false;
+    bool m_saveWord=false;
+
+
 
 };
 #endif // TOOLWIDGET_H
