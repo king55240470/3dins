@@ -117,6 +117,9 @@
 #include <QPdfWriter>
 #include <QPainter>
 #include <QPageSize>
+//word保存
+#include <QProcess>
+#include <QFileInfo>
 //Excelbaocun
 //#include <QtXlsx>
 //图片保存
@@ -137,7 +140,17 @@
 #include <QPageSize>
 #include <QPen>
 #include <cstdlib>
+// bool convertPdfToWord(const QString &pdfFilePath, const QString &wordFilePath) {
+//     QProcess process;
+//     QStringList arguments;
+//     arguments << "--headless" << "--convert-to" << "docx" << "--outdir"
+//               << QFileInfo(wordFilePath).absolutePath() << pdfFilePath;
 
+//     process.start("libreoffice", arguments);
+//     process.waitForFinished();
+
+//     return process.exitStatus() == QProcess::NormalExit;
+// }
 
 
 
@@ -2684,5 +2697,22 @@ QAction *  ToolWidget::getAction_Checked(){
 }
 bool ToolWidget::IsFindPoint_Checked(){
     return Is_FindPoint_Cheked;
+}
+
+
+QStringList* ToolWidget::getSaveIconPath(){
+    return &save_action_iconpath_list_;
+}
+QStringList* ToolWidget::getConstructIconPath(){
+    return &construct_action_iconpath_list_;
+}
+QStringList* ToolWidget::getFindIconPath(){
+    return &find_action_iconpath_list_;
+}
+QStringList* ToolWidget::getCoordIconPath(){
+    return & coord_action_iconpath_list_;
+}
+QStringList* ToolWidget::getViewAngleIconPath(){
+    return &view_angle_action_iconpath_list_;
 }
 
