@@ -77,7 +77,7 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingLine::RANSAC(pcl::PointXYZRGB sear
         ThreadPool pool(numThreads);
 
         // 分块处理点云
-        const int blockSize = 100000;
+        const int blockSize = 1000;
         for (int blockStart = 0; blockStart < num_points; blockStart += blockSize) {
             int blockEnd = std::min(blockStart + blockSize, num_points);
             pool.enqueue([this, cloudptr, blockStart, blockEnd] {
