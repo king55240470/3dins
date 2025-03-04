@@ -35,11 +35,8 @@ void MouseInteractorHighlightActor::OnLeftButtonDown()
         QMap<vtkSmartPointer<vtkActor>, CEntity*>& actorToEntity=m_pMainWin->getactorToEntityMap();
         CEntity* entity=actorToEntity[newPickedActor];
 
-        // 用于判断当前是否开启识别功能
-        auto findState = m_pMainWin->getPWinToolWidget()->getAction_Checked();
-
         // 只有打开识别点才会记录坐标
-        if(findState && findState->objectName() == "识别点"){
+        if(m_pMainWin->getPWinToolWidget()->IsFindPoint_Checked()){
             m_pMainWin->getChosenListMgr()->CreatPosition(pos); // 将选中的坐标传入管理器
             auto actor = CreatHighLightPoint(pos);// 生成一个用于高亮的顶点，并存入pickedActors
             HighlightActor(actor);
@@ -52,6 +49,8 @@ void MouseInteractorHighlightActor::OnLeftButtonDown()
             // 给拟合用的cloudptr赋值
             m_pMainWin->getpWinFileMgr()->cloudptr = cloudEntity->m_pointCloud.makeShared();
 
+            // 用于判断当前是否开启识别功能
+            auto findState = m_pMainWin->getPWinToolWidget()->getAction_Checked();
             if(findState){
                 if(findState->objectName() == "识别点"){
                     m_pMainWin->getPWinToolWidget()->onFindPoint();
