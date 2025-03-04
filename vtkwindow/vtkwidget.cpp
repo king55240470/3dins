@@ -69,9 +69,6 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
         renderer->ResetCamera();
         renWin->Render();
     }
-    //createScaleBar();
-    //attachInteractor();
-    //renderer->GetActiveCamera ()->AddObserver(vtkCommand::ModifiedEvent, this, &VtkWidget::UpdateScaleBar);
     getRenderWindow()->Render();
 }
 
@@ -688,7 +685,6 @@ void VtkWidget::createScaleBar()
     double x=renWin->GetSize()[0]-320;
     double y=renWin->GetSize()[1]-170;
 
-    // ========== 标尺线配置参数 ==========
     const int fixedPixelLength = 200;  // 固定像素长度
     const int marginRight = 70;        // 右侧边距
     const int marginBottom = 70;       // 底部边距
@@ -734,11 +730,9 @@ void VtkWidget::UpdateScaleBar()
 {
     if (!renWin || !renderer) return;
 
-    // ========== 获取有效窗口尺寸 ==========
     int* winSize = renWin->GetSize();
     if (winSize[0] <= 0 || winSize[1] <= 0) return;
 
-    // ========== 标尺位置计算 ==========
     const int fixedPixelLength = 200;
     const int marginRight = 70;
     const int marginBottom = 70;
@@ -746,13 +740,8 @@ void VtkWidget::UpdateScaleBar()
     int lineX = winSize[0] - marginRight - fixedPixelLength;
     int lineY = marginBottom;
 
-    // ========== 更新标尺位置 ==========
     scaleBarActor->SetPosition(lineX, lineY);
-
-    // ========== 更新文本位置 ==========
-    scaleText->SetPosition(lineX + 40, lineY - 20); // 文本位于标尺下方20像素
-
-    // ========== 物理长度计算 ==========
+    scaleText->SetPosition(lineX + 55, lineY - 20); // 文本位于标尺下方20像素
     vtkCamera* camera = renderer->GetActiveCamera();
     double physicalLength = 0.0;
 
@@ -766,15 +755,13 @@ void VtkWidget::UpdateScaleBar()
         double distance = camera->GetDistance();
         physicalLength = (fixedPixelLength * 2.0 * distance * tan(viewAngle/2)) / winSize[1];
     }
-
-    // ========== 更新文本内容 ==========
     std::ostringstream ss;
-    ss << "比例Scale: " << std::fixed << std::setprecision(2) << physicalLength << " units(mm)";
+    ss << "" << std::fixed << std::setprecision(2) << physicalLength << " (mm)";
     scaleText->SetInput(ss.str().c_str());
 
-    scaleText->GetTextProperty()->SetFontFamilyToArial(); // 默认字体
-    scaleText->GetTextProperty()->SetFontFile("C:/qcon/3dins/ebrima.ttf");
-    // ========== 安全渲染 ==========
+    //scaleText->GetTextProperty()->SetFontFamilyToArial(); // 默认字体
+    //scaleText->GetTextProperty()->SetFontFile("C:/qcon/3dins/ebrima.ttf");
+
     if (renWin->GetMapped()) {
         renWin->Render();
     }
