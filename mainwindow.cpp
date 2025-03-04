@@ -441,8 +441,9 @@ void MainWindow::openFile(){
     for (const QString &filePath : filePaths) {
         QFileInfo fileInfo(filePath);
         QString fileName = fileInfo.fileName();
-        // 根据文件名是否含有关键词来判断
-        if (fileName.contains("stand") || fileName.contains("标准")) {
+        auto fileLowName = fileName.toLower();
+        // 根据文件名是否含有 "stand"来判断，先转成小写
+        if (fileLowName.contains("stand")) {
             modelCloudExist=true; // 用于保证后续序列化文件
 
             //在modelFileMap中添加添加新文件，并分配新的cloud

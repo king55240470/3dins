@@ -73,10 +73,6 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
     //attachInteractor();
     //renderer->GetActiveCamera ()->AddObserver(vtkCommand::ModifiedEvent, this, &VtkWidget::UpdateScaleBar);
     getRenderWindow()->Render();
-    /*QTimer::singleShot(100, [this](){
-        UpdateScaleBar();
-        renWin->Render();
-    });*/
 }
 
 void VtkWidget::OnMouseMove()
@@ -112,7 +108,7 @@ void VtkWidget::OnMouseMove()
     // 限制渲染频率
     static double lastRenderTime = vtkTimerLog::GetUniversalTime();
     double currentTime = vtkTimerLog::GetUniversalTime();
-    if (currentTime - lastRenderTime > 0.05) {
+    if (currentTime - lastRenderTime > 0.02) {
         getRenderWindow()->Render();
         lastRenderTime = currentTime;
     }
@@ -164,7 +160,7 @@ void VtkWidget::OnLeftButtonPress()
 
             isDragging = true; // 开启拖动状态
             renWin->GetInteractor()->SetEventInformation(clickPos[0], clickPos[1], 0, 0, 0, 0);
-            renWin->GetInteractor()->SetInteractorStyle(0);
+            renWin->GetInteractor()->SetInteractorStyle(0); // 取消高亮事件
             return;
         }
     }
@@ -692,40 +688,6 @@ void VtkWidget::createScaleBar()
     double x=renWin->GetSize()[0]-320;
     double y=renWin->GetSize()[1]-170;
 
-    /*// 定义直线的固定长度和位置
-    const int lineLength = 200; // 直线长度
-    const int lineHeight = 70;  // 直线高度（距离窗口底部的距离）
-    const int padding = 70;     // 距离窗口右侧的距离
-
-    // 获取当前窗口大小
-    int winWidth = renWin->GetSize()[0];
-    int winHeight = renWin->GetSize()[1];
-
-    // 创建直线的两个端点
-    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-    points->InsertNextPoint(winWidth - padding - lineLength, lineHeight, 0); // 起点
-    points->InsertNextPoint(winWidth - padding, lineHeight, 0);             // 终点
-
-    // 创建 vtkLine
-    vtkSmartPointer<vtkLine> line = vtkSmartPointer<vtkLine>::New();
-    line->GetPointIds()->SetId(0, 0); // 起点
-    line->GetPointIds()->SetId(1, 1); // 终点
-
-    // 创建 vtkPolyData
-    vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
-    polyData->SetPoints(points);
-    polyData->Allocate(1, 1);
-    polyData->InsertNextCell(line->GetCellType(), line->GetPointIds());
-
-    // 创建 mapper 和 actor
-    vtkSmartPointer<vtkPolyDataMapper2D> mapper = vtkSmartPointer<vtkPolyDataMapper2D>::New();
-    mapper->SetInputData(polyData);
-
-    scaleBarActor = vtkSmartPointer<vtkActor2D>::New();
-    scaleBarActor->SetMapper(mapper);
-    scaleBarActor->GetProperty()->SetColor(1.0, 0.0, 0.0); // 设置颜色为红色
-    scaleBarActor->GetProperty()->SetLineWidth(2);*/
-
     // ========== 标尺线配置参数 ==========
     const int fixedPixelLength = 200;  // 固定像素长度
     const int marginRight = 70;        // 右侧边距
@@ -953,6 +915,8 @@ void VtkWidget::reDrawCentity(){
                 getRenderer()->AddActor(object->draw());
         }
     }
+    createScaleBar(); // 重新创建比例尺
+    attachInteractor();
     renWin->Render(); // 刷新窗口
 }
 
@@ -1164,7 +1128,6 @@ void VtkWidget::onCompare()
         PathList.append( path_top);
         PathList.append( path_right);
     }
-
 
     ShowColorBar(minDistance, maxDistance);
     createScaleBar();
