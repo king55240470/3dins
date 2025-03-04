@@ -227,6 +227,7 @@ void ElementListWidget::onCustomContextMenuRequested(const QPoint &pos)
     QAction *action7 = menu.addAction("设置别称");
     QAction *action5 = menu.addAction("显示元素信息");
     QAction *action6 = menu.addAction("关闭元素信息");
+    QAction *action8 = menu.addAction("显示标度尺");
     connect(action1, &QAction::triggered, this, &ElementListWidget::onDeleteEllipse);
     connect(action2, &QAction::triggered, this, &ElementListWidget::selectall);
     connect(action3, &QAction::triggered, this, &ElementListWidget::starttime);
@@ -234,6 +235,7 @@ void ElementListWidget::onCustomContextMenuRequested(const QPoint &pos)
     connect(action5, &QAction::triggered, this, &ElementListWidget::showInfotext);
     connect(action6, &QAction::triggered, this, &ElementListWidget::closeInfotext);
     connect(action7, &QAction::triggered, this, &ElementListWidget::changeName);
+    connect(action8, &QAction::triggered, this, &ElementListWidget::createrule);
     menu.exec(mapToGlobal(pos));
 }
 
@@ -808,6 +810,7 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
                 //qDebug()<<"距离"<<dis->getdistancepoint();
                 QTreeWidgetItem *item = treeWidgetNames->topLevelItem(i);
                 m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
+                m_pMainWin->getPWinVtkWidget()->onHighLightActor(m_pMainWin->getEntityListMgr()->getEntityList()[i]);
                 treeWidgetNames->setCurrentItem(item);
                 break;
             }
@@ -969,6 +972,7 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
         for(int i=0;i<objlist.size();i++){
             if(obj->GetObjectCName()==objlist[i]->GetObjectCName()){
                 m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
+                m_pMainWin->getPWinVtkWidget()->onHighLightActor(m_pMainWin->getEntityListMgr()->getEntityList()[i]);
                 QTreeWidgetItem *item = treeWidgetNames->topLevelItem(i);
                 treeWidgetNames->setCurrentItem(item);
                 break;
@@ -987,6 +991,11 @@ void ElementListWidget::isAdd()
     }else if(Nowlistsize<Treelistsize){
         Treelistsize=Nowlistsize;
     }
+}
+
+void ElementListWidget::createrule()
+{
+    m_pMainWin->Createruler();
 }
 
 void ElementListWidget::mouseDoubleClickEvent(QMouseEvent *event)

@@ -151,6 +151,9 @@ public:
 
     QMap<vtkSmartPointer<vtkActor>, CEntity*>& getactorToEntityMap(); // 管理所有centity对象生成的actor
 
+    //创建标度尺
+    void Createruler();
+
 public:
     RELY_ON_CS_TYPE m_nRelyOnWhichCs;
 

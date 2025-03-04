@@ -74,6 +74,7 @@ public:
     void updateDistance();
     void startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree, QVector<CEntity*>distancelist);
     void isAdd();
+    void createrule();
 
 protected:
     void mouseDoubleClickEvent(QMouseEvent *event) override;
