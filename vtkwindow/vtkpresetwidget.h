@@ -14,6 +14,7 @@ public:
     void setWidget(QString);
     void showContextMenu(const QPoint &);
     void deleteWidget();
+    bool eventFilter(QObject *, QEvent *);
 
 private:
     MainWindow *m_pMainWin;
@@ -36,9 +37,11 @@ public:
 
         QLabel *timeLabel = new QLabel(time);
         timeLabel->setStyleSheet("font-size: 8pt; color: gray;");
+        timeLabel->setWordWrap(true);// 设置自动换行
 
         QLabel *messageLabel = new QLabel(a);
         messageLabel->setStyleSheet("font-size: 10pt;");
+        messageLabel->setWordWrap(true);// 设置自动换行
 
         messageLayout->addWidget(timeLabel);
         messageLayout->addWidget(messageLabel);
@@ -47,6 +50,11 @@ public:
 
         setLayout(messageLayout);  // 设置布局
         setStyleSheet("background-color: white;");//设置颜色
+    }
+
+    // 添加更新宽度的函数
+    void updateWidth(int newWidth) {
+        setFixedWidth(newWidth);
     }
 };
 
