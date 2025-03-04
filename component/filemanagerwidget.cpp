@@ -8,6 +8,7 @@
 #include <QMainWindow>
 #include <QDebug>
 #include <QIcon>
+#include <QHeaderView>
 
 FileManagerWidget::FileManagerWidget(QWidget *parent)
     : QWidget{parent}
@@ -27,6 +28,9 @@ FileManagerWidget::FileManagerWidget(QWidget *parent)
     font.setPointSize(newFontSize);
     filetree->setFont(font);
 
+    //设置样式
+    QBrush foregroundBrush(QColor(237,129,39)); // 前景颜色
+
     delegate = new ButtonDelegate(filetree);
     filetree->setItemDelegate(delegate);
 
@@ -36,20 +40,26 @@ FileManagerWidget::FileManagerWidget(QWidget *parent)
     rootItem = model->invisibleRootItem();
 
     modelFile=new QStandardItem("打开的标准模型文件");
+    modelFile->setData(foregroundBrush, Qt::ForegroundRole);
     rootItem->appendRow(modelFile);
 
     measuredFile = new QStandardItem("打开的实测文件");
+    measuredFile->setData(foregroundBrush, Qt::ForegroundRole);
     rootItem->appendRow(measuredFile);
 
     contentItem = new QStandardItem("构建的内容");
+    contentItem->setData(foregroundBrush, Qt::ForegroundRole);
     rootItem->appendRow(contentItem);
 
     identifyItem = new QStandardItem("识别的内容");
+    identifyItem->setData(foregroundBrush, Qt::ForegroundRole);
     rootItem->appendRow(identifyItem);
 
     filetree->setModel(model);
 
     filetree->expandAll();  // 展开所有项
+
+    //filetree->setIndentation(0); // 取消缩进
 
     layout->addWidget(filetree);
     layout->setContentsMargins(0, 0, 0, 0);//消除边距

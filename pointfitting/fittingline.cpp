@@ -53,20 +53,47 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingLine::RANSAC(pcl::PointXYZRGB sear
         // }
         // averageCurvature /= cloudptr->size();
 
-        //使用std::async创建异步任务，提升运行速度
+        // //使用std::async创建异步任务，提升运行速度
+        // int num_points = cloudptr->size();
+        // curvatures.resize(num_points);
+        // std::vector<std::future<double>> futures;
+
+        // for (int i = 0; i < num_points; ++i) {
+        //     futures.emplace_back(std::async(std::launch::async, &FittingLine::calculateCurvature, this, cloudptr, i, 0.1));
+        // }
+
+        // for (int i = 0; i < num_points; ++i) {
+        //     curvatures[i] = futures[i].get();
+        //     averageCurvature += curvatures[i];
+        // }
+        //  averageCurvature /= num_points;
+
         int num_points = cloudptr->size();
         curvatures.resize(num_points);
-        std::vector<std::future<double>> futures;
+        averageCurvature = 0.0;
 
-        for (int i = 0; i < num_points; ++i) {
-            futures.emplace_back(std::async(std::launch::async, &FittingLine::calculateCurvature, this, cloudptr, i, 0.1));
+        // 创建线程池
+        size_t numThreads = std::thread::hardware_concurrency();
+        ThreadPool pool(numThreads);
+
+        // 分块处理点云
+        const int blockSize = 100000;
+        for (int blockStart = 0; blockStart < num_points; blockStart += blockSize) {
+            int blockEnd = std::min(blockStart + blockSize, num_points);
+            pool.enqueue([this, cloudptr, blockStart, blockEnd] {
+                for (int i = blockStart; i < blockEnd; ++i) {
+                    curvatures[i] = calculateCurvature(cloudptr, i, 0.1);
+                    qDebug()<<i;
+                    std::lock_guard<std::mutex> lock(this->mtx);  // 使用 mutex 保护共享资源
+                    averageCurvature += curvatures[i];
+                }
+            });
         }
 
-        for (int i = 0; i < num_points; ++i) {
-            curvatures[i] = futures[i].get();
-            averageCurvature += curvatures[i];
-        }
-         averageCurvature /= num_points;
+        // 等待所有任务完成
+        pool.enqueue([] {});
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        averageCurvature /= num_points;
 
         for (int i = 0; i < cloud_subset->size(); i++) {
             int index = indexs[i];
