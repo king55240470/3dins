@@ -19,7 +19,7 @@ FileManagerWidget::FileManagerWidget(QWidget *parent)
 
     filetree=new QTreeView(this);
     filetree->setEditTriggers(QAbstractItemView::NoEditTriggers); // 禁用编辑
-    filetree->setSelectionMode(QAbstractItemView::NoSelection); // 禁用选中
+    // filetree->setSelectionMode(QAbstractItemView::NoSelection); // 禁用选中
     //设置QTreeView的字体大小
     int width = filetree->width();
     int height = filetree->height();
