@@ -31,36 +31,66 @@ void MouseInteractorHighlightActor::OnLeftButtonDown()
     // 如果选中了actor
     if (newPickedActor)
     {
-        // 如果拾取成功，输出拾取点的世界坐标
         m_pMainWin->getChosenListMgr()->CreatPosition(pos); // 将选中的坐标传入管理器
+        // 生成一个用于高亮的顶点，并存入pickedActors
+        auto actor = CreatHighLightPoint(pos);
+        HighlightActor(actor);
 
         // 得到点中的centity
         QMap<vtkSmartPointer<vtkActor>, CEntity*>& actorToEntity=m_pMainWin->getactorToEntityMap();
         CEntity* entity=actorToEntity[newPickedActor];
 
-        // 如果选中的是点云类型的actor，则转成CPointCloud，然后给拟合用的cloudptr赋值
+        // 如果选中的是点云类型的actor
         if(entity->GetUniqueType() == enPointCloud){
             auto cloudEntity = (CPointCloud*)entity;
             qDebug() << "选中的点云大小:" << cloudEntity->m_pointCloud.size();
+            // 给拟合用的cloudptr赋值
             m_pMainWin->getpWinFileMgr()->cloudptr = cloudEntity->m_pointCloud.makeShared();
+
+            // 判断当前是否开启识别某种图形的功能
+            auto findState = m_pMainWin->getPWinToolWidget()->getAction_Checked();
+            if(findState){
+                if(findState->objectName() == "识别点"){
+                    m_pMainWin->getPWinToolWidget()->onFindPoint();
+                }
+                if(findState->objectName() == "识别线"){
+                    m_pMainWin->getPWinToolWidget()->onFindLine();
+                }
+                if(findState->objectName() == "识别圆"){
+                    m_pMainWin->getPWinToolWidget()->onFindCircle();
+                }
+                if(findState->objectName() == "识别平面"){
+                    m_pMainWin->getPWinToolWidget()->onFindPlane();
+                }
+                if(findState->objectName() == "识别球"){
+                    m_pMainWin->getPWinToolWidget()->onFindSphere();
+                }
+                if(findState->objectName() == "识别圆锥"){
+                    m_pMainWin->getPWinToolWidget()->onFindCone();
+                }
+                if(findState->objectName() == "识别圆柱"){
+                    m_pMainWin->getPWinToolWidget()->onFindCylinder();
+                }
+                if(findState->objectName() == "识别矩形"){
+                    m_pMainWin->getPWinToolWidget()->onFindPlane();
+                }
+            }
         }
-
-        // 生成一个用于高亮的顶点，并存入pickedActors
-        auto actor = CreatHighLightPoint(pos);
-
-        HighlightActor(actor);
     }
 
     // 调用基类的左键按下事件
     vtkInteractorStyleTrackballCamera::OnLeftButtonDown();
 }
 
+void MouseInteractorHighlightActor::OnLeftButtonUp()
+{
+    // 调用基类的左键释放事件
+    vtkInteractorStyleTrackballCamera::OnLeftButtonUp();
+}
 
 // 重写右键按下事件，取消选中；双击则弹出菜单栏
 void MouseInteractorHighlightActor::OnRightButtonDown()
 {
-    // vtkMenu->showTearOffMenu(); // 弹出菜单栏
-
     // 获取鼠标点击的位置
     int* clickPos = this->GetInteractor()->GetEventPosition();
 
@@ -126,7 +156,7 @@ vtkActor* MouseInteractorHighlightActor::CreatHighLightPoint(double pos[3])
     // 创建执行器，添加mapper
     vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
-    actor->GetProperty()->SetPointSize(6); // 设置点的大小
+    actor->GetProperty()->SetPointSize(7); // 设置点的大小
     point_actors.push_back(actor); // 存入point_actors
 
     renderer->AddActor(actor);

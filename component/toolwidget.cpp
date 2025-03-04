@@ -571,10 +571,7 @@ void ToolWidget::connectActionWithF(){
             Is_FindPoint_Cheked=true;
             action->setIcon(QIcon(":/component/find/point_.png"));
             action->setToolTip("已选中");
-            ToolWidget::onFindPoint();
-            QString log="开始识别点";
-            m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
-            log="开始记录坐标";
+            QString log="开始识别点, 记录选中点的坐标";
             m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
         } else {
             Is_FindPoint_Cheked=false;
@@ -626,7 +623,6 @@ void ToolWidget::connectActionWithF(){
           Action_Checked=(ToolAction*)action;
         action->setIcon(QIcon(":/component/find/circle_.jpg"));
         action->setToolTip("已选中");
-        ToolWidget::onFindCircle();
 
         QString log="开始识别圆";
         m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
@@ -653,7 +649,6 @@ void ToolWidget::connectActionWithF(){
             Action_Checked=(ToolAction*)action;
             action->setIcon(QIcon(":/component/find/plane_.png"));
             action->setToolTip("已选中");
-            ToolWidget::onFindPlane();
 
             QString log="开始识别平面";
             m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
@@ -680,7 +675,6 @@ void ToolWidget::connectActionWithF(){
              Action_Checked=(ToolAction*)action;
             action->setIcon(QIcon(":/component/find/rectangle_.png"));
             action->setToolTip("已选中");
-            ToolWidget::onFindPlane();
 
             QString log="开始识别矩形";
             m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
@@ -706,7 +700,6 @@ void ToolWidget::connectActionWithF(){
             Action_Checked=(ToolAction*)action;
             action->setIcon(QIcon(":/component/find/cylinder_.jpg"));
             action->setToolTip("已选中");
-            ToolWidget::onFindRectangle();
 
             QString log="开始识别圆柱";
             m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
@@ -733,7 +726,6 @@ void ToolWidget::connectActionWithF(){
             Action_Checked=(ToolAction*)action;
             action->setIcon(QIcon(":/component/find/cone_.jpg"));
             action->setToolTip("已选中");
-            ToolWidget::onFindCone();
 
             QString log="开始识别圆锥";
             m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
@@ -760,7 +752,6 @@ void ToolWidget::connectActionWithF(){
             Action_Checked=(ToolAction*)action;
             action->setIcon(QIcon(":/component/find/sphere_.png"));
             action->setToolTip("已选中");
-            ToolWidget::onFindSphere();
 
             QString log="开始识别球形";
             m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
