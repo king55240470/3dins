@@ -107,6 +107,7 @@ public:
     void setBegin(const CPosition &newBegin);
     CPosition getEnd() const;
     void setEnd(const CPosition &newEnd);
+    double getExtent();
     QString getCEntityInfo() override;
     void setCurrentId(){currentLineId++;
         m_strAutoName = QString("线%1").arg(currentLineId);

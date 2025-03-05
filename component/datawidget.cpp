@@ -200,7 +200,6 @@ void DataWidget::updateinfo()
                     table->setItem(0, 1, new QTableWidgetItem(QString::number(temposition2.x,'f',6)));
                     table->setItem(1, 1, new QTableWidgetItem(QString::number(temposition2.y,'f',6)));
                     table->setItem(2, 1, new QTableWidgetItem(QString::number(temposition2.z,'f',6)));
-
                     table->viewport()->update();
                 });
 
@@ -239,6 +238,10 @@ void DataWidget::updateinfo()
                 table->setItem(5, 0, new QTableWidgetItem("终点_z"));
                 table->setItem(5, 1, new QTableWidgetItem(QString::number(position2.z,'f',6)));
                 table->setItem(5, 2, new QTableWidgetItem(""));
+
+                table->setItem(6, 0, new QTableWidgetItem("长度"));
+                table->setItem(6, 1, new QTableWidgetItem(QString::number(line->getExtent(),'f',6)));
+                table->setItem(6, 2, new QTableWidgetItem(""));
 
             }
         }
