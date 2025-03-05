@@ -5,6 +5,8 @@
 #include "geometry/globes.h"
 #include "manager/chosencentitymgr.h"
 #include "manager/filemgr.h"
+#include "component/toolwidget.h"
+#include "pointfitting/setdatawidget.h"
 
 #include <QVector>
 #include <QDebug>
@@ -29,6 +31,8 @@
 #include <vtkCallbackCommand.h>
 #include <vtkCommand.h>
 
+class ToolWidget;
+
 // 定义一个继承自vtkInteractorStyleTrackballCamera的类，用于处理鼠标交互
 class MouseInteractorHighlightActor : public vtkInteractorStyleTrackballCamera
 {
@@ -40,6 +44,7 @@ public:
     MouseInteractorHighlightActor(vtkInteractorStyleTrackballCamera* parent = nullptr);
 
     virtual void OnLeftButtonDown() override; // 重写左键按下事件，点击高亮
+    virtual void OnLeftButtonUp() override; // 重写左键释放事件
     virtual void OnRightButtonDown() override; // 重写右键按下事件，取消高亮
 
     void SetRenderer(vtkRenderer* renderer);     // 绑定渲染器

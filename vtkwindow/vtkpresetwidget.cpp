@@ -35,6 +35,9 @@ VtkPresetWidget::VtkPresetWidget(QWidget *parent)
     //设置并连接右键菜单的操作
     treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(treeWidget, &QTreeView::customContextMenuRequested, this, &VtkPresetWidget::showContextMenu);
+
+    // 提升为指针类型，以便在 resizeEvent 中使用
+    treeWidget->installEventFilter(this);
 }
 
 void VtkPresetWidget::setWidget(QString a){
@@ -75,6 +78,16 @@ void VtkPresetWidget::deleteWidget(){
     treeWidget->clear();
 }
 
-
-
-
+bool VtkPresetWidget::eventFilter(QObject *obj, QEvent *event)
+{
+    if (obj == treeWidget && event->type() == QEvent::Resize) {
+        int treeWidth = treeWidget->width();
+        for (int i = 0; i < treeWidget->topLevelItemCount(); ++i) {
+            QTreeWidgetItem *item = treeWidget->topLevelItem(i);
+            QWidget *itemWidget = treeWidget->itemWidget(item, 0);
+            MessageItemWidget *messageWidget = static_cast<MessageItemWidget*>(itemWidget);
+            messageWidget->updateWidth(treeWidth);
+        }
+    }
+    return QWidget::eventFilter(obj, event);
+}

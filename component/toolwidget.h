@@ -114,7 +114,6 @@ public:
     bool IsFindPoint_Checked();
 
 
-
 public slots:
               //构造
     void onConstructPoint();
