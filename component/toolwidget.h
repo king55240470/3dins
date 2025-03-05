@@ -225,8 +225,11 @@ private:
 
     //是否自动化保存内容
     bool IsAuto=false;
+    //是否已保存
     bool m_savePdf=false;
     bool m_saveWord=false;
+    bool m_saveTxt=false;
+    bool m_saveExcel=false;
 
 
 

@@ -739,6 +739,9 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
             timer=nullptr;
             m_pMainWin->getPWinToolWidget()->setauto(true);
             m_pMainWin->getPWinToolWidget()->onSaveTxt();
+            m_pMainWin->getPWinToolWidget()->onSaveWord();
+            m_pMainWin->getPWinToolWidget()->onSaveExcel();
+            m_pMainWin->getPWinToolWidget()->onSavePdf();
             m_pMainWin->getPWinToolWidget()->setauto(false);
         }
 
