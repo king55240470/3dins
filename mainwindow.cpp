@@ -388,11 +388,11 @@ void MainWindow::setupUi(){
 }
 
 void MainWindow::LoadWidgets(){
+    pWinVtkPresetWidget=new VtkPresetWidget(this);
     pWinDataWidget=new DataWidget(this);
     pWinElementListWidget=new ElementListWidget(this);
     pWinFileManagerWidget=new FileManagerWidget(this);
     pWinToolWidget=new ToolWidget(this);
-    pWinVtkPresetWidget=new VtkPresetWidget(this);
     pWinVtkWidget=new VtkWidget(this);
     pWinReportWidget=new ReportWidget(this);
     pWinLogWidget=new LogWidget(this);

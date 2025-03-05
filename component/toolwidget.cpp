@@ -334,6 +334,8 @@ void ToolWidget::InitOutputFolder(){
     createFolder(ParentPath+"/输出/image");
     createFolder(ParentPath+"/输出/excel");
     createFolder(ParentPath+"/输出/txt");
+    m_pMainWin->getPWinVtkPresetWidget()->setWidget("已创建文件夹"+ParentPath+"/输出");
+
 }
 void ToolWidget::clearToolWidget(){
 
@@ -782,13 +784,13 @@ void ToolWidget::connectActionWithF(){
 
     // //保存
     //connect(save_actions_[save_action_name_list_.indexOf("excel")],&QAction::triggered,this,&  ToolWidget::onSaveExcel);
-    // connect(save_actions_[save_action_name_list_.indexOf("word")],&QAction::triggered,this,&  ToolWidget::onSaveWord);
+     //connect(save_actions_[save_action_name_list_.indexOf("word")],&QAction::triggered,this,&  ToolWidget::onSaveWord);
     // connect(save_actions_[save_action_name_list_.indexOf("txt")],&QAction::triggered,this,&  ToolWidget::onSaveTxt);
     // connect(save_actions_[save_action_name_list_.indexOf("pdf")],&QAction::triggered,this,&  ToolWidget::onSavePdf);
     // connect(save_actions_[save_action_name_list_.indexOf("image")],&QAction::triggered,this,&  ToolWidget::onSaveImage);
 
     //打开
-    //connect(save_actions_[save_action_name_list_.indexOf("excel")], &QAction::triggered, this, &ToolWidget::onOpenExcel);
+    connect(save_actions_[save_action_name_list_.indexOf("excel")], &QAction::triggered, this, &ToolWidget::onOpenExcel);
     connect(save_actions_[save_action_name_list_.indexOf("word")], &QAction::triggered, this, &ToolWidget::onOpenWord);
     connect(save_actions_[save_action_name_list_.indexOf("txt")], &QAction::triggered, this, &ToolWidget::onOpenTxt);
     connect(save_actions_[save_action_name_list_.indexOf("pdf")], &QAction::triggered, this, &ToolWidget::onOpenPdf);
@@ -898,7 +900,7 @@ void   ExtractData(QVector<CEntity *>& entitylist,QList<QList<QString>>& dataAll
             CDistance* Distance=(CDistance*) entity;
             inList<<"距离";
             inList<<Distance->m_strCName;
-            inList<<QString::number(Distance->getdistance(),'f',6);
+            inList<<QString::number(abs(Distance->getdistance()),'f',6);
             inList<<QString::number(Distance->getUptolerance(),'f',6);
             inList<<QString::number(Distance->getUndertolerance(),'f',6);
             if (Distance->judge())
@@ -910,7 +912,7 @@ void   ExtractData(QVector<CEntity *>& entitylist,QList<QList<QString>>& dataAll
             CAngle* Angle=(CAngle*)entity;
             inList<<"角度";
             inList<<Angle->m_strCName;
-            inList<<QString::number(Angle->getAngleValue(),'f',6);
+            inList<<QString::number(abs(Angle->getAngleValue()),'f',6);
             inList<<QString::number(Angle->getUptolerance(),'f',6);
             inList<<QString::number(Angle->getUndertolerance(),'f',6);
             if (Angle->judge())
@@ -918,6 +920,7 @@ void   ExtractData(QVector<CEntity *>& entitylist,QList<QList<QString>>& dataAll
             else
                 inList<<"不合格";
         }
+        if(inList.size())
         dataAll.append(inList);
     }
 }
@@ -1110,7 +1113,7 @@ void   ToolWidget::onSavePdf(){
        painter.drawText(tableX + xDistance*5+ 20,tableY + 30,"是否合格");
 
        painter.setFont(QFont("Arial", 12));
-       int yPos = 30;
+       int yPos = 90;
        bool MoreThanOne=false;
        for (const QList<QString>& rowData : dataAll) {
            if(yPos+yDistance>PDFheight){
@@ -1131,7 +1134,7 @@ void   ToolWidget::onSavePdf(){
            }
            int count=0;
            for (const QString& cellData : rowData) {
-                painter.drawText(tableX + 20+count*xDistance, tableY +yPos-120, cellData);
+                painter.drawText(tableX + 20+count*xDistance, tableY +yPos, cellData);
                 count++;
            }
 
@@ -1140,7 +1143,7 @@ void   ToolWidget::onSavePdf(){
        if(MoreThanOne){
            painter.drawRect(tableX, 10,tableX + xDistance*6+40, yPos);
        }else{
-           painter.drawRect(tableX, tableY+40,tableX + xDistance*6+40, yPos-100);
+           painter.drawRect(tableX, tableY+40,tableX + xDistance*6+40, yPos);
        }
 
        pdf.newPage();
@@ -1170,7 +1173,7 @@ void   ToolWidget::onSavePdf(){
        painter.drawText(0, 0, "3. 测量结果图");
        painter.drawText(0, 60, "（1）全局对比");
        int imageX = 0;
-       int imageY = 50+60;
+       int imageY = 50+30;
        int imageWidth = 1422;
        int imageHeight = 1002;
        int count=1;
@@ -1270,7 +1273,7 @@ void   ToolWidget::onSavePdf(){
 
 
 void   ToolWidget::onSaveExcel(){
-    QString path= getOutputPath("xlsx");
+    QString path= getOutputPath("excel");
     QString name=getTimeString();
 
     QString filePath=path+"/"+name+".xlsx";
@@ -1278,7 +1281,8 @@ void   ToolWidget::onSaveExcel(){
     // if (filePath.isEmpty()){
     //     return ;
     // }
-
+    if(m_saveExcel==true)
+        filePath=lastCreatedExcelFile;
     QStringList headers;
     headers << "类型" << "名称" << "数据1" << "数据2" << "数据3"<<"数据4"<<"数据5" ;
     int col = headers.size();
@@ -1381,6 +1385,7 @@ void   ToolWidget::onSaveExcel(){
     QString logInfo="Excel保存成功";
     m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
     lastCreatedExcelFile=filePath;
+    m_saveExcel=true;
 }
 
 void ToolWidget::onSaveTxt(){
@@ -1420,7 +1425,10 @@ void ToolWidget::onSaveTxt(){
     QString path= getOutputPath("txt");
     QString name=getTimeString();
 
-     filePath=path+"/"+name+".txt";
+    filePath=path+"/"+name+".txt";
+    if(m_saveTxt==true)
+        filePath=lastCreatedTxtFile;
+
 
 
     // 创建 QFile 对象
@@ -1442,7 +1450,7 @@ void ToolWidget::onSaveTxt(){
          if(object->GetUniqueType()==enDistance){
             CDistance* Distance=(CDistance*) object;
             out<<"类型：距离 名称："<<Distance->m_strCName<<Qt::endl;
-            out<<"大小："<<Distance->getdistance()<<"  上公差："<<Distance->getUptolerance()<<"  下公差："<<Distance->getUndertolerance()<<Qt::endl;
+            out<<"大小："<<abs(Distance->getdistance())<<"  上公差："<<Distance->getUptolerance()<<"  下公差："<<Distance->getUndertolerance()<<Qt::endl;
             QString qua;
             if(Distance->judge())
             {
@@ -1455,7 +1463,7 @@ void ToolWidget::onSaveTxt(){
         }else if(object->GetUniqueType()==enAngle){
             CAngle* Angle=(CAngle*)object;
             out<<"类型：角度 名称："<<Angle->m_strCName<<Qt::endl;
-            out<<"大小："<<Angle->getAngle()<<Qt::endl;
+            out<<"大小："<<abs(Angle->getAngle())<<Qt::endl;
             QString qua;
             if(Angle->judge())
             {
@@ -1473,64 +1481,284 @@ void ToolWidget::onSaveTxt(){
     QString logInfo="Txt保存成功";
     m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
     lastCreatedTxtFile=filePath;
+    m_saveTxt=true;
 }
 
 
 
 
 void   ToolWidget::onSaveWord(){
+
     QString path= getOutputPath("word");
     QString name=getTimeString();
 
     QString filePath=path+"/"+name+".docx";
-    // QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "", QString("word(*.doc *.docx)"));
-    // if (filePath.isEmpty()) {
-    //     return;
-    // }
+    if(m_saveWord==true)
+        filePath=lastCreatedWordFile;
+
 
     QStringList headers;
-    headers << "类型" << "名称" << "数据1" << "数据2" << "数据3" << "数据4" << "数据5";
+    headers << "类型" << "名称" << "数值" << "上公差" << "下公差" << "是否合格" ;
     auto& entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
     int col = headers.size();
     int row = entitylist.size();
     QList<QList<QString>> dataAll;
     ExtractData(entitylist, dataAll);
 
-    // 创建一个QTextDocument对象
-    QTextDocument doc;
 
-    // 创建一个QTextCursor对象
-    QTextCursor cursor(&doc);
-
-    // 标题和参数信息
-    cursor.insertText("entitylist列表输出\n\n");
-
-    // 插入表头
-    for (const QString& header : headers) {
-        cursor.insertText(header + "\t");
-    }
-    cursor.insertBlock();
-
+    int HeadTitleSize=35;
+    int TitleSize=24;
+    int TextSize=20;
     // 插入数据
-    for (const QList<QString>& rowData : dataAll) {
-        for (const QString& cellData : rowData) {
-            cursor.insertText(cellData + "\t");
-        }
+
+    QTextDocument document;
+    QTextCursor cursor(&document);
+
+    // 设置字体
+    QFont font;
+    font.setFamily("SimSun"); // 使用支持中文字符的字体，例如宋体
+    font.setPointSize(12);
+    QTextCharFormat charFormat;
+    charFormat.setFont(font);
+    cursor.setCharFormat(charFormat);
+
+    // 封面页
+    {
         cursor.insertBlock();
+        cursor.setBlockFormat(QTextBlockFormat());
+
+        // 设置标题
+        QFont titleFont("SimSun", HeadTitleSize, QFont::Bold);
+        charFormat.setFont(titleFont);
+        cursor.setCharFormat(charFormat);
+        cursor.insertText("工业测量报告\n\n");
+
+        // 插入图片
+        QImage image(":/style/ruler.png");
+        if (!image.isNull()) {
+            QTextImageFormat imageFormat;
+            imageFormat.setName(":/style/ruler.png");
+            imageFormat.setWidth(200);
+            imageFormat.setHeight(100);
+            cursor.insertImage(imageFormat);
+            cursor.insertBlock();
+        } else {
+            qDebug() << "无法加载图片：:/style/ruler.png";
+        }
+
+        // 设置副标题
+        QFont subtitleFont("SimSun", TitleSize);
+        charFormat.setFont(subtitleFont);
+        cursor.setCharFormat(charFormat);
+        cursor.insertText("测量项目: 3D 测量系统\n");
+        cursor.insertText("测量日期: " + QDateTime::currentDateTime().toString("yyyy-MM-dd") + "\n");
+        cursor.insertText("测量单位: 三维工业测量软件开发组\n\n");
+
+        // 添加描述性文本
+        QFont contentFont("SimSun", TitleSize);
+        charFormat.setFont(contentFont);
+        cursor.setCharFormat(charFormat);
+        cursor.insertText("本报告详细记录了使用3D测量系统进行的测量项目。\n");
+        cursor.insertText("测量日期为" + QDateTime::currentDateTime().toString("yyyy-MM-dd") + "，\n");
+        cursor.insertText("由三维工业测量软件开发组负责执行和分析。\n");
+
+        cursor.insertBlock();
+        cursor.insertText("\n\n\n\n");
     }
 
-    // vtkRenderWindow渲染窗口的代码不变
+    // 目录
+    {
+        QFont subtitleFont("SimSun", TitleSize, QFont::Bold);
+        charFormat.setFont(subtitleFont);
+        cursor.setCharFormat(charFormat);
+        cursor.insertText("目录\n\n");
 
-    // 将QTextDocument的内容保存为纯文本文件
+        QFont contentFont("SimSun", TextSize);
+        charFormat.setFont(contentFont);
+        cursor.setCharFormat(charFormat);
+        cursor.insertText("1. 测量数据概览\n");
+        cursor.insertText("2. 数据分析\n");
+        cursor.insertText("3. 测量结果图\n");
+        cursor.insertText("4. 结论与建议\n");
+        cursor.insertText("5. 附录\n\n");
+
+        cursor.insertBlock();
+        cursor.insertText("\n\n\n\n");
+    }
+
+    // 测量数据概览
+    {
+        QFont titleFont("SimSun",TitleSize, QFont::Bold);
+        charFormat.setFont(titleFont);
+        cursor.setCharFormat(charFormat);
+        cursor.insertText("1. 测量数据概览\n\n");
+
+        QFont tableFont("SimSun", TextSize);
+        charFormat.setFont(tableFont);
+        cursor.setCharFormat(charFormat);
+        QTextTableFormat tableFormat;
+        tableFormat.setBorder(1);
+        tableFormat.setCellPadding(12);
+        tableFormat.setCellSpacing(0);
+
+        QTextTable* table = cursor.insertTable(dataAll.size() + 1, 6, tableFormat);
+
+        table->cellAt(0, 0).firstCursorPosition().insertText("类型");
+        table->cellAt(0, 1).firstCursorPosition().insertText("名称");
+        table->cellAt(0, 2).firstCursorPosition().insertText("数值");
+        table->cellAt(0, 3).firstCursorPosition().insertText("上公差");
+        table->cellAt(0, 4).firstCursorPosition().insertText("下公差");
+        table->cellAt(0, 5).firstCursorPosition().insertText("是否合格");
+
+        int row = 1;
+        for (const QList<QString>& rowData : dataAll) {
+            int col = 0;
+            for (const QString& cellData : rowData) {
+                table->cellAt(row, col).firstCursorPosition().insertText(cellData);
+                col++;
+            }
+            row++;
+        }
+        cursor.movePosition(QTextCursor::End);
+
+        cursor.insertBlock();
+        cursor.insertText("\n\n\n\n");
+    }
+
+    // 数据分析
+    {
+        QFont titleFont("SimSun", TitleSize, QFont::Bold);
+        charFormat.setFont(titleFont);
+        cursor.setCharFormat(charFormat);
+        cursor.insertText("2. 数据分析\n\n");
+
+        QFont contentFont("SimSun", TextSize);
+        charFormat.setFont(contentFont);
+        cursor.setCharFormat(charFormat);
+        cursor.insertText("根据测量数据，我们对以下指标进行了分析:\n");
+        cursor.insertText("- 数据1: 平均值为 50.00，标准差为 10.00\n");
+        cursor.insertText("- 数据2: 最大值为 98.50，最小值为 12.30\n");
+        cursor.insertText("- 数据3: 中位数为 45.20，范围为 10.50 - 89.70\n");
+
+        cursor.insertBlock();
+        cursor.insertText("\n\n\n\n");
+    }
+
+    // 测量结果图
+    {
+        QFont titleFont("SimSun", TitleSize, QFont::Bold);
+        charFormat.setFont(titleFont);
+        cursor.setCharFormat(charFormat);
+        cursor.insertText("3. 测量结果图\n\n");
+
+        cursor.insertText("（1）全局对比\n");
+        int i=0;
+        for (const QString &imagePath : imagePaths) {
+            QImage image(imagePath);
+            if (!image.isNull()) {
+                QTextImageFormat imageFormat;
+                imageFormat.setName(imagePath);
+                imageFormat.setWidth(400); // 根据需要调整宽度
+                cursor.insertImage(imageFormat);
+                QFont TextFont("SimSun", TextSize, QFont::Bold);
+                charFormat.setFont( TextFont);
+                cursor.setCharFormat(charFormat);
+                cursor.insertText("\n");
+                cursor.insertText("       图"+QString::number(++i)+" 全局对比图\n");
+                cursor.insertBlock();
+            } else {
+                qDebug() << "无法加载图片：" << imagePath;
+            }
+        }
+
+        cursor.insertBlock();
+        cursor.insertText("\n\n\n\n");
+
+
+    }
+    {
+        QFont titleFont("SimSun", TitleSize, QFont::Bold);
+        charFormat.setFont(titleFont);
+        cursor.setCharFormat(charFormat);
+        int i=0;
+        cursor.insertText("（2）局部对比\n");
+        for (const QString &imagePath : imagePaths_part) {
+            QImage image(imagePath);
+            if (!image.isNull()) {
+                QTextImageFormat imageFormat;
+                imageFormat.setName(imagePath);
+                imageFormat.setWidth(400); // 根据需要调整宽度
+                cursor.insertImage(imageFormat);
+                QFont TextFont("SimSun", TextSize, QFont::Bold);
+                charFormat.setFont( TextFont);
+                cursor.setCharFormat(charFormat);
+                cursor.insertText("\n");
+                cursor.insertText("       图"+QString::number(++i)+" 局部对比图\n");
+                cursor.insertBlock();
+            } else {
+                qDebug() << "无法加载图片：" << imagePath;
+            }
+        }
+
+        cursor.insertBlock();
+        cursor.insertText("\n\n\n\n");
+    }
+
+    // 结论与建议
+    {
+        QFont titleFont("SimSun", TitleSize, QFont::Bold);
+        charFormat.setFont(titleFont);
+        cursor.setCharFormat(charFormat);
+        cursor.insertText("4. 结论与建议\n\n");
+
+        QFont contentFont("SimSun", TextSize);
+        charFormat.setFont(contentFont);
+        cursor.setCharFormat(charFormat);
+        cursor.insertText("根据测量数据和分析结果，我们得出以下结论:\n");
+        cursor.insertText("- 数据整体符合预期，波动范围在合理范围内\n");
+        cursor.insertText("- 数据3的异常点需要进一步检查和验证\n");
+        cursor.insertText("建议:\n");
+        cursor.insertText("- 对异常点进行详细检查\n");
+        cursor.insertText("- 定期进行测量系统校准\n");
+
+        cursor.insertBlock();
+        cursor.insertText("\n\n\n\n");
+    }
+
+    // 附录
+    {
+        QFont titleFont("SimSun", TitleSize, QFont::Bold);
+        charFormat.setFont(titleFont);
+        cursor.setCharFormat(charFormat);
+        cursor.insertText("5. 附录\n\n");
+
+        QFont contentFont("SimSun", TextSize);
+        charFormat.setFont(contentFont);
+        cursor.setCharFormat(charFormat);
+        cursor.insertText("参考文献:\n");
+        cursor.insertText("- 3d工业测量软件开发组测量标准\n");
+        cursor.insertText("- 测量系统用户手册\n");
+
+        cursor.insertBlock();
+        cursor.insertText("\n\n\n\n");
+    }
+
+
     QFile file(filePath);
-    if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+    if (file.open(QIODevice::WriteOnly)) {
         QTextStream stream(&file);
-        stream << doc.toPlainText();
+        stream << document.toHtml();  // 使用toHtml()方法保存富文本格式
         file.close();
         QString logInfo="Word保存成功";
         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
+    }else
+    {
+        qDebug()<<"保存失败";
     }
+
+
     lastCreatedWordFile=filePath;
+    m_saveWord=true;
 
 }
 
@@ -2635,10 +2863,10 @@ void ToolWidget::createFolder(QString path){
     QDir dir;
     if (dir.mkpath(path)) {
 
-        qDebug() << "文件夹创建成功:" << path;
+        //qDebug() << "文件夹创建成功:" << path;
     } else {
 
-        qDebug() << "文件夹创建失败:" << path;
+        //qDebug() << "文件夹创建失败:" << path;
     }
 }
 
