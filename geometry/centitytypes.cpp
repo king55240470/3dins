@@ -848,6 +848,11 @@ void CLine::setEnd(const CPosition &newEnd)
     end = newEnd;
 }
 
+double CLine::getExtent()
+{
+    return sqrt(pow(begin.x - end.x,  2) + pow(begin.y - end.y,  2) + pow(begin.z - end.z,  2));
+}
+
 QString CLine::getCEntityInfo()
 {
     QString infoText = QString("Line\nbegin_X: %1\nbegin_Y: %2\nbegin_Z: %3\n end_X: %4\nend_Y: %5\nend_Z: %6").arg(QString::number(begin.x, 'f',  6))
