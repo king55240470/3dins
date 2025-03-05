@@ -105,7 +105,7 @@ void VtkWidget::OnMouseMove()
     // 限制渲染频率
     static double lastRenderTime = vtkTimerLog::GetUniversalTime();
     double currentTime = vtkTimerLog::GetUniversalTime();
-    if (currentTime - lastRenderTime > 0.05) {
+    if (currentTime - lastRenderTime > 0.02) {
         getRenderWindow()->Render();
         lastRenderTime = currentTime;
     }
@@ -157,7 +157,7 @@ void VtkWidget::OnLeftButtonPress()
 
             isDragging = true; // 开启拖动状态
             renWin->GetInteractor()->SetEventInformation(clickPos[0], clickPos[1], 0, 0, 0, 0);
-            renWin->GetInteractor()->SetInteractorStyle(0);
+            renWin->GetInteractor()->SetInteractorStyle(0); // 取消高亮事件
             return;
         }
     }
@@ -902,6 +902,8 @@ void VtkWidget::reDrawCentity(){
                 getRenderer()->AddActor(object->draw());
         }
     }
+    createScaleBar(); // 重新创建比例尺
+    attachInteractor();
     renWin->Render(); // 刷新窗口
 }
 
@@ -1113,7 +1115,6 @@ void VtkWidget::onCompare()
         PathList.append( path_top);
         PathList.append( path_right);
     }
-
 
     ShowColorBar(minDistance, maxDistance);
     createScaleBar();
