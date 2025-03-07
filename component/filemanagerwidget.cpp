@@ -29,7 +29,7 @@ FileManagerWidget::FileManagerWidget(QWidget *parent)
     filetree->setFont(font);
 
     //设置样式
-    QBrush foregroundBrush(QColor(237,129,39)); // 前景颜色
+    QBrush foregroundBrush(QColor(255*0.2, 255*0.3, 255*0.5)); // 前景颜色
 
     delegate = new ButtonDelegate(filetree);
     filetree->setItemDelegate(delegate);
