@@ -7,6 +7,7 @@
 #include "manager/filemgr.h"
 #include "component/toolwidget.h"
 #include "pointfitting/setdatawidget.h"
+#include "vtkwindow/vtkpresetwidget.h"
 
 #include <QVector>
 #include <QDebug>
@@ -32,6 +33,7 @@
 #include <vtkCommand.h>
 
 class ToolWidget;
+class VtkPresetWidget;
 
 // 定义一个继承自vtkInteractorStyleTrackballCamera的类，用于处理鼠标交互
 class MouseInteractorHighlightActor : public vtkInteractorStyleTrackballCamera

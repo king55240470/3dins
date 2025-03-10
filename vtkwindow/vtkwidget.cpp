@@ -141,7 +141,7 @@ void VtkWidget::OnLeftButtonPress()
             clickPos[0] <= titlePosition[0] + width &&
             clickPos[1] >= titlePosition[1] + titleSize[1] - closeBoxSize &&
             clickPos[1] <= titlePosition[1] + titleSize[1])
-        {            
+        {
             closeTextActor(it.key()); // 关闭文本框
             return;
         }
@@ -618,25 +618,27 @@ void VtkWidget::ShowColorBar(double minDistance, double maxDistance){
     colors->SetNumberOfComponents(3); // RGB
 
     // 定义色温尺的起点和终点
-    int barHeight = 20; // 色温尺的高度
-    int barWidth = 200; // 色温尺的宽度
+    int barHeight = 200; // 色温尺的高度
+    int barWidth = 20; // 色温尺的宽度
     auto Width = renWin->GetSize()[0];
+    auto Height = renWin->GetSize()[1];
 
     // 为每个顶点设置颜色
-    colors->InsertTuple3(0, 0, 0, 255); // 左下角
-    colors->InsertTuple3(1, 255, 0, 0); // 右下角
-    colors->InsertTuple3(2, 255, 0, 0); // 右上角
-    colors->InsertTuple3(3, 0, 0, 255); // 左上角
+    colors->InsertTuple3(0, 255, 0, 0); // 右上角
+    colors->InsertTuple3(1, 255, 0, 0); // 左上角
+    colors->InsertTuple3(2, 0, 0, 255); // 右下角
+    colors->InsertTuple3(3, 0, 0, 255); // 左下角
 
     // 将颜色数据绑定到线段上（通过绘制多边形来模拟颜色条）
     vtkSmartPointer<vtkPolyData> colorBarPolyData = vtkSmartPointer<vtkPolyData>::New();
     vtkSmartPointer<vtkPoints> colorBarPoints = vtkSmartPointer<vtkPoints>::New();
     vtkSmartPointer<vtkCellArray> colorBarPolys = vtkSmartPointer<vtkCellArray>::New();
 
-    colorBarPoints->InsertNextPoint(Width - barWidth - 20, 10, 0);
-    colorBarPoints->InsertNextPoint(Width - 20, 10, 0);
-    colorBarPoints->InsertNextPoint(Width - 20, 10 + barHeight, 0);
-    colorBarPoints->InsertNextPoint(Width - barWidth - 20, 10 + barHeight, 0);
+    // 在窗口右上角插入四个点
+    colorBarPoints->InsertNextPoint(Width - barWidth - 20, Height - 20, 0);
+    colorBarPoints->InsertNextPoint(Width - 20, Height - 20, 0);
+    colorBarPoints->InsertNextPoint(Width - 20, Height - barHeight - 20, 0);
+    colorBarPoints->InsertNextPoint(Width - barWidth - 20, Height - barHeight - 20, 0);
 
     vtkIdType polyIds[4] = {0, 1, 2, 3};
     colorBarPolys->InsertNextCell(4, polyIds);
@@ -658,13 +660,15 @@ void VtkWidget::ShowColorBar(double minDistance, double maxDistance){
     minTextMapper->SetInput(std::to_string(minDistance).c_str());
     vtkSmartPointer<vtkActor2D> minTextActor = vtkSmartPointer<vtkActor2D>::New();
     minTextActor->SetMapper(minTextMapper);
-    minTextActor->SetPosition(Width - barWidth - 120, barHeight + 7); // 调整位置以适应显示
 
     vtkSmartPointer<vtkTextMapper> maxTextMapper = vtkSmartPointer<vtkTextMapper>::New();
     maxTextMapper->SetInput(std::to_string(maxDistance).c_str());
     vtkSmartPointer<vtkActor2D> maxTextActor = vtkSmartPointer<vtkActor2D>::New();
     maxTextActor->SetMapper(maxTextMapper);
-    maxTextActor->SetPosition(Width - 120, barHeight + 7); // 调整位置以适应显示
+
+    // 调整两个文本标注的位置以适应显示
+    minTextActor->SetPosition(Width - barWidth - 150, Height - 30);
+    maxTextActor->SetPosition(Width - barWidth - 150, Height - barHeight);
     minTextMapper->GetTextProperty()->SetFontSize(15);
     maxTextMapper->GetTextProperty()->SetFontSize(15);
 
