@@ -165,6 +165,16 @@ double FittingPlane::getWidth(){
     return width;
 }
 
+double FittingPlane::getradius()
+{
+    return radius;
+}
+
+double FittingPlane::getdistance()
+{
+    return distance;
+}
+
 Eigen::Vector3f FittingPlane::getLength_Direction(){
     return length_direction;
 }

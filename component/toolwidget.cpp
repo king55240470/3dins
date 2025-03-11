@@ -2178,9 +2178,10 @@ void ToolWidget:: onFindPlane(){
         return;
     }
 
-    // PointConstructor p_constructor;
-    // CPoint *newPoint;
-    // newPoint=p_constructor.createPoint(point.x,point.y,point.z);
+    PointConstructor p_constructor;
+    CPoint *newPoint;
+    newPoint=p_constructor.createPoint(point.x,point.y,point.z);
+    newPoint->Form="识别";
     // addToFindList(newPoint);
 
     PlaneConstructor constructor;
@@ -2192,6 +2193,10 @@ void ToolWidget:: onFindPlane(){
     QVector4D normal(plane->getNormal().x(),plane->getNormal().y(),plane->getNormal().z(),0);
     QVector4D direction(plane->getLength_Direction().x(),plane->getLength_Direction().y(),plane->getLength_Direction().z(),0);
     newPlane=constructor.createPlane(center,normal,direction,plane->getLength(),plane->getWidth());
+    newPlane->rad=plane->getradius();
+    newPlane->dis=plane->getdistance();
+    newPlane->parent.push_back(newPoint);
+    newPlane->isFind=true;
     if(newPlane==nullptr){
         qDebug()<<"拟合平面生成错误";
         return ;

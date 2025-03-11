@@ -142,6 +142,7 @@ public:
     void createScaleBar();
     void UpdateScaleBar();
     void attachInteractor();
+    double roundToNearestNiceValue(double value);
 private:
     QVTKOpenGLNativeWidget* vtkWidget; // vtk窗口
     MainWindow *m_pMainWin = nullptr; // mainwindow指针
@@ -200,6 +201,7 @@ private:
     vtkSmartPointer<vtkPolyDataMapper2D> scaleBarMapper;
     vtkSmartPointer<vtkActor2D> scaleBarActor;
     vtkSmartPointer<vtkTextActor> scaleText;
+    vtkSmartPointer<vtkLineSource> lineSource;
     double baseLength = 1.0;     // 初始标度尺长度
     double baseDistance = 500.0; // 参考初始相机距离
 

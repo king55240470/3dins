@@ -75,6 +75,7 @@ public:
     void startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree, QVector<CEntity*>distancelist);
     void isAdd();
     void createrule();
+    CPlane* UpdateFindPlane(CObject*FindPoint,pcl::PointXYZRGB searchPoint,pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree);
 
 protected:
     void mouseDoubleClickEvent(QMouseEvent *event) override;

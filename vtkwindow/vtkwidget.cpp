@@ -685,14 +685,9 @@ void VtkWidget::createScaleBar()
     double x=renWin->GetSize()[0]-320;
     double y=renWin->GetSize()[1]-170;
 
-    const int fixedPixelLength = 200;  // 固定像素长度
-    const int marginRight = 70;        // 右侧边距
-    const int marginBottom = 70;       // 底部边距
-
-    // ========== 创建标尺线 ==========
-    vtkNew<vtkLineSource> lineSource;
+    lineSource = vtkSmartPointer<vtkLineSource>::New();
     lineSource->SetPoint1(0, 0, 0);
-    lineSource->SetPoint2(fixedPixelLength, 0, 0); // X轴方向线段
+    lineSource->SetPoint2(200, 0, 0); // 初始长度，后续动态调整
 
     // ========== 坐标系设置（关键） ==========
     vtkNew<vtkCoordinate> coordinate;
@@ -737,11 +732,11 @@ void VtkWidget::UpdateScaleBar()
     const int marginRight = 70;
     const int marginBottom = 70;
 
-    int lineX = winSize[0] - marginRight - fixedPixelLength;
-    int lineY = marginBottom;
+    //int lineX = winSize[0] - marginRight - fixedPixelLength;
+    //int lineY = marginBottom;
 
-    scaleBarActor->SetPosition(lineX, lineY);
-    scaleText->SetPosition(lineX + 55, lineY - 20); // 文本位于标尺下方20像素
+    //scaleBarActor->SetPosition(lineX, lineY);
+    //scaleText->SetPosition(lineX + 55, lineY - 20); // 文本位于标尺下方20像素
     vtkCamera* camera = renderer->GetActiveCamera();
     double physicalLength = 0.0;
 
@@ -755,9 +750,36 @@ void VtkWidget::UpdateScaleBar()
         double distance = camera->GetDistance();
         physicalLength = (fixedPixelLength * 2.0 * distance * tan(viewAngle/2)) / winSize[1];
     }
+    // 获取整洁的物理长度
+    double desiredPhysicalLength = roundToNearestNiceValue(physicalLength);
+
+    // 计算所需的像素长度
+    double desiredPixelLength;
+    if (camera->GetParallelProjection()) {
+        double parallelScale = camera->GetParallelScale();
+        desiredPixelLength = (desiredPhysicalLength * winSize[1]) / (2.0 * parallelScale);
+    } else {
+        double viewAngle = vtkMath::RadiansFromDegrees(camera->GetViewAngle());
+        double distance = camera->GetDistance();
+        desiredPixelLength = (desiredPhysicalLength * winSize[1]) / (2.0 * distance * std::tan(viewAngle / 2));
+    }
+
+    // 更新线段长度
+    lineSource->SetPoint2(desiredPixelLength, 0, 0);
+    lineSource->Modified();
+
+    // 调整标尺位置（右对齐）
+    int lineX = winSize[0] - marginRight - desiredPixelLength;
+    scaleBarActor->SetPosition(lineX, marginBottom);
+
+    // 更新文本
     std::ostringstream ss;
-    ss << "" << std::fixed << std::setprecision(2) << physicalLength << " (mm)";
+    ss << std::fixed << std::setprecision(2) << desiredPhysicalLength << " mm";
     scaleText->SetInput(ss.str().c_str());
+
+    // 文本居中
+    int textX = lineX + desiredPixelLength / 2 - 30; // 调整偏移量
+    scaleText->SetPosition(textX, marginBottom - 20);
 
     //scaleText->GetTextProperty()->SetFontFamilyToArial(); // 默认字体
     //scaleText->GetTextProperty()->SetFontFile("C:/qcon/3dins/ebrima.ttf");
@@ -790,6 +812,32 @@ void VtkWidget::attachInteractor()
         interactor->AddObserver(vtkCommand::InteractionEvent, callback);
         interactor->AddObserver(vtkCommand::EndInteractionEvent, callback);
     }
+}
+
+double VtkWidget::roundToNearestNiceValue(double value)
+{
+    if (value <= 0) return 0.0;
+
+    double exponent = std::floor(std::log10(value));
+    double normalized = value / std::pow(10, exponent);
+
+    double nice = 1.0;
+    if (normalized < 1.5) {
+        nice = 1.0;
+    } else if (normalized < 2.5) {
+        nice = 2.0;
+    } else if (normalized < 5.0) {
+        nice = 5.0;
+    } else {
+        nice = 10.0;
+    }
+
+    if (nice == 10.0) {
+        exponent += 1;
+        nice = 1.0;
+    }
+
+    return nice * std::pow(10, exponent);
 }
 
 void VtkWidget::OnRightButtonPress()
