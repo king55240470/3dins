@@ -30,6 +30,10 @@ double MainWindow::ActorColor[3] = {0.5, 0.5, 0.5};
 double MainWindow::HighLightColor[3] = {1, 1, 0};
 double MainWindow::InfoTextColor[3] = {0.9, 0.9, 0.9};
 
+// 控制图形渲染的粗细
+double MainWindow::ActorPointSize = 5;
+double MainWindow::ActorLineWidth = 3;
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
@@ -65,7 +69,7 @@ void MainWindow::setupUi(){
     fileMenu->addSeparator();
     QAction *exitAction=fileMenu->addAction("退出");
     exitAction->setIcon(exitIcon);
-    exitAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Escape));
+    exitAction->setShortcut(QKeySequence(Qt::SHIFT | Qt::Key_Escape));
     connect(exitAction, SIGNAL(triggered()), this, SLOT(close())); // 连接退出的信号与槽
     // 创建一个隐藏的 QAction，用于触发菜单
     QAction* showMenuAction = new QAction();
@@ -88,13 +92,17 @@ void MainWindow::setupUi(){
         windowMenu->exec(globalPos);
     });
     addAction(showWinMenu);
+    QIcon mainWin(":/component/eye/main_win.png");
+    QIcon reportWin(":/component/eye/report_win.png");
     QAction* showVtkWin = windowMenu->addAction("主窗口");
     showVtkWin->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_W));
     showVtkWin->setShortcutContext(Qt::ApplicationShortcut);
+    showVtkWin->setIcon(mainWin);
 
     QAction* showReportWin = windowMenu->addAction("报表窗口");
     showReportWin->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_R));
     showReportWin->setShortcutContext(Qt::ApplicationShortcut);
+    showReportWin->setIcon(reportWin);
 
     QMenu *presetMenu=bar->addMenu("预置(P)");
     QAction* showPresetMenu = new QAction();

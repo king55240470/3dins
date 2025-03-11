@@ -1,7 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>component/save/excel.png</file>
-        <file>component/save/image.jpg</file>
         <file>component/save/pdf.jpg</file>
         <file>component/save/txt.jpg</file>
         <file>component/save/word.jpg</file>
@@ -53,5 +52,6 @@
         <file>component/find/point_.png</file>
         <file>component/find/rectangle_.png</file>
         <file>component/find/sphere_.png</file>
+        <file>component/save/image.png</file>
     </qresource>
 </RCC>

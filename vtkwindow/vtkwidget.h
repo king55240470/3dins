@@ -105,6 +105,7 @@ public:
     void onHighLightActor(CEntity* entity); // 高亮列表中选中的centity
 
     void createAxes();// 创建左下角坐标轴
+    void createActorController(); // 创建左上角的点大小和线宽控制器
 
     // 切换相机视角
     void onTopView(); // 俯视
@@ -123,7 +124,6 @@ public:
     void OnLeftButtonPress();
     void OnLeftButtonRelease();
     void OnRightButtonPress();
-    void OnRightButtonRelease();
     void OnMiddleButtonPress();
     void OnMiddleButtonRelease();
     void createText(CEntity* entity);

@@ -279,7 +279,6 @@ void VtkWidget::createText(CEntity* entity)
     renWin->GetInteractor()->AddObserver(vtkCommand::MouseMoveEvent, this, &VtkWidget::OnMouseMove);
     renWin->GetInteractor()->AddObserver(vtkCommand::LeftButtonReleaseEvent, this, &VtkWidget::OnLeftButtonRelease);
     renWin->GetInteractor()->AddObserver(vtkCommand::RightButtonPressEvent, this, &VtkWidget::OnRightButtonPress);
-    renWin->GetInteractor()->AddObserver(vtkCommand::RightButtonReleaseEvent, this, &VtkWidget::OnRightButtonRelease);
     renWin->GetInteractor()->AddObserver(vtkCommand::MiddleButtonPressEvent, this, &VtkWidget::OnMiddleButtonPress);
     renWin->GetInteractor()->AddObserver(vtkCommand::MiddleButtonReleaseEvent, this, &VtkWidget::OnMiddleButtonRelease);
 
@@ -619,7 +618,7 @@ void VtkWidget::ShowColorBar(double minDistance, double maxDistance){
 
     // 定义色温尺的起点和终点
     int barHeight = 200; // 色温尺的高度
-    int barWidth = 20; // 色温尺的宽度
+    int barWidth = 30; // 色温尺的宽度
     auto Width = renWin->GetSize()[0];
     auto Height = renWin->GetSize()[1];
 
@@ -667,8 +666,8 @@ void VtkWidget::ShowColorBar(double minDistance, double maxDistance){
     maxTextActor->SetMapper(maxTextMapper);
 
     // 调整两个文本标注的位置以适应显示
-    minTextActor->SetPosition(Width - barWidth - 150, Height - 30);
-    maxTextActor->SetPosition(Width - barWidth - 150, Height - barHeight);
+    maxTextActor->SetPosition(Width - barWidth - 160, Height - 50);
+    minTextActor->SetPosition(Width - barWidth - 160, Height - barHeight - 10);
     minTextMapper->GetTextProperty()->SetFontSize(15);
     maxTextMapper->GetTextProperty()->SetFontSize(15);
 
@@ -798,13 +797,7 @@ void VtkWidget::attachInteractor()
 
 void VtkWidget::OnRightButtonPress()
 {
-    renWin->GetInteractor()->SetInteractorStyle(0); // 使用vtkwidget自定义事件
     vtkMenu->showTearOffMenu(); // 弹出菜单栏
-}
-
-void VtkWidget::OnRightButtonRelease()
-{
-    renWin->GetInteractor()->SetInteractorStyle(m_highlightstyle); // 恢复高亮点击事件
 }
 
 vtkSmartPointer<vtkRenderWindow> VtkWidget::getRenderWindow(){
@@ -945,6 +938,11 @@ void VtkWidget::createAxes()
 
     axeWidget->SetEnabled(1);
     axeWidget->InteractiveOn();
+}
+
+void VtkWidget::createActorController()
+{
+
 }
 
 // 切换相机视角1

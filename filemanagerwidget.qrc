@@ -5,5 +5,7 @@
         <file>component/eye/file.png</file>
         <file>component/eye/start.png</file>
         <file>component/eye/stop.png</file>
+        <file>component/eye/main_win.png</file>
+        <file>component/eye/report_win.png</file>
     </qresource>
 </RCC>

@@ -45,7 +45,7 @@ void MouseInteractorHighlightActor::OnLeftButtonDown()
         // 如果选中的是点云类型的actor
         if(entity->GetUniqueType() == enPointCloud){
             auto cloudEntity = (CPointCloud*)entity;
-            QString log = QString("已选中: ") + cloudEntity->GetObjectAutoName();
+            QString log = QString("已选中点云: ") + cloudEntity->GetObjectAutoName();
             m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
             // 给拟合用的cloudptr赋值
             m_pMainWin->getpWinFileMgr()->cloudptr = cloudEntity->m_pointCloud.makeShared();
