@@ -18,6 +18,8 @@ public:
     Eigen::Vector4f getCenter();
     double getLength();
     double getWidth();
+    double getradius();
+    double getdistance();
     Eigen::Vector3f getLength_Direction();
 private:
     // pcl::PointXYZRGB searchPoint;//实现拟合平面的点

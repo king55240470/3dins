@@ -946,6 +946,59 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
                 QString str=obj->GetObjectCName()+"测量完成";
                 m_pMainWin->getPWinVtkPresetWidget()->setWidget(str);
                 list.push_back(plane);
+            }else if(planelist.size()==0){
+                qDebug()<<"拟合面构造距离，进行到拟合更新开始";
+                CObject*FindPoint = obj->parent[0];
+                qDebug()<<"拟合面构造距离，进行到读取开始";
+                CPoint*point=static_cast<CPoint*>(FindPoint);
+                searchPoint.x=point->GetPt().x;
+                searchPoint.y=point->GetPt().y;
+                searchPoint.z=point->GetPt().z;
+                if (kdtree.nearestKSearch(searchPoint, 1, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
+                    int nearestIdx = pointIdxNKNSearch[0];
+                    pcl::PointXYZRGB nearestPoint = m_pMainWin->getpWinFileMgr()->cloudptr->points[nearestIdx];
+                    CPosition pt;
+                    pt.x=nearestPoint.x;
+                    pt.y=nearestPoint.y;
+                    pt.z=nearestPoint.z;
+                    point->SetPosition(pt);
+                }
+                pcl::PointXYZRGB  Findpoint;
+                Findpoint.x=point->GetPt().x;
+                Findpoint.y=point->GetPt().y;
+                Findpoint.z=point->GetPt().z;
+
+                qDebug()<<"拟合面构造距离，进行到开始";
+                // 获取拟合用的点云指针
+                auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
+                auto Fplane=m_pMainWin->getPWinSetDataWidget()->getPlane();
+                Fplane->setRadius(plane->rad);
+                Fplane->setDistance(plane->dis);
+                auto could = m_pMainWin->getPWinSetDataWidget()->getPlane()->RANSAC(Findpoint,cloudptr);
+                qDebug()<<"拟合面构造距离，进行到RANSAC结束";
+                PlaneConstructor constructor;
+                CPlane* newPlane;
+                CPosition center;
+                center.x=Fplane->getCenter()[0];
+                center.y=Fplane->getCenter()[1];
+                center.z=Fplane->getCenter()[2];
+                QVector4D normal(Fplane->getNormal().x(),Fplane->getNormal().y(),Fplane->getNormal().z(),0);
+                QVector4D direction(Fplane->getLength_Direction().x(),Fplane->getLength_Direction().y(),Fplane->getLength_Direction().z(),0);
+                newPlane=constructor.createPlane(center,normal,direction,Fplane->getLength(),Fplane->getWidth());
+                --(newPlane->plainCount);
+                //point->Form="识别";
+                newPlane->parent.push_back(point);
+                newPlane->isFind=true;
+                if(newPlane==nullptr){
+                    qDebug()<<"拟合平面生成错误";
+                    return ;
+                }
+                qDebug()<<"拟合面构造距离，进行到新平面创造结束开始";
+                plane = newPlane;
+                qDebug()<<"拟合面构造距离，进行到替代结束";
+                QString str=obj->GetObjectCName()+"测量完成";
+                m_pMainWin->getPWinVtkPresetWidget()->setWidget(str);
+                list.push_back(plane);
             }
         }else if(obj->GetUniqueType()==enLine){
             QVector<CPosition>positionlists;
@@ -1000,6 +1053,7 @@ void ElementListWidget::createrule()
 {
     m_pMainWin->Createruler();
 }
+
 
 void ElementListWidget::mouseDoubleClickEvent(QMouseEvent *event)
 {

@@ -272,6 +272,9 @@ public:
     double length;
     double width;
 
+    double rad;
+    double dis;
+
     static int plainCount;
     int currentPlainId;
 
