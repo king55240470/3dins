@@ -16,6 +16,7 @@ public:
     bool isPointInLine(const pcl::PointXYZRGB&);
     void setRadius(double);
     void setDistance(double);
+    double getDistance();
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr getLineCloud();
     Eigen::Vector3f getBegin();
     Eigen::Vector3f getEnd();

@@ -35,8 +35,10 @@
 #include"vtkwindow/vtkwidget.h"
 #include"constructor/distanceconstructor.h"
 #include"constructor/planeconstructor.h"
+#include"constructor/lineconstructor.h"
 #include"constructor/angleconstructor.h"
 #include"vtkwindow/vtkpresetwidget.h"
+#include"pointfitting/fittingline.h"
 
 class ElementListWidget : public QWidget
 {
@@ -71,8 +73,10 @@ public:
     void continueUpdate();
     void onAddElement(pcl::PointCloud<pcl::PointXYZRGB>::Ptr could);
     void CompareCloud();
-    void updateDistance();
-    void startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree, QVector<CEntity*>distancelist);
+    void updateDistance();//开启更新
+    void startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree, QVector<CEntity*>distancelist);//timer关联函数
+    void cleanupAfterCompletion();//时间停止后的处理(删除时间或下一步或保存文件)
+    void UpdateDisNowFun(QVector<CEntity*>distancelist);//更新距离元素
     void isAdd();
     void createrule();
     CPlane* UpdateFindPlane(CObject*FindPoint,pcl::PointXYZRGB searchPoint,pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree);
@@ -85,6 +89,7 @@ private:
 
     QTreeWidget *treeWidgetNames;
     QTreeWidget *treeWidgetInfo;
+
     QLineEdit *xLineEdit;
     QLineEdit *yLineEdit;
     QLineEdit *sizeLineEdit;
@@ -94,25 +99,31 @@ private:
     MainWindow *m_pMainWin=nullptr;
     static int pcscount;
     QVector<CObject*>eleobjlist;
-    //std::unordered_map<QTreeWidgetItem*, size_t> itemToIndexMap;
     bool ctrlPressed = false;
+    //更改别名
     QLineEdit* name;
+    //距离元素设置上下公差
     QLineEdit* up;
     QLineEdit* down;
+    //状态机启动按钮
     QPushButton *updownBtn;
     QPushButton *startButton;
     QPushButton *pauseButton;
     QPushButton *terminateButton;
     QPushButton *continueButton;
+
     QDialog *dialog;
+    //状态机状态
     QStateMachine *stateMachine;
     QState *stoppedState;
     QState *runningState;
     QState *pausedState;
     QState *continueState;
+
     int Treelistsize=0;
-    int currentIndex;
-    int distancelistIndex;
+    int currentIndex;//被测量主元素parent索引
+    int distancelistIndex;//被测量主元素队列索引
+
     pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree;
     QVector<CEntity*>disAndanglelist;
     QTimer* timer=nullptr;

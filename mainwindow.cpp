@@ -42,7 +42,7 @@ MainWindow::MainWindow(QWidget *parent)
     RestoreWidgets();
     loadManager();
     LoadSetDataWidget();
-    filechange();
+    //filechange();
     m_nRelyOnWhichCs=csRef;
     SetUpTheme();
     modelCloudExist=false;
@@ -1262,15 +1262,14 @@ void MainWindow::onIsometricViewClicked()
 
 void MainWindow::filechange()
 {
-
-    fileWatcher.addPath("C:/Users/Lenovo/Desktop/downFTPfile"); // 替换为FTP目录路径
-    connect(&fileWatcher, &QFileSystemWatcher::directoryChanged, this, &MainWindow::onFileChanged);
-    // 初始化文件处理定时器
-    fileProcessorTimer.setInterval(1000); // 每秒处理一个文件
-    connect(&fileProcessorTimer, &QTimer::timeout, this, &MainWindow::processNextFile);
-    // 初始化已存在的文件列表
-    QDir dir("C:/Users/Lenovo/Desktop/downFTPfile");
-    existingFiles = dir.entryList(QDir::Files);
+    // fileWatcher.addPath("C:/Users/Lenovo/Desktop/downFTPfile"); // 替换为FTP目录路径
+    // connect(&fileWatcher, &QFileSystemWatcher::directoryChanged, this, &MainWindow::onFileChanged);
+    // // 初始化文件处理定时器
+    // fileProcessorTimer.setInterval(1000); // 每秒处理一个文件
+    // connect(&fileProcessorTimer, &QTimer::timeout, this, &MainWindow::processNextFile);
+    // // 初始化已存在的文件列表
+    // QDir dir("C:/Users/Lenovo/Desktop/downFTPfile");
+    // existingFiles = dir.entryList(QDir::Files);
 }
 
 void MainWindow::onFileChanged(const QString &path)

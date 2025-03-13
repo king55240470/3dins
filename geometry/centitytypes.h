@@ -30,6 +30,8 @@ public:
     CPosition begin;
     CPosition end;
 
+    double rad;
+    double dis;
 public:
     QDataStream& serialize(QDataStream& out) const override {
         CEntity::serialize(out);  // 先序列化基类部分
