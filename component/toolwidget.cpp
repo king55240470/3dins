@@ -596,10 +596,12 @@ void ToolWidget::connectActionWithF(){
             Action_Checked=(ToolAction*)action;
             action->setIcon(QIcon(":/component/find/line_.png"));
             action->setToolTip("已选中");
-            ToolWidget::onFindLine();
 
             QString log="开始识别线";
             m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
+
+
+
         } else {
             //若记录的是当前的QAction，则将记录置空
             if(Action_Checked==action){
@@ -2315,10 +2317,12 @@ void ToolWidget::onFindLine(){
     }
     m_pMainWin->getPWinSetDataWidget()->setLineData(point, cloudptr);
 
+    if(!m_pMainWin->getPWinSetDataWidget()->getBeginFitting())  return;
+
     // 生成点云对象并添加到entitylist
     auto lineCloud=m_pMainWin->getPWinSetDataWidget()->getLineCloud();
     if(lineCloud==nullptr){
-        qDebug()<<"拟合圆柱生成错误";
+        qDebug()<<"拟合直线生成错误";
         return ;
     }
     auto line=m_pMainWin->getPWinSetDataWidget()->getLine();
@@ -2342,7 +2346,7 @@ void ToolWidget::onFindLine(){
     end.z=line->getEnd().z();
     newLine=constructor.createLine(begin,end);
     if(newLine==nullptr){
-        qDebug()<<"拟合圆柱生成错误";
+        qDebug()<<"拟合直线生成错误";
         return ;
     }
     addToFindList(newLine);
@@ -2393,6 +2397,8 @@ void ToolWidget::onFindCircle(){
         return ;
     }
     m_pMainWin->getPWinSetDataWidget()->setCircleData(point, cloudptr);
+
+    if(!m_pMainWin->getPWinSetDataWidget()->getBeginFitting())  return;
 
     auto circleCloud=m_pMainWin->getPWinSetDataWidget()->getCircleCloud();
     if(circleCloud==nullptr){
@@ -2469,6 +2475,8 @@ void ToolWidget::onFindRectangle(){
         return ;
     }
 
+    if(!m_pMainWin->getPWinSetDataWidget()->getBeginFitting())  return;
+
     auto planeCloud=m_pMainWin->getPWinSetDataWidget()->getPlaneCloud();
     if(planeCloud==nullptr){
         qDebug()<<"拟合矩形生成错误";
@@ -2541,6 +2549,8 @@ void ToolWidget::onFindCylinder(){
         return ;
     }
     m_pMainWin->getPWinSetDataWidget()->setCylinderData(point, cloudptr);
+
+    if(!m_pMainWin->getPWinSetDataWidget()->getBeginFitting())  return;
 
     // 生成点云对象并添加到entitylist
     auto cylinderCloud=m_pMainWin->getPWinSetDataWidget()->getCylinderCloud();
@@ -2616,6 +2626,7 @@ void ToolWidget::onFindCone(){
     }
     m_pMainWin->getPWinSetDataWidget()->setConeData(point, cloudptr);
 
+    if(!m_pMainWin->getPWinSetDataWidget()->getBeginFitting())  return;
 
     auto coneCloud=m_pMainWin->getPWinSetDataWidget()->getConeCloud();
     if(coneCloud==nullptr){
@@ -2691,6 +2702,8 @@ void ToolWidget::onFindSphere(){
         return ;
     }
     m_pMainWin->getPWinSetDataWidget()->setSphereData(point, cloudptr);
+
+    if(!m_pMainWin->getPWinSetDataWidget()->getBeginFitting())  return;
 
     auto sphereCloud=m_pMainWin->getPWinSetDataWidget()->getSphereCloud();
     if(sphereCloud==nullptr){

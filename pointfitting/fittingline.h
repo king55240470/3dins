@@ -12,9 +12,8 @@ public:
     FittingLine();
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr RANSAC(pcl::PointXYZRGB,pcl::PointCloud<pcl::PointXYZRGB>::Ptr);
     double euclideanDistance(const pcl::PointXYZRGB&, const pcl::PointXYZRGB&);
-    double calculateCurvature(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr&, int, double);
+    double calculateCurvature(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr&, pcl::PointXYZRGB, double);
     bool isPointInLine(const pcl::PointXYZRGB&);
-    void setRadius(double);
     void setDistance(double);
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr getLineCloud();
     Eigen::Vector3f getBegin();
@@ -25,7 +24,6 @@ private:
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr lineCloud;//存储拟合平面上的点
     pcl::ModelCoefficients::Ptr coefficients;//存储拟合平面方程的4个系数
     pcl::PointIndices::Ptr inliers;//存储内点
-    //double radius;//邻域
     double distance;//距离阈值
 
     Eigen::Vector3f linePoint;//存储searchPoint
@@ -35,22 +33,18 @@ private:
     Eigen::Vector3f beginPoint;
     Eigen::Vector3f endPoint;
 
-    QVector<double> curvatures;
-    QVector<int> indexs;
-    double averageCurvature=0.0;//点云平均曲率
-
-    std::mutex mtx;  // 添加 mutex 成员变量
+    double curvature;//保存searchPoint的曲率
 };
 
 
+#include <vector>
 #include <queue>
 #include <thread>
 #include <mutex>
 #include <condition_variable>
 #include <functional>
-#include <atomic>
+#include <future>
 
-// 线程池类
 class ThreadPool {
 public:
     ThreadPool(size_t numThreads) : stop(false) {
@@ -60,7 +54,7 @@ public:
                     std::function<void()> task;
                     {
                         std::unique_lock<std::mutex> lock(this->queueMutex);
-                        this->condition.wait(lock, [this] { return this->stop ||!this->tasks.empty(); });
+                        this->condition.wait(lock, [this] { return this->stop || !this->tasks.empty(); });
                         if (this->stop && this->tasks.empty())
                             return;
                         task = std::move(this->tasks.front());
@@ -72,26 +66,35 @@ public:
         }
     }
 
-    template<class F>
-    void enqueue(F&& task) {
-        {
-            std::unique_lock<std::mutex> lock(queueMutex);
-            if (stop)
-                throw std::runtime_error("enqueue on stopped ThreadPool");
-            tasks.emplace(std::forward<F>(task));
-        }
-        condition.notify_one();
-    }
-
     ~ThreadPool() {
         {
             std::unique_lock<std::mutex> lock(queueMutex);
             stop = true;
         }
         condition.notify_all();
-        for (std::thread& worker : workers) {
+        for (std::thread &worker : workers) {
             worker.join();
         }
+    }
+
+    template<class F, class... Args>
+    auto enqueue(F&& f, Args&&... args)
+        -> std::future<typename std::result_of<F(Args...)>::type> {
+        using return_type = typename std::result_of<F(Args...)>::type;
+
+        auto task = std::make_shared< std::packaged_task<return_type()> >(
+            std::bind(std::forward<F>(f), std::forward<Args>(args)...)
+            );
+
+        std::future<return_type> res = task->get_future();
+        {
+            std::unique_lock<std::mutex> lock(queueMutex);
+            if (stop)
+                throw std::runtime_error("enqueue on stopped ThreadPool");
+            tasks.emplace([task]() { (*task)(); });
+        }
+        condition.notify_one();
+        return res;
     }
 
 private:
@@ -99,7 +102,7 @@ private:
     std::queue<std::function<void()>> tasks;
     std::mutex queueMutex;
     std::condition_variable condition;
-    std::atomic<bool> stop;
+    bool stop;
 };
 
 #endif // FITTINGLINE_H

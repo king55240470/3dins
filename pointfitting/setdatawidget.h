@@ -59,6 +59,8 @@ public:
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr getFittingCircle();
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr getCircleCloud();
     FittingCircle *getCircle();
+
+    bool getBeginFitting();
 private:
     MainWindow *m_pMainWin;
 
@@ -73,6 +75,7 @@ private:
     QLineEdit *rad;
     QLineEdit *dis;
     QPushButton *btn;
+    bool begin_fitting;
 
     //拟合平面
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr fittingPlane;
