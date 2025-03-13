@@ -206,6 +206,9 @@ private:
     double baseLength = 1.0;     // 初始标度尺长度
     double baseDistance = 500.0; // 参考初始相机距离
 
+    // 对话框，用于控制渲染的点的大小和线宽
+    QDialog* actorAdjustDialog;
+
 public slots:
 
 };

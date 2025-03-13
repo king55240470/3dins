@@ -87,7 +87,7 @@ private:
     vtkTimeStamp lastRightClickTime; // 时间戳，记录上次右键发生的 时间
     int DOUBLE_CLICK_INTERVAL = 300; // 双击间隔时间，单位毫秒
 
-    QMenu* vtkMenu; // 右键双击菜单
+    QMenu* vtkMenu;
 signals:
 
 };

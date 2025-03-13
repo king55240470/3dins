@@ -7,5 +7,7 @@
         <file>style/ruler.png</file>
         <file>style/savefile.png</file>
         <file>style/exit.png</file>
+        <file>style/sub.png</file>
+        <file>style/add.png</file>
     </qresource>
 </RCC>
