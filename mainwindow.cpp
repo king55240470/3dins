@@ -31,7 +31,7 @@ double MainWindow::HighLightColor[3] = {1, 1, 0};
 double MainWindow::InfoTextColor[3] = {0.9, 0.9, 0.9};
 
 // 控制图形渲染的粗细
-double MainWindow::ActorPointSize = 5;
+double MainWindow::ActorPointSize = 4;
 double MainWindow::ActorLineWidth = 3;
 
 MainWindow::MainWindow(QWidget *parent)
@@ -83,6 +83,10 @@ void MainWindow::setupUi(){
     QAction* contralAction=new QAction("控制图标(Z)");
     contralAction->setShortcut(QKeySequence(Qt::Key_Z));
     bar->addAction(contralAction);
+
+    QAction* actorAdjust = new QAction("渲染调整(A)");
+    actorAdjust->setShortcut(QKeySequence(Qt::Key_A));
+    bar->addAction(actorAdjust);
 
     QMenu* windowMenu = bar->addMenu("窗口(W)");
     QAction* showWinMenu = new QAction();
@@ -392,6 +396,7 @@ void MainWindow::setupUi(){
     setCentralWidget(spMainWindow);
     ContralWidget * contralWidget=new ContralWidget(pWinToolWidget,this);
     connect(contralAction,&QAction::triggered,[=](){contralWidget->show();});
+    connect(actorAdjust, &QAction::triggered, [&](){pWinVtkWidget->createActorController();});
 
 }
 

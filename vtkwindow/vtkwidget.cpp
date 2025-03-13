@@ -990,7 +990,85 @@ void VtkWidget::createAxes()
 
 void VtkWidget::createActorController()
 {
+    actorAdjustDialog = new QDialog(this);
+    actorAdjustDialog->setWindowTitle("调整图形渲染的粗细");
+    actorAdjustDialog->resize(200, 100);
 
+    // 添加图标和样式
+    QIcon addIcon(":/style/add.png");
+    QIcon subIcon(":/style/sub.png");
+    QString buttonStyle("QPushButton { border: none; background-color: transparent; }");
+
+    // 创建点大小调整的控件
+    QLabel *pointSizeLabel = new QLabel("点的大小:", actorAdjustDialog);
+    QLabel *currentPointSizeLabel = new QLabel(QString::number(MainWindow::ActorPointSize), actorAdjustDialog);
+    QPushButton *pointSizeAddBtn = new QPushButton(actorAdjustDialog);
+    QPushButton *pointSizeSubBtn = new QPushButton(actorAdjustDialog);
+    pointSizeAddBtn->setIcon(addIcon);
+    pointSizeAddBtn->setIconSize(QSize(30, 30));
+    pointSizeAddBtn->setStyleSheet(buttonStyle);
+    pointSizeSubBtn->setIcon(subIcon);
+    pointSizeSubBtn->setIconSize(QSize(30, 30));
+    pointSizeSubBtn->setStyleSheet(buttonStyle);
+
+    // 创建线宽调整的控件
+    QLabel *lineWidthLabel = new QLabel("线条宽度:", actorAdjustDialog);
+    QLabel *currentLineWidthLabel = new QLabel(QString::number(MainWindow::ActorLineWidth), actorAdjustDialog);
+    QPushButton *lineWidthAddBtn = new QPushButton(actorAdjustDialog);
+    QPushButton *lineWidthSubBtn = new QPushButton(actorAdjustDialog);
+    lineWidthAddBtn->setIcon(addIcon);
+    lineWidthAddBtn->setIconSize(QSize(30, 30));
+    lineWidthAddBtn->setStyleSheet(buttonStyle);
+    lineWidthSubBtn->setIcon(subIcon);
+    lineWidthSubBtn->setIconSize(QSize(30, 30));
+    lineWidthSubBtn->setStyleSheet(buttonStyle);
+
+    // 创建布局
+    QVBoxLayout *mainLayout = new QVBoxLayout(actorAdjustDialog);
+
+    // 点大小调整布局
+    QHBoxLayout *pointSizeLayout = new QHBoxLayout();
+    pointSizeLayout->addWidget(pointSizeLabel);
+    pointSizeLayout->addWidget(currentPointSizeLabel);
+    pointSizeLayout->addWidget(pointSizeSubBtn);
+    pointSizeLayout->addWidget(pointSizeAddBtn);
+
+    // 线宽调整布局
+    QHBoxLayout *lineWidthLayout = new QHBoxLayout();
+    lineWidthLayout->addWidget(lineWidthLabel);
+    lineWidthLayout->addWidget(currentLineWidthLabel);
+    lineWidthLayout->addWidget(lineWidthSubBtn);
+    lineWidthLayout->addWidget(lineWidthAddBtn);
+
+    // 添加到主布局
+    mainLayout->addLayout(pointSizeLayout);
+    mainLayout->addLayout(lineWidthLayout);
+
+    // 连接信号与槽
+    connect(pointSizeAddBtn, &QPushButton::clicked, [=]() {
+        MainWindow::ActorPointSize += 1;
+        currentPointSizeLabel->setText(QString::number(MainWindow::ActorPointSize));
+        reDrawCentity();
+    });
+
+    connect(pointSizeSubBtn, &QPushButton::clicked, [=]() {
+        MainWindow::ActorPointSize -= 1;
+        currentPointSizeLabel->setText(QString::number(MainWindow::ActorPointSize));
+        reDrawCentity();
+    });
+
+    connect(lineWidthAddBtn, &QPushButton::clicked, [=]() {
+        MainWindow::ActorLineWidth += 1;
+        currentLineWidthLabel->setText(QString::number(MainWindow::ActorLineWidth));
+        reDrawCentity();
+    });
+
+    connect(lineWidthSubBtn, &QPushButton::clicked, [=]() {
+        MainWindow::ActorLineWidth -= 1;
+        currentLineWidthLabel->setText(QString::number(MainWindow::ActorLineWidth));
+        reDrawCentity();
+    });
+    actorAdjustDialog->show();
 }
 
 // 切换相机视角1
