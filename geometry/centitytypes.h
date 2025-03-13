@@ -30,6 +30,8 @@ public:
     CPosition begin;
     CPosition end;
 
+    double rad;
+    double dis;
 public:
     QDataStream& serialize(QDataStream& out) const override {
         CEntity::serialize(out);  // 先序列化基类部分
@@ -815,6 +817,7 @@ public:
     bool isFileCloud = false; // 是否是文件生成的点云
     bool isComparsionCloud = false; //  是否是对比得到的点云
     bool isAlignCloud=false;// 是否是对齐得到的点云
+    bool isReconstructedCloud=false; // 泊松重建
     bool isModelCloud=false;// 是否是模型点云
     bool isMeasureCloud=false; // 是否是实测点云
     bool isCut=false; //是否是切割后的点云
@@ -858,6 +861,7 @@ public:
         isFileCloud = false;
         isComparsionCloud = false;
         isAlignCloud=false;
+        isReconstructedCloud=false;
         isModelCloud=false;
         isMeasureCloud=false;
         isCut=false;

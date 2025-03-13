@@ -8,6 +8,11 @@
 #include <vtkEventQtSlotConnect.h>
 #include <vtkTimerLog.h>
 #include <vtkImageResize.h>
+#include <pcl/surface/poisson.h>
+#include <pcl/surface/impl/poisson.hpp>
+#include <vtkCellArray.h>
+
+
 
 VtkWidget::VtkWidget(QWidget *parent)
     : QWidget(parent),
@@ -990,7 +995,85 @@ void VtkWidget::createAxes()
 
 void VtkWidget::createActorController()
 {
+    actorAdjustDialog = new QDialog(this);
+    actorAdjustDialog->setWindowTitle("调整图形渲染的粗细");
+    actorAdjustDialog->resize(200, 100);
 
+    // 添加图标和样式
+    QIcon addIcon(":/style/add.png");
+    QIcon subIcon(":/style/sub.png");
+    QString buttonStyle("QPushButton { border: none; background-color: transparent; }");
+
+    // 创建点大小调整的控件
+    QLabel *pointSizeLabel = new QLabel("点的大小:", actorAdjustDialog);
+    QLabel *currentPointSizeLabel = new QLabel(QString::number(MainWindow::ActorPointSize), actorAdjustDialog);
+    QPushButton *pointSizeAddBtn = new QPushButton(actorAdjustDialog);
+    QPushButton *pointSizeSubBtn = new QPushButton(actorAdjustDialog);
+    pointSizeAddBtn->setIcon(addIcon);
+    pointSizeAddBtn->setIconSize(QSize(30, 30));
+    pointSizeAddBtn->setStyleSheet(buttonStyle);
+    pointSizeSubBtn->setIcon(subIcon);
+    pointSizeSubBtn->setIconSize(QSize(30, 30));
+    pointSizeSubBtn->setStyleSheet(buttonStyle);
+
+    // 创建线宽调整的控件
+    QLabel *lineWidthLabel = new QLabel("线条宽度:", actorAdjustDialog);
+    QLabel *currentLineWidthLabel = new QLabel(QString::number(MainWindow::ActorLineWidth), actorAdjustDialog);
+    QPushButton *lineWidthAddBtn = new QPushButton(actorAdjustDialog);
+    QPushButton *lineWidthSubBtn = new QPushButton(actorAdjustDialog);
+    lineWidthAddBtn->setIcon(addIcon);
+    lineWidthAddBtn->setIconSize(QSize(30, 30));
+    lineWidthAddBtn->setStyleSheet(buttonStyle);
+    lineWidthSubBtn->setIcon(subIcon);
+    lineWidthSubBtn->setIconSize(QSize(30, 30));
+    lineWidthSubBtn->setStyleSheet(buttonStyle);
+
+    // 创建布局
+    QVBoxLayout *mainLayout = new QVBoxLayout(actorAdjustDialog);
+
+    // 点大小调整布局
+    QHBoxLayout *pointSizeLayout = new QHBoxLayout();
+    pointSizeLayout->addWidget(pointSizeLabel);
+    pointSizeLayout->addWidget(currentPointSizeLabel);
+    pointSizeLayout->addWidget(pointSizeSubBtn);
+    pointSizeLayout->addWidget(pointSizeAddBtn);
+
+    // 线宽调整布局
+    QHBoxLayout *lineWidthLayout = new QHBoxLayout();
+    lineWidthLayout->addWidget(lineWidthLabel);
+    lineWidthLayout->addWidget(currentLineWidthLabel);
+    lineWidthLayout->addWidget(lineWidthSubBtn);
+    lineWidthLayout->addWidget(lineWidthAddBtn);
+
+    // 添加到主布局
+    mainLayout->addLayout(pointSizeLayout);
+    mainLayout->addLayout(lineWidthLayout);
+
+    // 连接信号与槽
+    connect(pointSizeAddBtn, &QPushButton::clicked, [=]() {
+        MainWindow::ActorPointSize += 1;
+        currentPointSizeLabel->setText(QString::number(MainWindow::ActorPointSize));
+        reDrawCentity();
+    });
+
+    connect(pointSizeSubBtn, &QPushButton::clicked, [=]() {
+        MainWindow::ActorPointSize -= 1;
+        currentPointSizeLabel->setText(QString::number(MainWindow::ActorPointSize));
+        reDrawCentity();
+    });
+
+    connect(lineWidthAddBtn, &QPushButton::clicked, [=]() {
+        MainWindow::ActorLineWidth += 1;
+        currentLineWidthLabel->setText(QString::number(MainWindow::ActorLineWidth));
+        reDrawCentity();
+    });
+
+    connect(lineWidthSubBtn, &QPushButton::clicked, [=]() {
+        MainWindow::ActorLineWidth -= 1;
+        currentLineWidthLabel->setText(QString::number(MainWindow::ActorLineWidth));
+        reDrawCentity();
+    });
+    actorAdjustDialog->show();
 }
 
 // 切换相机视角1
@@ -1285,4 +1368,122 @@ void VtkWidget::onAlign()
     logInfo += "对齐完成，误差:";
     logInfo += std::to_string(rmse);
     m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
+}
+
+void VtkWidget::poissonReconstruction()
+{
+    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>());
+    QString logInfo;
+
+    // 收集选中的点云（确保不修改原始实体）
+    for (int i = 0; i < entityList.size(); i++) {
+        CEntity* entity = entityList[i];
+        if (!entity->IsSelected()) continue;
+        if (entity->GetUniqueType() == enPointCloud) {
+            // 获取点云的共享指针，确保原数据不被释放
+            auto pcEntity = static_cast<CPointCloud*>(entity);
+            cloud = pcl::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>(pcEntity->m_pointCloud);
+            logInfo += ((CPointCloud*)entity)->m_strAutoName + ' '; //添加点云编号
+        }
+    }
+
+    if (cloud->empty()) {
+        QMessageBox::warning(this, "警告", "点云不能为空");
+        return;
+    }
+
+    // 计算法向量
+    pcl::PointCloud<pcl::Normal>::Ptr normals(new pcl::PointCloud<pcl::Normal>);
+    pcl::NormalEstimation<pcl::PointXYZRGB, pcl::Normal> normalEstimation;
+    normalEstimation.setInputCloud(cloud);
+    pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZRGB>);
+    normalEstimation.setSearchMethod(tree);
+    normalEstimation.setKSearch(20);
+    normalEstimation.compute(*normals);
+
+    // 合并点云和法向量
+    pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloudWithNormals(new pcl::PointCloud<pcl::PointXYZRGBNormal>);
+    pcl::concatenateFields(*cloud, *normals, *cloudWithNormals);
+
+    // 执行泊松重建
+    pcl::Poisson<pcl::PointXYZRGBNormal> poisson;
+    poisson.setDepth(9); // 设定泊松重建深度
+    poisson.setInputCloud(cloudWithNormals);
+
+    pcl::PolygonMesh mesh;
+    poisson.reconstruct(mesh);
+
+    if (mesh.polygons.empty()) {
+        QMessageBox::warning(this, "警告", "泊松重建失败");
+        return;
+    }
+
+    // vtkSmartPointer<vtkPolyData> vtkMesh = convertPclMeshToVtkPolyData(mesh);
+    // displayMesh(vtkMesh);
+
+
+    // 转换 PolygonMesh 到 PointCloud
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr reconstructedCloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+    pcl::fromPCLPointCloud2(mesh.cloud, *reconstructedCloud);
+
+    auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateReconstructedCloud(reconstructedCloud);
+    m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
+    m_pMainWin->NotifySubscribe();
+
+    // 添加日志输出
+    logInfo += "泊松重建完成";
+    m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
+}
+
+vtkSmartPointer<vtkPolyData> VtkWidget::convertPclMeshToVtkPolyData(const pcl::PolygonMesh& pclMesh) {
+    vtkSmartPointer<vtkPolyData> vtkMesh = vtkSmartPointer<vtkPolyData>::New();
+
+    // 提取顶点坐标和颜色
+    pcl::PointCloud<pcl::PointXYZRGB> cloud;
+    pcl::fromPCLPointCloud2(pclMesh.cloud, cloud);
+
+    vtkNew<vtkPoints> points;
+    vtkNew<vtkUnsignedCharArray> colors;
+    colors->SetNumberOfComponents(3);
+    colors->SetName("Colors");
+
+    for (const auto& point : cloud) {
+        points->InsertNextPoint(point.x, point.y, point.z);
+        unsigned char color[3] = {point.r, point.g, point.b};
+        colors->InsertNextTypedTuple(color);
+    }
+
+    // 提取面片信息
+    vtkNew<vtkCellArray> polygons;
+    for (const auto& polygon : pclMesh.polygons) {
+        vtkNew<vtkIdList> idList;
+        for (const auto& vertex : polygon.vertices) {
+            idList->InsertNextId(static_cast<vtkIdType>(vertex));
+        }
+        polygons->InsertNextCell(idList);
+    }
+
+    // 组装vtkPolyData
+    vtkMesh->SetPoints(points);
+    vtkMesh->SetPolys(polygons);
+    vtkMesh->GetPointData()->SetScalars(colors); // 附加颜色
+
+    return vtkMesh;
+}
+
+void VtkWidget::displayMesh(vtkSmartPointer<vtkPolyData> meshData){
+    // 创建Mapper并设置输入数据
+    vtkNew<vtkPolyDataMapper> mapper;
+    mapper->SetInputData(meshData);
+
+    // 创建Actor并设置Mapper
+    vtkNew<vtkActor> actor;
+    actor->SetMapper(mapper);
+
+    // 将Actor添加到渲染器
+    vtkRenderer* renderer = getRenderer();
+    renderer->AddActor(actor);
+    renderer->ResetCamera(); // 重置相机视角
+    m_pMainWin->NotifySubscribe();
 }

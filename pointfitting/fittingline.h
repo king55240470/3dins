@@ -15,6 +15,7 @@ public:
     double calculateCurvature(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr&, pcl::PointXYZRGB, double);
     bool isPointInLine(const pcl::PointXYZRGB&);
     void setDistance(double);
+    double getDistance();
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr getLineCloud();
     Eigen::Vector3f getBegin();
     Eigen::Vector3f getEnd();

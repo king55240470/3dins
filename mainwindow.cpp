@@ -31,7 +31,7 @@ double MainWindow::HighLightColor[3] = {1, 1, 0};
 double MainWindow::InfoTextColor[3] = {0.9, 0.9, 0.9};
 
 // 控制图形渲染的粗细
-double MainWindow::ActorPointSize = 5;
+double MainWindow::ActorPointSize = 4;
 double MainWindow::ActorLineWidth = 3;
 
 MainWindow::MainWindow(QWidget *parent)
@@ -42,7 +42,7 @@ MainWindow::MainWindow(QWidget *parent)
     RestoreWidgets();
     loadManager();
     LoadSetDataWidget();
-    filechange();
+    //filechange();
     m_nRelyOnWhichCs=csRef;
     SetUpTheme();
     modelCloudExist=false;
@@ -83,6 +83,10 @@ void MainWindow::setupUi(){
     QAction* contralAction=new QAction("控制图标(Z)");
     contralAction->setShortcut(QKeySequence(Qt::Key_Z));
     bar->addAction(contralAction);
+
+    QAction* actorAdjust = new QAction("渲染调整(A)");
+    actorAdjust->setShortcut(QKeySequence(Qt::Key_A));
+    bar->addAction(actorAdjust);
 
     QMenu* windowMenu = bar->addMenu("窗口(W)");
     QAction* showWinMenu = new QAction();
@@ -291,6 +295,12 @@ void MainWindow::setupUi(){
     connect(alignAction,&QAction::triggered,this,[&](){
         pWinVtkWidget->onAlign();
     });
+    QAction* ReconstructionAction=cloudOperation->addAction("点云重建");
+    ReconstructionAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Q));
+    ReconstructionAction->setShortcutContext(Qt::ApplicationShortcut);
+    connect(ReconstructionAction,&QAction::triggered,this,[&](){
+        pWinVtkWidget->poissonReconstruction();
+    });
 
     QMenu * switchTheme = bar->addMenu("主题(T)");
     QAction* showThemeMenu = new QAction();
@@ -392,6 +402,7 @@ void MainWindow::setupUi(){
     setCentralWidget(spMainWindow);
     ContralWidget * contralWidget=new ContralWidget(pWinToolWidget,this);
     connect(contralAction,&QAction::triggered,[=](){contralWidget->show();});
+    connect(actorAdjust, &QAction::triggered, [&](){pWinVtkWidget->createActorController();});
 
 }
 
@@ -1262,15 +1273,14 @@ void MainWindow::onIsometricViewClicked()
 
 void MainWindow::filechange()
 {
-
-    fileWatcher.addPath("C:/Users/Lenovo/Desktop/downFTPfile"); // 替换为FTP目录路径
-    connect(&fileWatcher, &QFileSystemWatcher::directoryChanged, this, &MainWindow::onFileChanged);
-    // 初始化文件处理定时器
-    fileProcessorTimer.setInterval(1000); // 每秒处理一个文件
-    connect(&fileProcessorTimer, &QTimer::timeout, this, &MainWindow::processNextFile);
-    // 初始化已存在的文件列表
-    QDir dir("C:/Users/Lenovo/Desktop/downFTPfile");
-    existingFiles = dir.entryList(QDir::Files);
+    // fileWatcher.addPath("C:/Users/Lenovo/Desktop/downFTPfile"); // 替换为FTP目录路径
+    // connect(&fileWatcher, &QFileSystemWatcher::directoryChanged, this, &MainWindow::onFileChanged);
+    // // 初始化文件处理定时器
+    // fileProcessorTimer.setInterval(1000); // 每秒处理一个文件
+    // connect(&fileProcessorTimer, &QTimer::timeout, this, &MainWindow::processNextFile);
+    // // 初始化已存在的文件列表
+    // QDir dir("C:/Users/Lenovo/Desktop/downFTPfile");
+    // existingFiles = dir.entryList(QDir::Files);
 }
 
 void MainWindow::onFileChanged(const QString &path)

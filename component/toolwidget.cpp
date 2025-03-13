@@ -2330,9 +2330,10 @@ void ToolWidget::onFindLine(){
         return;
     }
 
-    // PointConstructor p_constructor;
-    // CPoint *newPoint;
-    // newPoint=p_constructor.createPoint(point.x,point.y,point.z);
+    PointConstructor p_constructor;
+    CPoint *newPoint;
+    newPoint=p_constructor.createPoint(point.x,point.y,point.z);
+    newPoint->Form="识别";
     // addToFindList(newPoint);
 
     LineConstructor constructor;
@@ -2345,6 +2346,8 @@ void ToolWidget::onFindLine(){
     end.y=line->getEnd().y();
     end.z=line->getEnd().z();
     newLine=constructor.createLine(begin,end);
+    newLine->parent.push_back(newPoint);
+    newLine->dis=line->getDistance();
     if(newLine==nullptr){
         qDebug()<<"拟合直线生成错误";
         return ;
