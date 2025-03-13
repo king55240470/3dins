@@ -59,3 +59,12 @@ CPointCloud *PointCloudListMgr::CreateAlignCloud(const pcl::PointCloud<pcl::Poin
     CloudEntity->m_strAutoName += "(对齐)";
     return CloudEntity;
 }
+
+CPointCloud *PointCloudListMgr::CreateReconstructedCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud)
+{
+    CPointCloud* CloudEntity = new CPointCloud();
+    CloudEntity->isReconstructedCloud = true;
+    CloudEntity->setPointCloud(cloud);  // 直接存储 shared_ptr，避免拷贝
+    CloudEntity->m_strAutoName += "(重建)";
+    return CloudEntity;
+}
