@@ -107,6 +107,7 @@ public:
     void onHighLightActor(CEntity* entity); // 高亮列表中选中的centity
 
     void createAxes();// 创建左下角坐标轴
+    void createActorController(); // 创建左上角的点大小和线宽控制器
 
     // 切换相机视角
     void onTopView(); // 俯视
@@ -126,7 +127,6 @@ public:
     void OnLeftButtonPress();
     void OnLeftButtonRelease();
     void OnRightButtonPress();
-    void OnRightButtonRelease();
     void OnMiddleButtonPress();
     void OnMiddleButtonRelease();
     void createText(CEntity* entity);
@@ -145,6 +145,8 @@ public:
     void createScaleBar();
     void UpdateScaleBar();
     void attachInteractor();
+    double roundToNearestNiceValue(double value);
+
 private:
     QVTKOpenGLNativeWidget* vtkWidget; // vtk窗口
     MainWindow *m_pMainWin = nullptr; // mainwindow指针
@@ -203,11 +205,15 @@ private:
     vtkSmartPointer<vtkPolyDataMapper2D> scaleBarMapper;
     vtkSmartPointer<vtkActor2D> scaleBarActor;
     vtkSmartPointer<vtkTextActor> scaleText;
+    vtkSmartPointer<vtkLineSource> lineSource;
     double baseLength = 1.0;     // 初始标度尺长度
     double baseDistance = 500.0; // 参考初始相机距离
 
     vtkSmartPointer<vtkPolyData> convertPclMeshToVtkPolyData(const pcl::PolygonMesh& pclMesh);
     void displayMesh(vtkSmartPointer<vtkPolyData> meshData);
+
+    // 对话框，用于控制渲染的点的大小和线宽
+    QDialog* actorAdjustDialog;
 
 public slots:
 

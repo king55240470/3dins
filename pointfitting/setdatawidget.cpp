@@ -71,7 +71,7 @@ void setDataWidget::setPlaneData(pcl::PointXYZRGB searchPoint,pcl::PointCloud<pc
     layout->addWidget(dis,1,1,1,2);
     layout->addWidget(btn,2,2,1,1);
     dialog->setLayout(layout);
-    dialog->show();
+    // dialog->show();
     connect(btn,&QPushButton::clicked,this,&setDataWidget::PlaneBtnClick);
     dialog->exec();
 }
@@ -82,7 +82,7 @@ void setDataWidget::PlaneBtnClick(){
         QMessageBox *messagebox=new QMessageBox();
         messagebox->setText("输入大于0的数");
         messagebox->setIcon(QMessageBox::Warning);
-        messagebox->show();
+        // messagebox->show();
         messagebox->exec();
         return;
     }
@@ -132,7 +132,7 @@ void setDataWidget::setCylinderData(pcl::PointXYZRGB searchPoint,pcl::PointCloud
     layout->addWidget(dis,1,1,1,2);
     layout->addWidget(btn,2,2,1,1);
     dialog->setLayout(layout);
-    dialog->show();
+    // dialog->show();
     connect(btn,&QPushButton::clicked,this,&setDataWidget::CylinderBtnClick);
     dialog->exec();
 }
@@ -143,7 +143,7 @@ void setDataWidget::CylinderBtnClick(){
         QMessageBox *messagebox=new QMessageBox();
         messagebox->setText("输入大于0的数");
         messagebox->setIcon(QMessageBox::Warning);
-        messagebox->show();
+        // messagebox->show();
         messagebox->exec();
         return;
     }
@@ -193,7 +193,7 @@ void setDataWidget::setSphereData(pcl::PointXYZRGB searchPoint,pcl::PointCloud<p
     layout->addWidget(dis,1,1,1,2);
     layout->addWidget(btn,2,2,1,1);
     dialog->setLayout(layout);
-    dialog->show();
+    // dialog->show();
     connect(btn,&QPushButton::clicked,this,&setDataWidget::SphereBtnClick);
     dialog->exec();
 }
@@ -204,7 +204,7 @@ void setDataWidget::SphereBtnClick(){
         QMessageBox *messagebox=new QMessageBox();
         messagebox->setText("输入大于0的数");
         messagebox->setIcon(QMessageBox::Warning);
-        messagebox->show();
+        // messagebox->show();
         messagebox->exec();
         return;
     }
@@ -254,7 +254,7 @@ void setDataWidget::setConeData(pcl::PointXYZRGB searchPoint,pcl::PointCloud<pcl
     layout->addWidget(dis,1,1,1,2);
     layout->addWidget(btn,2,2,1,1);
     dialog->setLayout(layout);
-    dialog->show();
+    // dialog->show();
     connect(btn,&QPushButton::clicked,this,&setDataWidget::ConeBtnClick);
     dialog->exec();
 }
@@ -265,7 +265,7 @@ void setDataWidget::ConeBtnClick(){
         QMessageBox *messagebox=new QMessageBox();
         messagebox->setText("输入大于0的数");
         messagebox->setIcon(QMessageBox::Warning);
-        messagebox->show();
+        // messagebox->show();
         messagebox->exec();
         return;
     }
@@ -315,7 +315,7 @@ void setDataWidget::setLineData(pcl::PointXYZRGB searchPoint,pcl::PointCloud<pcl
     layout->addWidget(dis,1,1,1,2);
     layout->addWidget(btn,2,2,1,1);
     dialog->setLayout(layout);
-    dialog->show();
+    // dialog->show();
     connect(btn,&QPushButton::clicked,this,&setDataWidget::LineBtnClick);
     dialog->exec();
 }
@@ -326,7 +326,7 @@ void setDataWidget::LineBtnClick(){
         QMessageBox *messagebox=new QMessageBox();
         messagebox->setText("输入大于0的数");
         messagebox->setIcon(QMessageBox::Warning);
-        messagebox->show();
+        // messagebox->show();
         messagebox->exec();
         return;
     }
@@ -376,7 +376,7 @@ void setDataWidget::setCircleData(pcl::PointXYZRGB searchPoint,pcl::PointCloud<p
     layout->addWidget(dis,1,1,1,2);
     layout->addWidget(btn,2,2,1,1);
     dialog->setLayout(layout);
-    dialog->show();
+    // dialog->show();
     connect(btn,&QPushButton::clicked,this,&setDataWidget::CircleBtnClick);
     dialog->exec();
 }
@@ -387,7 +387,7 @@ void setDataWidget::CircleBtnClick(){
         QMessageBox *messagebox=new QMessageBox();
         messagebox->setText("输入大于0的数");
         messagebox->setIcon(QMessageBox::Warning);
-        messagebox->show();
+        // messagebox->show();
         messagebox->exec();
         return;
     }

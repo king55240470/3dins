@@ -60,7 +60,7 @@ vtkSmartPointer<vtkActor> CPoint::draw(){
     // 创建执行器，添加mapper
     vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
-    actor->GetProperty()->SetPointSize(5); // 设置点的大小
+    actor->GetProperty()->SetPointSize(MainWindow::ActorPointSize); // 设置点的大小
     actor->GetProperty()->SetColor(MainWindow::ActorColor);
 
     return actor;
@@ -108,7 +108,7 @@ vtkSmartPointer<vtkActor> CLine::draw(){
     auto actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
     actor->GetProperty()->SetColor(MainWindow::ActorColor);
-    actor->GetProperty()->SetLineWidth(3);
+    actor->GetProperty()->SetLineWidth(MainWindow::ActorLineWidth);
 
     // 添加到渲染窗口中
     return actor;
@@ -173,7 +173,7 @@ vtkSmartPointer<vtkActor> CCircle::draw(){
     auto actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
     actor->GetProperty()->SetColor(MainWindow::ActorColor);
-    actor->GetProperty()->SetLineWidth(3);
+    actor->GetProperty()->SetLineWidth(MainWindow::ActorLineWidth);
 
     return actor;
 }
@@ -457,7 +457,7 @@ vtkSmartPointer<vtkActor> CCuboid::draw() {
     actor->SetMapper(mapper);
     actor->GetProperty()->SetColor(MainWindow::InfoTextColor);
     actor->GetProperty()->SetRepresentationToWireframe();
-    actor->GetProperty()->SetLineWidth(2);
+    actor->GetProperty()->SetLineWidth(MainWindow::ActorLineWidth);
 
     return actor;
 }
@@ -511,7 +511,7 @@ vtkSmartPointer<vtkActor> CPointCloud::draw(){
 
     vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
-    actor->GetProperty()->SetPointSize(5); // 设置点大小
+    actor->GetProperty()->SetPointSize(MainWindow::ActorPointSize); // 设置点大小
     if(isFileCloud){ // 如果是文件点云则统一设置成灰色
         actor->GetProperty()->SetColor(MainWindow::ActorColor[0], MainWindow::ActorColor[1]
                                        ,MainWindow::ActorColor[2]);
@@ -589,7 +589,7 @@ vtkSmartPointer<vtkActor> CDistance::pointToPlane()
     auto actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
     actor->GetProperty()->SetColor(MainWindow::ActorColor);
-    actor->GetProperty()->SetLineWidth(3);
+    actor->GetProperty()->SetLineWidth(MainWindow::ActorLineWidth);
 
     return actor;
 }
@@ -666,7 +666,7 @@ vtkSmartPointer<vtkActor> CDistance::pointToLine()
     auto actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
     actor->GetProperty()->SetColor(MainWindow::ActorColor);
-    actor->GetProperty()->SetLineWidth(3);
+    actor->GetProperty()->SetLineWidth(MainWindow::ActorLineWidth);
 
     return actor;
 }
@@ -712,7 +712,7 @@ vtkSmartPointer<vtkActor> CDistance::pointToPoint()
     auto actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
     actor->GetProperty()->SetColor(MainWindow::ActorColor);
-    actor->GetProperty()->SetLineWidth(3);
+    actor->GetProperty()->SetLineWidth(MainWindow::ActorLineWidth);
     return actor;
 }
 
@@ -776,7 +776,7 @@ vtkSmartPointer<vtkActor> CAngle::draw() {
     auto actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
     actor->GetProperty()->SetColor(MainWindow::ActorColor);
-    actor->GetProperty()->SetLineWidth(3);
+    actor->GetProperty()->SetLineWidth(MainWindow::ActorLineWidth);
 
     return actor;
 }

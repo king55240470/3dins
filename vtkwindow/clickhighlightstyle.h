@@ -7,6 +7,7 @@
 #include "manager/filemgr.h"
 #include "component/toolwidget.h"
 #include "pointfitting/setdatawidget.h"
+#include "vtkwindow/vtkpresetwidget.h"
 
 #include <QVector>
 #include <QDebug>
@@ -32,6 +33,7 @@
 #include <vtkCommand.h>
 
 class ToolWidget;
+class VtkPresetWidget;
 
 // 定义一个继承自vtkInteractorStyleTrackballCamera的类，用于处理鼠标交互
 class MouseInteractorHighlightActor : public vtkInteractorStyleTrackballCamera
@@ -85,7 +87,7 @@ private:
     vtkTimeStamp lastRightClickTime; // 时间戳，记录上次右键发生的 时间
     int DOUBLE_CLICK_INTERVAL = 300; // 双击间隔时间，单位毫秒
 
-    QMenu* vtkMenu; // 右键双击菜单
+    QMenu* vtkMenu;
 signals:
 
 };

@@ -5,6 +5,9 @@ QT += opengl
 LIBS += -lOpengl32
 QT += statemachine
 
+RC_ICONS = ruler.ico
+# TARGET = 3D_Measure
+
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++17

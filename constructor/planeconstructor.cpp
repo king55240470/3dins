@@ -231,7 +231,6 @@ CPlane* PlaneConstructor::createPlane(CPoint p1,CPoint p2,CPoint p3){
 CPlane* PlaneConstructor::createPlane(CPosition posCenter, QVector4D normal, QVector4D direction, double length, double width){
     CPlane* newplane=new CPlane();
     newplane->setCurrentId();
-    newplane->setCurrentId();
     newplane->setCenter(posCenter);
     newplane->setNormal(normal);
     newplane->setDir_long_edge(direction);

@@ -185,7 +185,7 @@ ToolWidget::ToolWidget(QWidget *parent)
 
 
 
-    save_action_iconpath_list_<<":/component/save/excel.png"<< ":/component/save/pdf.jpg"<< ":/component/save/txt.jpg"<< ":/component/save/word.jpg"<<":/component/save/image.jpg";
+    save_action_iconpath_list_<<":/component/save/excel.png"<< ":/component/save/pdf.jpg"<< ":/component/save/txt.jpg"<< ":/component/save/word.jpg"<<":/component/save/image.png";
     construct_action_iconpath_list_<<":/component/construct/point_.png"<<":/component/construct/line_.png"<<":/component/construct/circle_.png"<<   ":/component/construct/plane_.png"<<  ":/component/construct/rectangle_.png"<<":/component/construct/cylinder_.png"<< ":/component/construct/cone_.png"<< ":/component/construct/sphere_.png"<<":/component/construct/distance.png"<<":/component/construct/pointCloud.png"<<":/component/construct/angle.png";
     find_action_iconpath_list_<<":/component/construct/point.jpg"<<":/component/construct/line.jpg"<<":/component/construct/circle.jpg"<<   ":/component/construct/plan.jpg"<<  ":/component/construct/rectangle.jpg"<<":/component/construct/cylinder.jpg"<< ":/component/construct/cone.jpg"<< ":/component/construct/sphere.jpg";
     coord_action_iconpath_list_<<":/component/coord/create.png"<<  ":/component/coord/spin.jpg"<<":/component/coord/save.png";
@@ -2178,9 +2178,10 @@ void ToolWidget:: onFindPlane(){
         return;
     }
 
-    // PointConstructor p_constructor;
-    // CPoint *newPoint;
-    // newPoint=p_constructor.createPoint(point.x,point.y,point.z);
+    PointConstructor p_constructor;
+    CPoint *newPoint;
+    newPoint=p_constructor.createPoint(point.x,point.y,point.z);
+    newPoint->Form="识别";
     // addToFindList(newPoint);
 
     PlaneConstructor constructor;
@@ -2192,6 +2193,10 @@ void ToolWidget:: onFindPlane(){
     QVector4D normal(plane->getNormal().x(),plane->getNormal().y(),plane->getNormal().z(),0);
     QVector4D direction(plane->getLength_Direction().x(),plane->getLength_Direction().y(),plane->getLength_Direction().z(),0);
     newPlane=constructor.createPlane(center,normal,direction,plane->getLength(),plane->getWidth());
+    newPlane->rad=plane->getradius();
+    newPlane->dis=plane->getdistance();
+    newPlane->parent.push_back(newPoint);
+    newPlane->isFind=true;
     if(newPlane==nullptr){
         qDebug()<<"拟合平面生成错误";
         return ;
@@ -2321,9 +2326,10 @@ void ToolWidget::onFindLine(){
         return;
     }
 
-    // PointConstructor p_constructor;
-    // CPoint *newPoint;
-    // newPoint=p_constructor.createPoint(point.x,point.y,point.z);
+    PointConstructor p_constructor;
+    CPoint *newPoint;
+    newPoint=p_constructor.createPoint(point.x,point.y,point.z);
+    newPoint->Form="识别";
     // addToFindList(newPoint);
 
     LineConstructor constructor;
@@ -2336,6 +2342,8 @@ void ToolWidget::onFindLine(){
     end.y=line->getEnd().y();
     end.z=line->getEnd().z();
     newLine=constructor.createLine(begin,end);
+    newLine->parent.push_back(newPoint);
+    newLine->dis=line->getDistance();
     if(newLine==nullptr){
         qDebug()<<"拟合圆柱生成错误";
         return ;

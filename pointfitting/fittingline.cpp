@@ -274,6 +274,11 @@ void FittingLine::setDistance(double dis){
     distance=dis;
 }
 
+double FittingLine::getDistance()
+{
+    return distance;
+}
+
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingLine::getLineCloud(){
     return lineCloud;
 }

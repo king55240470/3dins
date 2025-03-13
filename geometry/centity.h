@@ -25,6 +25,8 @@ public:
 
     bool m_bRemeasure;//是否需要重新测量
 
+    bool isFind = false;
+
     enum CREATE_FORM m_CreateForm;
     enum ENTITY_TYPE m_EntityType;
     enum COMPENSATE_TYPE m_CompenType;

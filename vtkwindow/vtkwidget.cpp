@@ -284,7 +284,6 @@ void VtkWidget::createText(CEntity* entity)
     renWin->GetInteractor()->AddObserver(vtkCommand::MouseMoveEvent, this, &VtkWidget::OnMouseMove);
     renWin->GetInteractor()->AddObserver(vtkCommand::LeftButtonReleaseEvent, this, &VtkWidget::OnLeftButtonRelease);
     renWin->GetInteractor()->AddObserver(vtkCommand::RightButtonPressEvent, this, &VtkWidget::OnRightButtonPress);
-    renWin->GetInteractor()->AddObserver(vtkCommand::RightButtonReleaseEvent, this, &VtkWidget::OnRightButtonRelease);
     renWin->GetInteractor()->AddObserver(vtkCommand::MiddleButtonPressEvent, this, &VtkWidget::OnMiddleButtonPress);
     renWin->GetInteractor()->AddObserver(vtkCommand::MiddleButtonReleaseEvent, this, &VtkWidget::OnMiddleButtonRelease);
 
@@ -623,25 +622,27 @@ void VtkWidget::ShowColorBar(double minDistance, double maxDistance){
     colors->SetNumberOfComponents(3); // RGB
 
     // 定义色温尺的起点和终点
-    int barHeight = 20; // 色温尺的高度
-    int barWidth = 200; // 色温尺的宽度
+    int barHeight = 200; // 色温尺的高度
+    int barWidth = 30; // 色温尺的宽度
     auto Width = renWin->GetSize()[0];
+    auto Height = renWin->GetSize()[1];
 
     // 为每个顶点设置颜色
-    colors->InsertTuple3(0, 0, 0, 255); // 左下角
-    colors->InsertTuple3(1, 255, 0, 0); // 右下角
-    colors->InsertTuple3(2, 255, 0, 0); // 右上角
-    colors->InsertTuple3(3, 0, 0, 255); // 左上角
+    colors->InsertTuple3(0, 255, 0, 0); // 右上角
+    colors->InsertTuple3(1, 255, 0, 0); // 左上角
+    colors->InsertTuple3(2, 0, 0, 255); // 右下角
+    colors->InsertTuple3(3, 0, 0, 255); // 左下角
 
     // 将颜色数据绑定到线段上（通过绘制多边形来模拟颜色条）
     vtkSmartPointer<vtkPolyData> colorBarPolyData = vtkSmartPointer<vtkPolyData>::New();
     vtkSmartPointer<vtkPoints> colorBarPoints = vtkSmartPointer<vtkPoints>::New();
     vtkSmartPointer<vtkCellArray> colorBarPolys = vtkSmartPointer<vtkCellArray>::New();
 
-    colorBarPoints->InsertNextPoint(Width - barWidth - 20, 10, 0);
-    colorBarPoints->InsertNextPoint(Width - 20, 10, 0);
-    colorBarPoints->InsertNextPoint(Width - 20, 10 + barHeight, 0);
-    colorBarPoints->InsertNextPoint(Width - barWidth - 20, 10 + barHeight, 0);
+    // 在窗口右上角插入四个点
+    colorBarPoints->InsertNextPoint(Width - barWidth - 20, Height - 20, 0);
+    colorBarPoints->InsertNextPoint(Width - 20, Height - 20, 0);
+    colorBarPoints->InsertNextPoint(Width - 20, Height - barHeight - 20, 0);
+    colorBarPoints->InsertNextPoint(Width - barWidth - 20, Height - barHeight - 20, 0);
 
     vtkIdType polyIds[4] = {0, 1, 2, 3};
     colorBarPolys->InsertNextCell(4, polyIds);
@@ -663,13 +664,15 @@ void VtkWidget::ShowColorBar(double minDistance, double maxDistance){
     minTextMapper->SetInput(std::to_string(minDistance).c_str());
     vtkSmartPointer<vtkActor2D> minTextActor = vtkSmartPointer<vtkActor2D>::New();
     minTextActor->SetMapper(minTextMapper);
-    minTextActor->SetPosition(Width - barWidth - 120, barHeight + 7); // 调整位置以适应显示
 
     vtkSmartPointer<vtkTextMapper> maxTextMapper = vtkSmartPointer<vtkTextMapper>::New();
     maxTextMapper->SetInput(std::to_string(maxDistance).c_str());
     vtkSmartPointer<vtkActor2D> maxTextActor = vtkSmartPointer<vtkActor2D>::New();
     maxTextActor->SetMapper(maxTextMapper);
-    maxTextActor->SetPosition(Width - 120, barHeight + 7); // 调整位置以适应显示
+
+    // 调整两个文本标注的位置以适应显示
+    maxTextActor->SetPosition(Width - barWidth - 160, Height - 50);
+    minTextActor->SetPosition(Width - barWidth - 160, Height - barHeight - 10);
     minTextMapper->GetTextProperty()->SetFontSize(15);
     maxTextMapper->GetTextProperty()->SetFontSize(15);
 
@@ -690,14 +693,9 @@ void VtkWidget::createScaleBar()
     double x=renWin->GetSize()[0]-320;
     double y=renWin->GetSize()[1]-170;
 
-    const int fixedPixelLength = 200;  // 固定像素长度
-    const int marginRight = 70;        // 右侧边距
-    const int marginBottom = 70;       // 底部边距
-
-    // ========== 创建标尺线 ==========
-    vtkNew<vtkLineSource> lineSource;
+    lineSource = vtkSmartPointer<vtkLineSource>::New();
     lineSource->SetPoint1(0, 0, 0);
-    lineSource->SetPoint2(fixedPixelLength, 0, 0); // X轴方向线段
+    lineSource->SetPoint2(200, 0, 0); // 初始长度，后续动态调整
 
     // ========== 坐标系设置（关键） ==========
     vtkNew<vtkCoordinate> coordinate;
@@ -742,11 +740,11 @@ void VtkWidget::UpdateScaleBar()
     const int marginRight = 70;
     const int marginBottom = 70;
 
-    int lineX = winSize[0] - marginRight - fixedPixelLength;
-    int lineY = marginBottom;
+    //int lineX = winSize[0] - marginRight - fixedPixelLength;
+    //int lineY = marginBottom;
 
-    scaleBarActor->SetPosition(lineX, lineY);
-    scaleText->SetPosition(lineX + 55, lineY - 20); // 文本位于标尺下方20像素
+    //scaleBarActor->SetPosition(lineX, lineY);
+    //scaleText->SetPosition(lineX + 55, lineY - 20); // 文本位于标尺下方20像素
     vtkCamera* camera = renderer->GetActiveCamera();
     double physicalLength = 0.0;
 
@@ -760,9 +758,36 @@ void VtkWidget::UpdateScaleBar()
         double distance = camera->GetDistance();
         physicalLength = (fixedPixelLength * 2.0 * distance * tan(viewAngle/2)) / winSize[1];
     }
+    // 获取整洁的物理长度
+    double desiredPhysicalLength = roundToNearestNiceValue(physicalLength);
+
+    // 计算所需的像素长度
+    double desiredPixelLength;
+    if (camera->GetParallelProjection()) {
+        double parallelScale = camera->GetParallelScale();
+        desiredPixelLength = (desiredPhysicalLength * winSize[1]) / (2.0 * parallelScale);
+    } else {
+        double viewAngle = vtkMath::RadiansFromDegrees(camera->GetViewAngle());
+        double distance = camera->GetDistance();
+        desiredPixelLength = (desiredPhysicalLength * winSize[1]) / (2.0 * distance * std::tan(viewAngle / 2));
+    }
+
+    // 更新线段长度
+    lineSource->SetPoint2(desiredPixelLength, 0, 0);
+    lineSource->Modified();
+
+    // 调整标尺位置（右对齐）
+    int lineX = winSize[0] - marginRight - desiredPixelLength;
+    scaleBarActor->SetPosition(lineX, marginBottom);
+
+    // 更新文本
     std::ostringstream ss;
-    ss << "" << std::fixed << std::setprecision(2) << physicalLength << " (mm)";
+    ss << std::fixed << std::setprecision(2) << desiredPhysicalLength << " mm";
     scaleText->SetInput(ss.str().c_str());
+
+    // 文本居中
+    int textX = lineX + desiredPixelLength / 2 - 30; // 调整偏移量
+    scaleText->SetPosition(textX, marginBottom - 20);
 
     //scaleText->GetTextProperty()->SetFontFamilyToArial(); // 默认字体
     //scaleText->GetTextProperty()->SetFontFile("C:/qcon/3dins/ebrima.ttf");
@@ -797,15 +822,35 @@ void VtkWidget::attachInteractor()
     }
 }
 
-void VtkWidget::OnRightButtonPress()
+double VtkWidget::roundToNearestNiceValue(double value)
 {
-    renWin->GetInteractor()->SetInteractorStyle(0); // 使用vtkwidget自定义事件
-    vtkMenu->showTearOffMenu(); // 弹出菜单栏
+    if (value <= 0) return 0.0;
+
+    double exponent = std::floor(std::log10(value));
+    double normalized = value / std::pow(10, exponent);
+
+    double nice = 1.0;
+    if (normalized < 1.5) {
+        nice = 1.0;
+    } else if (normalized < 2.5) {
+        nice = 2.0;
+    } else if (normalized < 5.0) {
+        nice = 5.0;
+    } else {
+        nice = 10.0;
+    }
+
+    if (nice == 10.0) {
+        exponent += 1;
+        nice = 1.0;
+    }
+
+    return nice * std::pow(10, exponent);
 }
 
-void VtkWidget::OnRightButtonRelease()
+void VtkWidget::OnRightButtonPress()
 {
-    renWin->GetInteractor()->SetInteractorStyle(m_highlightstyle); // 恢复高亮点击事件
+    vtkMenu->showTearOffMenu(); // 弹出菜单栏
 }
 
 vtkSmartPointer<vtkRenderWindow> VtkWidget::getRenderWindow(){
@@ -946,6 +991,89 @@ void VtkWidget::createAxes()
 
     axeWidget->SetEnabled(1);
     axeWidget->InteractiveOn();
+}
+
+void VtkWidget::createActorController()
+{
+    actorAdjustDialog = new QDialog(this);
+    actorAdjustDialog->setWindowTitle("调整图形渲染的粗细");
+    actorAdjustDialog->resize(200, 100);
+
+    // 添加图标和样式
+    QIcon addIcon(":/style/add.png");
+    QIcon subIcon(":/style/sub.png");
+    QString buttonStyle("QPushButton { border: none; background-color: transparent; }");
+
+    // 创建点大小调整的控件
+    QLabel *pointSizeLabel = new QLabel("点的大小:", actorAdjustDialog);
+    QLabel *currentPointSizeLabel = new QLabel(QString::number(MainWindow::ActorPointSize), actorAdjustDialog);
+    QPushButton *pointSizeAddBtn = new QPushButton(actorAdjustDialog);
+    QPushButton *pointSizeSubBtn = new QPushButton(actorAdjustDialog);
+    pointSizeAddBtn->setIcon(addIcon);
+    pointSizeAddBtn->setIconSize(QSize(30, 30));
+    pointSizeAddBtn->setStyleSheet(buttonStyle);
+    pointSizeSubBtn->setIcon(subIcon);
+    pointSizeSubBtn->setIconSize(QSize(30, 30));
+    pointSizeSubBtn->setStyleSheet(buttonStyle);
+
+    // 创建线宽调整的控件
+    QLabel *lineWidthLabel = new QLabel("线条宽度:", actorAdjustDialog);
+    QLabel *currentLineWidthLabel = new QLabel(QString::number(MainWindow::ActorLineWidth), actorAdjustDialog);
+    QPushButton *lineWidthAddBtn = new QPushButton(actorAdjustDialog);
+    QPushButton *lineWidthSubBtn = new QPushButton(actorAdjustDialog);
+    lineWidthAddBtn->setIcon(addIcon);
+    lineWidthAddBtn->setIconSize(QSize(30, 30));
+    lineWidthAddBtn->setStyleSheet(buttonStyle);
+    lineWidthSubBtn->setIcon(subIcon);
+    lineWidthSubBtn->setIconSize(QSize(30, 30));
+    lineWidthSubBtn->setStyleSheet(buttonStyle);
+
+    // 创建布局
+    QVBoxLayout *mainLayout = new QVBoxLayout(actorAdjustDialog);
+
+    // 点大小调整布局
+    QHBoxLayout *pointSizeLayout = new QHBoxLayout();
+    pointSizeLayout->addWidget(pointSizeLabel);
+    pointSizeLayout->addWidget(currentPointSizeLabel);
+    pointSizeLayout->addWidget(pointSizeSubBtn);
+    pointSizeLayout->addWidget(pointSizeAddBtn);
+
+    // 线宽调整布局
+    QHBoxLayout *lineWidthLayout = new QHBoxLayout();
+    lineWidthLayout->addWidget(lineWidthLabel);
+    lineWidthLayout->addWidget(currentLineWidthLabel);
+    lineWidthLayout->addWidget(lineWidthSubBtn);
+    lineWidthLayout->addWidget(lineWidthAddBtn);
+
+    // 添加到主布局
+    mainLayout->addLayout(pointSizeLayout);
+    mainLayout->addLayout(lineWidthLayout);
+
+    // 连接信号与槽
+    connect(pointSizeAddBtn, &QPushButton::clicked, [=]() {
+        MainWindow::ActorPointSize += 1;
+        currentPointSizeLabel->setText(QString::number(MainWindow::ActorPointSize));
+        reDrawCentity();
+    });
+
+    connect(pointSizeSubBtn, &QPushButton::clicked, [=]() {
+        MainWindow::ActorPointSize -= 1;
+        currentPointSizeLabel->setText(QString::number(MainWindow::ActorPointSize));
+        reDrawCentity();
+    });
+
+    connect(lineWidthAddBtn, &QPushButton::clicked, [=]() {
+        MainWindow::ActorLineWidth += 1;
+        currentLineWidthLabel->setText(QString::number(MainWindow::ActorLineWidth));
+        reDrawCentity();
+    });
+
+    connect(lineWidthSubBtn, &QPushButton::clicked, [=]() {
+        MainWindow::ActorLineWidth -= 1;
+        currentLineWidthLabel->setText(QString::number(MainWindow::ActorLineWidth));
+        reDrawCentity();
+    });
+    actorAdjustDialog->show();
 }
 
 // 切换相机视角1

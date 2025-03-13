@@ -147,6 +147,9 @@ public:
     static double HighLightColor[3];
     static double InfoTextColor[3];
 
+    static double ActorPointSize;
+    static double ActorLineWidth;
+
     void SaveIniFile(); // 读取存储图形的配置文件并更新记录
 
     QMap<vtkSmartPointer<vtkActor>, CEntity*>& getactorToEntityMap(); // 管理所有centity对象生成的actor

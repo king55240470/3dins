@@ -30,6 +30,8 @@ public:
     CPosition begin;
     CPosition end;
 
+    double rad;
+    double dis;
 public:
     QDataStream& serialize(QDataStream& out) const override {
         CEntity::serialize(out);  // 先序列化基类部分
@@ -271,6 +273,9 @@ public:
     QVector4D dir_long_edge;   // dir 表示方向direction
     double length;
     double width;
+
+    double rad;
+    double dis;
 
     static int plainCount;
     int currentPlainId;
