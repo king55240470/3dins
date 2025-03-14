@@ -210,7 +210,6 @@ private:
     double baseDistance = 500.0; // 参考初始相机距离
 
     vtkSmartPointer<vtkPolyData> convertPclMeshToVtkPolyData(const pcl::PolygonMesh& pclMesh);
-    void displayMesh(vtkSmartPointer<vtkPolyData> meshData);
 
     // 对话框，用于控制渲染的点的大小和线宽
     QDialog* actorAdjustDialog;

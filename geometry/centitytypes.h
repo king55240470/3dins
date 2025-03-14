@@ -619,6 +619,34 @@ public:
     }
 };
 
+class CSurfaces : public CEntity{
+public:
+    vtkSmartPointer<vtkPolyData> mesh;
+
+    static int surfacesCount;
+    int currentSurfacesId;
+
+public:
+    CSurfaces(){
+        mesh = vtkSmartPointer<vtkPolyData>::New();
+    }
+
+    void setMesh(const vtkSmartPointer<vtkPolyData> &newMesh);
+    vtkSmartPointer<vtkPolyData> getMesh() const;
+
+    int GetUniqueType() override{
+        return enSurfaces;
+    }
+
+    vtkSmartPointer<vtkActor> draw() override;
+
+    void setCurrentId(){
+        currentSurfacesId= ++surfacesCount;
+        m_strAutoName = QString("曲面%1").arg(currentSurfacesId);
+        m_strCName = QString("曲面%1").arg(currentSurfacesId);
+    }
+};
+
 class CDistance : public CEntity{
     static int currentCdistacneId;
     double uptolerance;

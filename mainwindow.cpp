@@ -742,6 +742,10 @@ CEntity* MainWindow::CreateEntity(int nType){
         pTempEntity = new CCuboid();
         pTempEntity->setEntityType(enCuboid);
         break;
+    case enSurfaces:
+        pTempEntity = new CSurfaces();
+        pTempEntity->setEntityType(enSurfaces);
+        break;
     default:
         break;
     }

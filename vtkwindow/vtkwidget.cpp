@@ -1372,6 +1372,9 @@ void VtkWidget::onAlign()
 
 void VtkWidget::poissonReconstruction()
 {
+    //创建曲面实体
+    CSurfaces* pSurfaces=(CSurfaces*)m_pMainWin->CreateEntity(enSurfaces);
+
     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>());
     QString logInfo;
@@ -1383,6 +1386,7 @@ void VtkWidget::poissonReconstruction()
         if (entity->GetUniqueType() == enPointCloud) {
             // 获取点云的共享指针，确保原数据不被释放
             auto pcEntity = static_cast<CPointCloud*>(entity);
+            pSurfaces->parent.append(pcEntity); //重建曲面来源
             cloud = pcl::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>(pcEntity->m_pointCloud);
             logInfo += ((CPointCloud*)entity)->m_strAutoName + ' '; //添加点云编号
         }
@@ -1419,17 +1423,24 @@ void VtkWidget::poissonReconstruction()
         return;
     }
 
-    // vtkSmartPointer<vtkPolyData> vtkMesh = convertPclMeshToVtkPolyData(mesh);
-    // displayMesh(vtkMesh);
+    //重建曲面属性
+    vtkSmartPointer<vtkPolyData> vtkMesh = convertPclMeshToVtkPolyData(mesh);
+    pSurfaces->setCurrentId();
+    pSurfaces->Form="重建";
+    pSurfaces->setMesh(vtkMesh);
+    m_pMainWin->getPWinToolWidget()->addToList(pSurfaces);
+    pSurfaces->m_CreateForm=eReconstruct;
 
-
-    // 转换 PolygonMesh 到 PointCloud
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr reconstructedCloud(new pcl::PointCloud<pcl::PointXYZRGB>);
-    pcl::fromPCLPointCloud2(mesh.cloud, *reconstructedCloud);
-
-    auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateReconstructedCloud(reconstructedCloud);
-    m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
     m_pMainWin->NotifySubscribe();
+
+
+    // // 转换 PolygonMesh 到 PointCloud -显示点云
+    // pcl::PointCloud<pcl::PointXYZRGB>::Ptr reconstructedCloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+    // pcl::fromPCLPointCloud2(mesh.cloud, *reconstructedCloud);
+
+    // auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateReconstructedCloud(reconstructedCloud);
+    // m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
+    // m_pMainWin->NotifySubscribe();
 
     // 添加日志输出
     logInfo += "泊松重建完成";
@@ -1450,7 +1461,8 @@ vtkSmartPointer<vtkPolyData> VtkWidget::convertPclMeshToVtkPolyData(const pcl::P
 
     for (const auto& point : cloud) {
         points->InsertNextPoint(point.x, point.y, point.z);
-        unsigned char color[3] = {point.r, point.g, point.b};
+        // unsigned char color[3] = {point.r, point.g, point.b};
+        unsigned char color[3] = {200, 200,200}; // 设置颜色
         colors->InsertNextTypedTuple(color);
     }
 
@@ -1470,20 +1482,4 @@ vtkSmartPointer<vtkPolyData> VtkWidget::convertPclMeshToVtkPolyData(const pcl::P
     vtkMesh->GetPointData()->SetScalars(colors); // 附加颜色
 
     return vtkMesh;
-}
-
-void VtkWidget::displayMesh(vtkSmartPointer<vtkPolyData> meshData){
-    // 创建Mapper并设置输入数据
-    vtkNew<vtkPolyDataMapper> mapper;
-    mapper->SetInputData(meshData);
-
-    // 创建Actor并设置Mapper
-    vtkNew<vtkActor> actor;
-    actor->SetMapper(mapper);
-
-    // 将Actor添加到渲染器
-    vtkRenderer* renderer = getRenderer();
-    renderer->AddActor(actor);
-    renderer->ResetCamera(); // 重置相机视角
-    m_pMainWin->NotifySubscribe();
 }
