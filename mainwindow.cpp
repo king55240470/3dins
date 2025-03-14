@@ -42,7 +42,7 @@ MainWindow::MainWindow(QWidget *parent)
     RestoreWidgets();
     loadManager();
     LoadSetDataWidget();
-    filechange();
+    //filechange();
     m_nRelyOnWhichCs=csRef;
     SetUpTheme();
     modelCloudExist=false;
@@ -294,6 +294,12 @@ void MainWindow::setupUi(){
     alignAction->setShortcutContext(Qt::ApplicationShortcut);
     connect(alignAction,&QAction::triggered,this,[&](){
         pWinVtkWidget->onAlign();
+    });
+    QAction* ReconstructionAction=cloudOperation->addAction("点云重建");
+    ReconstructionAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Q));
+    ReconstructionAction->setShortcutContext(Qt::ApplicationShortcut);
+    connect(ReconstructionAction,&QAction::triggered,this,[&](){
+        pWinVtkWidget->poissonReconstruction();
     });
 
     QMenu * switchTheme = bar->addMenu("主题(T)");
@@ -735,6 +741,10 @@ CEntity* MainWindow::CreateEntity(int nType){
     case enCuboid:
         pTempEntity = new CCuboid();
         pTempEntity->setEntityType(enCuboid);
+        break;
+    case enSurfaces:
+        pTempEntity = new CSurfaces();
+        pTempEntity->setEntityType(enSurfaces);
         break;
     default:
         break;
@@ -1267,15 +1277,14 @@ void MainWindow::onIsometricViewClicked()
 
 void MainWindow::filechange()
 {
-
-    fileWatcher.addPath("C:/Users/Lenovo/Desktop/downFTPfile"); // 替换为FTP目录路径
-    connect(&fileWatcher, &QFileSystemWatcher::directoryChanged, this, &MainWindow::onFileChanged);
-    // 初始化文件处理定时器
-    fileProcessorTimer.setInterval(1000); // 每秒处理一个文件
-    connect(&fileProcessorTimer, &QTimer::timeout, this, &MainWindow::processNextFile);
-    // 初始化已存在的文件列表
-    QDir dir("C:/Users/Lenovo/Desktop/downFTPfile");
-    existingFiles = dir.entryList(QDir::Files);
+    // fileWatcher.addPath("C:/Users/Lenovo/Desktop/downFTPfile"); // 替换为FTP目录路径
+    // connect(&fileWatcher, &QFileSystemWatcher::directoryChanged, this, &MainWindow::onFileChanged);
+    // // 初始化文件处理定时器
+    // fileProcessorTimer.setInterval(1000); // 每秒处理一个文件
+    // connect(&fileProcessorTimer, &QTimer::timeout, this, &MainWindow::processNextFile);
+    // // 初始化已存在的文件列表
+    // QDir dir("C:/Users/Lenovo/Desktop/downFTPfile");
+    // existingFiles = dir.entryList(QDir::Files);
 }
 
 void MainWindow::onFileChanged(const QString &path)

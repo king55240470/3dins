@@ -22,6 +22,7 @@
 #include <future>
 
 FittingLine::FittingLine() {
+
     //创建点云智能指针
     lineCloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
     cloud_subset.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
@@ -39,68 +40,59 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingLine::RANSAC(pcl::PointXYZRGB sear
     for (int i=0;i<cloudptr->size();i++) {
         if (euclideanDistance(cloudptr->points[i], searchPoint) < distance) {
             cloud_subset->push_back(cloudptr->points[i]);
-            indexs.push_back(i);
         }
     }
 
-    if(cloud_subset->size()>=2){
-        // // 直接循环，效率低下，使用下面的方法
-        // // 遍历每个点，得到点云曲率
-        // for (int i = 0; i < cloudptr->size(); i++) {
-        //     double curvature=calculateCurvature(cloudptr, i, 0.1);
-        //     curvatures.push_back(curvature);
-        //     averageCurvature += curvature;
-        // }
-        // averageCurvature /= cloudptr->size();
+    if(cloud_subset->size()>=80000){
+        QString sizeStr="此阈值得到的邻近点云的数量为："+QString::number(cloud_subset->size())+"\n要求点云数量在80000个以内";
+        QMessageBox *messagebox=new QMessageBox();
+        messagebox->setText("输入的距离阈值太大，\n可能导致识别失败，\n请重新输入！\n"+sizeStr);
+        messagebox->setIcon(QMessageBox::Warning);
+        messagebox->show();
+        messagebox->exec();
+        return nullptr;
+    }else if(cloud_subset->size()>=2){
 
-        // //使用std::async创建异步任务，提升运行速度
-        // int num_points = cloudptr->size();
-        // curvatures.resize(num_points);
-        // std::vector<std::future<double>> futures;
+        curvature=calculateCurvature(cloudptr, searchPoint, 0.1);//计算searchPoint的曲率
 
-        // for (int i = 0; i < num_points; ++i) {
-        //     futures.emplace_back(std::async(std::launch::async, &FittingLine::calculateCurvature, this, cloudptr, i, 0.1));
-        // }
+        //法一：使用std::async创建异步任务，提升运行速度
+        std::vector<std::future<double>> futures;
+        futures.reserve(cloud_subset->size());
 
-        // for (int i = 0; i < num_points; ++i) {
-        //     curvatures[i] = futures[i].get();
-        //     averageCurvature += curvatures[i];
-        // }
-        //  averageCurvature /= num_points;
-
-        int num_points = cloudptr->size();
-        curvatures.resize(num_points);
-        averageCurvature = 0.0;
-
-        // 创建线程池
-        size_t numThreads = std::thread::hardware_concurrency();
-        ThreadPool pool(numThreads);
-
-        // 分块处理点云
-        const int blockSize = 1000;
-        for (int blockStart = 0; blockStart < num_points; blockStart += blockSize) {
-            int blockEnd = std::min(blockStart + blockSize, num_points);
-            pool.enqueue([this, cloudptr, blockStart, blockEnd] {
-                for (int i = blockStart; i < blockEnd; ++i) {
-                    curvatures[i] = calculateCurvature(cloudptr, i, 0.1);
-                    qDebug()<<i;
-                    std::lock_guard<std::mutex> lock(this->mtx);  // 使用 mutex 保护共享资源
-                    averageCurvature += curvatures[i];
-                }
-            });
+        // 启动异步任务计算曲率
+        for (int i = 0; i < cloud_subset->size(); ++i) {
+            futures.emplace_back(std::async(std::launch::async, &FittingLine::calculateCurvature, this, cloudptr, cloud_subset->points[i], 0.1));
         }
 
-        // 等待所有任务完成
-        pool.enqueue([] {});
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        averageCurvature /= num_points;
-
-        for (int i = 0; i < cloud_subset->size(); i++) {
-            int index = indexs[i];
-            if (curvatures[index] > averageCurvature) {
-                tempCloud->push_back(cloudptr->points[index]);
+        // 收集结果并筛选点
+        for (int i = 0; i < cloud_subset->size(); ++i) {
+            double currentCurvature = futures[i].get();
+            if (std::fabs(currentCurvature - curvature) <= 0.1) {//选择曲率与searchPoint相近的点
+                tempCloud->push_back(cloud_subset->points[i]);
             }
         }
+
+        // //法二：创建线程池
+        // ThreadPool pool(std::thread::hardware_concurrency());
+        // std::vector<std::future<double>> futures;
+        // futures.reserve(cloud_subset->size());
+
+        // // 启动异步任务计算曲率
+        // for (int i = 0; i < cloud_subset->size(); ++i) {
+        //     auto task = [this, cloudptr, point = cloud_subset->points[i], radius = 0.1]() {
+        //         return calculateCurvature(cloudptr, point, radius);
+        //     };
+        //     futures.emplace_back(pool.enqueue(task));
+        // }
+
+        // // 收集结果并筛选点
+        // for (int i = 0; i < cloud_subset->size(); ++i) {
+        //     double currentCurvature = futures[i].get();
+        //     if (std::fabs(currentCurvature - curvature) <= 0.1) {
+        //         tempCloud->push_back(cloud_subset->points[i]);
+        //     }
+        // }
+
     }else{
         QMessageBox *messagebox=new QMessageBox();
         messagebox->setText("输入的距离阈值太小，\n请重新输入！");
@@ -204,9 +196,9 @@ double FittingLine::euclideanDistance(const pcl::PointXYZRGB& p1, const pcl::Poi
 }
 
 // 计算指定索引点的曲率
-double FittingLine::calculateCurvature(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& pointCloud, int index, double radius) {
+double FittingLine::calculateCurvature(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& pointCloud, pcl::PointXYZRGB point, double radius) {
     // 获取指定索引的点
-    pcl::PointXYZRGB queryPoint = pointCloud->points[index];
+    pcl::PointXYZRGB queryPoint = point;
     std::vector<pcl::PointXYZRGB> neighbors;
 
     // 找出邻域内的点
@@ -266,12 +258,13 @@ bool FittingLine::isPointInLine(const pcl::PointXYZRGB& point){
     return crossProductMagnitude <= 0.1;
 }
 
-void FittingLine::setRadius(double rad){
-    //radius=rad;
-}
-
 void FittingLine::setDistance(double dis){
     distance=dis;
+}
+
+double FittingLine::getDistance()
+{
+    return distance;
 }
 
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingLine::getLineCloud(){

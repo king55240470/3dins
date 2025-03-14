@@ -8,6 +8,11 @@
 #include <vtkEventQtSlotConnect.h>
 #include <vtkTimerLog.h>
 #include <vtkImageResize.h>
+#include <pcl/surface/poisson.h>
+#include <pcl/surface/impl/poisson.hpp>
+#include <vtkCellArray.h>
+
+
 
 VtkWidget::VtkWidget(QWidget *parent)
     : QWidget(parent),
@@ -1363,4 +1368,118 @@ void VtkWidget::onAlign()
     logInfo += "对齐完成，误差:";
     logInfo += std::to_string(rmse);
     m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
+}
+
+void VtkWidget::poissonReconstruction()
+{
+    //创建曲面实体
+    CSurfaces* pSurfaces=(CSurfaces*)m_pMainWin->CreateEntity(enSurfaces);
+
+    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>());
+    QString logInfo;
+
+    // 收集选中的点云（确保不修改原始实体）
+    for (int i = 0; i < entityList.size(); i++) {
+        CEntity* entity = entityList[i];
+        if (!entity->IsSelected()) continue;
+        if (entity->GetUniqueType() == enPointCloud) {
+            // 获取点云的共享指针，确保原数据不被释放
+            auto pcEntity = static_cast<CPointCloud*>(entity);
+            pSurfaces->parent.append(pcEntity); //重建曲面来源
+            cloud = pcl::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>(pcEntity->m_pointCloud);
+            logInfo += ((CPointCloud*)entity)->m_strAutoName + ' '; //添加点云编号
+        }
+    }
+
+    if (cloud->empty()) {
+        QMessageBox::warning(this, "警告", "点云不能为空");
+        return;
+    }
+
+    // 计算法向量
+    pcl::PointCloud<pcl::Normal>::Ptr normals(new pcl::PointCloud<pcl::Normal>);
+    pcl::NormalEstimation<pcl::PointXYZRGB, pcl::Normal> normalEstimation;
+    normalEstimation.setInputCloud(cloud);
+    pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZRGB>);
+    normalEstimation.setSearchMethod(tree);
+    normalEstimation.setKSearch(20);
+    normalEstimation.compute(*normals);
+
+    // 合并点云和法向量
+    pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloudWithNormals(new pcl::PointCloud<pcl::PointXYZRGBNormal>);
+    pcl::concatenateFields(*cloud, *normals, *cloudWithNormals);
+
+    // 执行泊松重建
+    pcl::Poisson<pcl::PointXYZRGBNormal> poisson;
+    poisson.setDepth(9); // 设定泊松重建深度
+    poisson.setInputCloud(cloudWithNormals);
+
+    pcl::PolygonMesh mesh;
+    poisson.reconstruct(mesh);
+
+    if (mesh.polygons.empty()) {
+        QMessageBox::warning(this, "警告", "泊松重建失败");
+        return;
+    }
+
+    //重建曲面属性
+    vtkSmartPointer<vtkPolyData> vtkMesh = convertPclMeshToVtkPolyData(mesh);
+    pSurfaces->setCurrentId();
+    pSurfaces->Form="重建";
+    pSurfaces->setMesh(vtkMesh);
+    m_pMainWin->getPWinToolWidget()->addToList(pSurfaces);
+    pSurfaces->m_CreateForm=eReconstruct;
+
+    m_pMainWin->NotifySubscribe();
+
+
+    // // 转换 PolygonMesh 到 PointCloud -显示点云
+    // pcl::PointCloud<pcl::PointXYZRGB>::Ptr reconstructedCloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+    // pcl::fromPCLPointCloud2(mesh.cloud, *reconstructedCloud);
+
+    // auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateReconstructedCloud(reconstructedCloud);
+    // m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
+    // m_pMainWin->NotifySubscribe();
+
+    // 添加日志输出
+    logInfo += "泊松重建完成";
+    m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
+}
+
+vtkSmartPointer<vtkPolyData> VtkWidget::convertPclMeshToVtkPolyData(const pcl::PolygonMesh& pclMesh) {
+    vtkSmartPointer<vtkPolyData> vtkMesh = vtkSmartPointer<vtkPolyData>::New();
+
+    // 提取顶点坐标和颜色
+    pcl::PointCloud<pcl::PointXYZRGB> cloud;
+    pcl::fromPCLPointCloud2(pclMesh.cloud, cloud);
+
+    vtkNew<vtkPoints> points;
+    vtkNew<vtkUnsignedCharArray> colors;
+    colors->SetNumberOfComponents(3);
+    colors->SetName("Colors");
+
+    for (const auto& point : cloud) {
+        points->InsertNextPoint(point.x, point.y, point.z);
+        // unsigned char color[3] = {point.r, point.g, point.b};
+        unsigned char color[3] = {200, 200,200}; // 设置颜色
+        colors->InsertNextTypedTuple(color);
+    }
+
+    // 提取面片信息
+    vtkNew<vtkCellArray> polygons;
+    for (const auto& polygon : pclMesh.polygons) {
+        vtkNew<vtkIdList> idList;
+        for (const auto& vertex : polygon.vertices) {
+            idList->InsertNextId(static_cast<vtkIdType>(vertex));
+        }
+        polygons->InsertNextCell(idList);
+    }
+
+    // 组装vtkPolyData
+    vtkMesh->SetPoints(points);
+    vtkMesh->SetPolys(polygons);
+    vtkMesh->GetPointData()->SetScalars(colors); // 附加颜色
+
+    return vtkMesh;
 }
