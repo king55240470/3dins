@@ -295,6 +295,12 @@ void MainWindow::setupUi(){
     connect(alignAction,&QAction::triggered,this,[&](){
         pWinVtkWidget->onAlign();
     });
+    QAction* ReconstructionAction=cloudOperation->addAction("点云重建");
+    ReconstructionAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Q));
+    ReconstructionAction->setShortcutContext(Qt::ApplicationShortcut);
+    connect(ReconstructionAction,&QAction::triggered,this,[&](){
+        pWinVtkWidget->poissonReconstruction();
+    });
 
     QMenu * switchTheme = bar->addMenu("主题(T)");
     QAction* showThemeMenu = new QAction();
@@ -735,6 +741,10 @@ CEntity* MainWindow::CreateEntity(int nType){
     case enCuboid:
         pTempEntity = new CCuboid();
         pTempEntity->setEntityType(enCuboid);
+        break;
+    case enSurfaces:
+        pTempEntity = new CSurfaces();
+        pTempEntity->setEntityType(enSurfaces);
         break;
     default:
         break;

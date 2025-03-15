@@ -247,6 +247,10 @@ void FileManagerWidget::createContentItem(){
             QIcon icon(":/component/construct/angle.png");
             newContentItem->setIcon(icon);
         }
+        if(key.contains("曲面")){
+            QIcon icon(":/component/construct/angle.png");
+            newContentItem->setIcon(icon);
+        }
 
         newContentItem->setText(key);
 

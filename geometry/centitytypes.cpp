@@ -462,6 +462,18 @@ vtkSmartPointer<vtkActor> CCuboid::draw() {
     return actor;
 }
 
+vtkSmartPointer<vtkActor> CSurfaces::draw() {
+    // 创建映射器
+    auto mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    mapper->SetInputData(mesh);
+
+    // 创建执行器
+    auto actor = vtkSmartPointer<vtkActor>::New();
+    actor->SetMapper(mapper);
+
+    return actor;
+}
+
 int CPointCloud::pointCloudCount = 0;
 QString CPointCloud::getCEntityInfo()
 {
@@ -793,6 +805,7 @@ int CCone::coneCount=0;
 int CDistance::currentCdistacneId=0;
 int CCuboid::cuboidCount=0;
 int CAngle::currentCAngleId=0;
+int CSurfaces::surfacesCount=0;
 
 void CCircle::SetDiameter(double d)
 {
@@ -1108,6 +1121,16 @@ QVector4D CCuboid::getNormal() const
 void CCuboid::setNormal(const QVector4D &newNormal)
 {
     normal = newNormal;
+}
+
+void CSurfaces::setMesh(const vtkSmartPointer<vtkPolyData> &newMesh)
+{
+    mesh=newMesh;
+}
+
+vtkSmartPointer<vtkPolyData> CSurfaces::getMesh() const
+{
+    return mesh;
 }
 
 

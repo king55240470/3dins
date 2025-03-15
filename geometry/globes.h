@@ -9,7 +9,8 @@ enum CREATE_FORM : int
     eMeasure = 0x0,//测量
     eConstruct = 0x1,//
     ePreset = 0x2,//预设
-    eCopy = 0x3//复制
+    eCopy = 0x3,//复制
+    eReconstruct = 0x4//重建
 };
 
 enum ENTITY_TYPE : int
@@ -51,6 +52,7 @@ enum ENTITY_TYPE : int
     enScanCode      = 0x21,
     enTotalCount    = 0x22,
     enCuboid        = 0x23,
+    enSurfaces      = 0x24,
 };
 
 //校正偏差

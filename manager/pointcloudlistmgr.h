@@ -23,6 +23,7 @@ public:
     CPointCloud* CreateCompareCloud(pcl::PointCloud<pcl::PointXYZRGB> cloud);
     // CPointCloud* CreateAlignCloud(pcl::PointCloud<pcl::PointXYZRGB> cloud);
     CPointCloud *CreateAlignCloud(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud);
+    CPointCloud *CreateReconstructedCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud);
 
     pcl::PointCloud<pcl::PointXYZRGB>& getTempCloud(){
         return tempCloud;

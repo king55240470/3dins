@@ -32,6 +32,8 @@
 #include <pcl/registration/sample_consensus_prerejective.h>
 #include <pcl/registration/icp.h>
 #include <pcl/registration/ia_ransac.h>
+// #include <pcl/surface/poisson.h>
+// #include <pcl/surface/impl/poisson.hpp>
 
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
@@ -115,6 +117,7 @@ public:
 
     void onCompare();// 比较两个点云
     void onAlign();    // 配准的函数
+    void poissonReconstruction(); // 泊松重建
 
     // 显示选中的图形的信息
     void setCentity(CEntity*entity);  //传入centity对象
@@ -205,6 +208,8 @@ private:
     vtkSmartPointer<vtkLineSource> lineSource;
     double baseLength = 1.0;     // 初始标度尺长度
     double baseDistance = 500.0; // 参考初始相机距离
+
+    vtkSmartPointer<vtkPolyData> convertPclMeshToVtkPolyData(const pcl::PolygonMesh& pclMesh);
 
     // 对话框，用于控制渲染的点的大小和线宽
     QDialog* actorAdjustDialog;
