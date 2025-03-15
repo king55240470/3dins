@@ -720,11 +720,28 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
     qDebug()<<"时间进行1秒";
     QVector<CObject*>objlist=m_pMainWin->getObjectListMgr()->getObjectList();
     if(distancelistIndex>distancelist.size()-1){
-        cleanupAfterCompletion();
+        if(timer){
+            timer->stop();
+            delete timer;
+            timer=nullptr;
+            m_pMainWin->getPWinToolWidget()->setauto(true);
+            m_pMainWin->getPWinToolWidget()->onSaveTxt();
+            m_pMainWin->getPWinToolWidget()->onSaveWord();
+            m_pMainWin->getPWinToolWidget()->onSaveExcel();
+            m_pMainWin->getPWinToolWidget()->onSavePdf();
+            m_pMainWin->getPWinToolWidget()->setauto(false);
+        }
+        if(!pointCouldlists.empty()){
+            CompareCloud();
+            updateDistance();
+        }else{
+            isProcessing=false;
+            return;
+        }
     }
     if(currentIndex>distancelist[distancelistIndex]->parent.size()-1){
         UpdateDisNowFun(distancelist);
-
+        return;
     }else if(stateMachine->configuration().contains(stoppedState)){
         timer->stop();
         delete timer;
@@ -956,27 +973,6 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
     }
 }
 
-void ElementListWidget::cleanupAfterCompletion()
-{
-    if(timer){
-        timer->stop();
-        delete timer;
-        timer=nullptr;
-        m_pMainWin->getPWinToolWidget()->setauto(true);
-        m_pMainWin->getPWinToolWidget()->onSaveTxt();
-        m_pMainWin->getPWinToolWidget()->onSaveWord();
-        m_pMainWin->getPWinToolWidget()->onSaveExcel();
-        m_pMainWin->getPWinToolWidget()->onSavePdf();
-        m_pMainWin->getPWinToolWidget()->setauto(false);
-    }
-    if(!pointCouldlists.empty()){
-        CompareCloud();
-        updateDistance();
-    }else{
-        isProcessing=false;
-        return;
-    }
-}
 
 void ElementListWidget::UpdateDisNowFun(QVector<CEntity*>distancelist)
 {
@@ -1043,8 +1039,11 @@ void ElementListWidget::UpdateDisNowFun(QVector<CEntity*>distancelist)
     currentIndex=0;
     list.clear();
     QString str=distancelist[distancelistIndex]->GetObjectCName()+"测量完成";
+    qDebug()<<"进行到距离改变111";
     m_pMainWin->getPWinVtkPresetWidget()->setWidget(str);
+    qDebug()<<"进行到距离改变222";
     m_pMainWin->NotifySubscribe();
+    qDebug()<<"进行到距离改变333";
     distancelistIndex++;
     return;
 }
