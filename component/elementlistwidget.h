@@ -75,7 +75,6 @@ public:
     void CompareCloud();
     void updateDistance();//开启更新
     void startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree, QVector<CEntity*>distancelist);//timer关联函数
-    void cleanupAfterCompletion();//时间停止后的处理(删除时间或下一步或保存文件)
     void UpdateDisNowFun(QVector<CEntity*>distancelist);//更新距离元素
     void isAdd();
     void createrule();
