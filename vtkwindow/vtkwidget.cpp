@@ -1051,25 +1051,29 @@ void VtkWidget::createActorController()
 
     // 连接信号与槽
     connect(pointSizeAddBtn, &QPushButton::clicked, [=]() {
-        MainWindow::ActorPointSize += 1;
+        if(MainWindow::ActorPointSize < 10)
+            MainWindow::ActorPointSize += 1;
         currentPointSizeLabel->setText(QString::number(MainWindow::ActorPointSize));
         reDrawCentity();
     });
 
     connect(pointSizeSubBtn, &QPushButton::clicked, [=]() {
-        MainWindow::ActorPointSize -= 1;
+        if(MainWindow::ActorPointSize > 0)
+            MainWindow::ActorPointSize -= 1;
         currentPointSizeLabel->setText(QString::number(MainWindow::ActorPointSize));
         reDrawCentity();
     });
 
     connect(lineWidthAddBtn, &QPushButton::clicked, [=]() {
-        MainWindow::ActorLineWidth += 1;
+        if(MainWindow::ActorLineWidth < 7)
+            MainWindow::ActorLineWidth += 1;
         currentLineWidthLabel->setText(QString::number(MainWindow::ActorLineWidth));
         reDrawCentity();
     });
 
     connect(lineWidthSubBtn, &QPushButton::clicked, [=]() {
-        MainWindow::ActorLineWidth -= 1;
+        if(MainWindow::ActorLineWidth > 0)
+            MainWindow::ActorLineWidth -= 1;
         currentLineWidthLabel->setText(QString::number(MainWindow::ActorLineWidth));
         reDrawCentity();
     });
