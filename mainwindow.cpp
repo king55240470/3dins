@@ -42,7 +42,6 @@ MainWindow::MainWindow(QWidget *parent)
     RestoreWidgets();
     loadManager();
     LoadSetDataWidget();
-    //filechange();
     m_nRelyOnWhichCs=csRef;
     SetUpTheme();
     modelCloudExist=false;
@@ -55,6 +54,7 @@ void MainWindow::setupUi(){
     QIcon openFile(":/style/openfile.png");
     QIcon saveFile(":/style/savefile.png");
     QIcon exitIcon(":/style/exit.png");
+    QIcon ListeningFile(":/style/openfile.png");
     QMenu *fileMenu=bar->addMenu("文件(F)");
     QAction *openAction=fileMenu->addAction("打开文件");
     openAction->setIcon(openFile);
@@ -66,6 +66,11 @@ void MainWindow::setupUi(){
     saveAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_S));
     saveAction->setShortcutContext(Qt::ApplicationShortcut);
     connect(saveAction, &QAction::triggered, this, &MainWindow::saveFile); // 连接保存文件的信号与槽
+    QAction *ListeningAction=fileMenu->addAction("监听文件");
+    openAction->setIcon(ListeningFile);
+    openAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_T));
+    openAction->setShortcutContext(Qt::ApplicationShortcut);
+    connect(ListeningAction, &QAction::triggered, this, &MainWindow::listeningFile); // 连接打开文件的信号与槽
     fileMenu->addSeparator();
     QAction *exitAction=fileMenu->addAction("退出");
     exitAction->setIcon(exitIcon);
@@ -623,6 +628,69 @@ void MainWindow::saveFile(){
     // 关闭文件
     file.close();
     QMessageBox::information(nullptr, "提示", "qins文件保存成功");
+}
+
+void MainWindow::listeningFile()
+{
+    // 创建一个自定义对话框
+    QDialog* dialog = new QDialog(this);
+    dialog->setWindowTitle("监听文件");
+
+    // 创建布局
+    QVBoxLayout* layout = new QVBoxLayout(dialog);
+
+    // 创建一个按钮用于打开文件选择器
+    QPushButton* openFileButton = new QPushButton("选择文件", dialog);
+    connect(openFileButton, &QPushButton::clicked, this, [dialog, this]() {
+        // 打开文件选择器
+        QString filePath = QFileDialog::getExistingDirectory(this, "选择文件夹", QDir::homePath());
+        if (!filePath.isEmpty()) {
+            // 获取 QLineEdit 并设置文件路径
+            QLineEdit* filePathLineEdit = dialog->findChild<QLineEdit*>("filePathLineEdit");
+            if (filePathLineEdit) {
+                filePathLineEdit->setText(filePath);
+                listeningfilePath=filePathLineEdit->text();
+                filechange();
+            }
+        }
+    });
+
+    // 创建一个输入框用于记录文件路径
+    QLineEdit* filePathLineEdit = new QLineEdit(dialog);
+    filePathLineEdit->setObjectName("filePathLineEdit"); // 设置对象名称以便查找
+
+    // 创建一个水平布局用于放置确定和取消按钮
+    QHBoxLayout* buttonLayout = new QHBoxLayout();
+    QPushButton* okButton = new QPushButton("确定", dialog);
+    QPushButton* cancelButton = new QPushButton("取消", dialog);
+
+    connect(okButton, &QPushButton::clicked, this, [dialog, filePathLineEdit]() {
+        // 获取文件路径
+        QString filePath = filePathLineEdit->text();
+        if (filePath.isEmpty()) {
+            QMessageBox::warning(dialog, "警告", "请先选择一个文件！");
+            return;
+        }
+        // 在这里可以添加确定后的逻辑，例如开始监听文件
+        QMessageBox::information(dialog, "提示", "开始监听文件：" + filePath);
+        dialog->accept(); // 关闭对话框
+    });
+
+    connect(cancelButton, &QPushButton::clicked, dialog, &QDialog::reject);
+
+    buttonLayout->addWidget(okButton);
+    buttonLayout->addWidget(cancelButton);
+
+    // 将所有控件添加到布局中
+    layout->addWidget(openFileButton);
+    layout->addWidget(filePathLineEdit);
+    layout->addLayout(buttonLayout);
+
+    // 设置对话框的布局
+    dialog->setLayout(layout);
+
+    // 显示对话框
+    dialog->exec();
 }
 /*void MainWindow::open_clicked() {
     // 打开文件对话框，允许用户选择文件
@@ -1277,14 +1345,14 @@ void MainWindow::onIsometricViewClicked()
 
 void MainWindow::filechange()
 {
-    // fileWatcher.addPath("C:/Users/Lenovo/Desktop/downFTPfile"); // 替换为FTP目录路径
-    // connect(&fileWatcher, &QFileSystemWatcher::directoryChanged, this, &MainWindow::onFileChanged);
-    // // 初始化文件处理定时器
-    // fileProcessorTimer.setInterval(1000); // 每秒处理一个文件
-    // connect(&fileProcessorTimer, &QTimer::timeout, this, &MainWindow::processNextFile);
-    // // 初始化已存在的文件列表
-    // QDir dir("C:/Users/Lenovo/Desktop/downFTPfile");
-    // existingFiles = dir.entryList(QDir::Files);
+    fileWatcher.addPath(listeningfilePath); // 替换为FTP目录路径
+    connect(&fileWatcher, &QFileSystemWatcher::directoryChanged, this, &MainWindow::onFileChanged);
+    // 初始化文件处理定时器
+    fileProcessorTimer.setInterval(1000); // 每秒处理一个文件
+    connect(&fileProcessorTimer, &QTimer::timeout, this, &MainWindow::processNextFile);
+    // 初始化已存在的文件列表
+    QDir dir(listeningfilePath);
+    existingFiles = dir.entryList(QDir::Files);
 }
 
 void MainWindow::onFileChanged(const QString &path)
