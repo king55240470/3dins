@@ -8,7 +8,8 @@ static auto isPointInCircle=[](const CPosition &circleCenter, double radius, con
 };
 CylinderConstructor::CylinderConstructor() {}
 CEntity* CylinderConstructor::create(QVector<CEntity*>& entitylist){
-    Constructor::create(entitylist);
+    //Constructor::create(entitylist);
+
     QVector<CPosition> positions;
     QVector<CPoint*>points;
     for(int i=0;i<entitylist.size();i++){
@@ -21,14 +22,20 @@ CEntity* CylinderConstructor::create(QVector<CEntity*>& entitylist){
         }
     }
 
-    if(positions.size()==4){
+    if(points.size()==4&&positions.size()==4){
         CCylinder*cylinder=createCylinder(positions[0],positions[1],positions[2],positions[3]);
-        cylinder->parent.push_back(points[0]);
-        cylinder->parent.push_back(points[1]);
-        cylinder->parent.push_back(points[2]);
+        if(cylinder==nullptr){
+
+            return nullptr;
+        }
+        cylinder->parent.push_back(points[0]); 
+        cylinder->parent.push_back(points[1]);  
+        cylinder->parent.push_back(points[2]);         
         cylinder->parent.push_back(points[3]);
+
         return cylinder;
     }
+
     if(points.size()>4){
         setWrongInformation(PointTooMuch);
     }else if(points.size()<4){

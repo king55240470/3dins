@@ -65,6 +65,10 @@ CEntity* ConeConstructor::create(QVector<CEntity*>& entitylist){
 
     if(positions.size()==4){
         CCone*cone=createCone(positions[0],positions[1],positions[2],positions[3]);
+        if(cone==nullptr){
+
+            return nullptr;
+        }
         cone->parent.push_back(points[0]);
         cone->parent.push_back(points[1]);
         cone->parent.push_back(points[2]);

@@ -1286,7 +1286,7 @@ void   ToolWidget::onSaveExcel(){
     if(m_saveExcel==true)
         filePath=lastCreatedExcelFile;
     QStringList headers;
-    headers << "类型" << "名称" << "数据1" << "数据2" << "数据3"<<"数据4"<<"数据5" ;
+    headers << "类型" << "名称" <<"数值"<< "上公差" << "下公差" <<"是否合格" ;
     int col = headers.size();
     QList<QList<QString>> dataAll;
     auto& entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
