@@ -10,6 +10,7 @@ public:
     SphereConstructor();
     CEntity* create(QVector<CEntity*>& entitylist)override;
     CSphere* createSphere(CPosition p1,CPosition p2,CPosition p3,CPosition p4);
+
     CSphere* createSphere(CPosition center,double radius);
 };
 
