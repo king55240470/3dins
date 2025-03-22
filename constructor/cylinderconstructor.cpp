@@ -12,6 +12,7 @@ CEntity* CylinderConstructor::create(QVector<CEntity*>& entitylist){
 
     QVector<CPosition> positions;
     QVector<CPoint*>points;
+    QVector<CCircle*>circles;
     for(int i=0;i<entitylist.size();i++){
         CEntity* entity=entitylist[i];
         if(!entity->IsSelected())continue;
@@ -20,12 +21,15 @@ CEntity* CylinderConstructor::create(QVector<CEntity*>& entitylist){
             points.push_back(point);
             positions.push_back(point->GetPt());
         }
+        if(entity->GetUniqueType()==enCircle){
+            CCircle* circle=(CCircle*)entity;
+            circles.push_back(circle);
+        }
     }
-
+    //四个点构造一个圆柱
     if(points.size()==4&&positions.size()==4){
         CCylinder*cylinder=createCylinder(positions[0],positions[1],positions[2],positions[3]);
         if(cylinder==nullptr){
-
             return nullptr;
         }
         cylinder->parent.push_back(points[0]); 
@@ -35,16 +39,53 @@ CEntity* CylinderConstructor::create(QVector<CEntity*>& entitylist){
 
         return cylinder;
     }
+    //一个圆一个点构造一个圆柱
+    if(points.size()==1&&circles.size()==1){
+        CCylinder*cylinder=createCylinder(positions[0],circles[0]);
+        if(cylinder==nullptr){
+            setWrongInformation(PointDontMatch);
+            return nullptr;
+        }
+        cylinder->parent.push_back(points[0]);
+        cylinder->parent.push_back(circles[0]);
+        return cylinder;
+    }
 
     if(points.size()>4){
         setWrongInformation(PointTooMuch);
     }else if(points.size()<4){
         setWrongInformation(PointTooLess);
+    }else{
+         setWrongInformation(PointDontMatch);
     }
     return nullptr;
 
 }
+CCylinder* CylinderConstructor::createCylinder(CPosition p1,CCircle* circle){
+    double radius=circle->getDiameter()/2;
+    QVector4D circleCenter=toQVector4D(circle->getCenter());
+    QVector4D normal = circle->normal;
+
+
+    // 计算底面圆心和第四个点的距离
+    double distanceToD =distanceToPlane(toQVector4D(p1),circleCenter,normal);
+
+    // 计算法线并沿法线延伸距离
+    QVector4D topCircleCenter=circleCenter+normal*distanceToD;
+    QVector4D middleCenter=circleCenter+normal*(distanceToD/2);
+
+    if(isPointInCircle(toCPosition(topCircleCenter),radius,p1)){
+        return createCylinder(toCPosition(middleCenter),normal,fabs(distanceToD),2*radius);
+    }else{
+        setWrongInformation(PointDontMatch);
+        return nullptr;
+    }
+
+}
+
 CCylinder* CylinderConstructor::createCylinder(CPosition p1,CPosition p2,CPosition p3,CPosition p4){
+    CircleConstructor circleConstructor;
+    CCircle* circle=circleConstructor.createCircle(p1,p2,p3);
     CPosition A=p1;
     CPosition B=p2;
     CPosition C=p3;
