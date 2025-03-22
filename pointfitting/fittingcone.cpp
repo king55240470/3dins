@@ -33,6 +33,11 @@ FittingCone::FittingCone() {
 }
 
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingCone::RANSAC(pcl::PointXYZRGB searchPoint,pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudptr){
+
+    //清除数据
+    cloud_subset->clear();
+    coneCloud->clear();
+
     //创建KD树用于邻域搜索
     pcl::search::KdTree<pcl::PointXYZRGB> kdtree;
     kdtree.setInputCloud(cloudptr);
@@ -76,6 +81,17 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingCone::RANSAC(pcl::PointXYZRGB sear
 
         //执行分割
         seg.segment(*inliers, *coefficients);
+
+        // 检查分割是否成功
+        if (inliers->indices.empty()) {
+            QMessageBox *messagebox = new QMessageBox();
+            messagebox->setText("请修改邻域或距离阈值\nRANSAC found no model!\n");
+            messagebox->setIcon(QMessageBox::Warning);
+            messagebox->show();
+            messagebox->exec();
+            PCL_ERROR("RANSAC found no model. Error segmenting the model! No solution found.\n");
+            return nullptr;
+        }
 
         //计算圆锥顶点
         topCenter=Eigen::Vector3f(coefficients->values[0], coefficients->values[1], coefficients->values[2]);

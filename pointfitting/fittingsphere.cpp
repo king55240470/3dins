@@ -27,6 +27,11 @@ FittingSphere::FittingSphere() {
 }
 
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingSphere::RANSAC(pcl::PointXYZRGB searchPoint,pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudptr){
+
+    //清除数据
+    cloud_subset->clear();
+    sphereCloud->clear();
+
     //创建KD树用于邻域搜索
     pcl::search::KdTree<pcl::PointXYZRGB> kdtree;
     kdtree.setInputCloud(cloudptr);

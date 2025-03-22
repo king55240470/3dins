@@ -2309,6 +2309,8 @@ void ToolWidget:: onFindPlane(){
         return ;
     }
 
+    if(!m_pMainWin->getPWinSetDataWidget()->getBeginFitting())  return;
+
     auto planeCloud=m_pMainWin->getPWinSetDataWidget()->getPlaneCloud();
     if(planeCloud==nullptr){
         qDebug()<<"拟合平面生成错误";

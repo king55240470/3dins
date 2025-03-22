@@ -35,6 +35,11 @@ FittingLine::FittingLine() {
 
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingLine::RANSAC(pcl::PointXYZRGB searchPoint,pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudptr){
 
+    //清除数据
+    cloud_subset->clear();
+    tempCloud->clear();
+    lineCloud->clear();
+
     linePoint=Eigen::Vector3f(searchPoint.x,searchPoint.y,searchPoint.z);//转换searchPoint的类型
 
     for (int i=0;i<cloudptr->size();i++) {
