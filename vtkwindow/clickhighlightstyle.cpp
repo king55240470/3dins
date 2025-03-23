@@ -65,7 +65,7 @@ void MouseInteractorHighlightActor::OnLeftButtonDown()
                 if(findState->objectName() == "识别平面"){
                     m_pMainWin->getPWinToolWidget()->onFindPlane();
                 }
-                if(findState->objectName() == "识别球"){
+                if(findState->objectName() == "识别球形"){
                     m_pMainWin->getPWinToolWidget()->onFindSphere();
                 }
                 if(findState->objectName() == "识别圆锥"){
@@ -208,9 +208,15 @@ void MouseInteractorHighlightActor::HighlightActor(vtkActor* actor)
         vtkSmartPointer<vtkProperty> originalProperty = vtkSmartPointer<vtkProperty>::New();
         originalProperty->DeepCopy(actor->GetProperty());
         pickedActors.emplace_back(actor, originalProperty);// emplace_back作用等于push_back
-        // 让actor高亮
+        // 让actor高亮，并放在窗口最上层
         actor->GetProperty()->SetColor(MainWindow::HighLightColor[0], MainWindow::HighLightColor[1],
                                        MainWindow::HighLightColor[2]);
+        if (renderer != nullptr){
+            // 将actor从渲染器中移除并重新添加
+            renderer->RemoveActor(actor);
+            renderer->AddActor(actor);
+            renderer->Render();
+        }
     }
 
 }

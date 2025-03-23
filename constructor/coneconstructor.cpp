@@ -53,6 +53,7 @@ CEntity* ConeConstructor::create(QVector<CEntity*>& entitylist){
     Constructor::create(entitylist);
     QVector<CPoint*>points;
     QVector<CPosition> positions;
+    QVector<CCircle*>circles;
     for(int i=0;i<entitylist.size();i++){
         CEntity* entity=entitylist[i];
         if(!entity->IsSelected())continue;
@@ -61,45 +62,95 @@ CEntity* ConeConstructor::create(QVector<CEntity*>& entitylist){
             points.push_back(point);
             positions.push_back(point->GetPt());
         }
+        if(entity->GetUniqueType()==enCircle){
+            CCircle* circle=(CCircle*)entity;
+            circles.push_back(circle);
+        }
     }
 
     if(positions.size()==4){
         CCone*cone=createCone(positions[0],positions[1],positions[2],positions[3]);
+        if(cone==nullptr){
+
+            return nullptr;
+        }
         cone->parent.push_back(points[0]);
         cone->parent.push_back(points[1]);
         cone->parent.push_back(points[2]);
         cone->parent.push_back(points[3]);
         return cone;
     }
+    if(points.size()==1&&circles.size()==1){
+        CCone* cone=createCone(positions[0],circles[0]);
+        if(cone==nullptr){
+            setWrongInformation(PointDontMatch);
+            return nullptr;
+        }
+        cone->parent.push_back(points[0]);
+        cone->parent.push_back(circles[0]);
+        return cone;
+    }
+
+
+
     if(points.size()<4){
         setWrongInformation(PointTooLess);
     }else if(points.size()>4){
         setWrongInformation(PointTooMuch);
+    }else{
+         setWrongInformation(PointDontMatch);
     }
     return nullptr;
 }
-CCone* ConeConstructor::createCone(CPosition p1,CPosition p2,CPosition p3,CPosition p4){
-    QVector3D P1(p1.x, p1.y, p1.z);
-    QVector3D P2(p2.x, p2.y, p2.z);
-    QVector3D P3(p3.x, p3.y, p3.z);
-    QVector3D vertex(p4.x, p4.y, p4.z);
 
-    QVector3D center, normal;
+CCone*  ConeConstructor::createCone(CPosition p1,CCircle* circle){
+
+    QVector3D vertex(p1.x, p1.y, p1.z);
+
+    QVector3D center, normal(circle->normal);
+    normal.normalize();
     float height, halfAngle;
 
-    // 计算圆锥的参数
-    calculateConeParameters(P1, P2, P3, vertex, center, normal, height, halfAngle);
-    CPosition posCenter(center.x(),center.y(),center.z());
+    center.setX(circle->getCenter().x);
+   center.setY(circle->getCenter().y);
+   center.setZ(circle->getCenter().z);
+
+
+    // 计算顶点到底面圆的高度
+    height = QVector3D::dotProduct(vertex - center, normal) / normal.length();
+
+    // 计算底面半径（使用第一个点和中心点的距离）
+    float radius = circle->getDiameter()/2;
+
+    // 计算半角
+    halfAngle = atan(radius / height);
+
+
+    CPosition posCenter(center.x()+normal.x()*height,center.y()+normal.y()*height,center.z()+normal.z()*height);
     QVector4D axisVector(normal.x(), normal.y(),  normal.z(), 0);
-    qDebug()<<"posCenter";
-    qDebug()<<posCenter.x<<posCenter.y<<posCenter.z;
-    qDebug()<<"axisVector";
-    qDebug()<<axisVector.x()<<axisVector.y()<<axisVector.z();
-    qDebug()<<"height";
-    qDebug()<<height;
-    qDebug()<<"halAngle*2";
-    qDebug()<<halfAngle*2;
+
     return createCone(posCenter,axisVector,height,height,halfAngle*2);
+}
+CCone* ConeConstructor::createCone(CPosition p1,CPosition p2,CPosition p3,CPosition p4){
+    CircleConstructor constructor;
+    CCircle* circle=constructor.createCircle(p1,p2,p3);
+    CCone* cone= createCone(p4,circle);
+    delete circle;
+    return cone;
+    // QVector3D P1(p1.x, p1.y, p1.z);
+    // QVector3D P2(p2.x, p2.y, p2.z);
+    // QVector3D P3(p3.x, p3.y, p3.z);
+    // QVector3D vertex(p4.x, p4.y, p4.z);
+
+    // QVector3D center, normal;
+    // float height, halfAngle;
+
+    // // 计算圆锥的参数
+    // calculateConeParameters(P1, P2, P3, vertex, center, normal, height, halfAngle);
+    // CPosition posCenter(center.x(),center.y(),center.z());
+    // QVector4D axisVector(normal.x(), normal.y(),  normal.z(), 0);
+
+    // return createCone(posCenter,axisVector,height,height,halfAngle*2);
 }
 CCone* ConeConstructor::createCone(CPosition posCenter, QVector4D axis, double partH, double fullH, double angle){
     CCone* newCone=new CCone();

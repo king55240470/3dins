@@ -19,6 +19,7 @@
 #include "manager/chosencentitymgr.h"
 #include "manager/pointcloudlistmgr.h"
 #include <QMap>//从actor映射到centity
+#include <QSplashScreen>
 
 class DataWidget;
 class ElementListWidget;

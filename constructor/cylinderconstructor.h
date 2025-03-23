@@ -12,6 +12,7 @@ public:
     CEntity* create(QVector<CEntity*>& entitylist)override;
     CCylinder* createCylinder(CPosition p1,CPosition p2,CPosition p3,CPosition p4);
     CCylinder* createCylinder(CPosition pos, QVector4D vec, double height, double diametre);
+    CCylinder* createCylinder(CPosition p1,CCircle* ciecle);
 };
 
 #endif // CYLINDERCONSTRUCTOR_H
