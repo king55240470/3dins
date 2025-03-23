@@ -67,9 +67,9 @@ void MainWindow::setupUi(){
     saveAction->setShortcutContext(Qt::ApplicationShortcut);
     connect(saveAction, &QAction::triggered, this, &MainWindow::saveFile); // 连接保存文件的信号与槽
     QAction *ListeningAction=fileMenu->addAction("监听文件");
-    openAction->setIcon(ListeningFile);
-    openAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_T));
-    openAction->setShortcutContext(Qt::ApplicationShortcut);
+    ListeningAction->setIcon(ListeningFile);
+    ListeningAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_T));
+    ListeningAction->setShortcutContext(Qt::ApplicationShortcut);
     connect(ListeningAction, &QAction::triggered, this, &MainWindow::listeningFile); // 连接打开文件的信号与槽
     fileMenu->addSeparator();
     QAction *exitAction=fileMenu->addAction("退出");
@@ -651,6 +651,7 @@ void MainWindow::listeningFile()
                 filePathLineEdit->setText(filePath);
                 listeningfilePath=filePathLineEdit->text();
                 filechange();
+                pWinVtkPresetWidget->setWidget("开始监听文件");
             }
         }
     });
@@ -672,7 +673,7 @@ void MainWindow::listeningFile()
             return;
         }
         // 在这里可以添加确定后的逻辑，例如开始监听文件
-        QMessageBox::information(dialog, "提示", "开始监听文件：" + filePath);
+        //QMessageBox::information(dialog, "提示", "开始监听文件：" + filePath);
         dialog->accept(); // 关闭对话框
     });
 
