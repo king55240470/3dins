@@ -1290,7 +1290,7 @@ void VtkWidget::onAlign()
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud1 = clouds[0];
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud2 = clouds[1];
 
-    if (cloud1->empty() || cloud2->empty()) {
+    if (!cloud1 || cloud1->empty() || !cloud2 || cloud2->empty()) {
         QMessageBox::warning(this, "警告", "点云为空");
         return;
     }

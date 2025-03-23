@@ -67,9 +67,9 @@ void MainWindow::setupUi(){
     saveAction->setShortcutContext(Qt::ApplicationShortcut);
     connect(saveAction, &QAction::triggered, this, &MainWindow::saveFile); // 连接保存文件的信号与槽
     QAction *ListeningAction=fileMenu->addAction("监听文件");
-    openAction->setIcon(ListeningFile);
-    openAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_T));
-    openAction->setShortcutContext(Qt::ApplicationShortcut);
+    ListeningAction->setIcon(ListeningFile);
+    ListeningAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_T));
+    ListeningAction->setShortcutContext(Qt::ApplicationShortcut);
     connect(ListeningAction, &QAction::triggered, this, &MainWindow::listeningFile); // 连接打开文件的信号与槽
     fileMenu->addSeparator();
     QAction *exitAction=fileMenu->addAction("退出");
