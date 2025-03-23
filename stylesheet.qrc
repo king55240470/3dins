@@ -9,5 +9,6 @@
         <file>style/exit.png</file>
         <file>style/sub.png</file>
         <file>style/add.png</file>
+        <file>style/logo.png</file>
     </qresource>
 </RCC>

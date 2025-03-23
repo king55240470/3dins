@@ -8,11 +8,11 @@
 #include <vtkEventQtSlotConnect.h>
 #include <vtkTimerLog.h>
 #include <vtkImageResize.h>
-#include <pcl/surface/poisson.h>
-#include <pcl/surface/impl/poisson.hpp>
 #include <vtkCellArray.h>
 
-
+#include <pcl/surface/poisson.h>
+#include <pcl/surface/impl/poisson.hpp>
+#include <pcl/filters/random_sample.h>
 
 VtkWidget::VtkWidget(QWidget *parent)
     : QWidget(parent),
@@ -349,14 +349,12 @@ vtkSmartPointer<vtkActor2D> VtkWidget::createLine(CEntity* entity, vtkSmartPoint
     if (entity->getEntityType() == enDistance)
     {
         CDistance* dis = static_cast<CDistance*>(entity); // 安全转换类型
-        double distance = dis->getdistanceplane();
-        CObject* obj11 = dis->parent[1];
-        CPlane* plane = static_cast<CPlane*>(obj11);
-        QVector4D plane_normal = plane->getNormal();
-        plane_normal.normalize();
-        b.x = dis->getbegin().x - (distance * plane_normal.x());
-        b.y = dis->getbegin().y - (distance * plane_normal.y());
-        b.z = dis->getbegin().z - (distance * plane_normal.z());
+        double distance = dis->getdistance();
+        CPosition begin = dis->getbegin();
+        CPosition projection = dis->getProjection();
+        b.x = begin.x;
+        b.y = begin.y;
+        b.z = begin.z;
     }
     else if (entity->getEntityType() == enPoint)
     {
@@ -799,7 +797,6 @@ void VtkWidget::UpdateScaleBar()
 
 void VtkWidget::attachInteractor()
 {
-    qDebug()<<"更新尺";
     // ========== 创建通用回调 ==========
     auto callback = vtkSmartPointer<vtkCallbackCommand>::New();
     callback->SetClientData(this);
@@ -1276,7 +1273,7 @@ void VtkWidget::onAlign()
             // 获取点云的共享指针，确保原数据不被释放
             auto pcEntity = static_cast<CPointCloud*>(entity);
             clouds.append(pcl::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>(pcEntity->m_pointCloud));
-            logInfo += ((CPointCloud*)entity)->m_strAutoName + ' '; //添加对比的点云编号
+            logInfo += ((CPointCloud*)entity)->m_strAutoName + "与"; //添加对比的点云编号
         }
     }
 
@@ -1290,32 +1287,33 @@ void VtkWidget::onAlign()
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud2 = clouds[1];
 
     if (cloud1->empty() || cloud2->empty()) {
-        QMessageBox::warning(this, "警告", "点云不能为空");
+        QMessageBox::warning(this, "警告", "点云为空");
         return;
     }
 
-    // 下采样：使用正确的点云类型
+    // 均匀下采样
     // pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledCloud1(new pcl::PointCloud<pcl::PointXYZRGB>());
     // pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledCloud2(new pcl::PointCloud<pcl::PointXYZRGB>());
-    // std::shared_ptr<pcl::UniformSampling<pcl::PointXYZRGB>> uniformSampling =
-    //     std::make_shared<pcl::UniformSampling<pcl::PointXYZRGB>>();
-    // uniformSampling->setRadiusSearch(0.05f);
-    // uniformSampling->setInputCloud(cloud1);
-    // uniformSampling->filter(*downsampledCloud1);
-    // uniformSampling->setInputCloud(cloud2);
-    // uniformSampling->filter(*downsampledCloud2);
+    // pcl::UniformSampling<pcl::PointXYZRGB> uniformSampling;
+    // uniformSampling.setRadiusSearch(0.01f); // 设置采样半径，这个参数是关键
+    // uniformSampling.setInputCloud(cloud1);
+    // uniformSampling.filter(*downsampledCloud1);
+    // uniformSampling.setInputCloud(cloud2);
+    // uniformSampling.filter(*downsampledCloud2);
     // if (downsampledCloud1->empty() || downsampledCloud2->empty()) {
     //     QMessageBox::warning(this, "警告", "下采样后的点云为空");
     //     return;
     // }
 
-    // 使用XYZRGB类型进行ICP配准
-    pcl::IterativeClosestPoint<pcl::PointXYZRGB, pcl::PointXYZRGB> icp;
-    icp.setInputSource(cloud2);
-    icp.setInputTarget(cloud1);
-    icp.setMaximumIterations(50);
-    icp.setTransformationEpsilon(1e-8);
-    icp.setMaxCorrespondenceDistance(0.05);
+    // 滤波下采样
+    // pcl::VoxelGrid<PointXYZRGB> grid;
+    // pcl::PointCloud<pcl::PointXYZRGB>::Ptr src(new pcl::PointCloud<pcl::PointXYZRGB>);
+    // pcl::PointCloud<pcl::PointXYZRGB>::Ptr tag(new pcl::PointCloud<pcl::PointXYZRGB>);
+    // grid.setLeafSize(0.05f, 0.05f, 0.05f); // 体素网格大小
+    // grid.setInputCloud(cloud2);
+    // grid.filter(*downsampledCloud1);
+    // grid.setInputCloud(cloud1);
+    // grid.filter(*downsampledCloud2);
 
     // // 计算FPFH特征
     // fpfh.setRadiusSearch(0.1);  // 设置特征计算的半径
@@ -1348,9 +1346,15 @@ void VtkWidget::onAlign()
     // }
     // auto initialTransformation = std::make_shared<Eigen::Matrix4f>(sac_ia.getFinalTransformation());
 
+    // 使用XYZRGB类型进行ICP配准
+    pcl::IterativeClosestPoint<pcl::PointXYZRGB, pcl::PointXYZRGB> icp;
+    icp.setInputSource(cloud2);
+    icp.setInputTarget(cloud1);
+    icp.setMaximumIterations(50);
+    icp.setTransformationEpsilon(1e-8);
+    icp.setMaxCorrespondenceDistance(0.5);
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr icpFinalCloudPtr(new pcl::PointCloud<pcl::PointXYZRGB>());
     icp.align(*icpFinalCloudPtr);
-    //auto alignedCloud = icpFinalCloudPtr;  // 直接赋值，不要重新 make_shared
 
     if (!icp.hasConverged()) {
         icp.setMaxCorrespondenceDistance(0.1);

@@ -296,7 +296,7 @@ void MainWindow::setupUi(){
         pWinVtkWidget->onAlign();
     });
     QAction* ReconstructionAction=cloudOperation->addAction("点云重建");
-    ReconstructionAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Q));
+    ReconstructionAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_R));
     ReconstructionAction->setShortcutContext(Qt::ApplicationShortcut);
     connect(ReconstructionAction,&QAction::triggered,this,[&](){
         pWinVtkWidget->poissonReconstruction();

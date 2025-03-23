@@ -639,9 +639,9 @@ CONFIG(debug, debug|release){
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkWrappingTools-9.1d.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkzlib-9.1d.lib"
     contains(DEFINES, WIN64) {
-    TARGET = ../_debug64/AppName
+    TARGET = ../_debug64/3D-Measure-v1.0
     } else {
-    TARGET = ../_debug32/AppName
+    TARGET = ../_debug32/3D-Measure-v1.0
     }
 } else {
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkcgns-9.1.lib"
@@ -799,9 +799,9 @@ CONFIG(debug, debug|release){
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkWrappingTools-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkzlib-9.1.lib"
     contains(DEFINES, WIN64) {
-    TARGET = ../_release64/AppName
+    TARGET = ../_release64/3D-Measure-v1.0
     } else {
-    TARGET = ../_release32/AppName
+    TARGET = ../_release32/3D-Measure-v1.0
     }
 }
 
