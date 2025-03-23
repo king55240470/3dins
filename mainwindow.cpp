@@ -54,7 +54,7 @@ void MainWindow::setupUi(){
     QIcon openFile(":/style/openfile.png");
     QIcon saveFile(":/style/savefile.png");
     QIcon exitIcon(":/style/exit.png");
-    QIcon ListeningFile(":/style/openfile.png");
+    QIcon ListeningFile(":/style/monitor.png");
     QMenu *fileMenu=bar->addMenu("文件(F)");
     QAction *openAction=fileMenu->addAction("打开文件");
     openAction->setIcon(openFile);

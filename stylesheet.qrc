@@ -10,5 +10,6 @@
         <file>style/sub.png</file>
         <file>style/add.png</file>
         <file>style/logo.png</file>
+        <file>style/monitor.png</file>
     </qresource>
 </RCC>
