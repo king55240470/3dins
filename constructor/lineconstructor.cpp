@@ -19,9 +19,11 @@ CEntity* LineConstructor::create(QVector<CEntity*>& entitylist){
     }
     if(points.size()==1&&planes.size()==1){
         CLine*line=createLine(points[0],planes[0]);
-        if(!line){
+        if(line==nullptr){
+
             return nullptr;
         }
+
         line->setCurrentId();
         line->parent.push_back(points[0]);
         line->parent.push_back(planes[0]);
@@ -29,7 +31,8 @@ CEntity* LineConstructor::create(QVector<CEntity*>& entitylist){
     }
     if(points.size()==2){
         CLine*line=createLine(points[0],points[1]);
-        if(!line){
+        if(line==nullptr){
+
             return nullptr;
         }
         line->setCurrentId();

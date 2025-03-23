@@ -65,7 +65,7 @@ void MouseInteractorHighlightActor::OnLeftButtonDown()
                 if(findState->objectName() == "识别平面"){
                     m_pMainWin->getPWinToolWidget()->onFindPlane();
                 }
-                if(findState->objectName() == "识别球"){
+                if(findState->objectName() == "识别球形"){
                     m_pMainWin->getPWinToolWidget()->onFindSphere();
                 }
                 if(findState->objectName() == "识别圆锥"){

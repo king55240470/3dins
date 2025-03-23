@@ -114,6 +114,8 @@ void FileManagerWidget::openModelFile(/*QString fileName,QString filePath*/){
         qDebug() << "Key:" << key << ", Value:" << m_pMainWin->getpWinFileMgr()->getModelFileMap()[key];
     }
 
+    filetree->scrollToTop();
+
     // //在modelFileMap中添加添加新文件，并分配新的cloud
     // m_pMainWin->getpWinFileMgr()->getModelFileMap().insert(filePath, true);
     // auto cloud = m_pMainWin->getPointCloudListMgr()->CreateCloudFromFile(filePath);
@@ -189,9 +191,15 @@ void FileManagerWidget::openMeasuredFile(/*QString fileName,QString filePath*/){
 
         qDebug() << "Key:" << key << ", Value:" << m_pMainWin->getpWinFileMgr()->getMeasuredFileMap()[key];
     }
+
+    filetree->scrollToTop();
+
 }
 
 void FileManagerWidget::createContentItem(){
+
+    filetree->setSortingEnabled(false); //禁用排序
+
     //删除contentItem中的所有子项
     int childCount = contentItem->rowCount(); // 获取子项数量
     for (int i=childCount-1;i>=0;i--) {
@@ -258,6 +266,9 @@ void FileManagerWidget::createContentItem(){
 
         qDebug() << "Key:" << key << ", Value:" << m_pMainWin->getpWinFileMgr()->getContentItemMap()[key];
     }
+
+    filetree->scrollToBottom();// 滚动到底部
+
 }
 
 void FileManagerWidget::createIdentifyItem(){
@@ -323,6 +334,9 @@ void FileManagerWidget::createIdentifyItem(){
 
         qDebug() << "Key:" << key << ", Value:" << m_pMainWin->getpWinFileMgr()->getIdentifyItemMap()[key];
     }
+
+    filetree->scrollToBottom();// 滚动到底部
+
 }
 
 // void FileManagerWidget::createPresetOpen(CEntity *obj){

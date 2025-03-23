@@ -29,6 +29,10 @@ CEntity* DistanceConstructor::create(QVector<CEntity*>& entitylist){
     }
     if(points.size()==1&&planes.size()==1){
         CDistance*dis=createDistance(points[0],planes[0]);
+        if(dis==nullptr){
+
+            return nullptr;
+        }
         dis->setCurrentId();
         dis->parent.push_back(points[0]);
         dis->parent.push_back(planes[0]);
@@ -36,6 +40,10 @@ CEntity* DistanceConstructor::create(QVector<CEntity*>& entitylist){
     }
     if(points.size()==2){
         CDistance*dis=createDistance(points[0],points[1]);
+        if(dis==nullptr){
+
+            return nullptr;
+        }
         CObject*obj=(CObject*)dis;
         qDebug()<<"id为:"<<obj->GetObjectCName();
         qDebug()<<dis->getcount();
@@ -46,6 +54,10 @@ CEntity* DistanceConstructor::create(QVector<CEntity*>& entitylist){
     }
     if(points.size()==1&&circles.size()==1){
         CDistance*dis=createDistance(points[0],circles[0]);
+        if(dis==nullptr){
+
+            return nullptr;
+        }
         dis->setCurrentId();
         dis->parent.push_back(points[0]);
         dis->parent.push_back(circles[0]);
@@ -53,6 +65,10 @@ CEntity* DistanceConstructor::create(QVector<CEntity*>& entitylist){
     }
     if(points.size()==1&&lines.size()==1){
         CDistance*dis=createDistance(points[0],lines[0]);
+        if(dis==nullptr){
+
+            return nullptr;
+        }
         dis->setCurrentId();
         dis->parent.push_back(points[0]);
         dis->parent.push_back(lines[0]);

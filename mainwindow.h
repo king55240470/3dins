@@ -84,6 +84,7 @@ protected:
 private:
     void openFile();
     void saveFile();
+    void listeningFile();
 
 public:
     CPcsMgr* m_pcsListMgr;
@@ -125,6 +126,7 @@ public:
     //文件传入预处理
     QString filePathChange;
     bool peopleOpenfile=true; //判断是否为手动打开文件
+    QString listeningfilePath;
     void filechange();
     void onFileChanged(const QString &path);
     void processNextFile();

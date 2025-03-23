@@ -20,35 +20,42 @@ static auto canFormSphere=[](const QVector4D& p1, const QVector4D& p2, const QVe
 };
 
 static auto calculateSphere=[](const QVector4D& p1, const QVector4D& p2, const QVector4D& p3, const QVector4D& p4) {
-    QVector4D v1 = p2 - p1;
+ QVector4D v1 = p2 - p1;
     QVector4D v2 = p3 - p1;
     QVector4D v3 = p4 - p1;
 
+    // 计算向量的点积
     double a = QVector4D::dotProduct(v1, v1);
     double b = QVector4D::dotProduct(v2, v2);
     double c = QVector4D::dotProduct(v3, v3);
 
-    double d = 2 * (v1.x() * v2.y() - v2.x() * v1.y() + v1.x() * v3.y() - v3.x() * v1.y() + v2.x() * v3.y() - v2.y() * v3.x());
+    // 计算行列式
+    double d = 2 * (v1.x() * (v2.y() * v3.z() - v2.z() * v3.y()) -
+                    v1.y() * (v2.x() * v3.z() - v2.z() * v3.x()) +
+                    v1.z() * (v2.x() * v3.y() - v2.y() * v3.x()));
 
     if (qFabs(d) < 1e-5) {
-        return SphereInfo(QVector4D(0,0,0,0),0);
+        return SphereInfo(QVector4D(0, 0, 0, 0), 0);
     }
 
+    // 计算球心
     QVector4D center;
-    center.setX(((v1.x() * v1.x() + v1.y() * v1.y()) * (v2.y() - v3.y()) +
-                 (v2.x() * v2.x() + v2.y() * v2.y()) * (v3.y() - v1.y()) +
-                 (v3.x() * v3.x() + v3.y() * v3.y()) * (v1.y() - v2.y())) / d);
+    center.setX(((a * (v2.y() * v3.z() - v2.z() * v3.y()) +
+                 b * (v3.y() * v1.z() - v3.z() * v1.y()) +
+                 c * (v1.y() * v2.z() - v1.z() * v2.y())) / d));
 
-    center.setY(((v1.x() * v1.x() + v1.y() * v1.y()) * (v3.x() - v2.x()) +
-                 (v2.x() * v2.x() + v2.y() * v2.y()) * (v1.x() - v3.x()) +
-                 (v3.x() * v3.x() + v3.y() * v3.y()) * (v2.x() - v1.x())) / d);
+    center.setY(((a * (v2.z() * v3.x() - v2.x() * v3.z()) +
+                 b * (v3.z() * v1.x() - v3.x() * v1.z()) +
+                 c * (v1.z() * v2.x() - v1.x() * v2.z())) / d));
 
-    center.setZ(0); // 这里假设球在xy平面上
+    center.setZ(((a * (v2.x() * v3.y() - v2.y() * v3.x()) +
+                 b * (v3.x() * v1.y() - v3.y() * v1.x()) +
+                 c * (v1.x() * v2.y() - v1.y() * v2.x())) / d));
 
     // 计算半径
     double radius = (center - p1).length();
 
-    return SphereInfo(center,radius);
+    return SphereInfo(center, radius);
 };
 SphereConstructor::SphereConstructor() {}
 CEntity* SphereConstructor::create(QVector<CEntity*>& entitylist){
@@ -80,6 +87,10 @@ CEntity* SphereConstructor::create(QVector<CEntity*>& entitylist){
     qDebug()<<positions.size();
      if(positions.size()==4){
         CSphere*sphere=createSphere(positions[0],positions[1],positions[2],positions[3]);
+         if(sphere==nullptr){
+
+             return nullptr;
+         }
         sphere->setCurrentId();
         sphere->parent.push_back(points[0]);
         sphere->parent.push_back(points[1]);

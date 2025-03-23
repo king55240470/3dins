@@ -9,6 +9,10 @@
 #include <vtkTimerLog.h>
 #include <vtkImageResize.h>
 #include <vtkCellArray.h>
+#include <pcl/surface/marching_cubes_hoppe.h>
+#include <pcl/surface/gp3.h>
+#include <pcl/surface/mls.h>
+#include <pcl/surface/vtk_smoothing/vtk_mesh_smoothing_laplacian.h>
 
 #include <pcl/surface/poisson.h>
 #include <pcl/surface/impl/poisson.hpp>
@@ -1405,13 +1409,27 @@ void VtkWidget::poissonReconstruction()
         return;
     }
 
+    // //  MLS平滑点云, 计算法向量更精确
+    // pcl::MovingLeastSquares<pcl::PointXYZRGB, pcl::PointXYZRGB> mls;
+    // mls.setInputCloud(cloud);
+    // mls.setSearchRadius(0.02);  // 设定平滑半径
+    // mls.setPolynomialOrder(2);   // 设置多项式阶数
+    // mls.setComputeNormals(true); // 计算法向量
+    // // 创建 KD 树搜索对象（提高搜索效率）
+    // pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZRGB>());
+    // mls.setSearchMethod(tree);
+    // // 处理平滑点云
+    // pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudSmoothed(new pcl::PointCloud<pcl::PointXYZRGB>);
+    // mls.process(*cloudSmoothed); // cloudSmoothed为平滑点云，下可替换cloud
+
     // 计算法向量
     pcl::PointCloud<pcl::Normal>::Ptr normals(new pcl::PointCloud<pcl::Normal>);
     pcl::NormalEstimation<pcl::PointXYZRGB, pcl::Normal> normalEstimation;
     normalEstimation.setInputCloud(cloud);
     pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZRGB>);
     normalEstimation.setSearchMethod(tree);
-    normalEstimation.setKSearch(20);
+    normalEstimation.setRadiusSearch(0.02);  // 使用半径搜索，确保局部一致性（适合非均匀点云）
+    // normalEstimation.setKSearch(20); // KSearch过小会导致法向量计算不稳定，过大会导致平滑过度
     normalEstimation.compute(*normals);
 
     // 合并点云和法向量
@@ -1420,11 +1438,43 @@ void VtkWidget::poissonReconstruction()
 
     // 执行泊松重建
     pcl::Poisson<pcl::PointXYZRGBNormal> poisson;
-    poisson.setDepth(9); // 设定泊松重建深度
+    poisson.setDepth(12);  // 深度越高，重建精度越高，但计算量大
+    poisson.setSolverDivide(8);  // 影响泊松方程的求解精度，推荐 8~10
+    poisson.setIsoDivide(8);  // 影响网格划分，推荐 8~10
+    poisson.setSamplesPerNode(1.5);  // 控制采样密度，默认 1.0，适当增加可提高细节
     poisson.setInputCloud(cloudWithNormals);
-
     pcl::PolygonMesh mesh;
     poisson.reconstruct(mesh);
+
+    // // 进行网格平滑（泊松重建后的网格可能包含多余的三角形或噪声）
+    // pcl::MeshSmoothingLaplacianVTK meshSmoothing;
+    // meshSmoothing.setInputMesh(mesh);
+    // meshSmoothing.setNumIter(10);  // 迭代次数，控制平滑程度
+    // pcl::PolygonMesh smoothedMesh;
+    // meshSmoothing.process(smoothedMesh); // 如使用注意smoothedMesh替换mesh
+
+
+    // 贪婪投影三角化算法
+    // // Greedy Triangulation(适用于密集点云)
+    // pcl::GreedyProjectionTriangulation<pcl::PointNormal> gp3;
+    // gp3.setSearchRadius(0.025);  // 搜索半径（决定三角化的邻近点）
+    // gp3.setMu(2.5);              // 邻域扩展系数
+    // gp3.setMaximumNearestNeighbors(100);  // 允许的最大邻居点数
+    // gp3.setMaximumSurfaceAngle(M_PI / 4); // 最大表面角度（弧度）
+    // gp3.setMinimumAngle(M_PI / 18);       // 最小三角形角度
+    // gp3.setMaximumAngle(2 * M_PI / 3);    // 最大三角形角度
+    // gp3.setNormalConsistency(false);      // 是否考虑法向量一致性
+
+    // // 构建 KdTree 搜索点云
+    // pcl::search::KdTree<pcl::PointNormal>::Ptr tree2(new pcl::search::KdTree<pcl::PointNormal>);
+    // pcl::PointCloud<pcl::PointNormal>::Ptr cloudWithNormalsFixed(new pcl::PointCloud<pcl::PointNormal>);
+    // pcl::copyPointCloud(*cloudWithNormals, *cloudWithNormalsFixed);
+
+    // tree2->setInputCloud(cloudWithNormalsFixed);
+    // gp3.setInputCloud(cloudWithNormalsFixed);
+    // // 生成三角网格
+    // pcl::PolygonMesh mesh;
+    // gp3.reconstruct(mesh);
 
     if (mesh.polygons.empty()) {
         QMessageBox::warning(this, "警告", "泊松重建失败");
