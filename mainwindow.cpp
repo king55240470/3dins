@@ -651,6 +651,7 @@ void MainWindow::listeningFile()
                 filePathLineEdit->setText(filePath);
                 listeningfilePath=filePathLineEdit->text();
                 filechange();
+                pWinVtkPresetWidget->setWidget("开始监听文件");
             }
         }
     });
@@ -672,7 +673,7 @@ void MainWindow::listeningFile()
             return;
         }
         // 在这里可以添加确定后的逻辑，例如开始监听文件
-        QMessageBox::information(dialog, "提示", "开始监听文件：" + filePath);
+        //QMessageBox::information(dialog, "提示", "开始监听文件：" + filePath);
         dialog->accept(); // 关闭对话框
     });
 
