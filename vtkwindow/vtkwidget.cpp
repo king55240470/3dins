@@ -13,6 +13,10 @@
 #include <pcl/surface/gp3.h>
 #include <pcl/surface/mls.h>
 #include <pcl/surface/vtk_smoothing/vtk_mesh_smoothing_laplacian.h>
+#include <pcl/filters/crop_box.h>
+#include <pcl/filters/crop_hull.h>
+#include <pcl/filters/statistical_outlier_removal.h>
+#include <pcl/filters/normal_refinement.h>
 
 #include <pcl/surface/poisson.h>
 #include <pcl/surface/impl/poisson.hpp>
@@ -1295,7 +1299,7 @@ void VtkWidget::onAlign()
         return;
     }
 
-    // 均匀下采样
+    // // 均匀下采样
     // pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledCloud1(new pcl::PointCloud<pcl::PointXYZRGB>());
     // pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledCloud2(new pcl::PointCloud<pcl::PointXYZRGB>());
     // pcl::UniformSampling<pcl::PointXYZRGB> uniformSampling;
@@ -1309,7 +1313,7 @@ void VtkWidget::onAlign()
     //     return;
     // }
 
-    // 滤波下采样
+    // //滤波下采样
     // pcl::VoxelGrid<PointXYZRGB> grid;
     // pcl::PointCloud<pcl::PointXYZRGB>::Ptr src(new pcl::PointCloud<pcl::PointXYZRGB>);
     // pcl::PointCloud<pcl::PointXYZRGB>::Ptr tag(new pcl::PointCloud<pcl::PointXYZRGB>);
@@ -1332,7 +1336,7 @@ void VtkWidget::onAlign()
     //     return;
     // }
 
-    // SAC-IA粗配准
+    // // SAC-IA粗配准
     // pcl::SampleConsensusInitialAlignment<pcl::PointXYZ, pcl::PointXYZ, pcl::FPFHSignature33> sac_ia;
     // sac_ia.setInputSource(downsampledCloud1);
     // sac_ia.setInputTarget(downsampledCloud2);
@@ -1404,6 +1408,24 @@ void VtkWidget::poissonReconstruction()
         }
     }
 
+    // // 统计滤波去除离群点
+    // pcl::PointCloud<pcl::PointXYZRGB>::Ptr filteredCloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+    // pcl::StatisticalOutlierRemoval<pcl::PointXYZRGB> sor;
+    // sor.setInputCloud(cloud);
+    // sor.setMeanK(50);  // 计算每个点的50个邻居
+    // sor.setStddevMulThresh(1.0);  // 设定标准差阈值，值越小去除越严格
+    // sor.filter(*filteredCloud);
+
+    // // 替换 cloud 为去噪后的 filteredCloud
+    // cloud = filteredCloud;
+    // pcl::StatisticalOutlierRemoval<pcl::PointXYZRGB> sor;
+    // sor.setInputCloud(cloud);
+    // sor.setMeanK(50);        // 考虑50个邻近点
+    // sor.setStddevMulThresh(1.0); // 标准差倍数阈值
+    // pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZRGB>);
+    // sor.filter(*cloud_filtered);
+    // cloud = cloud_filtered;
+
     if (cloud->empty()) {
         QMessageBox::warning(this, "警告", "点云不能为空");
         return;
@@ -1436,12 +1458,26 @@ void VtkWidget::poissonReconstruction()
     pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloudWithNormals(new pcl::PointCloud<pcl::PointXYZRGBNormal>);
     pcl::concatenateFields(*cloud, *normals, *cloudWithNormals);
 
+    // pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloudWithNormals(new pcl::PointCloud<pcl::PointXYZRGBNormal>);
+    // pcl::concatenateFields(*cloud, *normals, *cloudWithNormals);
+    // pcl::NormalRefinement<pcl::PointXYZRGBNormal> normalRefine;
+    // normalRefine.setInputCloud(cloudWithNormals);
+    // normalRefine.s
+
     // 执行泊松重建
     pcl::Poisson<pcl::PointXYZRGBNormal> poisson;
-    poisson.setDepth(12);  // 深度越高，重建精度越高，但计算量大
-    poisson.setSolverDivide(8);  // 影响泊松方程的求解精度，推荐 8~10
-    poisson.setIsoDivide(8);  // 影响网格划分，推荐 8~10
-    poisson.setSamplesPerNode(1.5);  // 控制采样密度，默认 1.0，适当增加可提高细节
+    poisson.setDepth(5);  // 控制八叉树深度，值越大精度越高但计算量大（推荐 8~12）
+    poisson.setSolverDivide(8);  // 影响泊松方程求解精度（推荐 7~10）
+    poisson.setIsoDivide(8);  // 影响网格划分（推荐 7~10）
+    poisson.setSamplesPerNode(2.0);  // 控制每个节点的采样点数量（默认 1.0，可适当增加）
+    poisson.setScale(1.1f);  // 设置泊松重建的尺度，适当增加可以提高细节
+    poisson.setConfidence(false);  // 如果法向量质量较差，可以设为 false
+    poisson.setManifold(true);  // 生成流形网格，减少拓扑错误
+    poisson.setOutputPolygons(true);  // 生成三角形网格
+    // poisson.setDepth(12);  // 深度越高，重建精度越高，但计算量大
+    // poisson.setSolverDivide(8);  // 影响泊松方程的求解精度，推荐 8~10
+    // poisson.setIsoDivide(8);  // 影响网格划分，推荐 8~10
+    // poisson.setSamplesPerNode(1.5);  // 控制采样密度，默认 1.0，适当增加可提高细节
     poisson.setInputCloud(cloudWithNormals);
     pcl::PolygonMesh mesh;
     poisson.reconstruct(mesh);
