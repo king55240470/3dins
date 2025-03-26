@@ -675,9 +675,6 @@ void ElementListWidget::CompareCloud()
         }
     }
     m_pMainWin->NotifySubscribe();
-    m_pMainWin->getPWinToolWidget()->setauto(true);
-    m_pMainWin->getPWinToolWidget()->onSaveImage();
-    m_pMainWin->getPWinToolWidget()->setauto(false);
     return;
 }
 
@@ -692,6 +689,7 @@ void ElementListWidget::updateDistance()
     qDebug()<<"判断时间是否存在后";
     kdtree.setInputCloud(pointCouldlists.dequeue());
     qDebug()<<"队列的大小"<<pointCouldlists.size();
+    disAndanglelist.clear();
     for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
         if(m_pMainWin->getEntityListMgr()->getEntityList()[i]->GetObjectCName().left(2)=="距离"){
             disAndanglelist.push_back(m_pMainWin->getEntityListMgr()->getEntityList()[i]);
@@ -719,6 +717,8 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
 {
     qDebug()<<"时间进行1秒";
     QVector<CObject*>objlist=m_pMainWin->getObjectListMgr()->getObjectList();
+    qDebug()<<"distancelistIndex："<<distancelistIndex;
+    qDebug()<<"distancelist:"<<distancelist.size();
     if(distancelistIndex>distancelist.size()-1){
         if(timer){
             timer->stop();

@@ -1315,13 +1315,17 @@ void VtkWidget::onAlign()
 
     // //滤波下采样
     // pcl::VoxelGrid<PointXYZRGB> grid;
-    // pcl::PointCloud<pcl::PointXYZRGB>::Ptr src(new pcl::PointCloud<pcl::PointXYZRGB>);
-    // pcl::PointCloud<pcl::PointXYZRGB>::Ptr tag(new pcl::PointCloud<pcl::PointXYZRGB>);
+    // pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledCloud1(new pcl::PointCloud<pcl::PointXYZRGB>);
+    // pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledCloud2(new pcl::PointCloud<pcl::PointXYZRGB>);
     // grid.setLeafSize(0.05f, 0.05f, 0.05f); // 体素网格大小
     // grid.setInputCloud(cloud2);
-    // grid.filter(*downsampledCloud1);
-    // grid.setInputCloud(cloud1);
     // grid.filter(*downsampledCloud2);
+    // grid.setInputCloud(cloud1);
+    // grid.filter(*downsampledCloud1);
+
+    // 保存采样后的点云到文件
+    // pcl::io::savePCDFileASCII("downsampled_cloud1.pcd", *downsampledCloud1);
+    // pcl::io::savePCDFileASCII("downsampled_cloud2.pcd", *downsampledCloud2);
 
     // // 计算FPFH特征
     // fpfh.setRadiusSearch(0.1);  // 设置特征计算的半径
@@ -1369,6 +1373,8 @@ void VtkWidget::onAlign()
         icp.setMaximumIterations(150);
         icp.align(*icpFinalCloudPtr);
         if (!icp.hasConverged()) {
+            logInfo += "对齐失败";
+            m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
             return;
         }
     }
