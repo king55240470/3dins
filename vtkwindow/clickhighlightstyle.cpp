@@ -11,6 +11,9 @@ MouseInteractorHighlightActor::MouseInteractorHighlightActor(vtkInteractorStyleT
 // 实现左键按下事件的处理方法
 void MouseInteractorHighlightActor::OnLeftButtonDown()
 {
+    // 调用基类的左键按下事件
+    vtkInteractorStyleTrackballCamera::OnLeftButtonDown();
+
     vtkMenu->hideTearOffMenu(); // 隐藏菜单栏
     // 获取鼠标点击的位置
     int* clickPos = this->GetInteractor()->GetEventPosition();
@@ -81,8 +84,6 @@ void MouseInteractorHighlightActor::OnLeftButtonDown()
         }
     }
 
-    // 调用基类的左键按下事件
-    vtkInteractorStyleTrackballCamera::OnLeftButtonDown();
 }
 
 void MouseInteractorHighlightActor::OnLeftButtonUp()
