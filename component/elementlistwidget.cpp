@@ -1167,9 +1167,30 @@ void ElementListWidget::changeName()
 
 void ElementListWidget::setAutoName()
 {
+    int flag=0;
+    bool isOpen;
+
     QTreeWidgetItem *selectedItem=getSelectedItems()[0];
     CObject *obj = selectedItem->data(0, Qt::UserRole).value<CObject*>();
+
+    if(m_pMainWin->getpWinFileMgr()->getContentItemMap().contains(obj->m_strCName+"  "+obj->m_strAutoName)){
+        isOpen=m_pMainWin->getpWinFileMgr()->getContentItemMap()[obj->m_strCName+"  "+obj->m_strAutoName];
+        m_pMainWin->getpWinFileMgr()->getContentItemMap().remove(obj->m_strCName+"  "+obj->m_strAutoName);
+        flag=1;
+    }else if(m_pMainWin->getpWinFileMgr()->getIdentifyItemMap().contains(obj->m_strCName+"  "+obj->m_strAutoName)){
+        isOpen=m_pMainWin->getpWinFileMgr()->getIdentifyItemMap()[obj->m_strCName+"  "+obj->m_strAutoName];
+        m_pMainWin->getpWinFileMgr()->getIdentifyItemMap().remove(obj->m_strCName+"  "+obj->m_strAutoName);
+        flag=2;
+    }
+
     obj->SetObjectAutoName(name->text());
+
+    if(flag==1){
+        m_pMainWin->getpWinFileMgr()->getContentItemMap().insert(obj->m_strCName+"  "+obj->m_strAutoName,isOpen);
+    }else if(flag==2){
+        m_pMainWin->getpWinFileMgr()->getIdentifyItemMap().insert(obj->m_strCName+"  "+obj->m_strAutoName,isOpen);
+    }
+
     m_pMainWin->NotifySubscribe();
     dialog->close();
 }

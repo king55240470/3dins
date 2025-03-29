@@ -5,6 +5,8 @@ QT += opengl
 LIBS += -lOpengl32
 QT += statemachine
 
+QMAKE_CXXFLAGS += /arch:AVX2
+
 RC_ICONS = ruler.ico
 # TARGET = 3D_Measure
 

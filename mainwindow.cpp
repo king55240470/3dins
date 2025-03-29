@@ -63,6 +63,7 @@ void MainWindow::setupUi(){
     QIcon saveFile(":/style/savefile.png");
     QIcon exitIcon(":/style/exit.png");
     QIcon ListeningFile(":/style/monitor.png");
+    QIcon closeMonitor(":/style/close.png");
     QMenu *fileMenu=bar->addMenu("文件(F)");
     QAction *openAction=fileMenu->addAction("打开文件");
     openAction->setIcon(openFile);
@@ -79,10 +80,10 @@ void MainWindow::setupUi(){
     ListeningAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_T));
     ListeningAction->setShortcutContext(Qt::ApplicationShortcut);
     connect(ListeningAction, &QAction::triggered, this, &MainWindow::listeningFile); // 连接打开文件的信号与槽
-    QAction *CloseListeningAction=fileMenu->addAction("关闭监听文件");
-    ListeningAction->setIcon(ListeningFile);
-    ListeningAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Y));
-    ListeningAction->setShortcutContext(Qt::ApplicationShortcut);
+    QAction *CloseListeningAction=fileMenu->addAction("关闭监听");
+    CloseListeningAction->setIcon(closeMonitor);
+    CloseListeningAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Y));
+    CloseListeningAction->setShortcutContext(Qt::ApplicationShortcut);
     connect(CloseListeningAction, &QAction::triggered, this, &MainWindow::CloselisteningFile); // 连接打开文件的信号与槽
     fileMenu->addSeparator();
     QAction *exitAction=fileMenu->addAction("退出");
