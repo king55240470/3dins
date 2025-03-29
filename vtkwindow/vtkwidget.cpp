@@ -1299,7 +1299,7 @@ void VtkWidget::onAlign()
         return;
     }
 
-    // // 均匀下采样
+    // 均匀下采样
     // pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledCloud1(new pcl::PointCloud<pcl::PointXYZRGB>());
     // pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledCloud2(new pcl::PointCloud<pcl::PointXYZRGB>());
     // pcl::UniformSampling<pcl::PointXYZRGB> uniformSampling;
@@ -1312,16 +1312,6 @@ void VtkWidget::onAlign()
     //     QMessageBox::warning(this, "警告", "下采样后的点云为空");
     //     return;
     // }
-
-    // //滤波下采样
-    // pcl::VoxelGrid<PointXYZRGB> grid;
-    // pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledCloud1(new pcl::PointCloud<pcl::PointXYZRGB>);
-    // pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledCloud2(new pcl::PointCloud<pcl::PointXYZRGB>);
-    // grid.setLeafSize(0.05f, 0.05f, 0.05f); // 体素网格大小
-    // grid.setInputCloud(cloud2);
-    // grid.filter(*downsampledCloud2);
-    // grid.setInputCloud(cloud1);
-    // grid.filter(*downsampledCloud1);
 
     // 保存采样后的点云到文件
     // pcl::io::savePCDFileASCII("downsampled_cloud1.pcd", *downsampledCloud1);
@@ -1340,20 +1330,21 @@ void VtkWidget::onAlign()
     //     return;
     // }
 
-    // // SAC-IA粗配准
-    // pcl::SampleConsensusInitialAlignment<pcl::PointXYZ, pcl::PointXYZ, pcl::FPFHSignature33> sac_ia;
-    // sac_ia.setInputSource(downsampledCloud1);
-    // sac_ia.setInputTarget(downsampledCloud2);
-    // sac_ia.setSourceFeatures(fpfh1);
-    // sac_ia.setTargetFeatures(fpfh2);
+    // SAC-IA粗配准
+    // pcl::SampleConsensusInitialAlignment<pcl::PointXYZRGB, pcl::PointXYZRGB, pcl::FPFHSignature33> sac_ia;
+    // sac_ia.setInputSource(cloud2);
+    // sac_ia.setInputTarget(cloud1);
+    // // sac_ia.setSourceFeatures(cloud2);
+    // // sac_ia.setTargetFeatures(cloud1);
     // sac_ia.setMaximumIterations(500);  // 设置最大迭代次数
-    // sac_ia.setMinSampleDistance(0.05);  // 设置最小采样距离
-    // sac_ia.setMaxCorrespondenceDistance(0.1);  // 设置最大对应点距离
+    // sac_ia.setMinSampleDistance(0.01f);  // 设置最小采样距离
+    // sac_ia.setMaxCorrespondenceDistance(0.1f);  // 设置最大对应点距离
 
-    // pcl::PointCloud<pcl::PointXYZ> sacAlignedCloud;
+    // pcl::PointCloud<pcl::PointXYZRGB> sacAlignedCloud;
     // sac_ia.align(sacAlignedCloud);  // 粗配准
     // if (!sac_ia.hasConverged()) {
-    //     QMessageBox::critical(this, "Error", "FPFH粗配准未收敛！");
+    //     logInfo += "FPFH粗配准未收敛！";
+    //     m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
     //     return;
     // }
     // auto initialTransformation = std::make_shared<Eigen::Matrix4f>(sac_ia.getFinalTransformation());
@@ -1364,7 +1355,7 @@ void VtkWidget::onAlign()
     icp.setInputTarget(cloud1);
     icp.setMaximumIterations(50);
     icp.setTransformationEpsilon(1e-8);
-    icp.setMaxCorrespondenceDistance(0.5);
+    icp.setMaxCorrespondenceDistance(0.2f);
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr icpFinalCloudPtr(new pcl::PointCloud<pcl::PointXYZRGB>());
     icp.align(*icpFinalCloudPtr);
 

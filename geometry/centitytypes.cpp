@@ -470,6 +470,7 @@ vtkSmartPointer<vtkActor> CSurfaces::draw() {
     // 创建执行器
     auto actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
+    actor->GetProperty()->SetColor(MainWindow::ActorColor);
 
     return actor;
 }
