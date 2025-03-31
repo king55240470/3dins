@@ -27,6 +27,8 @@
 #include <QPropertyAnimation>
 #include <QTimer>
 #include <QQueue>
+#include <QThread>
+#include <QProgressBar>
 #include "geometry/centity.h"
 #include "toolwidget.h"
 #include "mainwindow.h"
@@ -39,6 +41,8 @@
 #include"constructor/angleconstructor.h"
 #include"vtkwindow/vtkpresetwidget.h"
 #include"pointfitting/fittingline.h"
+#include"component/worker.h"
+#include"component/progressdialogs.h"
 
 class ElementListWidget : public QWidget
 {
@@ -78,8 +82,6 @@ public:
     void UpdateDisNowFun(QVector<CEntity*>distancelist);//更新距离元素
     void isAdd();
     void createrule();
-    CPlane* UpdateFindPlane(CObject*FindPoint,pcl::PointXYZRGB searchPoint,pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree);
-
 protected:
     void mouseDoubleClickEvent(QMouseEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
@@ -129,8 +131,15 @@ private:
     QQueue<pcl::PointCloud<pcl::PointXYZRGB>::Ptr>pointCouldlists;
     bool isProcessing=false;
     QVector<CEntity*>list;
+    //创建线程用来进行保存文件工作
+    QThread *workerThread;
+    Worker* worker;
+    QProgressBar *progressBar;
+    ProgressDialogs *progressDialog;
 signals:
     void itemSelected(int index);
+public slots:
+    void updateProgress(int value);
 };
 
 #endif // ELEMENTLISTWIDGET_H

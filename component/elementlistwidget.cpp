@@ -96,11 +96,22 @@ ElementListWidget::ElementListWidget(QWidget *parent)
     connect(treeWidgetNames, &QTreeWidget::itemClicked, this, &ElementListWidget::onItemClicked);
     connect(treeWidgetNames, &QTreeWidget::itemDoubleClicked, this, &ElementListWidget::showDialog);
 
+    //用于进度条工作
+    // connect(worker, &Worker::requestSaveOperation, this, [this](int type) {
+    //     switch(type) {
+    //     case 0: m_pMainWin->getPWinToolWidget()->setauto(true);m_pMainWin->getPWinToolWidget()->onSaveTxt(); break;
+    //     case 1: m_pMainWin->getPWinToolWidget()->onSaveWord(); break;
+    //     case 2: m_pMainWin->getPWinToolWidget()->onSaveExcel(); break;
+    //     case 3: m_pMainWin->getPWinToolWidget()->onSavePdf();m_pMainWin->getPWinToolWidget()->setauto(false); break;
+    //     }
+    // });
+
     // 连接树部件的双击信号
     //connect(treeWidgetNames, &QTreeWidget::itemChanged, this, &ElementListWidget::isAdd);
 
     // 设置状态机
     setupStateMachine();
+
 }
 
 void ElementListWidget::CreateEllipse(CObject*obj)
@@ -155,6 +166,7 @@ void ElementListWidget::CreateEllipse(CObject*obj)
         QIcon icon(":/component/viewangle/isometric.png");
         item->setIcon(0, icon);
     }
+    treeWidgetNames->scrollToBottom();
 }
 
 void ElementListWidget::onDeleteEllipse()
@@ -213,6 +225,8 @@ void ElementListWidget::onDeleteEllipse()
         }
         m_pMainWin->NotifySubscribe();
     }
+    m_pMainWin->getPWinDataWidget()->getobjindex(-1);
+    m_pMainWin->getPWinDataWidget()->updateinfo();
 }
 
 void ElementListWidget::onCustomContextMenuRequested(const QPoint &pos)
@@ -227,7 +241,7 @@ void ElementListWidget::onCustomContextMenuRequested(const QPoint &pos)
     QAction *action7 = menu.addAction("设置别称");
     QAction *action5 = menu.addAction("显示元素信息");
     QAction *action6 = menu.addAction("关闭元素信息");
-    QAction *action8 = menu.addAction("显示标度尺");
+    //QAction *action8 = menu.addAction("显示标度尺");
     connect(action1, &QAction::triggered, this, &ElementListWidget::onDeleteEllipse);
     connect(action2, &QAction::triggered, this, &ElementListWidget::selectall);
     connect(action3, &QAction::triggered, this, &ElementListWidget::starttime);
@@ -235,7 +249,7 @@ void ElementListWidget::onCustomContextMenuRequested(const QPoint &pos)
     connect(action5, &QAction::triggered, this, &ElementListWidget::showInfotext);
     connect(action6, &QAction::triggered, this, &ElementListWidget::closeInfotext);
     connect(action7, &QAction::triggered, this, &ElementListWidget::changeName);
-    connect(action8, &QAction::triggered, this, &ElementListWidget::createrule);
+    //connect(action8, &QAction::triggered, this, &ElementListWidget::createrule);
     menu.exec(mapToGlobal(pos));
 }
 
@@ -378,6 +392,7 @@ void ElementListWidget::BtnClicked()
         dis1->setUndertolerance(downer);
         dis1->judge();
     }
+    onItemClicked();
     QMessageBox::information(this,"ok","公差设置成功");
     QMessageBox* infoBox = qobject_cast<QMessageBox*>(sender()); // 尝试获取发送者作为信息框（可选，用于直接关闭它，但通常不需要）
     if (infoBox) {
@@ -724,12 +739,56 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
             timer->stop();
             delete timer;
             timer=nullptr;
-            m_pMainWin->getPWinToolWidget()->setauto(true);
-            m_pMainWin->getPWinToolWidget()->onSaveTxt();
-            m_pMainWin->getPWinToolWidget()->onSaveWord();
-            m_pMainWin->getPWinToolWidget()->onSaveExcel();
-            m_pMainWin->getPWinToolWidget()->onSavePdf();
-            m_pMainWin->getPWinToolWidget()->setauto(false);
+
+            // 清理旧线程
+            if (workerThread) {
+                workerThread->quit();
+                workerThread->wait();
+                delete workerThread;
+                workerThread = nullptr;
+            }
+
+            progressBar = new QProgressBar();
+            Qt::WindowFlags flags=Qt::Dialog|Qt::WindowCloseButtonHint;
+            progressBar->setWindowFlags(flags);//设置窗口标志
+            QFont font=QFont(tr("宋体"),10);
+            progressBar->setFont(font);//设置进度条的字体
+            progressBar->setWindowTitle(tr("Please Wait Progress Bar"));//设置进度条的窗口标题
+            progressBar->setRange(0,100);//设置进度条的数值范围，0~mTotalNum
+            progressBar->setValue(0);//设置进度条的初始值
+            progressBar->show();//显示进度条
+
+            workerThread = new QThread(this);
+            worker = new Worker();
+            connect(worker, &Worker::requestSaveOperation, this, [this](int type) {
+                switch(type) {
+                case 0: m_pMainWin->getPWinToolWidget()->setauto(true);m_pMainWin->getPWinToolWidget()->onSaveTxt(); break;
+                case 1: m_pMainWin->getPWinToolWidget()->onSaveWord(); break;
+                case 2: m_pMainWin->getPWinToolWidget()->onSaveExcel(); break;
+                case 3: m_pMainWin->getPWinToolWidget()->onSavePdf();m_pMainWin->getPWinToolWidget()->setauto(false); break;
+                }
+            },Qt::QueuedConnection);
+            worker->moveToThread(workerThread);
+
+
+            // 信号连接
+            // 使用队列连接确保跨线程安全
+            connect(workerThread, &QThread::started, worker, &Worker::doWork);
+            connect(worker, &Worker::progress, this,
+                    &ElementListWidget::updateProgress, Qt::QueuedConnection);
+            connect(worker, &Worker::finished, workerThread, &QThread::quit);
+            connect(worker, &Worker::finished, worker, &Worker::deleteLater);
+            connect(workerThread, &QThread::finished, workerThread,
+                    &QThread::deleteLater);
+
+            workerThread->start();
+
+            // m_pMainWin->getPWinToolWidget()->setauto(true);
+            // m_pMainWin->getPWinToolWidget()->onSaveTxt();
+            // m_pMainWin->getPWinToolWidget()->onSaveWord();
+            // m_pMainWin->getPWinToolWidget()->onSaveExcel();
+            // m_pMainWin->getPWinToolWidget()->onSavePdf();
+            // m_pMainWin->getPWinToolWidget()->setauto(false);
         }
         if(!pointCouldlists.empty()){
             CompareCloud();
@@ -1059,6 +1118,7 @@ void ElementListWidget::createrule()
 }
 
 
+
 void ElementListWidget::mouseDoubleClickEvent(QMouseEvent *event)
 {
     qDebug()<<"鼠标1";
@@ -1187,6 +1247,17 @@ void ElementListWidget::keyReleaseEvent(QKeyEvent *event)
         treeWidgetNames->setSelectionMode(QAbstractItemView::SingleSelection); // 切换为单选模式
     }
     QWidget::keyReleaseEvent(event);
+}
+
+void ElementListWidget::updateProgress(int value)
+{
+    if (progressBar) {
+        progressBar->setValue(value);
+        if (value >= 100) {
+            progressBar->deleteLater(); // 安全释放
+            progressBar = nullptr;
+        }
+    }
 }
 
 

@@ -24,9 +24,11 @@ SOURCES += \
     component/filemanagerwidget.cpp \
     component/logwidget.cpp \
     component/presetelemwidget.cpp \
+    component/progressdialogs.cpp \
     component/reportwidget.cpp \
     component/toolaction.cpp \
     component/toolwidget.cpp \
+    component/worker.cpp \
     constructor/angleconstructor.cpp \
     constructor/circleconstructor.cpp \
     constructor/coneconstructor.cpp \
@@ -73,9 +75,11 @@ HEADERS += \
     component/filemanagerwidget.h \
     component/logwidget.h \
     component/presetelemwidget.h \
+    component/progressdialogs.h \
     component/reportwidget.h \
     component/toolaction.h \
     component/toolwidget.h \
+    component/worker.h \
     constructor/angleconstructor.h \
     constructor/circleconstructor.h \
     constructor/coneconstructor.h \
