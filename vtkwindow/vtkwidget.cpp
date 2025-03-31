@@ -1065,7 +1065,7 @@ void VtkWidget::createActorController()
     });
 
     connect(pointSizeSubBtn, &QPushButton::clicked, [=]() {
-        if(MainWindow::ActorPointSize > 0)
+        if(MainWindow::ActorPointSize > 1)
             MainWindow::ActorPointSize -= 1;
         currentPointSizeLabel->setText(QString::number(MainWindow::ActorPointSize));
         reDrawCentity();
@@ -1283,7 +1283,7 @@ void VtkWidget::onAlign()
             // 获取点云的共享指针，确保原数据不被释放
             auto pcEntity = static_cast<CPointCloud*>(entity);
             clouds.append(pcl::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>(pcEntity->m_pointCloud));
-            logInfo += ((CPointCloud*)entity)->m_strAutoName + "与"; //添加对比的点云编号
+            logInfo += ((CPointCloud*)entity)->m_strCName + "与";
         }
     }
 
@@ -1301,47 +1301,121 @@ void VtkWidget::onAlign()
         return;
     }
 
-    // 均匀下采样
-    // pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledCloud1(new pcl::PointCloud<pcl::PointXYZRGB>());
-    // pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledCloud2(new pcl::PointCloud<pcl::PointXYZRGB>());
-    // pcl::UniformSampling<pcl::PointXYZRGB> uniformSampling;
-    // uniformSampling.setRadiusSearch(0.01f); // 设置采样半径，这个参数是关键
-    // uniformSampling.setInputCloud(cloud1);
-    // uniformSampling.filter(*downsampledCloud1);
-    // uniformSampling.setInputCloud(cloud2);
-    // uniformSampling.filter(*downsampledCloud2);
-    // if (downsampledCloud1->empty() || downsampledCloud2->empty()) {
-    //     QMessageBox::warning(this, "警告", "下采样后的点云为空");
-    //     return;
+    // 用于采样的两个点云
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledCloud1(new pcl::PointCloud<pcl::PointXYZRGB>());
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledCloud2(new pcl::PointCloud<pcl::PointXYZRGB>());
+    float radius1 = calculateSamplingRadius(downsampledCloud1);
+    float radius2 = calculateSamplingRadius(downsampledCloud2);
+
+    pcl::UniformSampling<pcl::PointXYZRGB> uniformSampling;
+    uniformSampling.setRadiusSearch(radius1); // 设置采样半径，这个参数是关键
+    uniformSampling.setInputCloud(cloud1);
+    uniformSampling.filter(*downsampledCloud1);
+    uniformSampling.setRadiusSearch(radius2);
+    uniformSampling.setInputCloud(cloud2);
+    uniformSampling.filter(*downsampledCloud2);
+
+    qDebug() << radius1 << radius2;
+
+    // 如果点云较小，则只进行一轮采样
+    // if(radius2 <= 0.05f){
+    //     // 均匀下采样
+    //     pcl::UniformSampling<pcl::PointXYZRGB> uniformSampling;
+    //     uniformSampling.setRadiusSearch(radius1); // 设置采样半径，这个参数是关键
+    //     uniformSampling.setInputCloud(cloud1);
+    //     uniformSampling.filter(*downsampledCloud1);
+    //     uniformSampling.setRadiusSearch(radius2);
+    //     uniformSampling.setInputCloud(cloud2);
+    //     uniformSampling.filter(*downsampledCloud2);
     // }
+    // else{
+    //     // 动态设置采样半径
+    //     float initialRadius = 0.01f; // 初始采样半径
+    //     float maxRadius = 0.2f;  // 最大采样半径
+    //     float targetSize = 10000;    // 目标点云大小
+    //     float reductionFactor = 1.0f / 10.0f; // 点云缩减比例
+    //     // 初始化当前待采样的点云和采样半径
+    //     pcl::PointCloud<pcl::PointXYZRGB>::Ptr currentSource = cloud2;
+    //     pcl::PointCloud<pcl::PointXYZRGB>::Ptr currentTarget = cloud1;
+    //     float currentRadius = initialRadius;
+
+    //     while (true) {
+    //         // 均匀下采样
+    //         pcl::UniformSampling<pcl::PointXYZRGB> uniformSampling;
+    //         uniformSampling.setRadiusSearch(currentRadius);
+    //         uniformSampling.setInputCloud(currentSource);
+    //         uniformSampling.filter(*downsampledCloud2);
+    //         uniformSampling.setInputCloud(currentTarget);
+    //         uniformSampling.filter(*downsampledCloud1);
+
+    //         if (downsampledCloud1->empty() || downsampledCloud2->empty()) {
+    //             logInfo += "下采样后的点云为空";
+    //             m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
+    //             return;
+    //         }
+    //         // 检查采样后的点云大小，满足条件则结束采样
+    //         if (downsampledCloud2->size() <= targetSize ||
+    //             downsampledCloud2->size() <= cloud2->size() * reductionFactor) {
+    //             break;
+    //         }
+    //         // 增加采样半径，更新当前源点云和目标点云
+    //         currentRadius += 0.01f;
+    //         currentSource = downsampledCloud2;
+    //         currentTarget = downsampledCloud1;
+    //         if (currentRadius > maxRadius) {
+    //             return;
+    //         }
+    //     }
+    // }
+
+    if (downsampledCloud1->empty() || downsampledCloud2->empty()) {
+        logInfo += "下采样后的点云为空";
+        m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
+        return;
+    }
 
     // 保存采样后的点云到文件
     // pcl::io::savePCDFileASCII("downsampled_cloud1.pcd", *downsampledCloud1);
     // pcl::io::savePCDFileASCII("downsampled_cloud2.pcd", *downsampledCloud2);
 
-    // // 计算FPFH特征
-    // fpfh.setRadiusSearch(0.1);  // 设置特征计算的半径
-    // fpfh.setInputCloud(downsampledCloud1);
-    // fpfh.setInputNormals(normals1);
-    // fpfh.compute(*fpfh1);
-    // fpfh.setInputCloud(downsampledCloud2);
-    // fpfh.setInputNormals(normals2);
-    // fpfh.compute(*fpfh2);
-    // if (fpfh1->empty()) {
-    //     QMessageBox::warning(this, "警告", "特征提取失败，特征点云为空！");z
-    //     return;
-    // }
+    // 分别计算两个点云的法向量
+    // pcl::NormalEstimation<pcl::PointXYZRGB, pcl::Normal> normalsEtimation;
+    // pcl::PointCloud<pcl::Normal>::Ptr normals1(new pcl::PointCloud<pcl::Normal>());
+    // pcl::PointCloud<pcl::Normal>::Ptr normals2(new pcl::PointCloud<pcl::Normal>());
+    // pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZRGB>());
+    // normalsEtimation.setInputCloud(downsampledCloud1);
+    // normalsEtimation.setSearchMethod(tree);
+    // normalsEtimation.setRadiusSearch(300);
+
+    // normalsEtimation.compute(*normals1);
+    // normalsEtimation.setInputCloud(downsampledCloud2);
+    // normalsEtimation.compute(*normals2);
+
+    // 计算FPFH特征
+    // pcl::PointCloud<pcl::FPFHSignature33>::Ptr featureCloud1(new pcl::PointCloud<pcl::FPFHSignature33>());
+    // pcl::PointCloud<pcl::FPFHSignature33>::Ptr featureCloud2(new pcl::PointCloud<pcl::FPFHSignature33>());
+    // pcl::FPFHEstimation<pcl::PointXYZRGB, pcl::Normal, pcl::FPFHSignature33> fpfh_estimation;
+    // fpfh_estimation.setInputCloud(downsampledCloud1);
+    // fpfh_estimation.setInputNormals(normals1);
+    // fpfh_estimation.setSearchMethod(tree);
+    // fpfh_estimation.setRadiusSearch(50);
+    // fpfh_estimation.compute(*featureCloud1);
+
+    // fpfh_estimation.setInputCloud(downsampledCloud2);
+    // fpfh_estimation.setInputNormals(normals2);
+    // fpfh_estimation.setSearchMethod(tree);
+    // fpfh_estimation.setRadiusSearch(50);
+    // fpfh_estimation.compute(*featureCloud2);
 
     // SAC-IA粗配准
     // pcl::SampleConsensusInitialAlignment<pcl::PointXYZRGB, pcl::PointXYZRGB, pcl::FPFHSignature33> sac_ia;
-    // sac_ia.setInputSource(cloud2);
-    // sac_ia.setInputTarget(cloud1);
-    // // sac_ia.setSourceFeatures(cloud2);
-    // // sac_ia.setTargetFeatures(cloud1);
-    // sac_ia.setMaximumIterations(500);  // 设置最大迭代次数
+    // sac_ia.setInputSource(downsampledCloud2);
+    // sac_ia.setInputTarget(downsampledCloud1);
+    // sac_ia.setSourceFeatures(featureCloud2);
+    // sac_ia.setTargetFeatures(featureCloud1);
+    // sac_ia.setMaximumIterations(100);  // 设置最大迭代次数
     // sac_ia.setMinSampleDistance(0.01f);  // 设置最小采样距离
     // sac_ia.setMaxCorrespondenceDistance(0.1f);  // 设置最大对应点距离
-
     // pcl::PointCloud<pcl::PointXYZRGB> sacAlignedCloud;
     // sac_ia.align(sacAlignedCloud);  // 粗配准
     // if (!sac_ia.hasConverged()) {
@@ -1353,8 +1427,8 @@ void VtkWidget::onAlign()
 
     // 使用XYZRGB类型进行ICP配准
     pcl::IterativeClosestPoint<pcl::PointXYZRGB, pcl::PointXYZRGB> icp;
-    icp.setInputSource(cloud2);
-    icp.setInputTarget(cloud1);
+    icp.setInputSource(downsampledCloud2);
+    icp.setInputTarget(downsampledCloud1);
     icp.setMaximumIterations(50);
     icp.setTransformationEpsilon(1e-8);
     icp.setMaxCorrespondenceDistance(0.2f);
@@ -1362,7 +1436,7 @@ void VtkWidget::onAlign()
     icp.align(*icpFinalCloudPtr);
 
     if (!icp.hasConverged()) {
-        icp.setMaxCorrespondenceDistance(0.1);
+        icp.setMaxCorrespondenceDistance(0.1f);
         icp.setMaximumIterations(150);
         icp.align(*icpFinalCloudPtr);
         if (!icp.hasConverged()) {
@@ -1384,161 +1458,6 @@ void VtkWidget::onAlign()
     logInfo += std::to_string(rmse);
     m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
 }
-
-// void VtkWidget::poissonReconstruction()
-// {
-//     //创建曲面实体
-//     CSurfaces* pSurfaces=(CSurfaces*)m_pMainWin->CreateEntity(enSurfaces);
-
-//     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
-//     pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>());
-//     QString logInfo;
-
-//     // 收集选中的点云（确保不修改原始实体）
-//     for (int i = 0; i < entityList.size(); i++) {
-//         CEntity* entity = entityList[i];
-//         if (!entity->IsSelected()) continue;
-//         if (entity->GetUniqueType() == enPointCloud) {
-//             // 获取点云的共享指针，确保原数据不被释放
-//             auto pcEntity = static_cast<CPointCloud*>(entity);
-//             pSurfaces->parent.append(pcEntity); //重建曲面来源
-//             cloud = pcl::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>(pcEntity->m_pointCloud);
-//             logInfo += ((CPointCloud*)entity)->m_strAutoName + ' '; //添加点云编号
-//         }
-//     }
-
-//     // // 统计滤波去除离群点
-//     // pcl::PointCloud<pcl::PointXYZRGB>::Ptr filteredCloud(new pcl::PointCloud<pcl::PointXYZRGB>);
-//     // pcl::StatisticalOutlierRemoval<pcl::PointXYZRGB> sor;
-//     // sor.setInputCloud(cloud);
-//     // sor.setMeanK(50);  // 计算每个点的50个邻居
-//     // sor.setStddevMulThresh(1.0);  // 设定标准差阈值，值越小去除越严格
-//     // sor.filter(*filteredCloud);
-
-//     // // 替换 cloud 为去噪后的 filteredCloud
-//     // cloud = filteredCloud;
-//     // pcl::StatisticalOutlierRemoval<pcl::PointXYZRGB> sor;
-//     // sor.setInputCloud(cloud);
-//     // sor.setMeanK(50);        // 考虑50个邻近点
-//     // sor.setStddevMulThresh(1.0); // 标准差倍数阈值
-//     // pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZRGB>);
-//     // sor.filter(*cloud_filtered);
-//     // cloud = cloud_filtered;
-
-//     if (cloud->empty()) {
-//         QMessageBox::warning(this, "警告", "点云不能为空");
-//         return;
-//     }
-
-//     // //  MLS平滑点云, 计算法向量更精确
-//     // pcl::MovingLeastSquares<pcl::PointXYZRGB, pcl::PointXYZRGB> mls;
-//     // mls.setInputCloud(cloud);
-//     // mls.setSearchRadius(0.02);  // 设定平滑半径
-//     // mls.setPolynomialOrder(2);   // 设置多项式阶数
-//     // mls.setComputeNormals(true); // 计算法向量
-//     // // 创建 KD 树搜索对象（提高搜索效率）
-//     // pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZRGB>());
-//     // mls.setSearchMethod(tree);
-//     // // 处理平滑点云
-//     // pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudSmoothed(new pcl::PointCloud<pcl::PointXYZRGB>);
-//     // mls.process(*cloudSmoothed); // cloudSmoothed为平滑点云，下可替换cloud
-
-//     // 计算法向量
-//     pcl::PointCloud<pcl::Normal>::Ptr normals(new pcl::PointCloud<pcl::Normal>);
-//     pcl::NormalEstimation<pcl::PointXYZRGB, pcl::Normal> normalEstimation;
-//     normalEstimation.setInputCloud(cloud);
-//     pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZRGB>);
-//     normalEstimation.setSearchMethod(tree);
-//     normalEstimation.setRadiusSearch(0.02);  // 使用半径搜索，确保局部一致性（适合非均匀点云）
-//     // normalEstimation.setKSearch(20); // KSearch过小会导致法向量计算不稳定，过大会导致平滑过度
-//     normalEstimation.compute(*normals);
-
-//     // 合并点云和法向量
-//     pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloudWithNormals(new pcl::PointCloud<pcl::PointXYZRGBNormal>);
-//     pcl::concatenateFields(*cloud, *normals, *cloudWithNormals);
-
-//     // pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloudWithNormals(new pcl::PointCloud<pcl::PointXYZRGBNormal>);
-//     // pcl::concatenateFields(*cloud, *normals, *cloudWithNormals);
-//     // pcl::NormalRefinement<pcl::PointXYZRGBNormal> normalRefine;
-//     // normalRefine.setInputCloud(cloudWithNormals);
-//     // normalRefine.s
-
-//     // 执行泊松重建
-//     pcl::Poisson<pcl::PointXYZRGBNormal> poisson;
-//     poisson.setDepth(5);  // 控制八叉树深度，值越大精度越高但计算量大（推荐 8~12）
-//     poisson.setSolverDivide(8);  // 影响泊松方程求解精度（推荐 7~10）
-//     poisson.setIsoDivide(8);  // 影响网格划分（推荐 7~10）
-//     poisson.setSamplesPerNode(2.0);  // 控制每个节点的采样点数量（默认 1.0，可适当增加）
-//     poisson.setScale(1.1f);  // 设置泊松重建的尺度，适当增加可以提高细节
-//     poisson.setConfidence(false);  // 如果法向量质量较差，可以设为 false
-//     poisson.setManifold(true);  // 生成流形网格，减少拓扑错误
-//     poisson.setOutputPolygons(true);  // 生成三角形网格
-//     // poisson.setDepth(12);  // 深度越高，重建精度越高，但计算量大
-//     // poisson.setSolverDivide(8);  // 影响泊松方程的求解精度，推荐 8~10
-//     // poisson.setIsoDivide(8);  // 影响网格划分，推荐 8~10
-//     // poisson.setSamplesPerNode(1.5);  // 控制采样密度，默认 1.0，适当增加可提高细节
-//     poisson.setInputCloud(cloudWithNormals);
-//     pcl::PolygonMesh mesh;
-//     poisson.reconstruct(mesh);
-
-//     // // 进行网格平滑（泊松重建后的网格可能包含多余的三角形或噪声）
-//     // pcl::MeshSmoothingLaplacianVTK meshSmoothing;
-//     // meshSmoothing.setInputMesh(mesh);
-//     // meshSmoothing.setNumIter(10);  // 迭代次数，控制平滑程度
-//     // pcl::PolygonMesh smoothedMesh;
-//     // meshSmoothing.process(smoothedMesh); // 如使用注意smoothedMesh替换mesh
-
-
-//     // 贪婪投影三角化算法
-//     // // Greedy Triangulation(适用于密集点云)
-//     // pcl::GreedyProjectionTriangulation<pcl::PointNormal> gp3;
-//     // gp3.setSearchRadius(0.025);  // 搜索半径（决定三角化的邻近点）
-//     // gp3.setMu(2.5);              // 邻域扩展系数
-//     // gp3.setMaximumNearestNeighbors(100);  // 允许的最大邻居点数
-//     // gp3.setMaximumSurfaceAngle(M_PI / 4); // 最大表面角度（弧度）
-//     // gp3.setMinimumAngle(M_PI / 18);       // 最小三角形角度
-//     // gp3.setMaximumAngle(2 * M_PI / 3);    // 最大三角形角度
-//     // gp3.setNormalConsistency(false);      // 是否考虑法向量一致性
-
-//     // // 构建 KdTree 搜索点云
-//     // pcl::search::KdTree<pcl::PointNormal>::Ptr tree2(new pcl::search::KdTree<pcl::PointNormal>);
-//     // pcl::PointCloud<pcl::PointNormal>::Ptr cloudWithNormalsFixed(new pcl::PointCloud<pcl::PointNormal>);
-//     // pcl::copyPointCloud(*cloudWithNormals, *cloudWithNormalsFixed);
-
-//     // tree2->setInputCloud(cloudWithNormalsFixed);
-//     // gp3.setInputCloud(cloudWithNormalsFixed);
-//     // // 生成三角网格
-//     // pcl::PolygonMesh mesh;
-//     // gp3.reconstruct(mesh);
-
-//     if (mesh.polygons.empty()) {
-//         QMessageBox::warning(this, "警告", "泊松重建失败");
-//         return;
-//     }
-
-//     //重建曲面属性
-//     vtkSmartPointer<vtkPolyData> vtkMesh = convertPclMeshToVtkPolyData(mesh);
-//     pSurfaces->setCurrentId();
-//     pSurfaces->Form="重建";
-//     pSurfaces->setMesh(vtkMesh);
-//     m_pMainWin->getPWinToolWidget()->addToList(pSurfaces);
-//     pSurfaces->m_CreateForm=eReconstruct;
-
-//     m_pMainWin->NotifySubscribe();
-
-
-//     // // 转换 PolygonMesh 到 PointCloud -显示点云
-//     // pcl::PointCloud<pcl::PointXYZRGB>::Ptr reconstructedCloud(new pcl::PointCloud<pcl::PointXYZRGB>);
-//     // pcl::fromPCLPointCloud2(mesh.cloud, *reconstructedCloud);
-
-//     // auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateReconstructedCloud(reconstructedCloud);
-//     // m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
-//     // m_pMainWin->NotifySubscribe();
-
-//     // 添加日志输出
-//     logInfo += "泊松重建完成";
-//     m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
-// }
 
 void VtkWidget::poissonReconstruction()
 {
@@ -1657,6 +1576,20 @@ void VtkWidget::poissonReconstruction()
     // 添加日志输出
     logInfo += "泊松重建完成";
     m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
+}
+
+float VtkWidget::calculateSamplingRadius(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud)
+{
+    // 根据点云的大小动态设置采样半径
+    if (cloud->points.size() < 10000) { // 小于10000个点的小点云
+        return 0.01f;
+    } else if (cloud->points.size() < 100000) {
+        return 0.05f;
+    } else if (cloud->points.size() < 1000000) {
+        return 0.1f;
+    } else {
+        return 0.2f;
+    }
 }
 
 vtkSmartPointer<vtkPolyData> VtkWidget::convertPclMeshToVtkPolyData(const pcl::PolygonMesh& pclMesh) {
