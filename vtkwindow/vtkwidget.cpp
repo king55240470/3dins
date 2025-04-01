@@ -1323,7 +1323,7 @@ void VtkWidget::onAlign()
         float initialRadius = 0.01f; // 初始采样半径
         float maxRadius = 0.2f;  // 最大采样半径
         float targetSize = 10000;    // 目标点云大小
-        float reductionFactor = 1.0f / 10.0f; // 点云缩减比例
+        float reductionFactor = 1.0 / 10.0; // 点云缩减比例
         // 初始化当前待采样的点云和采样半径
         pcl::PointCloud<pcl::PointXYZRGB>::Ptr currentSource = cloud2;
         pcl::PointCloud<pcl::PointXYZRGB>::Ptr currentTarget = cloud1;
@@ -1365,8 +1365,7 @@ void VtkWidget::onAlign()
     }
 
     // 保存采样后的点云到文件
-    // pcl::io::savePCDFileASCII("downsampled_cloud1.pcd", *downsampledCloud1);
-    // pcl::io::savePCDFileASCII("downsampled_cloud2.pcd", *downsampledCloud2);
+    pcl::io::savePCDFileASCII("downsampled_cloud2.pcd", *downsampledCloud2);
 
     // 分别计算两个点云的法向量
     // pcl::NormalEstimation<pcl::PointXYZRGB, pcl::Normal> normalsEtimation;
@@ -1417,21 +1416,29 @@ void VtkWidget::onAlign()
     pcl::IterativeClosestPoint<pcl::PointXYZRGB, pcl::PointXYZRGB> icp;
     icp.setInputSource(downsampledCloud2);
     icp.setInputTarget(downsampledCloud1);
-    icp.setMaximumIterations(50);
+    icp.setMaximumIterations(150);
     icp.setTransformationEpsilon(1e-8);
-    icp.setMaxCorrespondenceDistance(0.2f);
+    icp.setMaxCorrespondenceDistance(0.1f);
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr icpFinalCloudPtr(new pcl::PointCloud<pcl::PointXYZRGB>());
     icp.align(*icpFinalCloudPtr);
 
+    // 如果仍未收敛，则进行动态迭代
     if (!icp.hasConverged()) {
-        icp.setMaxCorrespondenceDistance(0.1f);
-        icp.setMaximumIterations(150);
-        icp.align(*icpFinalCloudPtr);
-        if (!icp.hasConverged()) {
-            logInfo += "对齐失败";
-            m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
-            return;
+        int maxIter = 500; // 最大迭代次数
+        int iniIter = 150; // 初始迭代次数
+        float corDis = 0.2f; // 最大点距离
+        while(iniIter <= maxIter){
+            icp.setMaxCorrespondenceDistance(corDis);
+            icp.setMaximumIterations(iniIter);
+            icp.align(*icpFinalCloudPtr);
+            iniIter += 50;
+            corDis += 0.1f;
         }
+    }
+    if (!icp.hasConverged()) {
+        logInfo += "对齐失败";
+        m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
+        return;
     }
 
     // 处理对齐后的点云

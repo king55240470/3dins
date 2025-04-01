@@ -294,6 +294,10 @@ void MainWindow::setupUi(){
     connect(findCylinder, &QAction::triggered, this, [&](){ pWinToolWidget->onFindCylinder(); });
     connect(findCone, &QAction::triggered, this, [&](){ pWinToolWidget->onFindCone(); });
 
+    QIcon compareIcon(":/component/save/compare.png");
+    QIcon reconstructIcon(":/component/save/reconstruct.png");
+    QIcon alignIcon(":/component/save/ICP.png");
+
     QMenu *cloudOperation=bar->addMenu("点云操作(V)");
     QAction* showCloudMenu = new QAction();
     showCloudMenu->setShortcut(QKeySequence(Qt::Key_V));
@@ -305,18 +309,21 @@ void MainWindow::setupUi(){
     QAction* compareAction=cloudOperation->addAction("点云对比");
     compareAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_C));
     compareAction->setShortcutContext(Qt::ApplicationShortcut);
+    compareAction->setIcon(QIcon(compareIcon.pixmap(QSize(40, 40))));
     connect(compareAction,&QAction::triggered,this,[&](){
         pWinVtkWidget->onCompare();
     });
     QAction* alignAction=cloudOperation->addAction("点云对齐");
     alignAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Q));
     alignAction->setShortcutContext(Qt::ApplicationShortcut);
+    alignAction->setIcon(QIcon(alignIcon.pixmap(QSize(40, 40))));
     connect(alignAction,&QAction::triggered,this,[&](){
         pWinVtkWidget->onAlign();
     });
     QAction* ReconstructionAction=cloudOperation->addAction("点云重建");
     ReconstructionAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_R));
     ReconstructionAction->setShortcutContext(Qt::ApplicationShortcut);
+    ReconstructionAction->setIcon(QIcon(reconstructIcon.pixmap(QSize(40, 40))));
     connect(ReconstructionAction,&QAction::triggered,this,[&](){
         pWinVtkWidget->poissonReconstruction();
     });
@@ -1448,8 +1455,6 @@ void MainWindow::onConvertLightGreyTheme()
     MainWindow::InfoTextColor[2] = 0;
 
     pWinVtkWidget->getRenderer()->SetBackground(0.5, 0.5, 0.5);
-    pWinVtkWidget->getRenderer()->SetBackground(1, 1, 1);
-    pWinVtkWidget->getRenderer()->SetGradientBackground(true);
     pWinVtkWidget->UpdateInfo();
 }
 
