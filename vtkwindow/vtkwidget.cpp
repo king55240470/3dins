@@ -1283,7 +1283,7 @@ void VtkWidget::onAlign()
             // 获取点云的共享指针，确保原数据不被释放
             auto pcEntity = static_cast<CPointCloud*>(entity);
             clouds.append(pcl::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>(pcEntity->m_pointCloud));
-            logInfo += ((CPointCloud*)entity)->m_strCName + "与";
+            logInfo += ((CPointCloud*)entity)->m_strCName + " ";
         }
     }
 
@@ -1301,72 +1301,62 @@ void VtkWidget::onAlign()
         return;
     }
 
+    float radius1 = calculateSamplingRadius(cloud1);
+    float radius2 = calculateSamplingRadius(cloud2);
+
     // 用于采样的两个点云
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledCloud1(new pcl::PointCloud<pcl::PointXYZRGB>());
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledCloud2(new pcl::PointCloud<pcl::PointXYZRGB>());
-    float radius1 = calculateSamplingRadius(downsampledCloud1);
-    float radius2 = calculateSamplingRadius(downsampledCloud2);
-
-    pcl::UniformSampling<pcl::PointXYZRGB> uniformSampling;
-    uniformSampling.setRadiusSearch(radius1); // 设置采样半径，这个参数是关键
-    uniformSampling.setInputCloud(cloud1);
-    uniformSampling.filter(*downsampledCloud1);
-    uniformSampling.setRadiusSearch(radius2);
-    uniformSampling.setInputCloud(cloud2);
-    uniformSampling.filter(*downsampledCloud2);
-
-    qDebug() << radius1 << radius2;
 
     // 如果点云较小，则只进行一轮采样
-    // if(radius2 <= 0.05f){
-    //     // 均匀下采样
-    //     pcl::UniformSampling<pcl::PointXYZRGB> uniformSampling;
-    //     uniformSampling.setRadiusSearch(radius1); // 设置采样半径，这个参数是关键
-    //     uniformSampling.setInputCloud(cloud1);
-    //     uniformSampling.filter(*downsampledCloud1);
-    //     uniformSampling.setRadiusSearch(radius2);
-    //     uniformSampling.setInputCloud(cloud2);
-    //     uniformSampling.filter(*downsampledCloud2);
-    // }
-    // else{
-    //     // 动态设置采样半径
-    //     float initialRadius = 0.01f; // 初始采样半径
-    //     float maxRadius = 0.2f;  // 最大采样半径
-    //     float targetSize = 10000;    // 目标点云大小
-    //     float reductionFactor = 1.0f / 10.0f; // 点云缩减比例
-    //     // 初始化当前待采样的点云和采样半径
-    //     pcl::PointCloud<pcl::PointXYZRGB>::Ptr currentSource = cloud2;
-    //     pcl::PointCloud<pcl::PointXYZRGB>::Ptr currentTarget = cloud1;
-    //     float currentRadius = initialRadius;
+    if(radius2 <= 0.05f){
+        // 均匀下采样
+        pcl::UniformSampling<pcl::PointXYZRGB> uniformSampling;
+        uniformSampling.setRadiusSearch(radius1); // 设置采样半径，这个参数是关键
+        uniformSampling.setInputCloud(cloud1);
+        uniformSampling.filter(*downsampledCloud1);
+        uniformSampling.setRadiusSearch(radius2);
+        uniformSampling.setInputCloud(cloud2);
+        uniformSampling.filter(*downsampledCloud2);
+    }
+    else{ // 如果点云较大，则动态设置采样半径
+        float initialRadius = 0.01f; // 初始采样半径
+        float maxRadius = 0.2f;  // 最大采样半径
+        float targetSize = 10000;    // 目标点云大小
+        float reductionFactor = 1.0f / 10.0f; // 点云缩减比例
+        // 初始化当前待采样的点云和采样半径
+        pcl::PointCloud<pcl::PointXYZRGB>::Ptr currentSource = cloud2;
+        pcl::PointCloud<pcl::PointXYZRGB>::Ptr currentTarget = cloud1;
+        float currentRadius = initialRadius;
 
-    //     while (true) {
-    //         // 均匀下采样
-    //         pcl::UniformSampling<pcl::PointXYZRGB> uniformSampling;
-    //         uniformSampling.setRadiusSearch(currentRadius);
-    //         uniformSampling.setInputCloud(currentSource);
-    //         uniformSampling.filter(*downsampledCloud2);
-    //         uniformSampling.setInputCloud(currentTarget);
-    //         uniformSampling.filter(*downsampledCloud1);
+        while (true) {
+            // 均匀下采样
+            pcl::UniformSampling<pcl::PointXYZRGB> uniformSampling;
+            uniformSampling.setRadiusSearch(currentRadius);
+            uniformSampling.setInputCloud(currentSource);
+            uniformSampling.filter(*downsampledCloud2);
+            uniformSampling.setInputCloud(currentTarget);
+            uniformSampling.filter(*downsampledCloud1);
 
-    //         if (downsampledCloud1->empty() || downsampledCloud2->empty()) {
-    //             logInfo += "下采样后的点云为空";
-    //             m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
-    //             return;
-    //         }
-    //         // 检查采样后的点云大小，满足条件则结束采样
-    //         if (downsampledCloud2->size() <= targetSize ||
-    //             downsampledCloud2->size() <= cloud2->size() * reductionFactor) {
-    //             break;
-    //         }
-    //         // 增加采样半径，更新当前源点云和目标点云
-    //         currentRadius += 0.01f;
-    //         currentSource = downsampledCloud2;
-    //         currentTarget = downsampledCloud1;
-    //         if (currentRadius > maxRadius) {
-    //             return;
-    //         }
-    //     }
-    // }
+            if (downsampledCloud1->empty() || downsampledCloud2->empty()) {
+                logInfo += "下采样后的点云为空";
+                m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
+                return;
+            }
+            // 检查采样后的点云大小，满足条件则结束采样
+            if (downsampledCloud2->size() <= targetSize ||
+                downsampledCloud2->size() <= cloud2->size() * reductionFactor) {
+                break;
+            }
+            // 增加采样半径，更新当前源点云和目标点云
+            currentRadius += 0.01f;
+            currentSource = downsampledCloud2;
+            currentTarget = downsampledCloud1;
+            if (currentRadius > maxRadius) {
+                break;
+            }
+        }
+    }
 
     if (downsampledCloud1->empty() || downsampledCloud2->empty()) {
         logInfo += "下采样后的点云为空";
@@ -1385,13 +1375,12 @@ void VtkWidget::onAlign()
     // pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZRGB>());
     // normalsEtimation.setInputCloud(downsampledCloud1);
     // normalsEtimation.setSearchMethod(tree);
-    // normalsEtimation.setRadiusSearch(300);
-
+    // normalsEtimation.setRadiusSearch(100);
     // normalsEtimation.compute(*normals1);
     // normalsEtimation.setInputCloud(downsampledCloud2);
     // normalsEtimation.compute(*normals2);
 
-    // 计算FPFH特征
+    // // 计算FPFH特征
     // pcl::PointCloud<pcl::FPFHSignature33>::Ptr featureCloud1(new pcl::PointCloud<pcl::FPFHSignature33>());
     // pcl::PointCloud<pcl::FPFHSignature33>::Ptr featureCloud2(new pcl::PointCloud<pcl::FPFHSignature33>());
     // pcl::FPFHEstimation<pcl::PointXYZRGB, pcl::Normal, pcl::FPFHSignature33> fpfh_estimation;
@@ -1400,14 +1389,13 @@ void VtkWidget::onAlign()
     // fpfh_estimation.setSearchMethod(tree);
     // fpfh_estimation.setRadiusSearch(50);
     // fpfh_estimation.compute(*featureCloud1);
-
     // fpfh_estimation.setInputCloud(downsampledCloud2);
     // fpfh_estimation.setInputNormals(normals2);
     // fpfh_estimation.setSearchMethod(tree);
     // fpfh_estimation.setRadiusSearch(50);
     // fpfh_estimation.compute(*featureCloud2);
 
-    // SAC-IA粗配准
+    // // SAC-IA粗配准
     // pcl::SampleConsensusInitialAlignment<pcl::PointXYZRGB, pcl::PointXYZRGB, pcl::FPFHSignature33> sac_ia;
     // sac_ia.setInputSource(downsampledCloud2);
     // sac_ia.setInputTarget(downsampledCloud1);
