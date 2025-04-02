@@ -541,7 +541,7 @@ void MainWindow::openFile(){
             in>>*m_ObjectListMgr;
             pWinSetDataWidget->deserialize(in);
             in>>pWinFileMgr->getContentItemMap();
-            // in>>pWinFileMgr->getIdentifyItemMap();
+            in>>pWinFileMgr->getIdentifyItemMap();
             in>>pWinFileMgr->getModelFileMap();
 
             // //去除原来构建的点云
@@ -558,7 +558,7 @@ void MainWindow::openFile(){
 
             //反序列化toolWidget中的list
             pWinToolWidget->deserializeEntityList(in,pWinToolWidget->getConstructEntityList()); //构造
-            //pWinToolWidget->deserializeEntityList(in,pWinToolWidget->getIdentifyEntityList()); //拟合
+            pWinToolWidget->deserializeEntityList(in,pWinToolWidget->getIdentifyEntityList()); //拟合
 
             qDebug() << "加载成功,ConstructEntityList的大小为:"<<pWinToolWidget->getConstructEntityList().size();
             qDebug() << "加载成功,IdentifyEntityList的大小为:"<<pWinToolWidget->getIdentifyEntityList().size();
@@ -615,7 +615,7 @@ void MainWindow::saveFile(){
         out<<*m_ObjectListMgr;
         pWinSetDataWidget->serialize(out);
         out<<pWinFileMgr->getContentItemMap();
-        // out<<pWinFileMgr->getIdentifyItemMap();
+        out<<pWinFileMgr->getIdentifyItemMap();
         out<<pWinFileMgr->getModelFileMap();
 
         //保存模型点云
@@ -632,7 +632,7 @@ void MainWindow::saveFile(){
 
         //序列化toolWidget中的list
         pWinToolWidget->serializeEntityList(out,pWinToolWidget->getConstructEntityList()); //构造
-        //pWinToolWidget->serializeEntityList(out,pWinToolWidget->getIdentifyEntityList()); //拟合
+        pWinToolWidget->serializeEntityList(out,pWinToolWidget->getIdentifyEntityList()); //拟合
 
     }else{
         qWarning("Entity manager is null, nothing to save.");

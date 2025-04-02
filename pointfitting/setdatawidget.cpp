@@ -51,6 +51,7 @@ setDataWidget::setDataWidget(QWidget *parent)
     rad->setText(QString::number(0.1));
     dis->setText(QString::number(0.01));
 
+    plane=new FittingPlane();
 }
 
 //平面
@@ -91,7 +92,7 @@ void setDataWidget::PlaneBtnClick(){
         messagebox->exec();
         return;
     }
-    plane=new FittingPlane();
+    // plane=new FittingPlane();
     plane->setRadius(rad->text().toDouble());  // 设置半径
     plane->setDistance(dis->text().toDouble());  // 设置距离阈值
     planeCloud= plane->RANSAC(point,cloudptr);

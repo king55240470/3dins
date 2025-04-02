@@ -1588,20 +1588,21 @@ void VtkWidget::poissonReconstruction()
     // 2. 降采样（保持形状同时减少点数）
     pcl::VoxelGrid<pcl::PointXYZRGB> vg;
     vg.setInputCloud(cloud_filtered);
-    vg.setLeafSize(0.005f, 0.005f, 0.005f); //
+    vg.setLeafSize(0.003f, 0.003f, 0.003f);
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_downsampled(new pcl::PointCloud<pcl::PointXYZRGB>);
     vg.filter(*cloud_downsampled);
 
     // ===== 法向量计算优化 =====
     pcl::PointCloud<pcl::Normal>::Ptr normals(new pcl::PointCloud<pcl::Normal>);
     pcl::NormalEstimation<pcl::PointXYZRGB, pcl::Normal> normalEstimation;
+    normalEstimation.setViewPoint(0.0f, 0.0f, 0.0f); // 设置一致视点
     normalEstimation.setInputCloud(cloud_downsampled);
 
     pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZRGB>);
     normalEstimation.setSearchMethod(tree);
 
     // 使用K近邻搜索替代半径搜索，更稳定
-    normalEstimation.setKSearch(20);  // 调整K值控制局部区域大小
+    normalEstimation.setKSearch(30);  // 调整K值控制局部区域大小
     normalEstimation.compute(*normals);
 
     // ===== 点云法向量对齐 =====
@@ -1631,8 +1632,8 @@ void VtkWidget::poissonReconstruction()
     poisson.setDepth(8);          // 增加深度防止过拟合
     poisson.setSolverDivide(8);   // 保持求解精度
     poisson.setIsoDivide(8);      // 保持等值面划分密度
-    poisson.setSamplesPerNode(3.0); // 保持采样密度
-    poisson.setScale(1.0);        // 移除人工缩放
+    poisson.setSamplesPerNode(5); // 保持采样密度
+    poisson.setScale(0.9f);        // 移除人工缩放
     //    poisson.setLinearFit(true);   // 启用线性拟合增强局部一致性
     poisson.setInputCloud(cloud_oriented);
 

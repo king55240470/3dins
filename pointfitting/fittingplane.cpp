@@ -27,6 +27,7 @@ FittingPlane::FittingPlane()
 
     coefficients.reset(new pcl::ModelCoefficients);
     inliers.reset(new pcl::PointIndices);
+
 }
 
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingPlane::RANSAC(pcl::PointXYZRGB searchPoint,pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudptr)
