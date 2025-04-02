@@ -208,7 +208,7 @@ void MouseInteractorHighlightActor::HighlightActor(vtkActor* actor)
         // 保存高亮前的属性
         vtkSmartPointer<vtkProperty> originalProperty = vtkSmartPointer<vtkProperty>::New();
         originalProperty->DeepCopy(actor->GetProperty());
-        pickedActors.emplace_back(actor, originalProperty);// emplace_back作用等于push_back
+        pickedActors.emplace_back(actor, originalProperty);
         // 让actor高亮，并放在窗口最上层
         actor->GetProperty()->SetColor(MainWindow::HighLightColor[0], MainWindow::HighLightColor[1],
                                        MainWindow::HighLightColor[2]);
