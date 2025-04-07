@@ -926,6 +926,49 @@ void   ExtractData(QVector<CEntity *>& entitylist,QList<QList<QString>>& dataAll
         dataAll.append(inList);
     }
 }
+void   ExtractData(QVector<CEntity *>& entitylist,QList<QList<QString>>& dataAll,QList<QList<QString>>& data_accepted,QList<QList<QString>>& data_not_accepted){
+    for (int i = 0; i < entitylist.size(); i++) {
+        QList<QString> inList;
+        CEntity* entity=entitylist[i];
+        if(entity->GetUniqueType()==enDistance){
+            CDistance* Distance=(CDistance*) entity;
+            inList<<"距离";
+            inList<<Distance->m_strCName;
+            inList<<QString::number(abs(Distance->getdistance()),'f',6);
+            inList<<QString::number(Distance->getUptolerance(),'f',6);
+            inList<<QString::number(Distance->getUndertolerance(),'f',6);
+            if (Distance->judge()){
+                inList<<"合格";
+            data_accepted.append(inList);
+            }
+            else{
+                inList<<"不合格";
+            data_not_accepted.append(inList);
+            }
+        }
+        else if (entity->GetUniqueType()==enAngle){
+            CAngle* Angle=(CAngle*)entity;
+            inList<<"角度";
+            inList<<Angle->m_strCName;
+            inList<<QString::number(abs(Angle->getAngleValue()),'f',6);
+            inList<<QString::number(Angle->getUptolerance(),'f',6);
+            inList<<QString::number(Angle->getUndertolerance(),'f',6);
+            if (Angle->judge()){
+                inList<<"合格";
+                data_accepted.append(inList);
+            }
+            else{
+                inList<<"不合格";
+                data_not_accepted.append(inList);
+            }
+        }
+        if(inList.size()){
+
+            dataAll.append(inList);
+
+        }
+    }
+}
 
 
 void insertImageIntoPdf(const QString &imagePath, const QString &pdfPath) {
@@ -964,8 +1007,15 @@ void   ToolWidget::onSavePdf(){
    // // 插入纯文本数据
    auto& entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
    QList<QList<QString>> dataAll;
+   QList<QList<QString>> dataAccepted;
+   QList<QList<QString>>  dataNotAccepted;
 
-   ExtractData(entitylist, dataAll);
+   int count_accpted=0,count_not_accepted=0;
+
+   ExtractData(entitylist, dataAll, dataAccepted,dataNotAccepted);
+
+   count_accpted=dataAccepted.size();
+   count_not_accepted=dataNotAccepted.size();
 
    QPdfWriter pdf(filePath);
 
@@ -1153,18 +1203,65 @@ void   ToolWidget::onSavePdf(){
 
    // 数据分析
    {
+
        painter.resetTransform();
        painter.translate(50, 50);
        painter.setFont(QFont("Arial", 14, QFont::Bold));
-       painter.drawText(0, 0, "2. 数据分析");
+       painter.drawText(0, 0, "2. 数据分析（不合格参数）");
+
+       int tableX = 0;
+       int tableY = 40;
+
+
+       // 绘制表格边框
+       painter.setPen(Qt::black);
+
+
+       // 绘制表头
+       painter.setFont(QFont("Arial", 12, QFont::Bold));
+       painter.drawText(tableX + 20, tableY + 30, "类型");
+       painter.drawText(tableX + xDistance+ 20, tableY + 30, "名称");
+       painter.drawText(tableX + xDistance*2+ 20, tableY + 30, "数值");
+       painter.drawText(tableX + xDistance*3+ 20, tableY + 30, "上公差");
+       painter.drawText(tableX + xDistance*4+ 20, tableY + 30, "下公差");
+       painter.drawText(tableX + xDistance*5+ 20,tableY + 30,"是否合格");
 
        painter.setFont(QFont("Arial", 12));
-       painter.drawText(0, yDistance, "根据测量数据，我们对以下指标进行了分析:");
-       painter.drawText(0, yDistance*2, "- 数据1: 平均值为 50.00，标准差为 10.00");
-       painter.drawText(0, yDistance*3, "- 数据2: 最大值为 98.50，最小值为 12.30");
-       painter.drawText(0, yDistance*4, "- 数据3: 中位数为 45.20，范围为 10.50 - 89.70");
+       int yPos = 90;
+       bool MoreThanOne=false;
+       for (const QList<QString>& rowData : dataNotAccepted) {
+           if(yPos+yDistance>PDFheight){
+               if(MoreThanOne==false)
+                   painter.drawRect(tableX, tableY+40,tableX + xDistance*6+40,PDFheight-20);
+               else
+                   painter.drawRect(tableX, 10,tableX + xDistance*6+40, yPos);
+
+               pdf.newPage();
+               painter.drawText(tableX ,  0, "类型");
+               painter.drawText(tableX + xDistance, 0, "名称");
+               painter.drawText(tableX + xDistance*2,  0, "数值");
+               painter.drawText(tableX + xDistance*3, 0, "上公差");
+               painter.drawText(tableX + xDistance*4,  0, "下公差");
+               painter.drawText(tableX + xDistance*5,  0, "是否合格");
+               yPos=30;
+               MoreThanOne=true;
+           }
+           int count=0;
+           for (const QString& cellData : rowData) {
+               painter.drawText(tableX + 20+count*xDistance, tableY +yPos, cellData);
+               count++;
+           }
+
+           yPos += yDistance;
+       }
+       if(MoreThanOne){
+           painter.drawRect(tableX, 10,tableX + xDistance*6+40, yPos);
+       }else{
+           painter.drawRect(tableX, tableY+40,tableX + xDistance*6+40, yPos);
+       }
 
        pdf.newPage();
+
    }
 
    // 测量结果图
@@ -1238,11 +1335,8 @@ void   ToolWidget::onSavePdf(){
 
        painter.setFont(QFont("Arial", 12));
        painter.drawText(0, yDistance, "根据测量数据和分析结果，我们得出以下结论:");
-       painter.drawText(0, yDistance*2, "- 数据整体符合预期，波动范围在合理范围内");
-       painter.drawText(0, yDistance*3, "- 数据3的异常点需要进一步检查和验证");
-       painter.drawText(0, yDistance*4, "建议:");
-       painter.drawText(0, yDistance*5, "- 对异常点进行详细检查");
-       painter.drawText(0, yDistance*6, "- 定期进行测量系统校准");
+       painter.drawText(0, yDistance*2, "-共检测出"+ QString::number(count_not_accepted)+"个不合格的指标");
+       painter.drawText(0, yDistance*3, "-共检测出"+ QString::number(count_accpted)+"个合格的指标");
 
        pdf.newPage();
    }
@@ -1259,7 +1353,6 @@ void   ToolWidget::onSavePdf(){
        painter.drawText(0, yDistance*2, "- 3d工业测量软件开发组测量标准");
        painter.drawText(0, yDistance*3, "- 测量系统用户手册");
 
-       pdf.newPage();
    }
 
    painter.end();
@@ -1505,245 +1598,20 @@ void   ToolWidget::onSaveWord(){
     int col = headers.size();
     int row = entitylist.size();
     QList<QList<QString>> dataAll;
-    ExtractData(entitylist, dataAll);
+    QList<QList<QString>> dataAccepted;
+    QList<QList<QString>>  dataNotAccepted;
+    int count_accpted=0,count_not_accepted=0;
+
+    ExtractData(entitylist, dataAll, dataAccepted,dataNotAccepted);
+
+    count_accpted=dataAccepted.size();
+    count_not_accepted=dataNotAccepted.size();
 
 
     int HeadTitleSize=35;
     int TitleSize=24;
     int TextSize=20;
-    // 插入数据
 
-    // QTextDocument document;
-    // QTextCursor cursor(&document);
-
-    // // 设置字体
-    // QFont font;
-    // font.setFamily("SimSun"); // 使用支持中文字符的字体，例如宋体
-    // font.setPointSize(12);
-    // QTextCharFormat charFormat;
-    // charFormat.setFont(font);
-    // cursor.setCharFormat(charFormat);
-
-    // // 封面页
-    // {
-    //     cursor.insertBlock();
-    //     cursor.setBlockFormat(QTextBlockFormat());
-
-    //     // 设置标题
-    //     QFont titleFont("SimSun", HeadTitleSize, QFont::Bold);
-    //     charFormat.setFont(titleFont);
-    //     cursor.setCharFormat(charFormat);
-    //     cursor.insertText("工业测量报告\n\n");
-
-    //     // 插入图片
-    //     QImage image(":/style/ruler.png");
-    //     if (!image.isNull()) {
-    //         QTextImageFormat imageFormat;
-    //         imageFormat.setName(":/style/ruler.png");
-    //         imageFormat.setWidth(200);
-    //         imageFormat.setHeight(100);
-    //         cursor.insertImage(imageFormat);
-    //         cursor.insertBlock();
-    //     } else {
-    //         qDebug() << "无法加载图片：:/style/ruler.png";
-    //     }
-
-    //     // 设置副标题
-    //     QFont subtitleFont("SimSun", TitleSize);
-    //     charFormat.setFont(subtitleFont);
-    //     cursor.setCharFormat(charFormat);
-    //     cursor.insertText("测量项目: 3D 测量系统\n");
-    //     cursor.insertText("测量日期: " + QDateTime::currentDateTime().toString("yyyy-MM-dd") + "\n");
-    //     cursor.insertText("测量单位: 三维工业测量软件开发组\n\n");
-
-    //     // 添加描述性文本
-    //     QFont contentFont("SimSun", TitleSize);
-    //     charFormat.setFont(contentFont);
-    //     cursor.setCharFormat(charFormat);
-    //     cursor.insertText("本报告详细记录了使用3D测量系统进行的测量项目。\n");
-    //     cursor.insertText("测量日期为" + QDateTime::currentDateTime().toString("yyyy-MM-dd") + "，\n");
-    //     cursor.insertText("由三维工业测量软件开发组负责执行和分析。\n");
-
-    //     cursor.insertBlock();
-    //     cursor.insertText("\n\n\n\n");
-    // }
-
-    // // 目录
-    // {
-    //     QFont subtitleFont("SimSun", TitleSize, QFont::Bold);
-    //     charFormat.setFont(subtitleFont);
-    //     cursor.setCharFormat(charFormat);
-    //     cursor.insertText("目录\n\n");
-
-    //     QFont contentFont("SimSun", TextSize);
-    //     charFormat.setFont(contentFont);
-    //     cursor.setCharFormat(charFormat);
-    //     cursor.insertText("1. 测量数据概览\n");
-    //     cursor.insertText("2. 数据分析\n");
-    //     cursor.insertText("3. 测量结果图\n");
-    //     cursor.insertText("4. 结论与建议\n");
-    //     cursor.insertText("5. 附录\n\n");
-
-    //     cursor.insertBlock();
-    //     cursor.insertText("\n\n\n\n");
-    // }
-
-    // // 测量数据概览
-    // {
-    //     QFont titleFont("SimSun",TitleSize, QFont::Bold);
-    //     charFormat.setFont(titleFont);
-    //     cursor.setCharFormat(charFormat);
-    //     cursor.insertText("1. 测量数据概览\n\n");
-
-    //     QFont tableFont("SimSun", TextSize);
-    //     charFormat.setFont(tableFont);
-    //     cursor.setCharFormat(charFormat);
-    //     QTextTableFormat tableFormat;
-    //     tableFormat.setBorder(1);
-    //     tableFormat.setCellPadding(12);
-    //     tableFormat.setCellSpacing(0);
-
-    //     QTextTable* table = cursor.insertTable(dataAll.size() + 1, 6, tableFormat);
-
-    //     table->cellAt(0, 0).firstCursorPosition().insertText("类型");
-    //     table->cellAt(0, 1).firstCursorPosition().insertText("名称");
-    //     table->cellAt(0, 2).firstCursorPosition().insertText("数值");
-    //     table->cellAt(0, 3).firstCursorPosition().insertText("上公差");
-    //     table->cellAt(0, 4).firstCursorPosition().insertText("下公差");
-    //     table->cellAt(0, 5).firstCursorPosition().insertText("是否合格");
-
-    //     int row = 1;
-    //     for (const QList<QString>& rowData : dataAll) {
-    //         int col = 0;
-    //         for (const QString& cellData : rowData) {
-    //             table->cellAt(row, col).firstCursorPosition().insertText(cellData);
-    //             col++;
-    //         }
-    //         row++;
-    //     }
-    //     cursor.movePosition(QTextCursor::End);
-
-    //     cursor.insertBlock();
-    //     cursor.insertText("\n\n\n\n");
-    // }
-
-    // // 数据分析
-    // {
-    //     QFont titleFont("SimSun", TitleSize, QFont::Bold);
-    //     charFormat.setFont(titleFont);
-    //     cursor.setCharFormat(charFormat);
-    //     cursor.insertText("2. 数据分析\n\n");
-
-    //     QFont contentFont("SimSun", TextSize);
-    //     charFormat.setFont(contentFont);
-    //     cursor.setCharFormat(charFormat);
-    //     cursor.insertText("根据测量数据，我们对以下指标进行了分析:\n");
-    //     cursor.insertText("- 数据1: 平均值为 50.00，标准差为 10.00\n");
-    //     cursor.insertText("- 数据2: 最大值为 98.50，最小值为 12.30\n");
-    //     cursor.insertText("- 数据3: 中位数为 45.20，范围为 10.50 - 89.70\n");
-
-    //     cursor.insertBlock();
-    //     cursor.insertText("\n\n\n\n");
-    // }
-
-    // // 测量结果图
-    // {
-    //     QFont titleFont("SimSun", TitleSize, QFont::Bold);
-    //     charFormat.setFont(titleFont);
-    //     cursor.setCharFormat(charFormat);
-    //     cursor.insertText("3. 测量结果图\n\n");
-
-    //     cursor.insertText("（1）全局对比\n");
-    //     int i=0;
-    //     for (const QString &imagePath : imagePaths) {
-    //         QImage image(imagePath);
-    //         if (!image.isNull()) {
-    //             QTextImageFormat imageFormat;
-    //             imageFormat.setName(imagePath);
-    //             imageFormat.setWidth(400); // 根据需要调整宽度
-    //             cursor.insertImage(imageFormat);
-    //             QFont TextFont("SimSun", TextSize, QFont::Bold);
-    //             charFormat.setFont( TextFont);
-    //             cursor.setCharFormat(charFormat);
-    //             cursor.insertText("\n");
-    //             cursor.insertText("       图"+QString::number(++i)+" 全局对比图\n");
-    //             cursor.insertBlock();
-    //         } else {
-    //             qDebug() << "无法加载图片：" << imagePath;
-    //         }
-    //     }
-
-    //     cursor.insertBlock();
-    //     cursor.insertText("\n\n\n\n");
-
-
-    // }
-    // {
-    //     QFont titleFont("SimSun", TitleSize, QFont::Bold);
-    //     charFormat.setFont(titleFont);
-    //     cursor.setCharFormat(charFormat);
-    //     int i=0;
-    //     cursor.insertText("（2）局部对比\n");
-    //     for (const QString &imagePath : imagePaths_part) {
-    //         QImage image(imagePath);
-    //         if (!image.isNull()) {
-    //             QTextImageFormat imageFormat;
-    //             imageFormat.setName(imagePath);
-    //             imageFormat.setWidth(400); // 根据需要调整宽度
-    //             cursor.insertImage(imageFormat);
-    //             QFont TextFont("SimSun", TextSize, QFont::Bold);
-    //             charFormat.setFont( TextFont);
-    //             cursor.setCharFormat(charFormat);
-    //             cursor.insertText("\n");
-    //             cursor.insertText("       图"+QString::number(++i)+" 局部对比图\n");
-    //             cursor.insertBlock();
-    //         } else {
-    //             qDebug() << "无法加载图片：" << imagePath;
-    //         }
-    //     }
-
-    //     cursor.insertBlock();
-    //     cursor.insertText("\n\n\n\n");
-    // }
-
-    // // 结论与建议
-    // {
-    //     QFont titleFont("SimSun", TitleSize, QFont::Bold);
-    //     charFormat.setFont(titleFont);
-    //     cursor.setCharFormat(charFormat);
-    //     cursor.insertText("4. 结论与建议\n\n");
-
-    //     QFont contentFont("SimSun", TextSize);
-    //     charFormat.setFont(contentFont);
-    //     cursor.setCharFormat(charFormat);
-    //     cursor.insertText("根据测量数据和分析结果，我们得出以下结论:\n");
-    //     cursor.insertText("- 数据整体符合预期，波动范围在合理范围内\n");
-    //     cursor.insertText("- 数据3的异常点需要进一步检查和验证\n");
-    //     cursor.insertText("建议:\n");
-    //     cursor.insertText("- 对异常点进行详细检查\n");
-    //     cursor.insertText("- 定期进行测量系统校准\n");
-
-    //     cursor.insertBlock();
-    //     cursor.insertText("\n\n\n\n");
-    // }
-
-    // // 附录
-    // {
-    //     QFont titleFont("SimSun", TitleSize, QFont::Bold);
-    //     charFormat.setFont(titleFont);
-    //     cursor.setCharFormat(charFormat);
-    //     cursor.insertText("5. 附录\n\n");
-
-    //     QFont contentFont("SimSun", TextSize);
-    //     charFormat.setFont(contentFont);
-    //     cursor.setCharFormat(charFormat);
-    //     cursor.insertText("参考文献:\n");
-    //     cursor.insertText("- 3d工业测量软件开发组测量标准\n");
-    //     cursor.insertText("- 测量系统用户手册\n");
-
-    //     cursor.insertBlock();
-    //     cursor.insertText("\n\n\n\n");
-    // }
 
 
     QAxObject *word = new QAxObject("Word.Application");
@@ -1823,10 +1691,26 @@ void   ToolWidget::onSaveWord(){
     // 数据分析
     {
         selection->dynamicCall("TypeText(const QString&)", "2. 数据分析\n\n");
-        selection->dynamicCall("TypeText(const QString&)", "根据测量数据，我们对以下指标进行了分析:\n");
-        selection->dynamicCall("TypeText(const QString&)", "- 数据1: 平均值为 50.00，标准差为 10.00\n");
-        selection->dynamicCall("TypeText(const QString&)", "- 数据2: 最大值为 98.50，最小值为 12.30\n");
-        selection->dynamicCall("TypeText(const QString&)", "- 数据3: 中位数为 45.20，范围为 10.50 - 89.70\n");
+        selection->dynamicCall("TypeText(const QString&)", "根据测量数据，我们检测出以下指标不合格:\n");
+
+        int row = dataNotAccepted.size() + 1;
+        int col = headers.size();
+        QAxObject *range = selection->querySubObject("Range()");
+        QAxObject *table = document->querySubObject("Tables")->querySubObject("Add(QVariant, int, int, QVariant, QVariant)", range->asVariant(), row, col, 1, 1);
+
+        // 插入表头
+        for (int i = 0; i < headers.size(); ++i) {
+            QAxObject *cell = table->querySubObject("Cell(int, int)", 1, i + 1);
+            cell->querySubObject("Range")->dynamicCall("SetText(const QString&)", headers[i]);
+        }
+
+        // 插入数据
+        for (int i = 0; i < dataNotAccepted.size(); ++i) {
+            for (int j = 0; j < dataNotAccepted[i].size(); ++j) {
+                QAxObject *cell = table->querySubObject("Cell(int, int)", i + 2, j + 1);
+                cell->querySubObject("Range")->dynamicCall("SetText(const QString&)", dataNotAccepted[i][j]);
+            }
+        }
         selection->dynamicCall("EndKey(QVariant)", 6);
     }
 
@@ -1865,12 +1749,10 @@ void   ToolWidget::onSaveWord(){
     // 结论与建议
     {
         selection->dynamicCall("TypeText(const QString&)", "4. 结论与建议\n\n");
-        selection->dynamicCall("TypeText(const QString&)", "根据测量数据和分析结果，我们得出以下结论:\n");
-        selection->dynamicCall("TypeText(const QString&)", "- 数据整体符合预期，波动范围在合理范围内\n");
-        selection->dynamicCall("TypeText(const QString&)", "- 数据3的异常点需要进一步检查和验证\n");
-        selection->dynamicCall("TypeText(const QString&)", "建议:\n");
-        selection->dynamicCall("TypeText(const QString&)", "- 对异常点进行详细检查\n");
-        selection->dynamicCall("TypeText(const QString&)", "- 定期进行测量系统校准\n");
+
+        selection->dynamicCall("TypeText(const QString&)", "-共检测出"+ QString::number(count_not_accepted)+"个不合格的指标\n");
+        selection->dynamicCall("TypeText(const QString&)", "-共检测出"+ QString::number(count_accpted)+"个合格的指标\n");
+
         selection->dynamicCall("EndKey(QVariant)", 6);
     }
 
