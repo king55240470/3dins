@@ -5,6 +5,8 @@ QT += opengl
 LIBS += -lOpengl32
 QT += statemachine
 
+QMAKE_CXXFLAGS += /arch:AVX2
+
 RC_ICONS = ruler.ico
 # TARGET = 3D_Measure
 
@@ -22,9 +24,11 @@ SOURCES += \
     component/filemanagerwidget.cpp \
     component/logwidget.cpp \
     component/presetelemwidget.cpp \
+    component/progressdialogs.cpp \
     component/reportwidget.cpp \
     component/toolaction.cpp \
     component/toolwidget.cpp \
+    component/worker.cpp \
     constructor/angleconstructor.cpp \
     constructor/circleconstructor.cpp \
     constructor/coneconstructor.cpp \
@@ -71,9 +75,11 @@ HEADERS += \
     component/filemanagerwidget.h \
     component/logwidget.h \
     component/presetelemwidget.h \
+    component/progressdialogs.h \
     component/reportwidget.h \
     component/toolaction.h \
     component/toolwidget.h \
+    component/worker.h \
     constructor/angleconstructor.h \
     constructor/circleconstructor.h \
     constructor/coneconstructor.h \
@@ -639,9 +645,9 @@ CONFIG(debug, debug|release){
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkWrappingTools-9.1d.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkzlib-9.1d.lib"
     contains(DEFINES, WIN64) {
-    TARGET = ../_debug64/AppName
+    TARGET = ../_debug64/3D-Measure-v1.0
     } else {
-    TARGET = ../_debug32/AppName
+    TARGET = ../_debug32/3D-Measure-v1.0
     }
 } else {
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkcgns-9.1.lib"
@@ -799,9 +805,9 @@ CONFIG(debug, debug|release){
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkWrappingTools-9.1.lib"
     LIBS += "C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib\vtkzlib-9.1.lib"
     contains(DEFINES, WIN64) {
-    TARGET = ../_release64/AppName
+    TARGET = ../_release64/3D-Measure-v1.0
     } else {
-    TARGET = ../_release32/AppName
+    TARGET = ../_release32/3D-Measure-v1.0
     }
 }
 

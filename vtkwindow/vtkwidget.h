@@ -118,6 +118,7 @@ public:
     void onCompare();// 比较两个点云
     void onAlign();    // 配准的函数
     void poissonReconstruction(); // 泊松重建
+    float calculateSamplingRadius(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud); // 估计采样半径
 
     // 显示选中的图形的信息
     void setCentity(CEntity*entity);  //传入centity对象

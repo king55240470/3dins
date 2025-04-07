@@ -283,14 +283,14 @@ public:
 public:
     QDataStream& serialize(QDataStream& out) const override {
         CEntity::serialize(out);  // 先序列化基类部分
-        out <<center << normal<< dir_long_edge << length << width;
+        out <<center << normal<< dir_long_edge << length << width <<rad <<dis;
         out<<plainCount<<currentPlainId;
         return out;
     }
 
     QDataStream& deserialize(QDataStream& in) override {
         CEntity::deserialize(in);  // 先反序列化基类部分
-        in >>center >> normal >> dir_long_edge >> length >> width;
+        in >>center >> normal >> dir_long_edge >> length >> width >>rad >>dis;
         in>>plainCount>>currentPlainId;
         return in;
     }

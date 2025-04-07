@@ -11,6 +11,9 @@ MouseInteractorHighlightActor::MouseInteractorHighlightActor(vtkInteractorStyleT
 // 实现左键按下事件的处理方法
 void MouseInteractorHighlightActor::OnLeftButtonDown()
 {
+    // 调用基类的左键按下事件
+    vtkInteractorStyleTrackballCamera::OnLeftButtonDown();
+
     vtkMenu->hideTearOffMenu(); // 隐藏菜单栏
     // 获取鼠标点击的位置
     int* clickPos = this->GetInteractor()->GetEventPosition();
@@ -81,8 +84,6 @@ void MouseInteractorHighlightActor::OnLeftButtonDown()
         }
     }
 
-    // 调用基类的左键按下事件
-    vtkInteractorStyleTrackballCamera::OnLeftButtonDown();
 }
 
 void MouseInteractorHighlightActor::OnLeftButtonUp()
@@ -207,10 +208,16 @@ void MouseInteractorHighlightActor::HighlightActor(vtkActor* actor)
         // 保存高亮前的属性
         vtkSmartPointer<vtkProperty> originalProperty = vtkSmartPointer<vtkProperty>::New();
         originalProperty->DeepCopy(actor->GetProperty());
-        pickedActors.emplace_back(actor, originalProperty);// emplace_back作用等于push_back
-        // 让actor高亮
+        pickedActors.emplace_back(actor, originalProperty);
+        // 让actor高亮，并放在窗口最上层
         actor->GetProperty()->SetColor(MainWindow::HighLightColor[0], MainWindow::HighLightColor[1],
                                        MainWindow::HighLightColor[2]);
+        if (renderer != nullptr){
+            // 将actor从渲染器中移除并重新添加
+            renderer->RemoveActor(actor);
+            renderer->AddActor(actor);
+            renderer->Render();
+        }
     }
 
 }

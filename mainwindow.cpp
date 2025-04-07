@@ -48,13 +48,22 @@ MainWindow::MainWindow(QWidget *parent)
 }
 
 void MainWindow::setupUi(){
+    //配置ini文件用于文件传输
+    listenFileINI = new QSettings("Config.ini", QSettings::IniFormat);
+    // if(listenFileINI->value("/con/ip")==""){
+    //     listenFileINI->setValue("/con/ip", "192.0.0.0");
+    // }
+    // if(listenFileINI->value("/con/HaveFilePath")==""){
+    //     //listenFileINI->setValue("/con/HaveFilePath", "");
+    // }
     //菜单栏
     bar=menuBar();
     setMenuBar(bar);
     QIcon openFile(":/style/openfile.png");
     QIcon saveFile(":/style/savefile.png");
     QIcon exitIcon(":/style/exit.png");
-    QIcon ListeningFile(":/style/openfile.png");
+    QIcon ListeningFile(":/style/monitor.png");
+    QIcon closeMonitor(":/style/close.png");
     QMenu *fileMenu=bar->addMenu("文件(F)");
     QAction *openAction=fileMenu->addAction("打开文件");
     openAction->setIcon(openFile);
@@ -67,10 +76,15 @@ void MainWindow::setupUi(){
     saveAction->setShortcutContext(Qt::ApplicationShortcut);
     connect(saveAction, &QAction::triggered, this, &MainWindow::saveFile); // 连接保存文件的信号与槽
     QAction *ListeningAction=fileMenu->addAction("监听文件");
-    openAction->setIcon(ListeningFile);
-    openAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_T));
-    openAction->setShortcutContext(Qt::ApplicationShortcut);
+    ListeningAction->setIcon(ListeningFile);
+    ListeningAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_T));
+    ListeningAction->setShortcutContext(Qt::ApplicationShortcut);
     connect(ListeningAction, &QAction::triggered, this, &MainWindow::listeningFile); // 连接打开文件的信号与槽
+    QAction *CloseListeningAction=fileMenu->addAction("关闭监听");
+    CloseListeningAction->setIcon(closeMonitor);
+    CloseListeningAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Y));
+    CloseListeningAction->setShortcutContext(Qt::ApplicationShortcut);
+    connect(CloseListeningAction, &QAction::triggered, this, &MainWindow::CloselisteningFile); // 连接打开文件的信号与槽
     fileMenu->addSeparator();
     QAction *exitAction=fileMenu->addAction("退出");
     exitAction->setIcon(exitIcon);
@@ -97,7 +111,7 @@ void MainWindow::setupUi(){
     QAction* showWinMenu = new QAction();
     showWinMenu->setShortcut(QKeySequence(Qt::Key_W));
     connect(showWinMenu, &QAction::triggered, this, [this,windowMenu]() {
-        QPoint globalPos = mapToGlobal(QPoint(150, 22));
+        QPoint globalPos = mapToGlobal(QPoint(250, 22));
         windowMenu->exec(globalPos);
     });
     addAction(showWinMenu);
@@ -117,7 +131,7 @@ void MainWindow::setupUi(){
     QAction* showPresetMenu = new QAction();
     showPresetMenu->setShortcut(QKeySequence(Qt::Key_P));
     connect(showPresetMenu, &QAction::triggered, this, [this,presetMenu]() {
-        QPoint globalPos = mapToGlobal(QPoint(210, 22));
+        QPoint globalPos = mapToGlobal(QPoint(310, 22));
         presetMenu->exec(globalPos);
     });
     addAction(showPresetMenu);
@@ -196,7 +210,7 @@ void MainWindow::setupUi(){
     QAction* showConsMenu = new QAction();
     showConsMenu->setShortcut(QKeySequence(Qt::Key_C));
     connect(showConsMenu, &QAction::triggered, this, [this,constructorMenu]() {
-        QPoint globalPos = mapToGlobal(QPoint(275, 22));
+        QPoint globalPos = mapToGlobal(QPoint(370, 22));
         constructorMenu->exec(globalPos);
     });
     addAction(showConsMenu);
@@ -249,7 +263,7 @@ void MainWindow::setupUi(){
     QAction* showFitMenu = new QAction();
     showFitMenu->setShortcut(QKeySequence(Qt::Key_S));
     connect(showFitMenu, &QAction::triggered, this, [this,fittingMenu]() {
-        QPoint globalPos = mapToGlobal(QPoint(340, 22));
+        QPoint globalPos = mapToGlobal(QPoint(430, 22));
         fittingMenu->exec(globalPos);
     });
     addAction(showFitMenu);
@@ -280,29 +294,36 @@ void MainWindow::setupUi(){
     connect(findCylinder, &QAction::triggered, this, [&](){ pWinToolWidget->onFindCylinder(); });
     connect(findCone, &QAction::triggered, this, [&](){ pWinToolWidget->onFindCone(); });
 
+    QIcon compareIcon(":/component/save/compare.png");
+    QIcon reconstructIcon(":/component/save/reconstruct.png");
+    QIcon alignIcon(":/component/save/ICP.png");
+
     QMenu *cloudOperation=bar->addMenu("点云操作(V)");
     QAction* showCloudMenu = new QAction();
     showCloudMenu->setShortcut(QKeySequence(Qt::Key_V));
     connect(showCloudMenu, &QAction::triggered, this, [this,cloudOperation]() {
-        QPoint globalPos = mapToGlobal(QPoint(400, 22));
+        QPoint globalPos = mapToGlobal(QPoint(490, 22));
         cloudOperation->exec(globalPos);
     });
     addAction(showCloudMenu);
     QAction* compareAction=cloudOperation->addAction("点云对比");
     compareAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_C));
     compareAction->setShortcutContext(Qt::ApplicationShortcut);
+    compareAction->setIcon(QIcon(compareIcon.pixmap(QSize(40, 40))));
     connect(compareAction,&QAction::triggered,this,[&](){
         pWinVtkWidget->onCompare();
     });
     QAction* alignAction=cloudOperation->addAction("点云对齐");
     alignAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Q));
     alignAction->setShortcutContext(Qt::ApplicationShortcut);
+    alignAction->setIcon(QIcon(alignIcon.pixmap(QSize(40, 40))));
     connect(alignAction,&QAction::triggered,this,[&](){
         pWinVtkWidget->onAlign();
     });
     QAction* ReconstructionAction=cloudOperation->addAction("点云重建");
-    ReconstructionAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Q));
+    ReconstructionAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_R));
     ReconstructionAction->setShortcutContext(Qt::ApplicationShortcut);
+    ReconstructionAction->setIcon(QIcon(reconstructIcon.pixmap(QSize(40, 40))));
     connect(ReconstructionAction,&QAction::triggered,this,[&](){
         pWinVtkWidget->poissonReconstruction();
     });
@@ -311,7 +332,7 @@ void MainWindow::setupUi(){
     QAction* showThemeMenu = new QAction();
     showThemeMenu->setShortcut(QKeySequence(Qt::Key_T));
     connect(showThemeMenu, &QAction::triggered, this, [this,switchTheme]() {
-        QPoint globalPos = mapToGlobal(QPoint(465, 22));
+        QPoint globalPos = mapToGlobal(QPoint(550, 22));
         switchTheme->exec(globalPos);
     });
     addAction(showThemeMenu);
@@ -527,7 +548,7 @@ void MainWindow::openFile(){
             in>>*m_ObjectListMgr;
             pWinSetDataWidget->deserialize(in);
             in>>pWinFileMgr->getContentItemMap();
-            // in>>pWinFileMgr->getIdentifyItemMap();
+            in>>pWinFileMgr->getIdentifyItemMap();
             in>>pWinFileMgr->getModelFileMap();
 
             // //去除原来构建的点云
@@ -544,7 +565,7 @@ void MainWindow::openFile(){
 
             //反序列化toolWidget中的list
             pWinToolWidget->deserializeEntityList(in,pWinToolWidget->getConstructEntityList()); //构造
-            //pWinToolWidget->deserializeEntityList(in,pWinToolWidget->getIdentifyEntityList()); //拟合
+            pWinToolWidget->deserializeEntityList(in,pWinToolWidget->getIdentifyEntityList()); //拟合
 
             qDebug() << "加载成功,ConstructEntityList的大小为:"<<pWinToolWidget->getConstructEntityList().size();
             qDebug() << "加载成功,IdentifyEntityList的大小为:"<<pWinToolWidget->getIdentifyEntityList().size();
@@ -601,7 +622,7 @@ void MainWindow::saveFile(){
         out<<*m_ObjectListMgr;
         pWinSetDataWidget->serialize(out);
         out<<pWinFileMgr->getContentItemMap();
-        // out<<pWinFileMgr->getIdentifyItemMap();
+        out<<pWinFileMgr->getIdentifyItemMap();
         out<<pWinFileMgr->getModelFileMap();
 
         //保存模型点云
@@ -618,7 +639,7 @@ void MainWindow::saveFile(){
 
         //序列化toolWidget中的list
         pWinToolWidget->serializeEntityList(out,pWinToolWidget->getConstructEntityList()); //构造
-        //pWinToolWidget->serializeEntityList(out,pWinToolWidget->getIdentifyEntityList()); //拟合
+        pWinToolWidget->serializeEntityList(out,pWinToolWidget->getIdentifyEntityList()); //拟合
 
     }else{
         qWarning("Entity manager is null, nothing to save.");
@@ -632,65 +653,19 @@ void MainWindow::saveFile(){
 
 void MainWindow::listeningFile()
 {
-    // 创建一个自定义对话框
-    QDialog* dialog = new QDialog(this);
-    dialog->setWindowTitle("监听文件");
+    listenFileINI = new QSettings("Config.ini", QSettings::IniFormat);
+    QString ip=listenFileINI->value("con/ip").toString();
+    listeningfilePath="//"+ip;
+    //listeningfilePath="C:/qcon/FTPservice";
+    qDebug()<<listeningfilePath;
+    filechange();
+    pWinVtkPresetWidget->setWidget("开始监听文件");
+}
 
-    // 创建布局
-    QVBoxLayout* layout = new QVBoxLayout(dialog);
-
-    // 创建一个按钮用于打开文件选择器
-    QPushButton* openFileButton = new QPushButton("选择文件", dialog);
-    connect(openFileButton, &QPushButton::clicked, this, [dialog, this]() {
-        // 打开文件选择器
-        QString filePath = QFileDialog::getExistingDirectory(this, "选择文件夹", QDir::homePath());
-        if (!filePath.isEmpty()) {
-            // 获取 QLineEdit 并设置文件路径
-            QLineEdit* filePathLineEdit = dialog->findChild<QLineEdit*>("filePathLineEdit");
-            if (filePathLineEdit) {
-                filePathLineEdit->setText(filePath);
-                listeningfilePath=filePathLineEdit->text();
-                filechange();
-            }
-        }
-    });
-
-    // 创建一个输入框用于记录文件路径
-    QLineEdit* filePathLineEdit = new QLineEdit(dialog);
-    filePathLineEdit->setObjectName("filePathLineEdit"); // 设置对象名称以便查找
-
-    // 创建一个水平布局用于放置确定和取消按钮
-    QHBoxLayout* buttonLayout = new QHBoxLayout();
-    QPushButton* okButton = new QPushButton("确定", dialog);
-    QPushButton* cancelButton = new QPushButton("取消", dialog);
-
-    connect(okButton, &QPushButton::clicked, this, [dialog, filePathLineEdit]() {
-        // 获取文件路径
-        QString filePath = filePathLineEdit->text();
-        if (filePath.isEmpty()) {
-            QMessageBox::warning(dialog, "警告", "请先选择一个文件！");
-            return;
-        }
-        // 在这里可以添加确定后的逻辑，例如开始监听文件
-        QMessageBox::information(dialog, "提示", "开始监听文件：" + filePath);
-        dialog->accept(); // 关闭对话框
-    });
-
-    connect(cancelButton, &QPushButton::clicked, dialog, &QDialog::reject);
-
-    buttonLayout->addWidget(okButton);
-    buttonLayout->addWidget(cancelButton);
-
-    // 将所有控件添加到布局中
-    layout->addWidget(openFileButton);
-    layout->addWidget(filePathLineEdit);
-    layout->addLayout(buttonLayout);
-
-    // 设置对话框的布局
-    dialog->setLayout(layout);
-
-    // 显示对话框
-    dialog->exec();
+void MainWindow::CloselisteningFile()
+{
+    fileWatcher.removePaths(fileWatcher.directories());
+    pWinVtkPresetWidget->setWidget("关闭文件监听");
 }
 /*void MainWindow::open_clicked() {
     // 打开文件对话框，允许用户选择文件
@@ -1351,8 +1326,7 @@ void MainWindow::filechange()
     fileProcessorTimer.setInterval(1000); // 每秒处理一个文件
     connect(&fileProcessorTimer, &QTimer::timeout, this, &MainWindow::processNextFile);
     // 初始化已存在的文件列表
-    QDir dir(listeningfilePath);
-    existingFiles = dir.entryList(QDir::Files);
+    existingFiles=listenFileINI->value("/con/HaveFilePath").toStringList();
 }
 
 void MainWindow::onFileChanged(const QString &path)
@@ -1365,6 +1339,7 @@ void MainWindow::onFileChanged(const QString &path)
     foreach (const QString &file, currentFiles) {
         if (!existingFiles.contains(file)) {
             QString filePath = path + "/" + file;
+            listenFileINI->setValue("/con/HaveFilePath",file);
             qDebug() << "发现新文件：" << filePath;
 
             // 根据文件扩展名判断优先级
@@ -1480,8 +1455,6 @@ void MainWindow::onConvertLightGreyTheme()
     MainWindow::InfoTextColor[2] = 0;
 
     pWinVtkWidget->getRenderer()->SetBackground(0.5, 0.5, 0.5);
-    pWinVtkWidget->getRenderer()->SetBackground(1, 1, 1);
-    pWinVtkWidget->getRenderer()->SetGradientBackground(true);
     pWinVtkWidget->UpdateInfo();
 }
 

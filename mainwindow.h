@@ -11,6 +11,7 @@
 #include <QQueue>
 #include <QFileSystemWatcher>
 #include <QTimer>
+#include <QSettings>
 #include "geometry/globes.h"
 #include "geometry/centity.h"
 #include "manager/centitymgr.h"
@@ -19,6 +20,7 @@
 #include "manager/chosencentitymgr.h"
 #include "manager/pointcloudlistmgr.h"
 #include <QMap>//从actor映射到centity
+#include <QSplashScreen>
 
 class DataWidget;
 class ElementListWidget;
@@ -84,6 +86,7 @@ private:
     void openFile();
     void saveFile();
     void listeningFile();
+    void CloselisteningFile();
 
 public:
     CPcsMgr* m_pcsListMgr;
@@ -123,6 +126,7 @@ public:
     void onIsometricViewClicked();
 
     //文件传入预处理
+    QSettings *listenFileINI;
     QString filePathChange;
     bool peopleOpenfile=true; //判断是否为手动打开文件
     QString listeningfilePath;

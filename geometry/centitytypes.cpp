@@ -470,6 +470,7 @@ vtkSmartPointer<vtkActor> CSurfaces::draw() {
     // 创建执行器
     auto actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
+    actor->GetProperty()->SetColor(MainWindow::ActorColor);
 
     return actor;
 }
@@ -542,6 +543,9 @@ vtkSmartPointer<vtkActor> CDistance::draw(){
         actor = pointToLine();
     else if(isPointToPoint){
         actor = pointToPoint();
+    }
+    else if(isPointToCircle){
+        actor = pointToCircle();
     }
     else if(isPlaneToPlane){
         actor = planeToPlane();
@@ -686,7 +690,40 @@ vtkSmartPointer<vtkActor> CDistance::pointToLine()
 // 绘制点到圆面的垂线
 vtkSmartPointer<vtkActor> CDistance::pointToCircle()
 {
-    return 0;
+    // 将点和圆心转为全局坐标
+    CPosition pos_begin(begin.x, begin.y, begin.z);
+    QVector4D posVec_begin = GetRefCoord()->m_mat * QVector4D(pos_begin.x, pos_begin.y, pos_begin.z, 1);
+    CPosition glbPos_begin(posVec_begin.x(), posVec_begin.y(), posVec_begin.z());
+
+    CPosition pos_center(circle.getCenter());
+    QVector4D posVec_center = GetRefCoord()->m_mat * QVector4D(pos_center.x, pos_center.y ,pos_center.z, 1);
+    CPosition gibPos_center(posVec_center.x(), posVec_center.y(), posVec_center.z());
+
+    // 创建点集，并插入定义线的两个点
+    auto points = vtkSmartPointer<vtkPoints>::New();
+    points->InsertNextPoint(glbPos_begin.x, glbPos_begin.y, glbPos_begin.z);
+    points->InsertNextPoint(gibPos_center.x, gibPos_center.y, gibPos_center.z);
+
+    // 创建线源
+    auto lines = vtkSmartPointer<vtkCellArray>::New();
+    vtkIdType line[2] = {0, 1}; // 索引从0开始
+    lines->InsertNextCell(2, line); // 插入一条包含两个顶点的线
+
+    // 创建几何图形容器并设置点和线
+    vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
+    polyData->SetPoints(points);
+    polyData->SetLines(lines);
+
+    // 创建映射器
+    auto mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    mapper->SetInputData(polyData);
+
+    // 创建执行器
+    auto actor = vtkSmartPointer<vtkActor>::New();
+    actor->SetMapper(mapper);
+    actor->GetProperty()->SetColor(MainWindow::ActorColor);
+    actor->GetProperty()->SetLineWidth(MainWindow::ActorLineWidth);
+    return actor;
 }
 
 // 绘制点到点的距离
@@ -1398,7 +1435,7 @@ bool CAngle::judge()
 
 QString CAngle::getCEntityInfo() {
     QString infoText = QString("Angle\nVertex: (%1, %2, %3)\nLine1 End: (%4, %5, %6)\nLine2 End: (%7, %8, %9)\nAngle Value: %10\nUp Tolerance: %11\nUnder Tolerance: %12\nQualified: %13")
-        .arg(QString::number(vertex.x, 'f', 3)).arg(QString::number(vertex.y, 'f', 3)).arg(QString::number(vertex.z, 'f', 3))
+    .arg(QString::number(vertex.x, 'f', 3)).arg(QString::number(vertex.y, 'f', 3)).arg(QString::number(vertex.z, 'f', 3))
         .arg(QString::number(line1.getEnd().x, 'f', 3)).arg(QString::number(line1.getEnd().y, 'f', 3)).arg(QString::number(line1.getEnd().z, 'f', 3))
         .arg(QString::number(line2.getEnd().x, 'f', 3)).arg(QString::number(line2.getEnd().y, 'f', 3)).arg(QString::number(line2.getEnd().z, 'f', 3))
         .arg(QString::number(angleValue, 'f', 3))
