@@ -803,32 +803,32 @@ void ToolWidget::connectActionWithF(){
 
     //坐标系
     connect(coord_actions_[coord_action_name_list_.indexOf("创建坐标系")],&QAction::triggered,this,[&](){
-        tool_widget::onCreateCoord();
+
         m_pMainWin->on2dCoordOriginAuto(); //创建临时坐标系
     });
     connect(coord_actions_[coord_action_name_list_.indexOf("旋转坐标系")],&QAction::triggered,this,[&](){
-        tool_widget::onSpinCoord();
+
         m_pMainWin->on2dCoordSetRightX(); // x轴摆正
     });
     connect(coord_actions_[coord_action_name_list_.indexOf("保存坐标系")],&QAction::triggered,this,[&](bool){
-        tool_widget::onSaveCoord();
+
         m_pMainWin->on2dCoordSave();
     });
     //视角
     connect(view_angle_actions_[view_angle_action_name_list_.indexOf("主视角")],&QAction::triggered,this,[&](){
-        tool_widget::onFrontViewAngle();
+
         m_pMainWin->onFrontViewClicked();
     });
     connect(view_angle_actions_[view_angle_action_name_list_.indexOf("俯视角")],&QAction::triggered,this, [&](){
-        tool_widget::onUpViewAngle();
+
         m_pMainWin->onTopViewClicked();
     });
     connect(view_angle_actions_[view_angle_action_name_list_.indexOf("侧视角")],&QAction::triggered,[&](){
-        tool_widget::onRightViewAngle();
+
         m_pMainWin->onRightViewClicked();
     });
     connect(view_angle_actions_[view_angle_action_name_list_.indexOf("立体视角")],&QAction::triggered,[&](){
-        tool_widget::onIsometricViewAngle();
+
         m_pMainWin->onIsometricViewClicked();
     });
 
@@ -995,6 +995,9 @@ void insertImageIntoPdf(const QString &imagePath, const QString &pdfPath) {
 
 
 void   ToolWidget::onSavePdf(){
+
+    QString logInfo1="Pdf开始保存";
+    m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo1);
 
    QString path= getOutputPath("pdf");
    QString name=getTimeString();
@@ -1368,6 +1371,9 @@ void   ToolWidget::onSavePdf(){
 
 
 void   ToolWidget::onSaveExcel(){
+    QString logInfo1="Excel开始保存";
+    m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo1);
+
     QString path= getOutputPath("excel");
     QString name=getTimeString();
 
@@ -1484,6 +1490,8 @@ void   ToolWidget::onSaveExcel(){
 }
 
 void ToolWidget::onSaveTxt(){
+    QString logInfo1="Txt开始保存";
+    m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo1);
     QString filePath;
     IsAuto=true;
     if(IsAuto){
@@ -1583,6 +1591,9 @@ void ToolWidget::onSaveTxt(){
 
 
 void   ToolWidget::onSaveWord(){
+
+    QString logInfo1="Word开始保存";
+    m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo1);
 
     QString path= getOutputPath("word");
     QString name=getTimeString();

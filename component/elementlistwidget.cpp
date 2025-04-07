@@ -741,12 +741,12 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
             timer=nullptr;
 
             // 清理旧线程
-            if (workerThread) {
-                workerThread->quit();
-                workerThread->wait();
-                delete workerThread;
-                workerThread = nullptr;
-            }
+            // if (workerThread) {
+            //     workerThread->quit();
+            //     workerThread->wait();
+            //     delete workerThread;
+            //     workerThread = nullptr;
+            // }
 
             progressBar = new QProgressBar();
             Qt::WindowFlags flags=Qt::Dialog|Qt::WindowCloseButtonHint;
