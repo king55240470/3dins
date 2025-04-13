@@ -325,16 +325,20 @@ ToolWidget::ToolWidget(QWidget *parent)
 void ToolWidget::InitOutputFolder(){
     QString currentPath = QCoreApplication::applicationDirPath();
     //获得前两级路径，并在此基础上生成文件夹
-    QString ParentPath=getParentPath(2);
+    QString ParentPath="D:";
     CompareImagePath= ParentPath+"/点云对比图像/screenshot"+"/";
 
-    createFolder(ParentPath+"/点云对比图像/screenshot");
-    createFolder(ParentPath+"/输出/word");
-    createFolder(ParentPath+"/输出/pdf");
-    createFolder(ParentPath+"/输出/image");
-    createFolder(ParentPath+"/输出/excel");
-    createFolder(ParentPath+"/输出/txt");
-    m_pMainWin->getPWinVtkPresetWidget()->setWidget("已创建文件夹"+ParentPath+"/输出");
+    // createFolder(ParentPath+"/点云对比图像/screenshot");
+    createFolder(getOutputPath("word"));
+    createFolder(getOutputPath("pdf"));
+    createFolder(getOutputPath("image"));
+    createFolder(getOutputPath("excel"));
+    createFolder(getOutputPath("txt"));
+    // createFolder(ParentPath+"/output/pdf");
+    // createFolder(ParentPath+"/output/image");
+    // createFolder(ParentPath+"/output/excel");
+    // createFolder(ParentPath+"/output/txt");
+    m_pMainWin->getPWinVtkPresetWidget()->setWidget("已创建文件夹"+getOutputPath(""));
 
 }
 void ToolWidget::clearToolWidget(){
@@ -1813,7 +1817,9 @@ void   ToolWidget::onSaveImage(){
         fileName = "C:/Users/Lenovo/Desktop/imageSave";
     }
     QString path= getOutputPath("image");
+
     QString name=getTimeString();
+
     fileName=path+"/"+name+".png";
     QFileInfo fileInfo(fileName);
 
@@ -2927,8 +2933,7 @@ void ToolWidget::createFolder(QString path){
 
 
 QString ToolWidget::getOutputPath(QString kind){
-    QString path=getParentPath(2);
-    return path+"/输出/"+kind;
+   return "D:/output/" + kind;
 
 }
 QDataStream& ToolWidget::serializeEntityList(QDataStream& out, const QVector<CEntity*>& entityList){
