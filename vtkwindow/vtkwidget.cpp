@@ -1098,7 +1098,6 @@ void VtkWidget::onTopView() {
 
         // 重新设置相机并渲染
         renderer->ResetCamera();
-        //createText();
         renWin->Render();
     }
 }
@@ -1114,7 +1113,6 @@ void VtkWidget::onRightView(){
 
         // 重新设置相机并渲染
         renderer->ResetCamera();
-        //createText();
         renWin->Render();
     }
 }
@@ -1130,7 +1128,6 @@ void VtkWidget::onFrontView(){
 
         // 重新设置相机并渲染
         renderer->ResetCamera();
-        //createText();
         renWin->Render();
     }
 }
@@ -1147,7 +1144,6 @@ void VtkWidget::onIsometricView(){
 
         // 重新设置相机并渲染
         renderer->ResetCamera();
-        //createText();
         renWin->Render();
     }
 }
@@ -1418,7 +1414,7 @@ void VtkWidget::onAlign()
     icp.setInputTarget(downsampledCloud1);
     icp.setMaximumIterations(150);
     icp.setTransformationEpsilon(1e-8);
-    icp.setMaxCorrespondenceDistance(0.1f);
+    icp.setMaxCorrespondenceDistance(0.2f);
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr icpFinalCloudPtr(new pcl::PointCloud<pcl::PointXYZRGB>());
     icp.align(*icpFinalCloudPtr);
 
@@ -1426,13 +1422,13 @@ void VtkWidget::onAlign()
     if (!icp.hasConverged()) {
         int maxIter = 500; // 最大迭代次数
         int iniIter = 150; // 初始迭代次数
-        float corDis = 0.2f; // 最大点距离
+        float corDis = 1.0f; // 最大点距离阈值
         while(iniIter <= maxIter){
             icp.setMaxCorrespondenceDistance(corDis);
             icp.setMaximumIterations(iniIter);
             icp.align(*icpFinalCloudPtr);
             iniIter += 50;
-            corDis += 0.1f;
+            if(corDis <= 3.0f)  corDis += 0.5f;
         }
     }
     if (!icp.hasConverged()) {
@@ -1577,11 +1573,11 @@ void VtkWidget::poissonReconstruction()
 float VtkWidget::calculateSamplingRadius(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud)
 {
     // 根据点云的大小动态设置采样半径
-    if (cloud->points.size() < 10000) { // 小于10000个点的小点云
+    if (cloud->size() < 100000) { // 小于10000个点的小点云
         return 0.01f;
-    } else if (cloud->points.size() < 100000) {
+    } else if (cloud->size() < 500000 && cloud->size() > 100000) {
         return 0.05f;
-    } else if (cloud->points.size() < 1000000) {
+    } else if (cloud->size() < 1000000) {
         return 0.1f;
     } else {
         return 0.2f;
