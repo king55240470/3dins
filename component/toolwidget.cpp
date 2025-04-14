@@ -571,6 +571,8 @@ void ToolWidget::connectActionWithF(){
 
     //识别
     connect(find_actions_[find_action_name_list_.indexOf("识别点")],&QAction::triggered,this,[&](){
+        QDateTime currentDateTime = QDateTime::currentDateTime();
+        qDebug()<<QDateTime::currentDateTime();
         QAction *action = qobject_cast<QAction *>(sender());
         if (action->isChecked()) {
             //标注选中状态
@@ -905,7 +907,8 @@ void   ExtractData(QVector<CEntity *>& entitylist,QList<QList<QString>>& dataAll
         if(entity->GetUniqueType()==enDistance){
             CDistance* Distance=(CDistance*) entity;
             inList<<"距离";
-            inList<<Distance->m_strCName;
+
+            inList<<Distance->m_strAutoName;
             inList<<QString::number(abs(Distance->getdistance()),'f',6);
             inList<<QString::number(Distance->getUptolerance(),'f',6);
             inList<<QString::number(Distance->getUndertolerance(),'f',6);
@@ -917,7 +920,7 @@ void   ExtractData(QVector<CEntity *>& entitylist,QList<QList<QString>>& dataAll
         else if (entity->GetUniqueType()==enAngle){
             CAngle* Angle=(CAngle*)entity;
             inList<<"角度";
-            inList<<Angle->m_strCName;
+            inList<<Angle->m_strAutoName;
             inList<<QString::number(abs(Angle->getAngleValue()),'f',6);
             inList<<QString::number(Angle->getUptolerance(),'f',6);
             inList<<QString::number(Angle->getUndertolerance(),'f',6);
@@ -937,7 +940,7 @@ void   ExtractData(QVector<CEntity *>& entitylist,QList<QList<QString>>& dataAll
         if(entity->GetUniqueType()==enDistance){
             CDistance* Distance=(CDistance*) entity;
             inList<<"距离";
-            inList<<Distance->m_strCName;
+            inList<<Distance->m_strAutoName;
             inList<<QString::number(abs(Distance->getdistance()),'f',6);
             inList<<QString::number(Distance->getUptolerance(),'f',6);
             inList<<QString::number(Distance->getUndertolerance(),'f',6);
@@ -953,7 +956,7 @@ void   ExtractData(QVector<CEntity *>& entitylist,QList<QList<QString>>& dataAll
         else if (entity->GetUniqueType()==enAngle){
             CAngle* Angle=(CAngle*)entity;
             inList<<"角度";
-            inList<<Angle->m_strCName;
+            inList<<Angle->m_strAutoName;
             inList<<QString::number(abs(Angle->getAngleValue()),'f',6);
             inList<<QString::number(Angle->getUptolerance(),'f',6);
             inList<<QString::number(Angle->getUndertolerance(),'f',6);
@@ -1007,8 +1010,6 @@ void   ToolWidget::onSavePdf(){
    QString name=getTimeString();
    QString filePath=path+"/"+name+".pdf";
 
-   if(m_savePdf==true)
-       filePath=lastCreatedPdfFile;
 
 
    // // 插入纯文本数据
@@ -1386,8 +1387,7 @@ void   ToolWidget::onSaveExcel(){
     // if (filePath.isEmpty()){
     //     return ;
     // }
-    if(m_saveExcel==true)
-        filePath=lastCreatedExcelFile;
+
     QStringList headers;
     headers << "类型" << "名称" <<"数值"<< "上公差" << "下公差" <<"是否合格" ;
     int col = headers.size();
@@ -1533,8 +1533,7 @@ void ToolWidget::onSaveTxt(){
     QString name=getTimeString();
 
     filePath=path+"/"+name+".txt";
-    if(m_saveTxt==true)
-        filePath=lastCreatedTxtFile;
+
 
 
 
@@ -1556,7 +1555,7 @@ void ToolWidget::onSaveTxt(){
         CObject* object=objectlist[i];
          if(object->GetUniqueType()==enDistance){
             CDistance* Distance=(CDistance*) object;
-            out<<"类型：距离 名称："<<Distance->m_strCName<<Qt::endl;
+            out<<"类型：距离 名称："<<Distance->m_strAutoName<<Qt::endl;
             out<<"大小："<<abs(Distance->getdistance())<<"  上公差："<<Distance->getUptolerance()<<"  下公差："<<Distance->getUndertolerance()<<Qt::endl;
             QString qua;
             if(Distance->judge())
@@ -1569,7 +1568,7 @@ void ToolWidget::onSaveTxt(){
             out<<Qt::endl;
         }else if(object->GetUniqueType()==enAngle){
             CAngle* Angle=(CAngle*)object;
-            out<<"类型：角度 名称："<<Angle->m_strCName<<Qt::endl;
+            out<<"类型：角度 名称："<<Angle->m_strAutoName<<Qt::endl;
             out<<"大小："<<abs(Angle->getAngle())<<Qt::endl;
             QString qua;
             if(Angle->judge())
@@ -1603,8 +1602,7 @@ void   ToolWidget::onSaveWord(){
     QString name=getTimeString();
 
     QString filePath=path+"/"+name+".docx";
-    if(m_saveWord==true)
-        filePath=lastCreatedWordFile;
+
 
 
     QStringList headers;
