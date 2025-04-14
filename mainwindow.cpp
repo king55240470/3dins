@@ -588,6 +588,8 @@ void MainWindow::openFile(){
     //     pWinFileManagerWidget->openMeasuredFile(fileName,filePath);
     //     }
 }
+
+//若读取文件，点云存储在“D:\cloud”
 void MainWindow::saveFile(){
     //保存ObjectList
     // QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "请输入文件名", QString("dat(*.dat )"));

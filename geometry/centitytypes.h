@@ -13,7 +13,10 @@
 #include <vtkActor.h>
 #include <QStandardItem>
 #include"cpcsnode.h"
+#include <regex>
+#include <filesystem>
 
+namespace fs = std::filesystem;
 
 class CLine  : public CEntity
 {
@@ -859,7 +862,37 @@ public:
         out <<isFileCloud  <<isComparsionCloud <<isAlignCloud<<isModelCloud<<isMeasureCloud<<isCut<<isOver;
 
         if(!haveSaved){
-            std::string file_path = "D:/source/3dins/build/modelCloud.ply";
+            // std::string file_path = "D:/modelCloud.ply";
+            std::string base_dir = "D:/cloud";
+
+            // 1. 检查并创建 cloud 文件夹
+            if (!fs::exists(base_dir)) {
+                fs::create_directory(base_dir);
+            }
+
+            // 2. 遍历文件夹，找最大编号
+            int max_index = 0;
+            std::regex file_pattern(R"((\d+)_stand\.ply)");
+
+            for (const auto& entry : fs::directory_iterator(base_dir)) {
+                if (entry.is_regular_file()) {
+                    std::smatch match;
+                    std::string filename = entry.path().filename().string();
+                    if (std::regex_match(filename, match, file_pattern)) {
+                        int index = std::stoi(match[1]);
+                        if (index > max_index) {
+                            max_index = index;
+                        }
+                    }
+                }
+            }
+
+            // 3. 生成新的文件名
+            int new_index = max_index + 1;
+            std::ostringstream oss;
+            oss << base_dir << "/" << new_index << "_stand.ply";
+            std::string file_path = oss.str();
+
             out<< QString::fromStdString(file_path);
             pcl::io::savePLYFile(file_path, m_pointCloud);
         }
