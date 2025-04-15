@@ -475,10 +475,16 @@ vtkSmartPointer<vtkActor> CSurfaces::draw() {
     return actor;
 }
 
+QString CSurfaces::getCEntityInfo()
+{
+    QString infoText = QString("");
+    return infoText;
+}
+
 int CPointCloud::pointCloudCount = 0;
 QString CPointCloud::getCEntityInfo()
 {
-    auto infoText = QString ("PointCloud\npoints: %1")
+    auto infoText = QString("PointCloud\npoints: %1")
     .arg(QString::number(getPointCloudSize(), 'f', 0));
 
     return infoText;
@@ -1168,6 +1174,11 @@ void CSurfaces::setMesh(const vtkSmartPointer<vtkPolyData> &newMesh)
 vtkSmartPointer<vtkPolyData> CSurfaces::getMesh() const
 {
     return mesh;
+}
+
+void CSurfaces::setPointCloud(pcl::PointCloud<pcl::PointXYZRGB> inputCloud)
+{
+    m_pointCloud = inputCloud;
 }
 
 

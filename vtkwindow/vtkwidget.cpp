@@ -405,6 +405,16 @@ vtkSmartPointer<vtkActor2D> VtkWidget::createLine(CEntity* entity, vtkSmartPoint
         CAngle* angle = static_cast<CAngle*>(entity);
         b = angle->getVertex(); // 指向线段终点是两条线的 "交点"
     }
+    else if(entity->getEntityType() == enPointCloud){
+        CPointCloud* cloud = static_cast<CPointCloud*>(entity);
+        auto point = cloud->m_pointCloud.points[0];
+        b = CPosition(point.x, point.y, point.z);
+    }
+    else if(entity->getEntityType() == enSurfaces){
+        CSurfaces* surface = static_cast<CSurfaces*>(entity);
+        auto point = surface->m_pointCloud.points[0];
+        b = CPosition(point.x, point.y, point.z);
+    }
     entityToEndPoints[entity] = b; // 将该线段的终点存入map
 
     coordinate = vtkSmartPointer<vtkCoordinate>::New();
@@ -1466,7 +1476,7 @@ void VtkWidget::poissonReconstruction()
         if (entity->GetUniqueType() == enPointCloud) {
             // 获取点云的共享指针，确保原数据不被释放
             auto pcEntity = static_cast<CPointCloud*>(entity);
-            pSurfaces->parent.append(pcEntity); // 重建曲面来源
+            pSurfaces->setPointCloud(pcEntity->m_pointCloud);
             cloud = pcl::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>(pcEntity->m_pointCloud);
             logInfo += ((CPointCloud*)entity)->m_strAutoName + ' '; // 添加点云编号
         }
