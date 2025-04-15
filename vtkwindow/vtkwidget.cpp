@@ -1197,6 +1197,7 @@ void VtkWidget::onCompare()
     comparisonCloud->is_dense = false;
     comparisonCloud->resize(cloud1->size());
 
+
     // 初始化最大和最小距离变量
     float maxDistance = std::numeric_limits<float>::min();
     float minDistance = std::numeric_limits<float>::max();
@@ -1235,7 +1236,6 @@ void VtkWidget::onCompare()
     cloudEntity->parent=parentlist;
     m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
     m_pMainWin->NotifySubscribe();
-
     //调用保存图像函数
     m_pMainWin->getPWinToolWidget()->onSaveImage();
     QString path_front=m_pMainWin->getPWinToolWidget()->getlastCreatedImageFileFront();

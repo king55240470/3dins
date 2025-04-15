@@ -67,13 +67,15 @@ public:
     int addViewAngleActions(QStringList&,int,int=-1);
 
     ~ToolWidget();
+    //将按钮与函数连接
     void connectActionWithF();
     void updateele();
-
+    //添加入列表
     void addToList(CEntity*);
     void addToFindList(CEntity*);
-
+    //得到构造实体列表
     QVector<CEntity*>& getConstructEntityList();
+    //得到识别实体列表
     QVector<CEntity*>& getIdentifyEntityList();
 
     //serialize
@@ -142,6 +144,7 @@ public slots:
     void onSaveTxt();
     void onSaveWord();
     void onSaveImage();
+    void onSavePointCloud();
 
     //打开文件
     void onOpenExcel();
