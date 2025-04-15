@@ -1591,3 +1591,7 @@ void MainWindow::Createruler()
 VtkPresetWidget *MainWindow::getPWinVtkPresetWidget(){
     return pWinVtkPresetWidget;
 }
+
+FileManagerWidget *MainWindow::getPWinFileManagerWidget(){
+    return pWinFileManagerWidget;
+}
