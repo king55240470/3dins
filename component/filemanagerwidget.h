@@ -44,6 +44,9 @@ private:
 
     QModelIndex selectedIndex;//保存右键删除时选中的索引
     QStandardItem *selectedItem;//保存右键删除时选中的子项
+
+    QMap<QString, bool> contentItemMapTemp;
+    QMap<QString, bool> identifyItemMapTemp;
 public:
     void openModelFile(/*QString,QString*/);
     void openMeasuredFile(/*QString,QString*/);
@@ -55,6 +58,9 @@ public:
     void UpdateInfo();
     bool isChildOf(QStandardItem*, QStandardItem*);
 
+    void allHide();//全部隐藏
+    void allRecover();//全部恢复
+
 private slots:
     void getItem(const QModelIndex &);
     void changePlay(const QModelIndex &);
@@ -64,6 +70,7 @@ private slots:
     void changeIdentifyItem(const QModelIndex &);
     void deleteFile();
     void redrawCloudEntity(); // 由文件重新生成点云
+
 signals:
 };
 

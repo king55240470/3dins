@@ -1,5 +1,6 @@
 #include "vtkwindow/vtkwidget.h"
 #include "vtkwindow/vtkpresetwidget.h"
+#include "component/filemanagerwidget.h"
 #include <QFileDialog>  // 用于文件对话框
 #include <QOpenGLContext>
 #include <qopenglfunctions.h>
@@ -1207,6 +1208,7 @@ void VtkWidget::onCompare()
     comparisonCloud->is_dense = false;
     comparisonCloud->resize(cloud1->size());
 
+
     // 初始化最大和最小距离变量
     float maxDistance = std::numeric_limits<float>::min();
     float minDistance = std::numeric_limits<float>::max();
@@ -1246,11 +1248,15 @@ void VtkWidget::onCompare()
     m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
     m_pMainWin->NotifySubscribe();
 
+    m_pMainWin->getPWinFileManagerWidget()->allHide();
+
     //调用保存图像函数
     m_pMainWin->getPWinToolWidget()->onSaveImage();
     QString path_front=m_pMainWin->getPWinToolWidget()->getlastCreatedImageFileFront();
     QString path_top=m_pMainWin->getPWinToolWidget()->getlastCreatedImageFileTop();
     QString path_right=m_pMainWin->getPWinToolWidget()->getlastCreatedImageFileRight();
+
+    m_pMainWin->getPWinFileManagerWidget()->allRecover();
 
     if(isCut){
         //存储局部对比点云图像的路径
