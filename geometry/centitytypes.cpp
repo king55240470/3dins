@@ -516,6 +516,7 @@ vtkSmartPointer<vtkActor> CPointCloud::draw(){
     vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
     polyData->SetPoints(points);
     polyData->GetPointData()->SetScalars(colors);
+    cloudPolyData = polyData; // 用于记录点集的集合容器
 
     // 创建一个顶点过滤器来生成顶点表示
     vtkSmartPointer<vtkVertexGlyphFilter> glyphFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();

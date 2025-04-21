@@ -327,6 +327,12 @@ void MainWindow::setupUi(){
     connect(ReconstructionAction,&QAction::triggered,this,[&](){
         pWinVtkWidget->poissonReconstruction();
     });
+    QAction* filterAction = cloudOperation->addAction("点云滤波");
+    filterAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_B));
+    filterAction->setShortcutContext(Qt::ApplicationShortcut);
+    connect(filterAction,&QAction::triggered,this,[&](){
+        pWinVtkWidget->onCloudFilter();
+    });
 
     QMenu * switchTheme = bar->addMenu("主题(T)");
     QAction* showThemeMenu = new QAction();
@@ -1457,6 +1463,7 @@ void MainWindow::onConvertLightGreyTheme()
     MainWindow::InfoTextColor[2] = 0;
 
     pWinVtkWidget->getRenderer()->SetBackground(0.5, 0.5, 0.5);
+    pWinVtkWidget->getRenderer()->SetGradientBackground(false);
     pWinVtkWidget->UpdateInfo();
 }
 

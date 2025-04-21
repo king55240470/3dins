@@ -605,6 +605,8 @@ void ElementListWidget::onAddElement(pcl::PointCloud<pcl::PointXYZRGB>::Ptr coul
             updateDistance();
             m_pMainWin->NotifySubscribe();
         }
+    }else{
+        pointCouldlists.enqueue(could);
     }
 }
 
