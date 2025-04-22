@@ -625,7 +625,7 @@ void ElementListWidget::onAddElement(pcl::PointCloud<pcl::PointXYZRGB>::Ptr coul
             m_pMainWin->NotifySubscribe();
         }
     }else{
-        //pointCouldlists.enqueue(could);
+        pointCouldlists.enqueue(could);
     }
 }
 
@@ -679,7 +679,7 @@ void ElementListWidget::CompareCloud()
     }else{
         m_pMainWin->getPWinToolWidget()->setauto(true);
         qDebug()<<"进入对齐之前";
-        m_pMainWin->getPWinVtkWidget()->onAlign();
+        //m_pMainWin->getPWinVtkWidget()->onAlign();
         qDebug()<<"进入对齐之后";
         qDebug()<<CurrentMeasureindex;
         m_pMainWin->getEntityListMgr()->getEntityList()[CurrentMeasureindex]->SetSelected(false);

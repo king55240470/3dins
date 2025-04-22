@@ -553,7 +553,7 @@ void MainWindow::openFile(){
 
             //pWinFileManagerWidget->openModelFile(fileName, filePath);
             pWinVtkPresetWidget->setWidget(fileName+"文件已打开");
-        } else{
+        } else if(fileLowName.contains(".pcd")){
             //在measuredFileMap中添加新文件，并分配新的cloud
             getpWinFileMgr()->getMeasuredFileMap().insert(filePath, true);
             auto cloud = getPointCloudListMgr()->CreateCloudFromFile(filePath);
