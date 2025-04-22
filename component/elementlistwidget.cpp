@@ -95,6 +95,7 @@ ElementListWidget::ElementListWidget(QWidget *parent)
 
     connect(treeWidgetNames, &QTreeWidget::itemClicked, this, &ElementListWidget::onItemClicked);
     connect(treeWidgetNames, &QTreeWidget::itemDoubleClicked, this, &ElementListWidget::showDialog);
+    connect(startButton, &QPushButton::clicked, this, &ElementListWidget::startprocess);
 
     //用于进度条工作
     // connect(worker, &Worker::requestSaveOperation, this, [this](int type) {
@@ -562,10 +563,10 @@ void ElementListWidget::setupStateMachine()
         pauseButton->setEnabled(true);
         continueButton->setEnabled(false);
         terminateButton->setEnabled(true);
-        if(timer){
-            timer->start();
-        }
-        Treelistsize=m_pMainWin->getEntityListMgr()->getEntityList().size();
+        // if(timer){
+        //     timer->start();
+        // }
+        // Treelistsize=m_pMainWin->getEntityListMgr()->getEntityList().size();
     });
 
     connect(pausedState, &QState::entered, [this]() {
@@ -593,6 +594,24 @@ void ElementListWidget::continueUpdate()
 {
     qDebug()<<"进行下一个";
     startupdateData(kdtree,disAndanglelist);
+}
+
+void ElementListWidget::beginStartButton()
+{
+    startButton->click();
+}
+
+void ElementListWidget::startprocess()
+{
+    qDebug()<<"点云队列数量"<<pointCouldlists.size();
+    if(pointCouldlists.empty()){
+        m_pMainWin->getPWinVtkPresetWidget()->setWidget("实测点云为空无法进行测量");
+    }else{
+        isProcessing=true;
+        CompareCloud();
+        updateDistance();
+        m_pMainWin->NotifySubscribe();
+    }
 }
 
 void ElementListWidget::onAddElement(pcl::PointCloud<pcl::PointXYZRGB>::Ptr could)
@@ -660,7 +679,7 @@ void ElementListWidget::CompareCloud()
     }else{
         m_pMainWin->getPWinToolWidget()->setauto(true);
         qDebug()<<"进入对齐之前";
-        m_pMainWin->getPWinVtkWidget()->onAlign();
+        //m_pMainWin->getPWinVtkWidget()->onAlign();
         qDebug()<<"进入对齐之后";
         qDebug()<<CurrentMeasureindex;
         m_pMainWin->getEntityListMgr()->getEntityList()[CurrentMeasureindex]->SetSelected(false);

@@ -44,6 +44,7 @@ MainWindow::MainWindow(QWidget *parent)
     LoadSetDataWidget();
     m_nRelyOnWhichCs=csRef;
     SetUpTheme();
+    EnterInterface();
     modelCloudExist=false;
 }
 
@@ -432,6 +433,44 @@ void MainWindow::setupUi(){
 
 }
 
+void MainWindow::EnterInterface()
+{
+    // 设置路由：当访问 /start 时触发功能
+    server.route("/start", QHttpServerRequest::Method::Get, [this](
+                                                                const QHttpServerRequest &request) {
+
+        // 触发核心功能
+        beginStartButton();
+
+        // 返回JSON响应
+        return QHttpServerResponse(QJsonObject{
+                                       {"status", "success"},
+                                       {"message", "功能已启动"}
+                                   }, QHttpServerResponder::StatusCode::Ok);
+    });
+
+    // 设置CORS头（可选）
+    server.afterRequest([](QHttpServerResponse &&resp) {
+        resp.setHeader("Access-Control-Allow-Origin", "*");
+        return std::move(resp);
+    });
+
+    // 监听端口
+    const auto port = 8080;
+    const auto ret = server.listen(QHostAddress::Any, port);
+    if (!ret) {
+        qDebug() << "服务器启动失败！";
+        return;
+    }
+
+    qDebug() << "服务已启动，监听端口：" << port;
+}
+
+void MainWindow::beginStartButton()
+{
+    pWinElementListWidget->beginStartButton();
+}
+
 void MainWindow::LoadWidgets(){
     pWinVtkPresetWidget=new VtkPresetWidget(this);
     pWinDataWidget=new DataWidget(this);
@@ -505,6 +544,7 @@ void MainWindow::openFile(){
             pcl::copyPointCloud(*newcloud, tmpCloud);
 
             getpWinFileMgr()->cloudptr = pcl::PointCloud<pcl::PointXYZRGB>::Ptr(newcloud);
+
             if(!getpWinFileMgr()->cloudptr){
                 qDebug() << "拟合用的点云为空!";
             }
@@ -529,7 +569,7 @@ void MainWindow::openFile(){
             NotifySubscribe();
             getPWinVtkWidget()->onTopView();
             getPWinElementListWidget()->onAddElement(getpWinFileMgr()->cloudptr);
-
+            qDebug()<<"实测点云加入";
             //pWinFileManagerWidget->openMeasuredFile(fileName, filePath);
             pWinVtkPresetWidget->setWidget(fileName+"文件已打开");
             //pWinElementListWidget->onAddElement();
@@ -659,8 +699,8 @@ void MainWindow::listeningFile()
 {
     listenFileINI = new QSettings("Config.ini", QSettings::IniFormat);
     QString ip=listenFileINI->value("con/ip").toString();
-    listeningfilePath="//"+ip;
-    //listeningfilePath="C:/qcon/FTPservice";
+    //listeningfilePath="//"+ip;
+    listeningfilePath="C:/qcon/FTPservice";
     qDebug()<<listeningfilePath;
     filechange();
     pWinVtkPresetWidget->setWidget("开始监听文件");
@@ -1458,8 +1498,8 @@ void MainWindow::onConvertLightGreyTheme()
     MainWindow::InfoTextColor[1] = 0;
     MainWindow::InfoTextColor[2] = 0;
 
-    pWinVtkWidget->getRenderer()->SetBackground(1, 1, 1);
     pWinVtkWidget->getRenderer()->SetBackground(0.5, 0.5, 0.5);
+    pWinVtkWidget->getRenderer()->SetBackground(1, 1, 1);
     pWinVtkWidget->getRenderer()->SetGradientBackground(true);
     pWinVtkWidget->UpdateInfo();
 }
