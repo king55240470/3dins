@@ -21,6 +21,14 @@
 #include "manager/pointcloudlistmgr.h"
 #include <QMap>//从actor映射到centity
 #include <QSplashScreen>
+#include <QtHttpServer/QHttpServer>
+#include <QtHttpServer/QAbstractHttpServer>
+#include <QtHttpServer/QHttpServerRouter>
+#include <QtHttpServer/QHttpServerRouterRule>
+#include <QtHttpServer/QHttpServerResponse>
+#include <QHostAddress>
+#include <QJsonObject>
+#include <QJsonDocument>
 
 class DataWidget;
 class ElementListWidget;
@@ -115,6 +123,7 @@ public:
     DataWidget *getPWinDataWidget();
     ToolWidget *getPWinToolWidget();
     VtkPresetWidget *getPWinVtkPresetWidget();
+    FileManagerWidget *getPWinFileManagerWidget();
     //slots
     void on2dCoordOriginAuto(); // 创建坐标系
     void on2dCoordSave();
@@ -140,7 +149,12 @@ public:
     void LoadWidgets();
     void RestoreWidgets();
     void setupUi();
+    void EnterInterface();//开放接口
+    void beginStartButton();
     void showPresetElemWidget(int);
+
+    QHttpServer server;// 创建HTTP服务器
+
     FileMgr *getpWinFileMgr();
     ChosenCEntityMgr *getChosenListMgr(); // 获取窗口选中点的管理器成员
     PointCloudListMgr *getPointCloudListMgr(); // 获取打开的点云列表

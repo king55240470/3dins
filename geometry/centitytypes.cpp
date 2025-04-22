@@ -475,10 +475,16 @@ vtkSmartPointer<vtkActor> CSurfaces::draw() {
     return actor;
 }
 
+QString CSurfaces::getCEntityInfo()
+{
+    QString infoText = QString("");
+    return infoText;
+}
+
 int CPointCloud::pointCloudCount = 0;
 QString CPointCloud::getCEntityInfo()
 {
-    auto infoText = QString ("PointCloud\npoints: %1")
+    auto infoText = QString("PointCloud\npoints: %1")
     .arg(QString::number(getPointCloudSize(), 'f', 0));
 
     return infoText;
@@ -510,6 +516,7 @@ vtkSmartPointer<vtkActor> CPointCloud::draw(){
     vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
     polyData->SetPoints(points);
     polyData->GetPointData()->SetScalars(colors);
+    cloudPolyData = polyData; // 用于记录点集的集合容器
 
     // 创建一个顶点过滤器来生成顶点表示
     vtkSmartPointer<vtkVertexGlyphFilter> glyphFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
@@ -1170,6 +1177,11 @@ vtkSmartPointer<vtkPolyData> CSurfaces::getMesh() const
     return mesh;
 }
 
+void CSurfaces::setPointCloud(pcl::PointCloud<pcl::PointXYZRGB> inputCloud)
+{
+    m_pointCloud = inputCloud;
+}
+
 
 QString CDistance::getCEntityInfo()
 {
@@ -1178,7 +1190,7 @@ QString CDistance::getCEntityInfo()
     QString underTol_str;
     QString q;
     // 给文本添加字符串
-    type_str = QString("distance \nactual  %1\n").arg(QString::number(getdistance(), 'f',  6));
+    type_str = QString("distance \nactual  %1\n").arg(QString::number(qAbs(getdistance()), 'f',  6));
     upTol_str = QString("max  %1\n").arg(QString::number(getUptolerance(), 'f',  6));
     underTol_str = QString("min  %1\n").arg(QString::number(getUndertolerance(), 'f',  6));
     if(judge())

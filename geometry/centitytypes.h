@@ -319,7 +319,7 @@ public:
         length=0;
         width=0;
         //currentPlainId = ++plainCount;
-       // m_strAutoName = QString("平面%1").arg(currentPlainId);
+        // m_strAutoName = QString("平面%1").arg(currentPlainId);
         //m_strCName = QString("平面%1").arg(currentPlainId);
     }
     int GetUniqueType() override{
@@ -585,7 +585,7 @@ public:
         width=0;
         height=0;
         //currentCuboidId= ++cuboidCount;
-       // m_strAutoName = QString("长方体%1").arg(currentCuboidId);
+        // m_strAutoName = QString("长方体%1").arg(currentCuboidId);
         //m_strCName = QString("长方体%1").arg(currentCuboidId);
     }
 
@@ -637,11 +637,15 @@ public:
     void setMesh(const vtkSmartPointer<vtkPolyData> &newMesh);
     vtkSmartPointer<vtkPolyData> getMesh() const;
 
+    pcl::PointCloud<pcl::PointXYZRGB> m_pointCloud; // 用于曲面重建的点云
+    void setPointCloud(pcl::PointCloud<pcl::PointXYZRGB> inputCloud); // 设置输入点云
+
     int GetUniqueType() override{
         return enSurfaces;
     }
 
     vtkSmartPointer<vtkActor> draw() override;
+    QString getCEntityInfo() override;
 
     void setCurrentId(){
         currentSurfacesId= ++surfacesCount;
@@ -842,6 +846,7 @@ public:
     CPosition m_pt;
     pcl::PointCloud<pcl::PointXYZRGB> m_pointCloud; // 存储的点云对象（已经加载过的）
     static QMap<vtkActor*, pcl::PointCloud<pcl::PointXYZRGB>> actorToPointCloud; // 管理RGB点云生成的actor
+    vtkSmartPointer<vtkPolyData> cloudPolyData;
     double pointCloudSize; // 点云的大小，即包含点的数量
     static int pointCloudCount;
     int currentPointCloudId;

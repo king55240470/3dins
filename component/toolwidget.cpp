@@ -43,6 +43,7 @@
 #include<QResource>
 #include<QLabel>
 #include"elementlistwidget.h"
+#include "filemanagerwidget.h"
 #include"geometry/centitytypes.h"
 #include"vtkwindow/vtkwidget.h"
 #include <vtkProperty.h>
@@ -1483,7 +1484,7 @@ void   ToolWidget::onSaveExcel(){
     // }
 
     QStringList headers;
-    headers << "类型" << "名称" <<"数值"<< "上公差" << "下公差" <<"是否合格" ;
+    headers << "Type" << "检测点" <<"检测数值"<< "Max" << "Min";
     int col = headers.size();
     QList<QList<QString>> dataAll;
     auto& entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
@@ -1500,68 +1501,30 @@ void   ToolWidget::onSaveExcel(){
     //QAxObject *workBook = excel.querySubObject("Open(QString&)", filePath); //获取当前工作簿
     QAxObject *workSheet = workBook->querySubObject("Sheets(int)", 1); //设置为 获取第一页 数据
 
-    // 大标题行
-    QAxObject *cell;
-    cell = workSheet->querySubObject("Cells(int,int)", 1, 1);
-    cell->dynamicCall("SetValue(const QString&)", "entitylist 数据输出");
-    cell->querySubObject("Font")->setProperty("Size", 11);
-    // 合并标题行
-    QString cellTitle;
-    cellTitle.append("A1:");
-    cellTitle.append(QChar(col - 1 + 'A'));
-    cellTitle.append(QString::number(1));
-    QAxObject *range = workSheet->querySubObject("Range(const QString&)", cellTitle);
-    range->setProperty("WrapText", true);
-    range->setProperty("MergeCells", true);
-    range->setProperty("HorizontalAlignment", -4108);
-    range->setProperty("VertivcalAlignment", -4108);
 
-    // 行高
-    workSheet->querySubObject("Range(const QString&)", "1:1")->setProperty("RowHeight", 30);
+    QAxObject *usedRange = workSheet->querySubObject("UsedRange");
+    QAxObject *font = usedRange->querySubObject("Font");
+    font->setProperty("Name", "宋体");  // 设置字体为宋体
+    font->setProperty("Size", 11);     // 可选：设置字号（默认 11 号）
 
-    //列标题
-    QString lastCars = QChar('A');
+    // 只设置列标题（无其他格式）
+    // 设置列标题（仅加粗，无其他格式）
     for (int i = 0; i < col; i++)
     {
-        // excel表格 A:A第一列到第一列,B:B第二列到第二列
-        // A B C D...X Y Z AA AB AC...AX AY AZ BA BB BC...
-        QString columnName;
-        QString cars;
-        if (i < 26) {
-            // 列数少于26个字母A B C D...X Y Z
-            cars = QChar(i + 'A');
-        } else {
-            // 列数大于26个字母 AA AB AC...AX AY AZ BA BB BC...
-            cars = QChar(i / 26 - 1 + 'A');
-            cars.append(QChar(i % 26 + 'A'));
-        }
-        columnName = cars + ":" + cars;
-        lastCars = cars;
-        // 有大标题，列标题从第二行开始("Cells(int, int)", 2, i+1)
-        // 无大标题，列标题从第一行开始("Cells(int, int)", 1, i+1)
-        QAxObject *col = workSheet->querySubObject("Columns(const QString&)", columnName);
-        QAxObject *cell = workSheet->querySubObject("Cells(int, int)", 2, i+1);
+        QAxObject *cell = workSheet->querySubObject("Cells(int, int)", 1, i + 1);
         cell->dynamicCall("SetValue(const QString&)", headers[i]);
-        cell->querySubObject("Font")->setProperty("Bold", true);
-        cell->querySubObject("Interior")->setProperty("Color", QColor(191, 191, 191));
-        cell->setProperty("WrapText", true);						//内容过多，自动换行
-        cell->setProperty("HorizontalAlignment", -4108);
-        cell->setProperty("VertivcalAlignment", -4108);
+        //cell->querySubObject("Font")->setProperty("Bold", true); // 仅保留加粗
     }
 
-    //处理数据
-    int curRow = 3;
+    // 处理数据（从第2行开始）
+    int curRow = 2;
     foreach(QList<QString> inLst, dataAll) {
-        for (int j = 0; j < inLst.size(); j++) {
-            // ("Cells(int, int)", row, col)单元格的行和列从开始
-            QAxObject *cell = workSheet->querySubObject("Cells(int, int)", curRow, j+1);
+        for (int j = 0; j < headers.size(); j++) {
+            QAxObject *cell = workSheet->querySubObject("Cells(int, int)", curRow, j + 1);
             cell->dynamicCall("SetValue(const QString&)", inLst[j]);
-            QAxObject* border = cell->querySubObject("Borders");
-            border->setProperty("Color", QColor(0, 0, 0));		 //设置单元格边框色（黑色）
         }
         curRow++;
     }
-
     // 自动调整列宽
     for (int i = 0; i < col; i++) {
         QString columnName;
@@ -1689,205 +1652,6 @@ void ToolWidget::onSaveTxt(){
 
 void   ToolWidget::onSaveWord(){
     createDistanceMeasurementReport();
-    // QString logInfo1="Word开始保存";
-    // m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo1);
-
-    // QString path= getOutputPath("word");
-    // QString name=getTimeString();
-
-    // QString filePath=path+"/"+name+".docx";
-
-
-    // QStringList headers;
-    // headers << "类型" << "名称" << "数值" << "上公差" << "下公差" << "是否合格" ;
-    // auto& entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
-    // int col = headers.size();
-    // int row = entitylist.size();
-    // QList<QList<QString>> dataAll;
-    // QList<QList<QString>> dataAccepted;
-    // QList<QList<QString>>  dataNotAccepted;
-    // int count_accpted=0,count_not_accepted=0;
-
-    // ExtractData(entitylist, dataAll, dataAccepted,dataNotAccepted);
-
-    // count_accpted=dataAccepted.size();
-    // count_not_accepted=dataNotAccepted.size();
-
-
-    // int HeadTitleSize=35;
-    // int TitleSize=24;
-    // int TextSize=20;
-
-
-
-    // QAxObject *word = new QAxObject("Word.Application");
-    // word->dynamicCall("SetVisible(bool)", false);
-    // QAxObject *documents = word->querySubObject("Documents");
-    // documents->dynamicCall("Add()");
-    // QAxObject *document = word->querySubObject("ActiveDocument");
-
-    // // 添加标题
-    // QAxObject *selection = word->querySubObject("Selection");
-    // selection->dynamicCall("TypeText(const QString&)", "工业测量报告");
-    // selection->dynamicCall("EndKey(QVariant)", 6);
-
-    // // 封面页
-    // {
-    //     selection->dynamicCall("TypeText(const QString&)", "工业测量报告\n\n");
-    //     selection->dynamicCall("EndKey(QVariant)", 6);
-
-    //     // 插入图片
-    //     QString imagePath = ":/style/ruler.png";
-    //     QImage image(imagePath);
-    //     if (!image.isNull()) {
-    //         QAxObject* inlineShapes = document->querySubObject("InlineShapes");
-    //         inlineShapes->dynamicCall("AddPicture(const QString&)", imagePath);
-    //         selection->dynamicCall("EndKey(QVariant)", 6);
-    //     } else {
-    //         qDebug() << "无法加载图片：:/style/ruler.png";
-    //     }
-
-    //     // 插入副标题和描述性文本
-    //     selection->dynamicCall("TypeText(const QString&)", "测量项目: 3D 测量系统\n");
-    //     selection->dynamicCall("TypeText(const QString&)", "测量日期: " + QDateTime::currentDateTime().toString("yyyy-MM-dd") + "\n");
-    //     selection->dynamicCall("TypeText(const QString&)", "测量单位: 三维工业测量软件开发组\n\n");
-    //     selection->dynamicCall("TypeText(const QString&)", "本报告详细记录了使用3D测量系统进行的测量项目。\n");
-    //     selection->dynamicCall("TypeText(const QString&)", "测量日期为" + QDateTime::currentDateTime().toString("yyyy-MM-dd") + "，\n");
-    //     selection->dynamicCall("TypeText(const QString&)", "由三维工业测量软件开发组负责执行和分析。\n");
-    //     selection->dynamicCall("EndKey(QVariant)", 6);
-    // }
-
-    // // 目录
-    // {
-    //     selection->dynamicCall("TypeText(const QString&)", "目录\n\n");
-    //     selection->dynamicCall("TypeText(const QString&)", "1. 测量数据概览\n");
-    //     selection->dynamicCall("TypeText(const QString&)", "2. 数据分析\n");
-    //     selection->dynamicCall("TypeText(const QString&)", "3. 测量结果图\n");
-    //     selection->dynamicCall("TypeText(const QString&)", "4. 结论与建议\n");
-    //     selection->dynamicCall("TypeText(const QString&)", "5. 附录\n\n");
-    //     selection->dynamicCall("EndKey(QVariant)", 6);
-    // }
-
-    // // 测量数据概览
-    // {
-    //     selection->dynamicCall("TypeText(const QString&)", "1. 测量数据概览\n\n");
-
-    //     int row = dataAll.size() + 1;
-    //     int col = headers.size();
-    //     QAxObject *range = selection->querySubObject("Range()");
-    //     QAxObject *table = document->querySubObject("Tables")->querySubObject("Add(QVariant, int, int, QVariant, QVariant)", range->asVariant(), row, col, 1, 1);
-
-    //     // 插入表头
-    //     for (int i = 0; i < headers.size(); ++i) {
-    //         QAxObject *cell = table->querySubObject("Cell(int, int)", 1, i + 1);
-    //         cell->querySubObject("Range")->dynamicCall("SetText(const QString&)", headers[i]);
-    //     }
-
-    //     // 插入数据
-    //     for (int i = 0; i < dataAll.size(); ++i) {
-    //         for (int j = 0; j < dataAll[i].size(); ++j) {
-    //             QAxObject *cell = table->querySubObject("Cell(int, int)", i + 2, j + 1);
-    //             cell->querySubObject("Range")->dynamicCall("SetText(const QString&)", dataAll[i][j]);
-    //         }
-    //     }
-    //     //selection->dynamicCall("EndKey(QVariant)", 6);
-    //     selection->dynamicCall("EndKey(QVariant)", 6);
-    // }
-
-    // // 数据分析
-    // {
-    //     selection->dynamicCall("TypeText(const QString&)", "2. 数据分析\n\n");
-    //     selection->dynamicCall("TypeText(const QString&)", "根据测量数据，我们检测出以下指标不合格:\n");
-
-    //     int row = dataNotAccepted.size() + 1;
-    //     int col = headers.size();
-    //     QAxObject *range = selection->querySubObject("Range()");
-    //     QAxObject *table = document->querySubObject("Tables")->querySubObject("Add(QVariant, int, int, QVariant, QVariant)", range->asVariant(), row, col, 1, 1);
-
-    //     // 插入表头
-    //     for (int i = 0; i < headers.size(); ++i) {
-    //         QAxObject *cell = table->querySubObject("Cell(int, int)", 1, i + 1);
-    //         cell->querySubObject("Range")->dynamicCall("SetText(const QString&)", headers[i]);
-    //     }
-
-    //     // 插入数据
-    //     for (int i = 0; i < dataNotAccepted.size(); ++i) {
-    //         for (int j = 0; j < dataNotAccepted[i].size(); ++j) {
-    //             QAxObject *cell = table->querySubObject("Cell(int, int)", i + 2, j + 1);
-    //             cell->querySubObject("Range")->dynamicCall("SetText(const QString&)", dataNotAccepted[i][j]);
-    //         }
-    //     }
-    //     selection->dynamicCall("EndKey(QVariant)", 6);
-    // }
-
-    // // 测量结果图
-    // {
-    //     selection->dynamicCall("TypeText(const QString&)", "3. 测量结果图\n\n");
-    //     selection->dynamicCall("TypeText(const QString&)", "（1）全局对比\n");
-    //     int i = 0;
-    //     for (const QString &imagePath : imagePaths) {
-    //         QImage image(imagePath);
-    //         if (!image.isNull()) {
-    //             QAxObject* inlineShapes = document->querySubObject("InlineShapes");
-    //             inlineShapes->dynamicCall("AddPicture(const QString&)", imagePath);
-    //             selection->dynamicCall("EndKey(QVariant)", 6);
-    //             selection->dynamicCall("TypeText(const QString&)", "\n       图" + QString::number(++i) + " 全局对比图\n");
-
-    //         } else {
-    //             qDebug() << "无法加载图片：" << imagePath;
-    //         }
-    //     }
-    //     selection->dynamicCall("TypeText(const QString&)", "（2）局部对比\n");
-    //     for (const QString &imagePath : imagePaths_part) {
-    //         QImage image(imagePath);
-    //         if (!image.isNull()) {
-    //             QAxObject* inlineShapes = document->querySubObject("InlineShapes");
-    //             inlineShapes->dynamicCall("AddPicture(const QString&)", imagePath);
-    //             selection->dynamicCall("EndKey(QVariant)", 6);
-    //             selection->dynamicCall("TypeText(const QString&)", "\n       图" + QString::number(++i) + " 局部对比图\n");
-    //         } else {
-    //             qDebug() << "无法加载图片：" << imagePath;
-    //         }
-    //     }
-    //     selection->dynamicCall("EndKey(QVariant)", 6);
-    // }
-
-    // // 结论与建议
-    // {
-    //     selection->dynamicCall("TypeText(const QString&)", "4. 结论与建议\n\n");
-
-    //     selection->dynamicCall("TypeText(const QString&)", "-共检测出"+ QString::number(count_not_accepted)+"个不合格的指标\n");
-    //     selection->dynamicCall("TypeText(const QString&)", "-共检测出"+ QString::number(count_accpted)+"个合格的指标\n");
-
-    //     selection->dynamicCall("EndKey(QVariant)", 6);
-    // }
-
-    // // 附录
-    // {
-    //     selection->dynamicCall("TypeText(const QString&)", "5. 附录\n\n");
-    //     selection->dynamicCall("TypeText(const QString&)", "参考文献:\n");
-    //     selection->dynamicCall("TypeText(const QString&)", "- 3d工业测量软件开发组测量标准\n");
-    //     selection->dynamicCall("TypeText(const QString&)", "- 测量系统用户手册\n");
-    //     selection->dynamicCall("EndKey(QVariant)", 6);
-    // }
-
-    // // 保存文档
-
-    // if (!filePath.isEmpty()) {
-    //     document->dynamicCall("SaveAs2(const QString&)", filePath);
-    //     document->dynamicCall("Close()");
-    //     word->dynamicCall("Quit()");
-    //     delete selection;
-    //     delete document;
-    //     delete documents;
-    //     delete word;
-    //     QString logInfo="Word保存成功";
-    //     m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
-
-    // }
-
-    // lastCreatedWordFile=filePath;
-    // m_saveWord=true;
 
 }
 
@@ -1917,33 +1681,6 @@ void ToolWidget::createDistanceMeasurementReport()
 
     QList<QString>  data_pointCloud;
     ExtractData(entityList, dataAll,data_pointCloud);
-
-
-    // qDebug()<<"当前列表中含有元素数目"<<entityList.size();
-    // for(int i=0;i<entityList.size();i++){
-    //     CEntity* entity=entityList[i];
-    //     qDebug()<<entity->getEntityType();
-    //     if(entity->getEntityType()==enPointCloud){
-    //         qDebug()<<"点云"+QString::number(i);
-    //         CPointCloud* point_cloud=(CPointCloud*)entity;
-    //         // if(point_cloud->m_strAutoName.contains("实测")||
-    //         //     point_cloud->m_strCName.contains("实测")){
-    //              compare_clouds.push_back(point_cloud);
-    //         // }
-    //     }
-    //     else if(entity->getEntityType()==enDistance||entity->getEntityType()==enAngle){
-    //         qDebug()<<"检测点"+QString::number(i);
-    //         check_points.append(entity);
-    //     }
-    // }
-    //提取实测点云
-    // CPointCloud* point_cloud=nullptr;
-    // if(compare_clouds.size()>0){
-    //     point_cloud=compare_clouds[0];
-    // }else{
-    //     // qDebug()<<"没有名为实测的点云";
-    //     // return ;
-    // }
 
     QAxObject* word = nullptr;
     QAxObject* document = nullptr;
@@ -2224,7 +1961,7 @@ void ToolWidget::createDistanceMeasurementReport()
         lastCreatedWordFile=fileName;
         m_saveWord=true;
 
-        QDesktopServices::openUrl(QUrl::fromLocalFile(fileName));//打开
+        //QDesktopServices::openUrl(QUrl::fromLocalFile(fileName));//打开
 
     } catch (const std::exception& e) {
         QMessageBox::critical(nullptr, "错误", QString("生成报告时出错:\n%1").arg(e.what()));
@@ -3470,20 +3207,31 @@ QStringList* ToolWidget::getViewAngleIconPath(){
     return &view_angle_action_iconpath_list_;
 }
 void ToolWidget::SaveImage(CEntity* entity){
-
+    //得到所有元素
     QVector<CObject*> objlist=m_pMainWin->getObjectListMgr()->getObjectList();
+    //除了entity的元素全部取消选中
     for(int i=0;i<objlist.size();i++)
         m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
     entity->SetSelected(true);
-
+    //显示文本框
     m_pMainWin->getPWinElementListWidget()->showInfotext();
+    //如果是实测点云，隐藏其他元素
+    if(entity->GetUniqueType()==enPointCloud){
+        m_pMainWin->getPWinFileManagerWidget()->allHide("实测");
+    }
 
-    //保存某一实体的照片
+    //生成路径
     QString path= getOutputPath("image");
     QString name=entity->m_strAutoName+getTimeString();
     QString fileName=path+"/"+name+".png";
+    //记录路径
     m_checkpoint_imagePath[entity]=fileName;
+    //保存某一实体的照片
     SaveImage(fileName,"png");
-
+    //恢复被隐藏的元素
+    if(entity->GetUniqueType()==enPointCloud){
+        m_pMainWin->getPWinFileManagerWidget()->allRecover();
+    }
+    //关闭文本框
     m_pMainWin->getPWinElementListWidget()->closeInfotext();
 }

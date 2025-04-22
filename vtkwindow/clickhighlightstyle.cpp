@@ -30,6 +30,7 @@ void MouseInteractorHighlightActor::OnLeftButtonDown()
     // 获取选中的actor
     vtkActor* newPickedActor = picker->GetActor();
     double* pos = picker->GetPickPosition(); // 用于存储拾取点的世界坐标
+    auto pointId = cellPicker->GetPointId();
 
     // 如果选中了actor
     if (newPickedActor)
@@ -38,7 +39,6 @@ void MouseInteractorHighlightActor::OnLeftButtonDown()
         QMap<vtkSmartPointer<vtkActor>, CEntity*>& actorToEntity=m_pMainWin->getactorToEntityMap();
         CEntity* entity=actorToEntity[newPickedActor];
 
-        // 只有打开识别点才会记录坐标
         if(m_pMainWin->getPWinToolWidget()->IsFindPoint_Checked()){
             m_pMainWin->getChosenListMgr()->CreatPosition(pos); // 将选中的坐标传入管理器
             auto actor = CreatHighLightPoint(pos);// 生成一个用于高亮的顶点，并存入pickedActors
@@ -50,8 +50,14 @@ void MouseInteractorHighlightActor::OnLeftButtonDown()
             auto cloudEntity = (CPointCloud*)entity;
             QString log = QString("已选中点云: ") + cloudEntity->GetObjectAutoName();
             m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
-            // 给拟合用的cloudptr赋值
-            m_pMainWin->getpWinFileMgr()->cloudptr = cloudEntity->m_pointCloud.makeShared();
+            m_pMainWin->getpWinFileMgr()->cloudptr = cloudEntity->m_pointCloud.makeShared(); // 给拟合用的cloudptr赋值
+
+            // 如果选中对比点云，则得到点的真实坐标
+            if(cloudEntity->isComparsionCloud){
+                auto pointArray = cloudEntity->cloudPolyData->GetPoints();
+                auto actualPoint = pointArray->GetPoint(pointId);
+                qDebug() << actualPoint[0] << actualPoint[1] << actualPoint[2];
+            }
 
             // 用于判断当前是否开启识别功能
             auto findState = m_pMainWin->getPWinToolWidget()->getAction_Checked();
@@ -212,14 +218,16 @@ void MouseInteractorHighlightActor::HighlightActor(vtkActor* actor)
         // 让actor高亮，并放在窗口最上层
         actor->GetProperty()->SetColor(MainWindow::HighLightColor[0], MainWindow::HighLightColor[1],
                                        MainWindow::HighLightColor[2]);
+        actor->GetProperty()->SetPointSize(MainWindow::ActorPointSize + 3);
+        actor->GetProperty()->SetLineWidth(MainWindow::ActorLineWidth + 3);
+
         if (renderer != nullptr){
-            // 将actor从渲染器中移除并重新添加
+            // 将 actor 置于最上层
             renderer->RemoveActor(actor);
             renderer->AddActor(actor);
             renderer->Render();
         }
     }
-
 }
 
 // 实现恢复actor属性的方法
@@ -234,6 +242,11 @@ void MouseInteractorHighlightActor::ResetActor(vtkActor* actor)
             break;
         }
     }
+}
+
+void MouseInteractorHighlightActor::SetCameraToOptimalView(vtkSmartPointer<vtkActor> actor, vtkRenderer *renderer)
+{
+
 }
 
 QVector<std::pair<vtkSmartPointer<vtkActor>, vtkSmartPointer<vtkProperty>>> &MouseInteractorHighlightActor::getPickedActors()
