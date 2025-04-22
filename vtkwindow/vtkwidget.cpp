@@ -1375,10 +1375,8 @@ void VtkWidget::onAlign()
         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
         return;
     }
-
     // 保存采样后的点云到文件
     pcl::io::savePCDFileASCII("downsampled_cloud2.pcd", *downsampledCloud2);
-
     // 分别计算两个点云的法向量
     // pcl::NormalEstimation<pcl::PointXYZRGB, pcl::Normal> normalsEtimation;
     // pcl::PointCloud<pcl::Normal>::Ptr normals1(new pcl::PointCloud<pcl::Normal>());
@@ -1457,9 +1455,13 @@ void VtkWidget::onAlign()
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr alignedCloud(new pcl::PointCloud<pcl::PointXYZRGB>());
     *alignedCloud = *icpFinalCloudPtr;
     auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateAlignCloud(alignedCloud);
+    qDebug()<<"第1处";
     m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
+    qDebug()<<"第2处";
     m_pMainWin->NotifySubscribe();
+    qDebug()<<"第3处";
     double rmse = icp.getFitnessScore();
+    qDebug()<<"第4处";
     // 添加日志输出
     logInfo += "对齐完成，误差:";
     logInfo += std::to_string(rmse);

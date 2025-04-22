@@ -449,6 +449,19 @@ void MainWindow::EnterInterface()
                                    }, QHttpServerResponder::StatusCode::Ok);
     });
 
+    server.route("/process", QHttpServerRequest::Method::Get, [this](
+                                                                const QHttpServerRequest &request) {
+
+        // 触发核心功能
+        QString s = getIsProcess();
+
+        // 返回JSON响应
+        return QHttpServerResponse(QJsonObject{
+                                       {"status", "success"},
+                                       {s, "!"}
+                                   }, QHttpServerResponder::StatusCode::Ok);
+    });
+
     // 设置CORS头（可选）
     server.afterRequest([](QHttpServerResponse &&resp) {
         resp.setHeader("Access-Control-Allow-Origin", "*");
@@ -469,6 +482,15 @@ void MainWindow::EnterInterface()
 void MainWindow::beginStartButton()
 {
     pWinElementListWidget->beginStartButton();
+}
+
+QString MainWindow::getIsProcess()
+{
+    if(pWinElementListWidget->getIsProcess()){
+        return "检测未完成";
+    }else{
+        return "检测已完成";
+    }
 }
 
 void MainWindow::LoadWidgets(){

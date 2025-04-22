@@ -321,8 +321,8 @@ void ElementListWidget::setTolerance()
 {
     QList<QTreeWidgetItem*> selectedItems = getSelectedItems();
     CObject *obj = selectedItems[0]->data(0, Qt::UserRole).value<CObject*>();
-    if(obj->GetObjectCName().left(2)!="距离"){
-        QMessageBox::critical(this, "选择错误", "该元素不是距离类型。");
+    if(obj->GetObjectCName().left(2)!="距离"&&obj->GetUniqueType()!=enAngle){
+        QMessageBox::critical(this, "选择错误", "该元素不可以设置公差。");
         return;
     }
     dialog = new QDialog(this);
@@ -369,29 +369,25 @@ void ElementListWidget::BtnClicked()
     }
     for(QTreeWidgetItem*item:selectedItems){
         CObject *obj = item->data(0, Qt::UserRole).value<CObject*>();
-        if(obj->GetObjectCName().left(2)!="距离"){
-            QMessageBox::critical(this,"错误","该元素不是距离类型");
-            return;
-        }
         int index=-1;
         for(int i=0;i<m_pMainWin->getObjectListMgr()->getObjectList().size();i++){
             if(m_pMainWin->getObjectListMgr()->getObjectList()[i]==obj){
                 index=i;
             }
         }
-        CDistance* dis = dynamic_cast<CDistance*>(m_pMainWin->getEntityListMgr()->getEntityList()[index]);
-        CDistance* dis1 = dynamic_cast<CDistance*>(m_pMainWin->getObjectListMgr()->getObjectList()[index]);
-        if(!dis||!dis1){
-            qDebug()<<"dis转换失败";
-            QMessageBox::critical(this, "错误", "对象转换失败，请检查。");
-            return;
+        CAngle*angle;
+        CDistance* dis;
+        if(obj->GetUniqueType()==enAngle){
+            angle = (CAngle*)m_pMainWin->getEntityListMgr()->getEntityList()[index];
+            angle->setUptolerance(uper);
+            angle->setUndertolerance(downer);
+            angle->judge();
+        }else{
+            dis = dynamic_cast<CDistance*>(m_pMainWin->getEntityListMgr()->getEntityList()[index]);
+            dis->setUptolerance(uper);
+            dis->setUndertolerance(downer);
+            dis->judge();
         }
-        dis->setUptolerance(uper);
-        dis->setUndertolerance(downer);
-        dis->judge();
-        dis1->setUptolerance(uper);
-        dis1->setUndertolerance(downer);
-        dis1->judge();
     }
     onItemClicked();
     QMessageBox::information(this,"ok","公差设置成功");
@@ -679,7 +675,7 @@ void ElementListWidget::CompareCloud()
     }else{
         m_pMainWin->getPWinToolWidget()->setauto(true);
         qDebug()<<"进入对齐之前";
-        //m_pMainWin->getPWinVtkWidget()->onAlign();
+        m_pMainWin->getPWinVtkWidget()->onAlign();
         qDebug()<<"进入对齐之后";
         qDebug()<<CurrentMeasureindex;
         m_pMainWin->getEntityListMgr()->getEntityList()[CurrentMeasureindex]->SetSelected(false);
@@ -1136,6 +1132,11 @@ void ElementListWidget::isAdd()
 void ElementListWidget::createrule()
 {
     m_pMainWin->Createruler();
+}
+
+bool ElementListWidget::getIsProcess()
+{
+    return isProcessing;
 }
 
 

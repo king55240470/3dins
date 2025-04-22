@@ -151,6 +151,7 @@ public:
     void setupUi();
     void EnterInterface();//开放接口
     void beginStartButton();
+    QString getIsProcess();
     void showPresetElemWidget(int);
 
     QHttpServer server;// 创建HTTP服务器
