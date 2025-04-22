@@ -75,6 +75,8 @@ public:
     void mousePressEvent(QMouseEvent *event) override;
     void setupStateMachine();
     void continueUpdate();
+    void beginStartButton();
+    void startprocess();
     void onAddElement(pcl::PointCloud<pcl::PointXYZRGB>::Ptr could);
     void CompareCloud();
     void updateDistance();//开启更新
