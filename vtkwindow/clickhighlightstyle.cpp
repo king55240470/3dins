@@ -218,16 +218,16 @@ void MouseInteractorHighlightActor::HighlightActor(vtkActor* actor)
         // 让actor高亮，并放在窗口最上层
         actor->GetProperty()->SetColor(MainWindow::HighLightColor[0], MainWindow::HighLightColor[1],
                                        MainWindow::HighLightColor[2]);
-        actor->GetProperty()->SetPointSize(MainWindow::ActorPointSize + 1);
-        actor->GetProperty()->SetLineWidth(MainWindow::ActorLineWidth + 1);
+        actor->GetProperty()->SetPointSize(MainWindow::ActorPointSize + 3);
+        actor->GetProperty()->SetLineWidth(MainWindow::ActorLineWidth + 3);
+
         if (renderer != nullptr){
-            // 将actor从渲染器中移除并重新添加
+            // 将 actor 置于最上层
             renderer->RemoveActor(actor);
             renderer->AddActor(actor);
             renderer->Render();
         }
     }
-
 }
 
 // 实现恢复actor属性的方法
@@ -242,6 +242,11 @@ void MouseInteractorHighlightActor::ResetActor(vtkActor* actor)
             break;
         }
     }
+}
+
+void MouseInteractorHighlightActor::SetCameraToOptimalView(vtkSmartPointer<vtkActor> actor, vtkRenderer *renderer)
+{
+
 }
 
 QVector<std::pair<vtkSmartPointer<vtkActor>, vtkSmartPointer<vtkProperty>>> &MouseInteractorHighlightActor::getPickedActors()

@@ -82,6 +82,8 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
         // camera->SetViewAngle(60); // 调整视野角度
         // camera->SetClippingRange(0.1, 1000);// 根据场景的具体大小和需要调整裁剪范围
         camera->OrthogonalizeViewUp(); // 确保与SetViewUp方向正交
+        camera->GetPosition();
+        camera->GetViewAngle();
 
         renderer->ResetCamera();
         renWin->Render();
@@ -348,6 +350,7 @@ vtkSmartPointer<vtkActor2D> VtkWidget::createTextBox(vtkSmartPointer<vtkTextActo
     rectangleActor->GetProperty()->SetLineWidth(4);
     rectangleActor->SetPosition(x - 5, y - 5);
     rectangleActor->SetLayerNumber(3);
+    getRenderer();
 
     return rectangleActor;
 }
@@ -1132,6 +1135,7 @@ void VtkWidget::onRightView(){
 // 切换相机视角3
 void VtkWidget::onFrontView(){
     vtkCamera *camera = renderer->GetActiveCamera();
+    camera->GetPosition();
     if (camera) {
         camera->SetPosition(0, -1, 0);  // 重置相机位置为正视
         camera->SetFocalPoint(0, 0, 0);
@@ -1160,23 +1164,53 @@ void VtkWidget::onIsometricView(){
     }
 }
 
-void VtkWidget::onCloudFilter()
+double *VtkWidget::getViewAngles()
 {
-    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud;
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZRGB>);
-    QString logInfo;
+    vtkCamera *camera = renderer->GetActiveCamera();
+    if (!camera)    return nullptr;
 
-    // 收集选中的点云（确保不修改原始实体）
-    for (int i = 0; i < entityList.size(); i++) {
-        CEntity* entity = entityList[i];
-        if (!entity->IsSelected()) continue;
-        if (entity->GetUniqueType() == enPointCloud) {
-            // 获取点云的共享指针，确保原数据不被释放
-            auto pcEntity = static_cast<CPointCloud*>(entity);
-            cloud = pcEntity->m_pointCloud.makeShared();
-        }
+    // 获取相机的方向向量
+    double projDir[3];
+    camera->GetDirectionOfProjection(projDir);
+    double viewUp[3];
+    camera->GetViewUp(viewUp);
+
+    // 计算相机的正交向量
+    double right[3];
+    vtkMath::Cross(projDir, viewUp, right);
+
+    // 构建旋转矩阵
+    double rotationMatrix[3][3];
+    for (int i = 0; i < 3; i++) {
+        rotationMatrix[0][i] = right[i];
+        rotationMatrix[1][i] = viewUp[i];
+        rotationMatrix[2][i] = -projDir[i]; // 注意：投影方向是相机的负 z 轴方向
     }
+
+    // 计算欧拉角（以弧度为单位）
+    double phi, theta, psi;
+    // 根据旋转矩阵计算欧拉角的公式（这里使用 XYZ 固定角序列）
+    theta = asin(rotationMatrix[2][0]);
+    phi = atan2(rotationMatrix[2][1] / cos(theta), rotationMatrix[2][2] / cos(theta));
+    psi = atan2(rotationMatrix[1][0] / cos(theta), rotationMatrix[0][0] / cos(theta));
+
+    // 转换为角度
+    phi = vtkMath::DegreesFromRadians(phi);
+    theta = vtkMath::DegreesFromRadians(theta);
+    psi = vtkMath::DegreesFromRadians(psi);
+
+    // 创建一个 double 数组来存储结果
+    double* angles = new double[3];
+    angles[0] = phi;   // 绕 X 轴的旋转角度
+    angles[1] = theta; // 绕 Y 轴的旋转角度
+    angles[2] = psi;   // 绕 Z 轴的旋转角度
+
+    return angles;
+}
+
+pcl::PointCloud<pcl::PointXYZRGB>::Ptr VtkWidget::onFilter(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud)
+{
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZRGB>);
 
     if(!cloud){
         m_pMainWin->getPWinVtkPresetWidget()->setWidget("滤波的输入点云为空！");
@@ -1189,23 +1223,7 @@ void VtkWidget::onCloudFilter()
     sor.setStddevMulThresh(1.0);  // 判断离群点的阈值
     sor.filter(*cloud_filtered);
 
-    // 创建条件滤波器
-    pcl::ConditionAnd<pcl::PointXYZRGB>::Ptr range_cond(new pcl::ConditionAnd<pcl::PointXYZRGB>);
-
-    // 添加滤波条件：z轴值大于0.0， 且小于0.1
-    range_cond->addComparison(pcl::FieldComparison<pcl::PointXYZRGB>::ConstPtr(new pcl::FieldComparison<pcl::PointXYZRGB>("z", pcl::ComparisonOps::GT, 0.0)));
-    range_cond->addComparison(pcl::FieldComparison<pcl::PointXYZRGB>::ConstPtr(new pcl::FieldComparison<pcl::PointXYZRGB>("z", pcl::ComparisonOps::LT, 0.8)));
-
-    // 创建条件滤波对象并设置条件
-    pcl::ConditionalRemoval<pcl::PointXYZRGB> condrem;
-    condrem.setCondition(range_cond);
-    condrem.setInputCloud(cloud);
-    condrem.setKeepOrganized(true);
-    condrem.filter(*cloud_filtered);
-
-    auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateFittingCloud(*cloud_filtered);
-    m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
-    m_pMainWin->NotifySubscribe();
+    return cloud_filtered;
 }
 
 // 比较两个点云的处理函数
@@ -1322,8 +1340,6 @@ void VtkWidget::onCompare()
     }
 
     ShowColorBar(minDistance, maxDistance);
-    createScaleBar();
-    attachInteractor();
     // 添加日志输出
     logInfo += "对比完成";
     m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
@@ -1354,9 +1370,9 @@ void VtkWidget::onAlign()
         return;
     }
 
-    // 确保类型正确并复制点云
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud1 = clouds[0];
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud2 = clouds[1];
+    // 滤波去噪
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud1 = onFilter(clouds[0]);
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud2 = onFilter(clouds[1]);
 
     if (!cloud1 || cloud1->empty() || !cloud2 || cloud2->empty()) {
         logInfo += "点云为空!";
@@ -1364,12 +1380,11 @@ void VtkWidget::onAlign()
         return;
     }
 
-    float radius1 = calculateSamplingRadius(cloud1);
-    float radius2 = calculateSamplingRadius(cloud2);
-
     // 用于采样的两个点云
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledCloud1(new pcl::PointCloud<pcl::PointXYZRGB>());
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledCloud2(new pcl::PointCloud<pcl::PointXYZRGB>());
+    float radius1 = calculateSamplingRadius(cloud1);
+    float radius2 = calculateSamplingRadius(cloud2);
 
     // 如果点云较小，则只进行一轮采样
     if(radius2 <= 0.05f){

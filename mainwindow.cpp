@@ -31,8 +31,8 @@ double MainWindow::HighLightColor[3] = {1, 1, 0};
 double MainWindow::InfoTextColor[3] = {0.9, 0.9, 0.9};
 
 // 控制图形渲染的粗细
-double MainWindow::ActorPointSize = 4;
-double MainWindow::ActorLineWidth = 3;
+double MainWindow::ActorPointSize = 1;
+double MainWindow::ActorLineWidth = 1;
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -327,12 +327,6 @@ void MainWindow::setupUi(){
     connect(ReconstructionAction,&QAction::triggered,this,[&](){
         pWinVtkWidget->poissonReconstruction();
     });
-    QAction* filterAction = cloudOperation->addAction("点云滤波");
-    filterAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_B));
-    filterAction->setShortcutContext(Qt::ApplicationShortcut);
-    connect(filterAction,&QAction::triggered,this,[&](){
-        pWinVtkWidget->onCloudFilter();
-    });
 
     QMenu * switchTheme = bar->addMenu("主题(T)");
     QAction* showThemeMenu = new QAction();
@@ -494,7 +488,7 @@ void MainWindow::openFile(){
         QString fileName = fileInfo.fileName();
         auto fileLowName = fileName.toLower();
         // 根据文件名是否含有 "stand"来判断，先转成小写
-        if (fileLowName.contains("stand")) {
+        if (fileLowName.contains("stand") && (filePath.endsWith("ply") || filePath.endsWith("pcd"))) {
             modelCloudExist=true; // 用于保证后续序列化文件
 
             //在modelFileMap中添加添加新文件，并分配新的cloud
@@ -519,7 +513,9 @@ void MainWindow::openFile(){
 
             //pWinFileManagerWidget->openModelFile(fileName, filePath);
             pWinVtkPresetWidget->setWidget(fileName+"文件已打开");
-        } else{
+        }
+        else if(!fileLowName.contains("stand") && (filePath.endsWith("ply")
+                                                    || filePath.endsWith("pcd"))){
             //在measuredFileMap中添加新文件，并分配新的cloud
             getpWinFileMgr()->getMeasuredFileMap().insert(filePath, true);
             auto cloud = getPointCloudListMgr()->CreateCloudFromFile(filePath);
@@ -1462,8 +1458,9 @@ void MainWindow::onConvertLightGreyTheme()
     MainWindow::InfoTextColor[1] = 0;
     MainWindow::InfoTextColor[2] = 0;
 
+    pWinVtkWidget->getRenderer()->SetBackground(1, 1, 1);
     pWinVtkWidget->getRenderer()->SetBackground(0.5, 0.5, 0.5);
-    pWinVtkWidget->getRenderer()->SetGradientBackground(false);
+    pWinVtkWidget->getRenderer()->SetGradientBackground(true);
     pWinVtkWidget->UpdateInfo();
 }
 

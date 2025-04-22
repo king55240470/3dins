@@ -42,6 +42,7 @@
 #include <vtkGenericRenderWindowInteractor.h>
 #include <vtkLine.h>
 #include <vtkActor.h>
+#include <vtkMath.h>
 #include <vtkSmartPointer.h>
 #include <vtkSphereSource.h>
 #include <vtkPolyDataMapper.h>
@@ -114,8 +115,9 @@ public:
     void onRightView(); // 右侧
     void onFrontView(); // 正视
     void onIsometricView(); // 旋转立体
+    double* getViewAngles();
 
-    void onCloudFilter(); // 点云滤波
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr onFilter(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud); // 点云滤波
     void onCompare();// 比较两个点云
     void onAlign();    // 配准的函数
     void poissonReconstruction(); // 泊松重建

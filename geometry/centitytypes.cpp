@@ -1190,7 +1190,7 @@ QString CDistance::getCEntityInfo()
     QString underTol_str;
     QString q;
     // 给文本添加字符串
-    type_str = QString("distance \nactual  %1\n").arg(QString::number(getdistance(), 'f',  6));
+    type_str = QString("distance \nactual  %1\n").arg(QString::number(qAbs(getdistance()), 'f',  6));
     upTol_str = QString("max  %1\n").arg(QString::number(getUptolerance(), 'f',  6));
     underTol_str = QString("min  %1\n").arg(QString::number(getUndertolerance(), 'f',  6));
     if(judge())
