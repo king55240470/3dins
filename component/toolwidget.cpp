@@ -140,6 +140,13 @@
 #include <QPageSize>
 #include <QPen>
 #include <cstdlib>
+
+
+#include <pcl/io/ply_io.h>  // 用于保存 .ply 文件
+#include <pcl/io/pcd_io.h>  // 用于保存 .pcd 文件
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
+
 // bool convertPdfToWord(const QString &pdfFilePath, const QString &wordFilePath) {
 //     QProcess process;
 //     QStringList arguments;
@@ -151,7 +158,6 @@
 
 //     return process.exitStatus() == QProcess::NormalExit;
 // }
-
 
 
 
@@ -184,8 +190,8 @@ ToolWidget::ToolWidget(QWidget *parent)
     //静态保存图片路径和名称
 
 
-
-    save_action_iconpath_list_<<":/component/save/excel.png"<< ":/component/save/pdf.jpg"<< ":/component/save/txt.jpg"<< ":/component/save/word.jpg"<<":/component/save/image.png";
+    //保存图标路径
+    save_action_iconpath_list_<<":/component/save/excel.png"<< ":/component/save/pdf.jpg"<< ":/component/save/txt.jpg"<< ":/component/save/word.jpg"<<":/component/save/image.png"<<":/component/save/pointcloud.png";
     construct_action_iconpath_list_<<":/component/construct/point_.png"<<":/component/construct/line_.png"<<":/component/construct/circle_.png"<<   ":/component/construct/plane_.png"<<  ":/component/construct/rectangle_.png"<<":/component/construct/cylinder_.png"<< ":/component/construct/cone_.png"<< ":/component/construct/sphere_.png"<<":/component/construct/distance.png"<<":/component/construct/pointCloud.png"<<":/component/construct/angle.png";
     find_action_iconpath_list_<<":/component/construct/point.jpg"<<":/component/construct/line.jpg"<<":/component/construct/circle.jpg"<<   ":/component/construct/plan.jpg"<<  ":/component/construct/rectangle.jpg"<<":/component/construct/cylinder.jpg"<< ":/component/construct/cone.jpg"<< ":/component/construct/sphere.jpg";
     coord_action_iconpath_list_<<":/component/coord/create.png"<<  ":/component/coord/spin.jpg"<<":/component/coord/save.png";
@@ -194,21 +200,21 @@ ToolWidget::ToolWidget(QWidget *parent)
 
 
 
-
-    save_action_name_list_<<"excel"<< "pdf"<< "txt"<< "word"<<"image";
+   //设置图标名称
+    save_action_name_list_<<"excel"<< "pdf"<< "txt"<< "word"<<"image"<<"pointcloud";
     construct_action_name_list_<<"构造点"<<"构造线"<<"构造圆"<<"构造平面"<<"构造矩形"<<"构造圆柱"<<"构造圆锥"<<"构造球形"<<"构造距离"<<"构造点云"<<"构造角度";
     find_action_name_list_<<"识别点"<<"识别线"<<"识别圆"<<"识别平面"<<"识别矩形"<<"识别圆柱"<<"识别圆锥"<<"识别球形";;
     coord_action_name_list_<<"创建坐标系"<<"旋转坐标系"<<"保存坐标系";
     view_angle_action_name_list_<<"主视角"<<"俯视角"<<"侧视角"<<"立体视角";
 
-
+   //更新图标数目
     m_nSaveActionNum=save_action_name_list_.count();
     m_nConstructActionNum=construct_action_name_list_.count();
     m_nFindActionNum=find_action_name_list_.count();
     m_nCoordActionNum=coord_action_name_list_.count();
     m_nViewAngleActionNum=view_angle_action_name_list_.count();
 
-
+    //创建图标
     save_actions_      =new ToolAction * [m_nSaveActionNum];
     construct_actions_ =new ToolAction * [m_nConstructActionNum];
     find_actions_ =    new ToolAction * [m_nFindActionNum];
@@ -225,7 +231,7 @@ ToolWidget::ToolWidget(QWidget *parent)
 
     toolBars=new QToolBar*[m_nToolbarNum];
 
-
+    //设置工具栏格式
     for(int i=0;i<m_nToolbarNum;i++){
 
         toolBars[i]=new QToolBar(this);
@@ -329,6 +335,8 @@ void ToolWidget::InitOutputFolder(){
     CompareImagePath= ParentPath+"/点云对比图像/screenshot"+"/";
 
     // createFolder(ParentPath+"/点云对比图像/screenshot");
+    createFolder(getOutputPath("pcd"));
+    createFolder(getOutputPath("ply"));
     createFolder(getOutputPath("word"));
     createFolder(getOutputPath("pdf"));
     createFolder(getOutputPath("image"));
@@ -350,6 +358,7 @@ void ToolWidget::clearToolWidget(){
 
 }
 void ToolWidget::createToolWidget(){
+    //重构工具栏
     int toolbar_index=-1;
     int lastToolBar_index=0;
 
@@ -568,9 +577,9 @@ int ToolWidget::getViewAngleActionNum(){
 void ToolWidget::connectActionWithF(){
 
 
-
     //识别
     connect(find_actions_[find_action_name_list_.indexOf("识别点")],&QAction::triggered,this,[&](){
+
         QAction *action = qobject_cast<QAction *>(sender());
         if (action->isChecked()) {
             //标注选中状态
@@ -794,7 +803,7 @@ void ToolWidget::connectActionWithF(){
     // connect(save_actions_[save_action_name_list_.indexOf("txt")],&QAction::triggered,this,&  ToolWidget::onSaveTxt);
     // connect(save_actions_[save_action_name_list_.indexOf("pdf")],&QAction::triggered,this,&  ToolWidget::onSavePdf);
     // connect(save_actions_[save_action_name_list_.indexOf("image")],&QAction::triggered,this,&  ToolWidget::onSaveImage);
-
+    connect(save_actions_[save_action_name_list_.indexOf("pointcloud")],&QAction::triggered,this,&  ToolWidget::onSavePointCloud);
     //打开
     connect(save_actions_[save_action_name_list_.indexOf("excel")], &QAction::triggered, this, &ToolWidget::onOpenExcel);
     connect(save_actions_[save_action_name_list_.indexOf("word")], &QAction::triggered, this, &ToolWidget::onOpenWord);
@@ -905,7 +914,8 @@ void   ExtractData(QVector<CEntity *>& entitylist,QList<QList<QString>>& dataAll
         if(entity->GetUniqueType()==enDistance){
             CDistance* Distance=(CDistance*) entity;
             inList<<"距离";
-            inList<<Distance->m_strCName;
+
+            inList<<Distance->m_strAutoName;
             inList<<QString::number(abs(Distance->getdistance()),'f',6);
             inList<<QString::number(Distance->getUptolerance(),'f',6);
             inList<<QString::number(Distance->getUndertolerance(),'f',6);
@@ -917,7 +927,7 @@ void   ExtractData(QVector<CEntity *>& entitylist,QList<QList<QString>>& dataAll
         else if (entity->GetUniqueType()==enAngle){
             CAngle* Angle=(CAngle*)entity;
             inList<<"角度";
-            inList<<Angle->m_strCName;
+            inList<<Angle->m_strAutoName;
             inList<<QString::number(abs(Angle->getAngleValue()),'f',6);
             inList<<QString::number(Angle->getUptolerance(),'f',6);
             inList<<QString::number(Angle->getUndertolerance(),'f',6);
@@ -937,7 +947,7 @@ void   ExtractData(QVector<CEntity *>& entitylist,QList<QList<QString>>& dataAll
         if(entity->GetUniqueType()==enDistance){
             CDistance* Distance=(CDistance*) entity;
             inList<<"距离";
-            inList<<Distance->m_strCName;
+            inList<<Distance->m_strAutoName;
             inList<<QString::number(abs(Distance->getdistance()),'f',6);
             inList<<QString::number(Distance->getUptolerance(),'f',6);
             inList<<QString::number(Distance->getUndertolerance(),'f',6);
@@ -953,7 +963,7 @@ void   ExtractData(QVector<CEntity *>& entitylist,QList<QList<QString>>& dataAll
         else if (entity->GetUniqueType()==enAngle){
             CAngle* Angle=(CAngle*)entity;
             inList<<"角度";
-            inList<<Angle->m_strCName;
+            inList<<Angle->m_strAutoName;
             inList<<QString::number(abs(Angle->getAngleValue()),'f',6);
             inList<<QString::number(Angle->getUptolerance(),'f',6);
             inList<<QString::number(Angle->getUndertolerance(),'f',6);
@@ -1007,8 +1017,6 @@ void   ToolWidget::onSavePdf(){
    QString name=getTimeString();
    QString filePath=path+"/"+name+".pdf";
 
-   if(m_savePdf==true)
-       filePath=lastCreatedPdfFile;
 
 
    // // 插入纯文本数据
@@ -1386,8 +1394,7 @@ void   ToolWidget::onSaveExcel(){
     // if (filePath.isEmpty()){
     //     return ;
     // }
-    if(m_saveExcel==true)
-        filePath=lastCreatedExcelFile;
+
     QStringList headers;
     headers << "类型" << "名称" <<"数值"<< "上公差" << "下公差" <<"是否合格" ;
     int col = headers.size();
@@ -1533,8 +1540,7 @@ void ToolWidget::onSaveTxt(){
     QString name=getTimeString();
 
     filePath=path+"/"+name+".txt";
-    if(m_saveTxt==true)
-        filePath=lastCreatedTxtFile;
+
 
 
 
@@ -1556,7 +1562,7 @@ void ToolWidget::onSaveTxt(){
         CObject* object=objectlist[i];
          if(object->GetUniqueType()==enDistance){
             CDistance* Distance=(CDistance*) object;
-            out<<"类型：距离 名称："<<Distance->m_strCName<<Qt::endl;
+            out<<"类型：距离 名称："<<Distance->m_strAutoName<<Qt::endl;
             out<<"大小："<<abs(Distance->getdistance())<<"  上公差："<<Distance->getUptolerance()<<"  下公差："<<Distance->getUndertolerance()<<Qt::endl;
             QString qua;
             if(Distance->judge())
@@ -1569,7 +1575,7 @@ void ToolWidget::onSaveTxt(){
             out<<Qt::endl;
         }else if(object->GetUniqueType()==enAngle){
             CAngle* Angle=(CAngle*)object;
-            out<<"类型：角度 名称："<<Angle->m_strCName<<Qt::endl;
+            out<<"类型：角度 名称："<<Angle->m_strAutoName<<Qt::endl;
             out<<"大小："<<abs(Angle->getAngle())<<Qt::endl;
             QString qua;
             if(Angle->judge())
@@ -1603,8 +1609,7 @@ void   ToolWidget::onSaveWord(){
     QString name=getTimeString();
 
     QString filePath=path+"/"+name+".docx";
-    if(m_saveWord==true)
-        filePath=lastCreatedWordFile;
+
 
 
     QStringList headers;
@@ -1800,7 +1805,41 @@ void   ToolWidget::onSaveWord(){
 
 }
 
+void ToolWidget::onSavePointCloud(){
 
+    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+
+    QVector<CPointCloud*> compare_clouds;
+    for(int i=0;i<entityList.size();i++){
+        CEntity* entity=entityList[i];
+        if(entity->getEntityType()==enPointCloud){
+            CPointCloud* point_cloud=(CPointCloud*)entity;
+
+            if(point_cloud->m_strAutoName.contains("对比")||
+                point_cloud->m_strCName.contains("对比")){
+                compare_clouds.push_back(point_cloud);
+            }
+        }
+    }
+
+
+    for(int i=0;i<compare_clouds.size();i++){
+        pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud=compare_clouds[i]->m_pointCloud.makeShared();
+  //+"("+QString::number(i+1)+")"
+        //+"("+QString::number(i+1)+")"
+        QString name=getTimeString();
+        QString filePathPly=getOutputPath("ply")+"/"+name+".ply";
+
+        QString filePathPcd=getOutputPath("pcd")+"/"+name+".pcd";
+
+        //保存为pcl和pcd文件
+        pcl::io::savePLYFile((filePathPly).toStdString(), *cloud);
+        pcl::io::savePCDFileASCII((filePathPcd).toStdString(), *cloud);
+
+    }
+    QString logInfo="对比点云保存成功";
+    m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
+}
 
 static void WrongWidget(QString message,QString moreMessage="空");
 void   ToolWidget::onSaveImage(){
