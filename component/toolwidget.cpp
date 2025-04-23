@@ -1726,6 +1726,16 @@ void ToolWidget::createDistanceMeasurementReport()
         QAxObject* activeDocument = word->querySubObject("ActiveDocument");
         QAxObject* sections = activeDocument->querySubObject("Sections");
         QAxObject* firstSection = sections->querySubObject("First()");
+        // //设置边框
+        // QAxObject* pageSetup2 = firstSection->querySubObject("PageSetup");
+        // QAxObject* borders = pageSetup2->querySubObject("Borders");
+
+        // // 设置四边单实线黑色边框
+        // borders->setProperty("Enable", true);
+        // borders->setProperty("LineStyle", 1);      // 单线
+        // borders->setProperty("LineWidth", 3);      // 0.75磅
+        // borders->setProperty("Color", 0x000000);   // 黑色
+        // borders->setProperty("DistanceFrom", 24);  // 距离正文24磅
 
         // 设置页眉
         QAxObject* header = firstSection->querySubObject("Headers(QVariant)", 1); // 1表示首页页眉

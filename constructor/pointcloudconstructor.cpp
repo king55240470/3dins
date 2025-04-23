@@ -266,106 +266,172 @@ vtkSmartPointer<vtkPolyData> PointCloudConstructor::getPointsPolydata(pcl::Point
 void PointCloudConstructor::setSourceCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr sourceCloud){
     m_sourceCloud=sourceCloud;
 }
-CPointCloud* PointCloudConstructor::createPointCloud(CCuboid* m_cuboid,pcl::PointCloud<pcl::PointXYZRGB>::Ptr sourceCloud){
-    if(m_cuboid!=nullptr){
-
-        CPosition pos(m_cuboid->getCenter().x,m_cuboid->getCenter().y, m_cuboid->getCenter().z);
+CPointCloud* PointCloudConstructor::createPointCloud(CCuboid* m_cuboid, pcl::PointCloud<pcl::PointXYZRGB>::Ptr sourceCloud) {
+    if(m_cuboid != nullptr) {
+        CPosition pos(m_cuboid->getCenter().x, m_cuboid->getCenter().y, m_cuboid->getCenter().z);
         QVector4D posVec = m_cuboid->GetRefCoord()->m_mat * QVector4D(pos.x, pos.y, pos.z, 1);
         CPosition globalPos(posVec.x(), posVec.y(), posVec.z());
 
         // 创建 vtkCubeSource 并设置其属性
         auto cuboid = vtkSmartPointer<vtkCubeSource>::New();
-        cuboid->SetCenter(globalPos.x, globalPos.y, globalPos.z); // 设置长方体中心点
-        cuboid->SetXLength(m_cuboid->getLength()); // 设置长方体长度
-        cuboid->SetYLength(m_cuboid->getWidth());  // 设置长方体宽度
-        cuboid->SetZLength(m_cuboid->getHeight()); // 设置长方体高度
+        cuboid->SetCenter(0, 0, 0); // 先设置在原点，后面再平移
+        cuboid->SetXLength(m_cuboid->getWidth());
+        cuboid->SetYLength(m_cuboid->getLength());
+        cuboid->SetZLength(m_cuboid->getHeight());
 
-        // // 创建变换对象并设置旋转角度
-        // vtkSmartPointer<vtkTransform> transform = vtkSmartPointer<vtkTransform>::New();
-        // transform->RotateX(m_cuboid->getAngleX()); // 绕X轴旋转
-        // transform->RotateY(m_cuboid->getAngleY()); // 绕Y轴旋转
-        // transform->RotateZ(m_cuboid->getAngleZ()); // 绕Z轴旋转
-
-        // // 应用变换到 vtkPolyData
-        // vtkSmartPointer<vtkTransformPolyDataFilter> transformFilter = vtkTransformPolyDataFilter::New();
-        // transformFilter->SetInputConnection(cuboid->GetOutputPort());
-        // transformFilter->SetTransform(transform);
-        // transformFilter->Update();
-
-        // // 获取变换后的 vtkPolyData
-        // vtkSmartPointer<vtkPolyData> transformedPolyData = transformFilter->GetOutput();
-
-
-        // return createPointCloud(transformedPolyData,sourceCloud);
-
-        vtkSmartPointer<vtkTransform> transform = vtkSmartPointer<vtkTransform>::New();
-
-        // 提取法向量
-        QVector4D normal = m_cuboid->getNormal(); // 假设 GetNormal() 返回法向量
+        // 提取法向量并归一化
+        QVector4D normal = m_cuboid->getNormal();
         double nx = normal.x();
         double ny = normal.y();
         double nz = normal.z();
 
-        // 确保法向量的长度为 1
-        double length = std::sqrt(nx * nx + ny * ny + nz * nz);
-        if (length > 0.0) {
+        double length = std::sqrt(nx*nx + ny*ny + nz*nz);
+        if(length > 0.0) {
             nx /= length;
             ny /= length;
             nz /= length;
         }
 
-        // 计算旋转角度和旋转轴
-        double rotationAxis[3] = {0.0, 0.0, 1.0}; // 默认旋转轴（Z 轴）
-        double rotationAngle = 0.0;               // 默认旋转角度
+        vtkSmartPointer<vtkTransform> transform = vtkSmartPointer<vtkTransform>::New();
+        transform->PostMultiply(); // 确保先旋转后平移
 
-        // 如果法向量不是 Z 轴方向，则计算旋转轴和角度
-        if (nx != 0.0 || ny != 0.0 || nz != 1.0) {
+        // 只有当法向量不与Z轴对齐时才需要旋转
+        if(std::abs(nz) < 1.0 - 1e-6) {
+            double rotationAxis[3];
             double zAxis[3] = {0.0, 0.0, 1.0};
             double normalVec[3] = {nx, ny, nz};
 
-            // 计算旋转轴 = Z 轴 × 法向量
+            // 计算旋转轴和角度
             vtkMath::Cross(zAxis, normalVec, rotationAxis);
-
-            // 计算旋转角度 = arccos(Z 轴 · 法向量)
             double dotProduct = vtkMath::Dot(zAxis, normalVec);
-            rotationAngle = vtkMath::DegreesFromRadians(std::acos(dotProduct));
+            dotProduct = std::max(-1.0, std::min(1.0, dotProduct)); // 确保在有效范围内
+            double rotationAngle = vtkMath::DegreesFromRadians(std::acos(dotProduct));
+
+            // 如果法向量指向下方，需要特殊处理
+            if(nz < 0) {
+                // 绕X轴旋转180度
+                rotationAngle = 180.0;
+                rotationAxis[0] = 1.0;
+                rotationAxis[1] = 0.0;
+                rotationAxis[2] = 0.0;
+            }
+
+            transform->RotateWXYZ(rotationAngle, rotationAxis);
         }
 
-        // 应用旋转到 vtkTransform
-        transform->RotateWXYZ(rotationAngle, rotationAxis[0], rotationAxis[1], rotationAxis[2]);
+        // 平移变换到实际位置
+        transform->Translate(globalPos.x, globalPos.y, globalPos.z);
 
-        // 应用变换到 vtkPolyData
+        // 应用变换
         vtkSmartPointer<vtkTransformPolyDataFilter> transformFilter = vtkSmartPointer<vtkTransformPolyDataFilter>::New();
         transformFilter->SetInputConnection(cuboid->GetOutputPort());
         transformFilter->SetTransform(transform);
         transformFilter->Update();
 
-        // 获取变换后的 vtkPolyData
-        vtkSmartPointer<vtkPolyData> transformedPolyData = transformFilter->GetOutput();
-
-        return createPointCloud(transformedPolyData, sourceCloud);
-
-        // QVector4D xAxis(1,0,0,0),yAxis(0,1,0,0),zAxis(0,0,1,0);
-        // double x= M_PI*cuboid->getAngleX()/180;
-        // double y= M_PI*cuboid->getAngleY()/180;
-        // double z= M_PI*cuboid->getAngleZ()/180;
-
-
-        // xAxis.setX(cos(y)*cos(z)-sin(y)*sin(z));
-        // xAxis.setY(sin(z)*cos(y)+sin(y)*cos(z));
-        // xAxis.setZ(-sin(y));
-
-
-        // yAxis.setX(cos(z)*sin(y)*sin(x)+sin(z)*cos(x));
-        // yAxis.setY(sin(x)*sin(y)*sin(z)-cos(z)*cos(x));
-        // yAxis.setZ(cos(y)*sin(x));
-
-
-        // zAxis.setX(cos(z)*sin(y)*cos(x)-sin(z)*sin(x));
-        // zAxis.setY(sin(z)*sin(y)*cos(x)+cos(z)*sin(x));
-        // zAxis.setZ(cos(y)*cos(x));
-
-        // return createPointCloud(cuboid->getCenter(),xAxis,yAxis,zAxis,cuboid->getLength(),cuboid->getWidth(),cuboid->getHeight(),sourceCloud);
+        return createPointCloud(transformFilter->GetOutput(), sourceCloud);
     }
     return nullptr;
 }
+// CPointCloud* PointCloudConstructor::createPointCloud(CCuboid* m_cuboid,pcl::PointCloud<pcl::PointXYZRGB>::Ptr sourceCloud){
+//     if(m_cuboid!=nullptr){
+
+//         CPosition pos(m_cuboid->getCenter().x,m_cuboid->getCenter().y, m_cuboid->getCenter().z);
+//         QVector4D posVec = m_cuboid->GetRefCoord()->m_mat * QVector4D(pos.x, pos.y, pos.z, 1);
+//         CPosition globalPos(posVec.x(), posVec.y(), posVec.z());
+
+//         // 创建 vtkCubeSource 并设置其属性
+//         auto cuboid = vtkSmartPointer<vtkCubeSource>::New();
+//         cuboid->SetCenter(globalPos.x, globalPos.y, globalPos.z); // 设置长方体中心点
+//         cuboid->SetXLength(m_cuboid->getLength()); // 设置长方体长度
+//         cuboid->SetYLength(m_cuboid->getWidth());  // 设置长方体宽度
+//         cuboid->SetZLength(m_cuboid->getHeight()); // 设置长方体高度
+
+//         // // 创建变换对象并设置旋转角度
+//         // vtkSmartPointer<vtkTransform> transform = vtkSmartPointer<vtkTransform>::New();
+//         // transform->RotateX(m_cuboid->getAngleX()); // 绕X轴旋转
+//         // transform->RotateY(m_cuboid->getAngleY()); // 绕Y轴旋转
+//         // transform->RotateZ(m_cuboid->getAngleZ()); // 绕Z轴旋转
+
+//         // // 应用变换到 vtkPolyData
+//         // vtkSmartPointer<vtkTransformPolyDataFilter> transformFilter = vtkTransformPolyDataFilter::New();
+//         // transformFilter->SetInputConnection(cuboid->GetOutputPort());
+//         // transformFilter->SetTransform(transform);
+//         // transformFilter->Update();
+
+//         // // 获取变换后的 vtkPolyData
+//         // vtkSmartPointer<vtkPolyData> transformedPolyData = transformFilter->GetOutput();
+
+
+//         // return createPointCloud(transformedPolyData,sourceCloud);
+
+//         vtkSmartPointer<vtkTransform> transform = vtkSmartPointer<vtkTransform>::New();
+
+//         // 提取法向量
+//         QVector4D normal = m_cuboid->getNormal(); // 假设 GetNormal() 返回法向量
+//         double nx = normal.x();
+//         double ny = normal.y();
+//         double nz = normal.z();
+
+//         // 确保法向量的长度为 1
+//         double length = std::sqrt(nx * nx + ny * ny + nz * nz);
+//         if (length > 0.0) {
+//             nx /= length;
+//             ny /= length;
+//             nz /= length;
+//         }
+
+//         // 计算旋转角度和旋转轴
+//         double rotationAxis[3] = {0.0, 0.0, 1.0}; // 默认旋转轴（Z 轴）
+//         double rotationAngle = 0.0;               // 默认旋转角度
+
+//         // 如果法向量不是 Z 轴方向，则计算旋转轴和角度
+//         if (nx != 0.0 || ny != 0.0 || nz != 1.0) {
+//             double zAxis[3] = {0.0, 0.0, 1.0};
+//             double normalVec[3] = {nx, ny, nz};
+
+//             // 计算旋转轴 = Z 轴 × 法向量
+//             vtkMath::Cross(zAxis, normalVec, rotationAxis);
+
+//             // 计算旋转角度 = arccos(Z 轴 · 法向量)
+//             double dotProduct = vtkMath::Dot(zAxis, normalVec);
+//             rotationAngle = vtkMath::DegreesFromRadians(std::acos(dotProduct));
+//         }
+
+//         // 应用旋转到 vtkTransform
+//         transform->RotateWXYZ(rotationAngle, rotationAxis[0], rotationAxis[1], rotationAxis[2]);
+
+//         // 应用变换到 vtkPolyData
+//         vtkSmartPointer<vtkTransformPolyDataFilter> transformFilter = vtkSmartPointer<vtkTransformPolyDataFilter>::New();
+//         transformFilter->SetInputConnection(cuboid->GetOutputPort());
+//         transformFilter->SetTransform(transform);
+//         transformFilter->Update();
+
+//         // 获取变换后的 vtkPolyData
+//         vtkSmartPointer<vtkPolyData> transformedPolyData = transformFilter->GetOutput();
+
+//         return createPointCloud(transformedPolyData, sourceCloud);
+
+//         // QVector4D xAxis(1,0,0,0),yAxis(0,1,0,0),zAxis(0,0,1,0);
+//         // double x= M_PI*cuboid->getAngleX()/180;
+//         // double y= M_PI*cuboid->getAngleY()/180;
+//         // double z= M_PI*cuboid->getAngleZ()/180;
+
+
+//         // xAxis.setX(cos(y)*cos(z)-sin(y)*sin(z));
+//         // xAxis.setY(sin(z)*cos(y)+sin(y)*cos(z));
+//         // xAxis.setZ(-sin(y));
+
+
+//         // yAxis.setX(cos(z)*sin(y)*sin(x)+sin(z)*cos(x));
+//         // yAxis.setY(sin(x)*sin(y)*sin(z)-cos(z)*cos(x));
+//         // yAxis.setZ(cos(y)*sin(x));
+
+
+//         // zAxis.setX(cos(z)*sin(y)*cos(x)-sin(z)*sin(x));
+//         // zAxis.setY(sin(z)*sin(y)*cos(x)+cos(z)*sin(x));
+//         // zAxis.setZ(cos(y)*cos(x));
+
+//         // return createPointCloud(cuboid->getCenter(),xAxis,yAxis,zAxis,cuboid->getLength(),cuboid->getWidth(),cuboid->getHeight(),sourceCloud);
+//     }
+//     return nullptr;
+// }
