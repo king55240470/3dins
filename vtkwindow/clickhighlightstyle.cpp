@@ -40,6 +40,9 @@ void MouseInteractorHighlightActor::OnLeftButtonDown()
         CEntity* entity=actorToEntity[newPickedActor];
 
         if(m_pMainWin->getPWinToolWidget()->IsFindPoint_Checked()){
+            QString log = QString("已选中点：(%1, %2, %3)").arg(QString::number(pos[0], 'f', 4))
+                              .arg(QString::number(pos[1], 'f', 4)).arg(QString::number(pos[2], 'f', 4));
+            m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
             m_pMainWin->getChosenListMgr()->CreatPosition(pos); // 将选中的坐标传入管理器
             auto actor = CreatHighLightPoint(pos);// 生成一个用于高亮的顶点，并存入pickedActors
             HighlightActor(actor);
@@ -51,6 +54,8 @@ void MouseInteractorHighlightActor::OnLeftButtonDown()
             QString log = QString("已选中点云: ") + cloudEntity->GetObjectAutoName();
             m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
             m_pMainWin->getpWinFileMgr()->cloudptr = cloudEntity->m_pointCloud.makeShared(); // 给拟合用的cloudptr赋值
+
+            ShowBoundBox(newPickedActor);
 
             // 如果选中对比点云，则得到点的真实坐标
             if(cloudEntity->isComparsionCloud){
@@ -109,6 +114,7 @@ void MouseInteractorHighlightActor::OnRightButtonDown()
     picker->Pick(clickPos[0], clickPos[1], clickPos[2], renderer);
     // 获取选中的actor并取消高亮
     vtkActor* newpickedActor = picker->GetActor();
+    renderer->RemoveActor(boxActor); // 清除边界框
 
     // 如果选中了actor
     if(newpickedActor){
@@ -191,8 +197,9 @@ void MouseInteractorHighlightActor::DeleteHighLightPoint()
             if(point_actors[i] == actor)
                 renderer->RemoveActor(actor);
         }
-        renderer->Modified(); // 更新渲染器
     }
+    renderer->RemoveActor(boxActor);
+    renderer->Render();
 }
 
 void MouseInteractorHighlightActor::CancelHighlightActors()
@@ -218,14 +225,11 @@ void MouseInteractorHighlightActor::HighlightActor(vtkActor* actor)
         // 让actor高亮，并放在窗口最上层
         actor->GetProperty()->SetColor(MainWindow::HighLightColor[0], MainWindow::HighLightColor[1],
                                        MainWindow::HighLightColor[2]);
-        actor->GetProperty()->SetPointSize(MainWindow::ActorPointSize + 3);
+        actor->GetProperty()->SetPointSize(MainWindow::ActorPointSize);
         actor->GetProperty()->SetLineWidth(MainWindow::ActorLineWidth + 3);
-
-        if (renderer != nullptr){
-            // 将 actor 置于最上层
+        if(renderer != nullptr){
             renderer->RemoveActor(actor);
             renderer->AddActor(actor);
-            renderer->Render();
         }
     }
 }
@@ -241,6 +245,31 @@ void MouseInteractorHighlightActor::ResetActor(vtkActor* actor)
             actor->GetProperty()->DeepCopy(pair.second);
             break;
         }
+    }
+    renderer->RemoveActor(boxActor); // 清除边界框
+}
+
+void MouseInteractorHighlightActor::ShowBoundBox(vtkActor *actor)
+{
+    // 获取 actor 的边界框
+    double bounds[6];
+    actor->GetBounds(bounds);
+
+    // 创建边界框的actor
+    auto boundBox = vtkSmartPointer<vtkOutlineFilter>::New();
+    boundBox->SetInputConnection(actor->GetMapper()->GetInputConnection(0, 0));
+    boundBox->Update();
+    auto boxMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    boxMapper->SetInputConnection(boundBox->GetOutputPort());
+    boxActor = vtkSmartPointer<vtkActor>::New();
+    boxActor->SetMapper(boxMapper);
+    boxActor->GetProperty()->SetColor(1, 1, 0); // 设置边界框的颜色
+    boxActor->GetProperty()->SetLineWidth(MainWindow::ActorLineWidth);       // 设置边界框的线宽
+
+    if (renderer != nullptr && boxActor){
+        renderer->RemoveActor(boxActor);
+        renderer->AddActor(boxActor);
+        renderer->Render();
     }
 }
 

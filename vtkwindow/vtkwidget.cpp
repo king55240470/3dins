@@ -228,9 +228,30 @@ void VtkWidget::createText(CEntity* entity)
     infoTextActor->GetTextProperty()->SetBold(1);
     infoTextActor->SetLayerNumber(1);
 
+    // 创建标题文本演员
+    titleTextActor = vtkSmartPointer<vtkTextActor>::New();
+    titleTextActor->GetTextProperty()->SetFontSize(18); // 设置字体大小
+    titleTextActor->GetTextProperty()->SetFontFamilyToTimes(); // 设置字体样式
+    titleTextActor->GetTextProperty()->SetColor(1, 1, 0);
+    titleTextActor->GetTextProperty()->SetBold(1); // 设置加粗
+    titleTextActor->SetInput(firstLine.toUtf8().constData()); // 设置输入文本
+
+    // 计算两个actor大小
+    double infoBox[4];
+    infoTextActor->GetBoundingBox(renderer, infoBox);
+    textWidth = infoBox[1] - infoBox[0];
+    textHeight = infoBox[3] - infoBox[2];
+
+    double titleBox[4];
+    titleTextActor->GetBoundingBox(renderer, titleBox);
+    auto titleWidth = titleBox[1] - titleBox[0];
+    auto titleHeight = titleBox[3] - titleBox[2];
+    double width = titleWidth > textWidth ? titleWidth:textWidth + 30;
+    double height = textHeight + titleHeight + 20;
+
     // 计算文本框的位置
-    double x = renWin->GetSize()[0] - 320 - increaseDis[0];
-    double y = renWin->GetSize()[1] - 170 - increaseDis[1];
+    double x = renWin->GetSize()[0] - width - increaseDis[0];
+    double y = renWin->GetSize()[1] - height - increaseDis[1];
     infoTextActor->SetPosition(x, y);
     if(increaseDis[1]  <= renWin->GetSize()[1] - 300){
         increaseDis[1] += 200;
@@ -239,14 +260,6 @@ void VtkWidget::createText(CEntity* entity)
         increaseDis[1] = 0;
         increaseDis[0] += renWin->GetSize()[0] - 300; // 放到窗口左边显示
     }
-
-    // 检查是否重叠，并调整位置
-    double bbox[4];
-    infoTextActor->GetBoundingBox(renderer, bbox);
-    textWidth = bbox[1] - bbox[0];
-    textHeight = bbox[3] - bbox[2];
-    double width = textWidth + 20;
-    double height = textHeight + 10;
 
     // 检查是否与其他文本框重叠
     for (auto it = entityToTextActors.begin(); it != entityToTextActors.end(); ++it)
@@ -261,13 +274,6 @@ void VtkWidget::createText(CEntity* entity)
         }
     }
 
-    // 创建标题文本演员
-    titleTextActor = vtkSmartPointer<vtkTextActor>::New();
-    titleTextActor->GetTextProperty()->SetFontSize(18); // 设置字体大小
-    titleTextActor->GetTextProperty()->SetFontFamilyToTimes(); // 设置字体样式
-    titleTextActor->GetTextProperty()->SetColor(1, 1, 0);
-    titleTextActor->GetTextProperty()->SetBold(1); // 设置加粗
-    titleTextActor->SetInput(firstLine.toUtf8().constData()); // 设置输入文本
     titleTextActor->SetPosition(x, y + textHeight); // 设置标题文本的位置
 
     // 创建文本框
@@ -364,12 +370,14 @@ vtkSmartPointer<vtkActor2D> VtkWidget::createLine(CEntity* entity, vtkSmartPoint
     if (entity->getEntityType() == enDistance)
     {
         CDistance* dis = static_cast<CDistance*>(entity); // 安全转换类型
-        double distance = dis->getdistance();
         CPosition begin = dis->getbegin();
-        CPosition projection = dis->getProjection();
-        b.x = begin.x;
-        b.y = begin.y;
-        b.z = begin.z;
+        CPosition pro = dis->getProjection();
+        // 将begin转为全局坐标
+        QVector4D posVec_b = entity->GetRefCoord()->m_mat * QVector4D(begin.x, begin.y, begin.z, 1);
+        CPosition glbPos_b(posVec_b.x(), posVec_b.y(), posVec_b.z());
+        b.x = pro.x;
+        b.y = pro.y;
+        b.z = pro.z;
     }
     else if (entity->getEntityType() == enPoint)
     {
@@ -420,7 +428,7 @@ vtkSmartPointer<vtkActor2D> VtkWidget::createLine(CEntity* entity, vtkSmartPoint
         auto point = surface->m_pointCloud.points[0];
         b = CPosition(point.x, point.y, point.z);
     }
-    entityToEndPoints[entity] = b; // 将该线段的终点存入map
+    entityToEndPoints[entity] = b;
 
     coordinate = vtkSmartPointer<vtkCoordinate>::New();
     coordinate->SetValue(b.x, b.y, b.z);

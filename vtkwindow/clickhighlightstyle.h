@@ -31,6 +31,7 @@
 #include <vtkProperty.h>
 #include <vtkCallbackCommand.h>
 #include <vtkCommand.h>
+#include <vtkOutlineFilter.h>
 
 class ToolWidget;
 class VtkPresetWidget;
@@ -59,6 +60,7 @@ public:
     void CancelHighlightActors();
     void HighlightActor(vtkActor* actor);// 高亮显示指定的actor
     void ResetActor(vtkActor* actor);// 恢复指定的actor的属性到之前的状态
+    void ShowBoundBox(vtkActor* actor);
 
     void SetCameraToOptimalView(vtkSmartPointer<vtkActor> actor, vtkRenderer* renderer);
 
@@ -75,6 +77,8 @@ private:
 
     // 存储所有用于高亮的顶点
     QVector<vtkActor*> point_actors;
+
+    vtkSmartPointer<vtkActor> boxActor; // 边界框
 
     // 渲染器和交互器
     vtkRenderer* renderer = nullptr;
