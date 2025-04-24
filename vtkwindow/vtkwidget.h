@@ -116,6 +116,8 @@ public:
     void onFrontView(); // 正视
     void onIsometricView(); // 旋转立体
     double* getViewAngles();
+    double* getBoundboxData(CEntity* entity); // 返回长宽高
+    CPosition getBoundboxCenter(CEntity* entity); // 返回外包盒中心
 
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr onFilter(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud); // 点云滤波
     void onCompare();// 比较两个点云

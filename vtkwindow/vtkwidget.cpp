@@ -1216,6 +1216,41 @@ double *VtkWidget::getViewAngles()
     return angles;
 }
 
+double *VtkWidget::getBoundboxData(CEntity* entity)
+{
+    // 得到对应的actor
+    auto& actorMap = m_pMainWin->getactorToEntityMap();
+    auto actor = actorMap.key(entity);
+    double* boxData = new double();
+
+    // 获取 actor 的边界框
+    double bounds[6];
+    actor->GetBounds(bounds);
+    double length = bounds[1] - bounds[0];
+    double width = bounds[3] - bounds[2];
+    double height = bounds[5] - bounds[4];
+    boxData[0] = length;
+    boxData[1] = width;
+    boxData[2] = height;
+
+    return boxData;
+}
+
+CPosition VtkWidget::getBoundboxCenter(CEntity *entity)
+{
+    // 得到对应的actor
+    auto& actorMap = m_pMainWin->getactorToEntityMap();
+    auto actor = actorMap.key(entity);
+
+    // 获取 actor 的边界框
+    double bounds[6];
+    actor->GetBounds(bounds);
+    CPosition center(bounds[1] - bounds[0], bounds[3] - bounds[2], bounds[5] - bounds[4]);
+    qDebug() << center.x << center.y << center.z;
+
+    return CPosition(center.x/2, center.y/2, center.z);
+}
+
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr VtkWidget::onFilter(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud)
 {
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZRGB>);
