@@ -1323,7 +1323,7 @@ void VtkWidget::onCompare()
     m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
     m_pMainWin->NotifySubscribe();
 
-    m_pMainWin->getPWinFileManagerWidget()->allHide();
+    m_pMainWin->getPWinFileManagerWidget()->allHide("对比");
 
     //调用保存图像函数
     m_pMainWin->getPWinToolWidget()->onSaveImage();

@@ -58,7 +58,7 @@ public:
     void UpdateInfo();
     bool isChildOf(QStandardItem*, QStandardItem*);
 
-    void allHide();//全部隐藏
+    void allHide(QString a);//全部隐藏
     void allRecover();//全部恢复
 
 private slots:
