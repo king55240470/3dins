@@ -44,17 +44,13 @@ void MouseInteractorHighlightActor::OnLeftButtonDown()
                               .arg(QString::number(pos[1], 'f', 4)).arg(QString::number(pos[2], 'f', 4));
             m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
             m_pMainWin->getChosenListMgr()->CreatPosition(pos); // 将选中的坐标传入管理器
-            auto actor = CreatHighLightPoint(pos);// 生成一个用于高亮的顶点，并存入pickedActors
-            HighlightActor(actor);
+            CreatHighLightPoint(pos);// 生成一个用于高亮的顶点，并存入pickedActors
         }
 
         // 如果选中的是点云类型的actor
         if(entity->GetUniqueType() == enPointCloud){
             auto cloudEntity = (CPointCloud*)entity;
-            QString log = QString("已选中点云: ") + cloudEntity->GetObjectAutoName();
-            m_pMainWin->getPWinVtkPresetWidget()->setWidget(log);
             m_pMainWin->getpWinFileMgr()->cloudptr = cloudEntity->m_pointCloud.makeShared(); // 给拟合用的cloudptr赋值
-
             ShowBoundBox(newPickedActor);
 
             // 如果选中对比点云，则得到点的真实坐标
@@ -103,7 +99,7 @@ void MouseInteractorHighlightActor::OnLeftButtonUp()
     vtkInteractorStyleTrackballCamera::OnLeftButtonUp();
 }
 
-// 重写右键按下事件，取消选中；双击则弹出菜单栏
+// 重写右键按下事件，取消选中
 void MouseInteractorHighlightActor::OnRightButtonDown()
 {
     // 获取鼠标点击的位置
@@ -114,13 +110,11 @@ void MouseInteractorHighlightActor::OnRightButtonDown()
     picker->Pick(clickPos[0], clickPos[1], clickPos[2], renderer);
     // 获取选中的actor并取消高亮
     vtkActor* newpickedActor = picker->GetActor();
+    m_pMainWin->getChosenListMgr()->getChosenActorAxes().clear(); // 清除所有选中的点的记录
     renderer->RemoveActor(boxActor); // 清除边界框
 
     // 如果选中了actor
     if(newpickedActor){
-        // 清除选中的点
-        m_pMainWin->getChosenListMgr()->getChosenActorAxes().clear(); // 清除所有选中的点的记录
-
         // 遍历存储的PickedActors，寻找并恢复被选中的actor的属性
         for (auto item = pickedActors.begin(); item != pickedActors.end();item++)
         {
@@ -137,7 +131,6 @@ void MouseInteractorHighlightActor::OnRightButtonDown()
     // 如果选中的是空白，则取消全部高亮，并清除选中点在chosenlist的记录
     else {
         CancelHighlightActors();
-        m_pMainWin->getChosenListMgr()->getChosenActorAxes().clear(); // 清除所有选中的点的记录
     }
 
     // 调用基类的右键按下事件处理方法
@@ -172,7 +165,8 @@ vtkActor* MouseInteractorHighlightActor::CreatHighLightPoint(double pos[3])
     // 创建执行器，添加mapper
     vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
-    actor->GetProperty()->SetPointSize(7); // 设置点的大小
+    actor->GetProperty()->SetPointSize(MainWindow::ActorPointSize + 3); // 设置点的大小
+    actor->GetProperty()->SetColor(MainWindow::HighLightColor);
     point_actors.push_back(actor); // 存入point_actors
 
     renderer->AddActor(actor);
@@ -189,7 +183,6 @@ void MouseInteractorHighlightActor::DeleteHighLightPoint()
 
     // 初始化迭代器，准备遍历actor集合
     actorCollection->InitTraversal(it);
-
     vtkActor* actor;
     // 如果渲染器中有用于高亮的顶点，即point_actors不为空，则从窗口中移除
     while ((actor = actorCollection->GetNextActor(it)) != nullptr){
@@ -198,7 +191,7 @@ void MouseInteractorHighlightActor::DeleteHighLightPoint()
                 renderer->RemoveActor(actor);
         }
     }
-    renderer->RemoveActor(boxActor);
+    point_actors.clear();
     renderer->Render();
 }
 
@@ -210,6 +203,7 @@ void MouseInteractorHighlightActor::CancelHighlightActors()
         ResetActor(item->first); // 恢复actor的属性
     }
     DeleteHighLightPoint();
+    renderer->RemoveActor(boxActor);
     renderer->Render();
 }
 
@@ -218,6 +212,10 @@ void MouseInteractorHighlightActor::HighlightActor(vtkActor* actor)
 {
     // 如果actor没被隐藏
     if(actor != nullptr){
+        // 得到选中的centity
+        QMap<vtkSmartPointer<vtkActor>, CEntity*>& actorToEntity=m_pMainWin->getactorToEntityMap();
+        CEntity* entity=actorToEntity[actor];
+
         // 保存高亮前的属性
         vtkSmartPointer<vtkProperty> originalProperty = vtkSmartPointer<vtkProperty>::New();
         originalProperty->DeepCopy(actor->GetProperty());
@@ -225,7 +223,9 @@ void MouseInteractorHighlightActor::HighlightActor(vtkActor* actor)
         // 让actor高亮，并放在窗口最上层
         actor->GetProperty()->SetColor(MainWindow::HighLightColor[0], MainWindow::HighLightColor[1],
                                        MainWindow::HighLightColor[2]);
-        actor->GetProperty()->SetPointSize(MainWindow::ActorPointSize);
+        if(entity->GetUniqueType() != enPointCloud){
+            actor->GetProperty()->SetPointSize(MainWindow::ActorPointSize + 3);
+        }
         actor->GetProperty()->SetLineWidth(MainWindow::ActorLineWidth + 3);
         if(renderer != nullptr){
             renderer->RemoveActor(actor);
@@ -266,7 +266,7 @@ void MouseInteractorHighlightActor::ShowBoundBox(vtkActor *actor)
     boxActor->GetProperty()->SetColor(1, 1, 0); // 设置边界框的颜色
     boxActor->GetProperty()->SetLineWidth(MainWindow::ActorLineWidth);       // 设置边界框的线宽
 
-    if (renderer != nullptr && boxActor){
+    if (renderer != nullptr && boxActor != nullptr){
         renderer->RemoveActor(boxActor);
         renderer->AddActor(boxActor);
         renderer->Render();

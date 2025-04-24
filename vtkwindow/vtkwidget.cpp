@@ -244,8 +244,8 @@ void VtkWidget::createText(CEntity* entity)
 
     double titleBox[4];
     titleTextActor->GetBoundingBox(renderer, titleBox);
-    auto titleWidth = titleBox[1] - titleBox[0];
-    auto titleHeight = titleBox[3] - titleBox[2];
+    titleWidth = titleBox[1] - titleBox[0];
+    titleHeight = titleBox[3] - titleBox[2];
     double width = titleWidth > textWidth ? titleWidth:textWidth + 30;
     double height = textHeight + titleHeight + 20;
 
@@ -316,10 +316,10 @@ vtkSmartPointer<vtkActor2D> VtkWidget::createTextBox(vtkSmartPointer<vtkTextActo
     points = vtkSmartPointer<vtkPoints>::New();
     double bbox[4];
     textActor->GetBoundingBox(renderer, bbox);
-    double textWidth = bbox[1] - bbox[0];
-    double textHeight = bbox[3] - bbox[2];
+    textWidth = bbox[1] - bbox[0];
+    textHeight = bbox[3] - bbox[2];
     double width = textWidth + 25;
-    double height = textHeight + 45; // 加上标题行的高度
+    double height = textHeight + 40; // 加上标题行的高度
 
     points->InsertNextPoint(0, 0, 0);
     points->InsertNextPoint(width, 0, 0);
@@ -367,63 +367,59 @@ vtkSmartPointer<vtkActor2D> VtkWidget::createLine(CEntity* entity, vtkSmartPoint
     CPosition b;
     QString filename;
 
-    if (entity->getEntityType() == enDistance)
+    if (entity->GetUniqueType() == enDistance)
     {
-        CDistance* dis = static_cast<CDistance*>(entity); // 安全转换类型
+        CDistance* dis = static_cast<CDistance*>(entity); // 安全类型转换
         CPosition begin = dis->getbegin();
-        CPosition pro = dis->getProjection();
-        // 将begin转为全局坐标
-        QVector4D posVec_b = entity->GetRefCoord()->m_mat * QVector4D(begin.x, begin.y, begin.z, 1);
-        CPosition glbPos_b(posVec_b.x(), posVec_b.y(), posVec_b.z());
-        b.x = pro.x;
-        b.y = pro.y;
-        b.z = pro.z;
+        b.x = begin.x;
+        b.y = begin.y;
+        b.z = begin.z;
     }
-    else if (entity->getEntityType() == enPoint)
+    else if (entity->GetUniqueType() == enPoint)
     {
         CPoint* point = static_cast<CPoint*>(entity);
         b = point->GetPt();
     }
-    else if (entity->getEntityType() == enLine)
+    else if (entity->GetUniqueType() == enLine)
     {
         CLine* line = static_cast<CLine*>(entity);
-        b = line->GetObjectCenterLocalPoint();
+        b = line->getBegin();
     }
-    else if (entity->getEntityType() == enCircle)
+    else if (entity->GetUniqueType() == enCircle)
     {
         CCircle* circle = static_cast<CCircle*>(entity);
         b = circle->getCenter();
     }
-    else if (entity->getEntityType() == enSphere)
+    else if (entity->GetUniqueType() == enSphere)
     {
         CSphere* s = static_cast<CSphere*>(entity);
         b = s->getCenter();
     }
-    else if (entity->getEntityType() == enPlane)
+    else if (entity->GetUniqueType() == enPlane)
     {
         CPlane* s = static_cast<CPlane*>(entity);
         b = s->getCenter();
     }
-    else if (entity->getEntityType() == enCylinder)
+    else if (entity->GetUniqueType() == enCylinder)
     {
         CCylinder* s = static_cast<CCylinder*>(entity);
         b = s->getBtm_center();
     }
-    else if (entity->getEntityType() == enCone)
+    else if (entity->GetUniqueType() == enCone)
     {
         CCone* s = static_cast<CCone*>(entity);
         b = s->getVertex();
     }
-    else if(entity->getEntityType() == enAngle){
+    else if(entity->GetUniqueType() == enAngle){
         CAngle* angle = static_cast<CAngle*>(entity);
         b = angle->getVertex(); // 指向线段终点是两条线的 "交点"
     }
-    else if(entity->getEntityType() == enPointCloud){
+    else if(entity->GetUniqueType() == enPointCloud){
         CPointCloud* cloud = static_cast<CPointCloud*>(entity);
         auto point = cloud->m_pointCloud.points[0];
         b = CPosition(point.x, point.y, point.z);
     }
-    else if(entity->getEntityType() == enSurfaces){
+    else if(entity->GetUniqueType() == enSurfaces){
         CSurfaces* surface = static_cast<CSurfaces*>(entity);
         auto point = surface->m_pointCloud.points[0];
         b = CPosition(point.x, point.y, point.z);
@@ -1429,18 +1425,9 @@ void VtkWidget::onAlign()
     float radius1 = calculateSamplingRadius(cloud1);
     float radius2 = calculateSamplingRadius(cloud2);
 
-    // 如果点云较小，则只进行一轮采样
-    if(radius2 <= 0.05f){
-        // 均匀下采样
-        pcl::UniformSampling<pcl::PointXYZRGB> uniformSampling;
-        uniformSampling.setRadiusSearch(radius1); // 设置采样半径，这个参数是关键
-        uniformSampling.setInputCloud(cloud1);
-        uniformSampling.filter(*downsampledCloud1);
-        uniformSampling.setRadiusSearch(radius2);
-        uniformSampling.setInputCloud(cloud2);
-        uniformSampling.filter(*downsampledCloud2);
-    }
-    else{ // 如果点云较大，则动态设置采样半径
+    // 如果点云较小，则不进行采样
+    if(radius2 > 0.05f && radius1> 0.05f){
+         // 如果点云较大，则动态设置采样半径
         float initialRadius = 0.01f; // 初始采样半径
         float maxRadius = 0.2f;  // 最大采样半径
         float targetSize = 10000;    // 目标点云大小

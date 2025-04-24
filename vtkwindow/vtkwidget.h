@@ -203,7 +203,7 @@ private:
     QMap<CEntity*, vtkSmartPointer<vtkActor2D>> entityToIcons; // 每个图形对应的关闭图标
     QMap<CEntity*, CPosition> entityToEndPoints; // 每个显示信息的centity对应一个指向线段的落点
     double increaseDis[2] = {0, 0}; // 每增加一个文本显示，自动间隔一段距离
-    double textWidth, textHeight;
+    double textWidth, textHeight, titleWidth, titleHeight;
     double* position; // infoTextActor 的位置
     double textBox[4];
     // 以下变量用于中键平移窗口时改变指向线段
