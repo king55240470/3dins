@@ -408,6 +408,9 @@ Makefile: 3D.pro C:\Qt\6.6.0\msvc2019_64\mkspecs\win32-msvc\qmake.conf C:\Qt\6.6
 		C:\Qt\6.6.0\msvc2019_64\lib\Qt6Widgets.prl \
 		C:\Qt\6.6.0\msvc2019_64\lib\Qt6StateMachine.prl \
 		C:\Qt\6.6.0\msvc2019_64\lib\Qt6Gui.prl \
+		C:\Qt\6.6.0\msvc2019_64\lib\Qt6HttpServer.prl \
+		C:\Qt\6.6.0\msvc2019_64\lib\Qt6WebSockets.prl \
+		C:\Qt\6.6.0\msvc2019_64\lib\Qt6Network.prl \
 		C:\Qt\6.6.0\msvc2019_64\lib\Qt6Core.prl \
 		C:\Qt\6.6.0\msvc2019_64\lib\Qt6EntryPoint.prl \
 		C:\Qt\6.6.0\msvc2019_64\mkspecs\features\build_pass.prf \
@@ -423,6 +426,9 @@ Makefile: 3D.pro C:\Qt\6.6.0\msvc2019_64\mkspecs\win32-msvc\qmake.conf C:\Qt\6.6
 		C:\Qt\6.6.0\msvc2019_64\lib\Qt6Widgetsd.prl \
 		C:\Qt\6.6.0\msvc2019_64\lib\Qt6StateMachined.prl \
 		C:\Qt\6.6.0\msvc2019_64\lib\Qt6Guid.prl \
+		C:\Qt\6.6.0\msvc2019_64\lib\Qt6HttpServerd.prl \
+		C:\Qt\6.6.0\msvc2019_64\lib\Qt6WebSocketsd.prl \
+		C:\Qt\6.6.0\msvc2019_64\lib\Qt6Networkd.prl \
 		C:\Qt\6.6.0\msvc2019_64\lib\Qt6Cored.prl \
 		C:\Qt\6.6.0\msvc2019_64\lib\Qt6EntryPointd.prl
 	$(QMAKE) -o Makefile 3D.pro -spec win32-msvc "CONFIG+=debug" "CONFIG+=qml_debug"
@@ -750,6 +756,9 @@ C:\Qt\6.6.0\msvc2019_64\lib\Qt6AxContainer.prl:
 C:\Qt\6.6.0\msvc2019_64\lib\Qt6Widgets.prl:
 C:\Qt\6.6.0\msvc2019_64\lib\Qt6StateMachine.prl:
 C:\Qt\6.6.0\msvc2019_64\lib\Qt6Gui.prl:
+C:\Qt\6.6.0\msvc2019_64\lib\Qt6HttpServer.prl:
+C:\Qt\6.6.0\msvc2019_64\lib\Qt6WebSockets.prl:
+C:\Qt\6.6.0\msvc2019_64\lib\Qt6Network.prl:
 C:\Qt\6.6.0\msvc2019_64\lib\Qt6Core.prl:
 C:\Qt\6.6.0\msvc2019_64\lib\Qt6EntryPoint.prl:
 C:\Qt\6.6.0\msvc2019_64\mkspecs\features\build_pass.prf:
@@ -765,6 +774,9 @@ C:\Qt\6.6.0\msvc2019_64\lib\Qt6AxContainerd.prl:
 C:\Qt\6.6.0\msvc2019_64\lib\Qt6Widgetsd.prl:
 C:\Qt\6.6.0\msvc2019_64\lib\Qt6StateMachined.prl:
 C:\Qt\6.6.0\msvc2019_64\lib\Qt6Guid.prl:
+C:\Qt\6.6.0\msvc2019_64\lib\Qt6HttpServerd.prl:
+C:\Qt\6.6.0\msvc2019_64\lib\Qt6WebSocketsd.prl:
+C:\Qt\6.6.0\msvc2019_64\lib\Qt6Networkd.prl:
 C:\Qt\6.6.0\msvc2019_64\lib\Qt6Cored.prl:
 C:\Qt\6.6.0\msvc2019_64\lib\Qt6EntryPointd.prl:
 qmake: FORCE

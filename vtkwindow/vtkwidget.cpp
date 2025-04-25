@@ -18,6 +18,7 @@
 #include <pcl/filters/crop_hull.h>
 #include <pcl/filters/statistical_outlier_removal.h>
 #include <pcl/filters/normal_refinement.h>
+#include <pcl/filters/conditional_removal.h>
 
 #include <pcl/surface/poisson.h>
 #include <pcl/surface/impl/poisson.hpp>
@@ -83,6 +84,8 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
         // camera->SetViewAngle(60); // 调整视野角度
         // camera->SetClippingRange(0.1, 1000);// 根据场景的具体大小和需要调整裁剪范围
         camera->OrthogonalizeViewUp(); // 确保与SetViewUp方向正交
+        camera->GetPosition();
+        camera->GetViewAngle();
 
         renderer->ResetCamera();
         renWin->Render();
@@ -227,9 +230,30 @@ void VtkWidget::createText(CEntity* entity)
     infoTextActor->GetTextProperty()->SetBold(1);
     infoTextActor->SetLayerNumber(1);
 
+    // 创建标题文本演员
+    titleTextActor = vtkSmartPointer<vtkTextActor>::New();
+    titleTextActor->GetTextProperty()->SetFontSize(18); // 设置字体大小
+    titleTextActor->GetTextProperty()->SetFontFamilyToTimes(); // 设置字体样式
+    titleTextActor->GetTextProperty()->SetColor(1, 1, 0);
+    titleTextActor->GetTextProperty()->SetBold(1); // 设置加粗
+    titleTextActor->SetInput(firstLine.toUtf8().constData()); // 设置输入文本
+
+    // 计算两个actor大小
+    double infoBox[4];
+    infoTextActor->GetBoundingBox(renderer, infoBox);
+    textWidth = infoBox[1] - infoBox[0];
+    textHeight = infoBox[3] - infoBox[2];
+
+    double titleBox[4];
+    titleTextActor->GetBoundingBox(renderer, titleBox);
+    titleWidth = titleBox[1] - titleBox[0];
+    titleHeight = titleBox[3] - titleBox[2];
+    double width = titleWidth > textWidth ? titleWidth:textWidth + 30;
+    double height = textHeight + titleHeight + 20;
+
     // 计算文本框的位置
-    double x = renWin->GetSize()[0] - 320 - increaseDis[0];
-    double y = renWin->GetSize()[1] - 170 - increaseDis[1];
+    double x = renWin->GetSize()[0] - width - increaseDis[0];
+    double y = renWin->GetSize()[1] - height - increaseDis[1];
     infoTextActor->SetPosition(x, y);
     if(increaseDis[1]  <= renWin->GetSize()[1] - 300){
         increaseDis[1] += 200;
@@ -238,14 +262,6 @@ void VtkWidget::createText(CEntity* entity)
         increaseDis[1] = 0;
         increaseDis[0] += renWin->GetSize()[0] - 300; // 放到窗口左边显示
     }
-
-    // 检查是否重叠，并调整位置
-    double bbox[4];
-    infoTextActor->GetBoundingBox(renderer, bbox);
-    textWidth = bbox[1] - bbox[0];
-    textHeight = bbox[3] - bbox[2];
-    double width = textWidth + 20;
-    double height = textHeight + 10;
 
     // 检查是否与其他文本框重叠
     for (auto it = entityToTextActors.begin(); it != entityToTextActors.end(); ++it)
@@ -260,13 +276,6 @@ void VtkWidget::createText(CEntity* entity)
         }
     }
 
-    // 创建标题文本演员
-    titleTextActor = vtkSmartPointer<vtkTextActor>::New();
-    titleTextActor->GetTextProperty()->SetFontSize(18); // 设置字体大小
-    titleTextActor->GetTextProperty()->SetFontFamilyToTimes(); // 设置字体样式
-    titleTextActor->GetTextProperty()->SetColor(1, 1, 0);
-    titleTextActor->GetTextProperty()->SetBold(1); // 设置加粗
-    titleTextActor->SetInput(firstLine.toUtf8().constData()); // 设置输入文本
     titleTextActor->SetPosition(x, y + textHeight); // 设置标题文本的位置
 
     // 创建文本框
@@ -309,10 +318,10 @@ vtkSmartPointer<vtkActor2D> VtkWidget::createTextBox(vtkSmartPointer<vtkTextActo
     points = vtkSmartPointer<vtkPoints>::New();
     double bbox[4];
     textActor->GetBoundingBox(renderer, bbox);
-    double textWidth = bbox[1] - bbox[0];
-    double textHeight = bbox[3] - bbox[2];
+    textWidth = bbox[1] - bbox[0];
+    textHeight = bbox[3] - bbox[2];
     double width = textWidth + 25;
-    double height = textHeight + 45; // 加上标题行的高度
+    double height = textHeight + 40; // 加上标题行的高度
 
     points->InsertNextPoint(0, 0, 0);
     points->InsertNextPoint(width, 0, 0);
@@ -349,6 +358,7 @@ vtkSmartPointer<vtkActor2D> VtkWidget::createTextBox(vtkSmartPointer<vtkTextActo
     rectangleActor->GetProperty()->SetLineWidth(4);
     rectangleActor->SetPosition(x - 5, y - 5);
     rectangleActor->SetLayerNumber(3);
+    getRenderer();
 
     return rectangleActor;
 }
@@ -359,66 +369,64 @@ vtkSmartPointer<vtkActor2D> VtkWidget::createLine(CEntity* entity, vtkSmartPoint
     CPosition b;
     QString filename;
 
-    if (entity->getEntityType() == enDistance)
+    if (entity->GetUniqueType() == enDistance)
     {
-        CDistance* dis = static_cast<CDistance*>(entity); // 安全转换类型
-        double distance = dis->getdistance();
+        CDistance* dis = static_cast<CDistance*>(entity); // 安全类型转换
         CPosition begin = dis->getbegin();
-        CPosition projection = dis->getProjection();
         b.x = begin.x;
         b.y = begin.y;
         b.z = begin.z;
     }
-    else if (entity->getEntityType() == enPoint)
+    else if (entity->GetUniqueType() == enPoint)
     {
         CPoint* point = static_cast<CPoint*>(entity);
         b = point->GetPt();
     }
-    else if (entity->getEntityType() == enLine)
+    else if (entity->GetUniqueType() == enLine)
     {
         CLine* line = static_cast<CLine*>(entity);
-        b = line->GetObjectCenterLocalPoint();
+        b = line->getBegin();
     }
-    else if (entity->getEntityType() == enCircle)
+    else if (entity->GetUniqueType() == enCircle)
     {
         CCircle* circle = static_cast<CCircle*>(entity);
         b = circle->getCenter();
     }
-    else if (entity->getEntityType() == enSphere)
+    else if (entity->GetUniqueType() == enSphere)
     {
         CSphere* s = static_cast<CSphere*>(entity);
         b = s->getCenter();
     }
-    else if (entity->getEntityType() == enPlane)
+    else if (entity->GetUniqueType() == enPlane)
     {
         CPlane* s = static_cast<CPlane*>(entity);
         b = s->getCenter();
     }
-    else if (entity->getEntityType() == enCylinder)
+    else if (entity->GetUniqueType() == enCylinder)
     {
         CCylinder* s = static_cast<CCylinder*>(entity);
         b = s->getBtm_center();
     }
-    else if (entity->getEntityType() == enCone)
+    else if (entity->GetUniqueType() == enCone)
     {
         CCone* s = static_cast<CCone*>(entity);
         b = s->getVertex();
     }
-    else if(entity->getEntityType() == enAngle){
+    else if(entity->GetUniqueType() == enAngle){
         CAngle* angle = static_cast<CAngle*>(entity);
         b = angle->getVertex(); // 指向线段终点是两条线的 "交点"
     }
-    else if(entity->getEntityType() == enPointCloud){
+    else if(entity->GetUniqueType() == enPointCloud){
         CPointCloud* cloud = static_cast<CPointCloud*>(entity);
         auto point = cloud->m_pointCloud.points[0];
         b = CPosition(point.x, point.y, point.z);
     }
-    else if(entity->getEntityType() == enSurfaces){
+    else if(entity->GetUniqueType() == enSurfaces){
         CSurfaces* surface = static_cast<CSurfaces*>(entity);
         auto point = surface->m_pointCloud.points[0];
         b = CPosition(point.x, point.y, point.z);
     }
-    entityToEndPoints[entity] = b; // 将该线段的终点存入map
+    entityToEndPoints[entity] = b;
 
     coordinate = vtkSmartPointer<vtkCoordinate>::New();
     coordinate->SetValue(b.x, b.y, b.z);
@@ -1133,6 +1141,7 @@ void VtkWidget::onRightView(){
 // 切换相机视角3
 void VtkWidget::onFrontView(){
     vtkCamera *camera = renderer->GetActiveCamera();
+    camera->GetPosition();
     if (camera) {
         camera->SetPosition(0, -1, 0);  // 重置相机位置为正视
         camera->SetFocalPoint(0, 0, 0);
@@ -1215,6 +1224,103 @@ void VtkWidget::onIsometricView(){
 //     manager->Destroy();
 // }
 
+double *VtkWidget::getViewAngles()
+{
+    vtkCamera *camera = renderer->GetActiveCamera();
+    if (!camera)    return nullptr;
+
+    // 获取相机的方向向量
+    double projDir[3];
+    camera->GetDirectionOfProjection(projDir);
+    double viewUp[3];
+    camera->GetViewUp(viewUp);
+
+    // 计算相机的正交向量
+    double right[3];
+    vtkMath::Cross(projDir, viewUp, right);
+
+    // 构建旋转矩阵
+    double rotationMatrix[3][3];
+    for (int i = 0; i < 3; i++) {
+        rotationMatrix[0][i] = right[i];
+        rotationMatrix[1][i] = viewUp[i];
+        rotationMatrix[2][i] = -projDir[i]; // 注意：投影方向是相机的负 z 轴方向
+    }
+
+    // 计算欧拉角（以弧度为单位）
+    double phi, theta, psi;
+    // 根据旋转矩阵计算欧拉角的公式（这里使用 XYZ 固定角序列）
+    theta = asin(rotationMatrix[2][0]);
+    phi = atan2(rotationMatrix[2][1] / cos(theta), rotationMatrix[2][2] / cos(theta));
+    psi = atan2(rotationMatrix[1][0] / cos(theta), rotationMatrix[0][0] / cos(theta));
+
+    // 转换为角度
+    phi = vtkMath::DegreesFromRadians(phi);
+    theta = vtkMath::DegreesFromRadians(theta);
+    psi = vtkMath::DegreesFromRadians(psi);
+
+    // 创建一个 double 数组来存储结果
+    double* angles = new double[3];
+    angles[0] = phi;   // 绕 X 轴的旋转角度
+    angles[1] = theta; // 绕 Y 轴的旋转角度
+    angles[2] = psi;   // 绕 Z 轴的旋转角度
+
+    return angles;
+}
+
+double *VtkWidget::getBoundboxData(CEntity* entity)
+{
+    // 得到对应的actor
+    auto& actorMap = m_pMainWin->getactorToEntityMap();
+    auto actor = actorMap.key(entity);
+    double* boxData = new double();
+
+    // 获取 actor 的边界框
+    double bounds[6];
+    actor->GetBounds(bounds);
+    double length = bounds[1] - bounds[0];
+    double width = bounds[3] - bounds[2];
+    double height = bounds[5] - bounds[4];
+    boxData[0] = length;
+    boxData[1] = width;
+    boxData[2] = height;
+
+    return boxData;
+}
+
+CPosition VtkWidget::getBoundboxCenter(CEntity *entity)
+{
+    // 得到对应的actor
+    auto& actorMap = m_pMainWin->getactorToEntityMap();
+    auto actor = actorMap.key(entity);
+
+    // 获取 actor 的边界框
+    double bounds[6];
+    actor->GetBounds(bounds);
+    CPosition center(bounds[1] - bounds[0], bounds[3] - bounds[2], bounds[5] - bounds[4]);
+    qDebug() << center.x << center.y << center.z;
+
+    return CPosition(center.x/2, center.y/2, center.z);
+}
+
+pcl::PointCloud<pcl::PointXYZRGB>::Ptr VtkWidget::onFilter(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud)
+{
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZRGB>);
+
+    if(!cloud){
+        m_pMainWin->getPWinVtkPresetWidget()->setWidget("滤波的输入点云为空！");
+    }
+
+    // 统计滤波
+    pcl::StatisticalOutlierRemoval<pcl::PointXYZRGB> sor;
+    sor.setInputCloud(cloud);
+    sor.setMeanK(50);   // 考虑的邻近点的数量
+    sor.setStddevMulThresh(1.0);  // 判断离群点的阈值
+    sor.filter(*cloud_filtered);
+
+    return cloud_filtered;
+}
+
 // 比较两个点云的处理函数
 void VtkWidget::onCompare()
 {
@@ -1240,7 +1346,7 @@ void VtkWidget::onCompare()
     }
 
     if(clouds.size()!=2){
-        QMessageBox::critical(this, "错误", "点云数目异常(只允许两个点云)");
+        m_pMainWin->getPWinVtkPresetWidget()->setWidget("需要两个点云！");
         return ;
     }
 
@@ -1249,7 +1355,7 @@ void VtkWidget::onCompare()
 
     // 检查点云是否为空
     if (cloud1->empty() || cloud2->empty()) {
-        QMessageBox::warning(this, "Warning", "其中一个或两个点云为空!");
+        m_pMainWin->getPWinVtkPresetWidget()->setWidget("点云为空！");
         return;
     }
 
@@ -1304,7 +1410,7 @@ void VtkWidget::onCompare()
     m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
     m_pMainWin->NotifySubscribe();
 
-    m_pMainWin->getPWinFileManagerWidget()->allHide();
+    m_pMainWin->getPWinFileManagerWidget()->allHide("对比");
 
     // 导出为ply文件
     pcl::PLYWriter writer;
@@ -1336,8 +1442,6 @@ void VtkWidget::onCompare()
     }
 
     ShowColorBar(minDistance, maxDistance);
-    createScaleBar();
-    attachInteractor();
     // 添加日志输出
     logInfo += "对比完成";
     m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
@@ -1363,38 +1467,30 @@ void VtkWidget::onAlign()
     }
 
     if (clouds.size() != 2) {
-        QMessageBox::critical(this, "错误", "需要选中两个点云进行配准");
+        logInfo += "对齐需要两个点云!";
+        m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
         return;
     }
 
-    // 确保类型正确并复制点云
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud1 = clouds[0];
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud2 = clouds[1];
+    // 滤波去噪
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud1 = onFilter(clouds[0]);
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud2 = onFilter(clouds[1]);
 
     if (!cloud1 || cloud1->empty() || !cloud2 || cloud2->empty()) {
-        QMessageBox::warning(this, "警告", "点云为空");
+        logInfo += "点云为空!";
+        m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
         return;
     }
-
-    float radius1 = calculateSamplingRadius(cloud1);
-    float radius2 = calculateSamplingRadius(cloud2);
 
     // 用于采样的两个点云
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledCloud1(new pcl::PointCloud<pcl::PointXYZRGB>());
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledCloud2(new pcl::PointCloud<pcl::PointXYZRGB>());
+    float radius1 = calculateSamplingRadius(cloud1);
+    float radius2 = calculateSamplingRadius(cloud2);
 
-    // 如果点云较小，则只进行一轮采样
-    if(radius2 <= 0.05f){
-        // 均匀下采样
-        pcl::UniformSampling<pcl::PointXYZRGB> uniformSampling;
-        uniformSampling.setRadiusSearch(radius1); // 设置采样半径，这个参数是关键
-        uniformSampling.setInputCloud(cloud1);
-        uniformSampling.filter(*downsampledCloud1);
-        uniformSampling.setRadiusSearch(radius2);
-        uniformSampling.setInputCloud(cloud2);
-        uniformSampling.filter(*downsampledCloud2);
-    }
-    else{ // 如果点云较大，则动态设置采样半径
+    // 如果点云较小，则不进行采样
+    if(radius2 > 0.05f && radius1> 0.05f){
+         // 如果点云较大，则动态设置采样半径
         float initialRadius = 0.01f; // 初始采样半径
         float maxRadius = 0.2f;  // 最大采样半径
         float targetSize = 10000;    // 目标点云大小
@@ -1442,51 +1538,6 @@ void VtkWidget::onAlign()
     // 保存采样后的点云到文件
     pcl::io::savePCDFileASCII("downsampled_cloud2.pcd", *downsampledCloud2);
 
-    // 分别计算两个点云的法向量
-    // pcl::NormalEstimation<pcl::PointXYZRGB, pcl::Normal> normalsEtimation;
-    // pcl::PointCloud<pcl::Normal>::Ptr normals1(new pcl::PointCloud<pcl::Normal>());
-    // pcl::PointCloud<pcl::Normal>::Ptr normals2(new pcl::PointCloud<pcl::Normal>());
-    // pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZRGB>());
-    // normalsEtimation.setInputCloud(downsampledCloud1);
-    // normalsEtimation.setSearchMethod(tree);
-    // normalsEtimation.setRadiusSearch(100);
-    // normalsEtimation.compute(*normals1);
-    // normalsEtimation.setInputCloud(downsampledCloud2);
-    // normalsEtimation.compute(*normals2);
-
-    // // 计算FPFH特征
-    // pcl::PointCloud<pcl::FPFHSignature33>::Ptr featureCloud1(new pcl::PointCloud<pcl::FPFHSignature33>());
-    // pcl::PointCloud<pcl::FPFHSignature33>::Ptr featureCloud2(new pcl::PointCloud<pcl::FPFHSignature33>());
-    // pcl::FPFHEstimation<pcl::PointXYZRGB, pcl::Normal, pcl::FPFHSignature33> fpfh_estimation;
-    // fpfh_estimation.setInputCloud(downsampledCloud1);
-    // fpfh_estimation.setInputNormals(normals1);
-    // fpfh_estimation.setSearchMethod(tree);
-    // fpfh_estimation.setRadiusSearch(50);
-    // fpfh_estimation.compute(*featureCloud1);
-    // fpfh_estimation.setInputCloud(downsampledCloud2);
-    // fpfh_estimation.setInputNormals(normals2);
-    // fpfh_estimation.setSearchMethod(tree);
-    // fpfh_estimation.setRadiusSearch(50);
-    // fpfh_estimation.compute(*featureCloud2);
-
-    // // SAC-IA粗配准
-    // pcl::SampleConsensusInitialAlignment<pcl::PointXYZRGB, pcl::PointXYZRGB, pcl::FPFHSignature33> sac_ia;
-    // sac_ia.setInputSource(downsampledCloud2);
-    // sac_ia.setInputTarget(downsampledCloud1);
-    // sac_ia.setSourceFeatures(featureCloud2);
-    // sac_ia.setTargetFeatures(featureCloud1);
-    // sac_ia.setMaximumIterations(100);  // 设置最大迭代次数
-    // sac_ia.setMinSampleDistance(0.01f);  // 设置最小采样距离
-    // sac_ia.setMaxCorrespondenceDistance(0.1f);  // 设置最大对应点距离
-    // pcl::PointCloud<pcl::PointXYZRGB> sacAlignedCloud;
-    // sac_ia.align(sacAlignedCloud);  // 粗配准
-    // if (!sac_ia.hasConverged()) {
-    //     logInfo += "FPFH粗配准未收敛！";
-    //     m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
-    //     return;
-    // }
-    // auto initialTransformation = std::make_shared<Eigen::Matrix4f>(sac_ia.getFinalTransformation());
-
     // 使用XYZRGB类型进行ICP配准
     pcl::IterativeClosestPoint<pcl::PointXYZRGB, pcl::PointXYZRGB> icp;
     icp.setInputSource(downsampledCloud2);
@@ -1528,6 +1579,51 @@ void VtkWidget::onAlign()
     logInfo += std::to_string(rmse);
     m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
 }
+
+void sacAlign(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud1, pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud2){
+    // 分别计算两个点云的法向量
+    pcl::NormalEstimation<pcl::PointXYZRGB, pcl::Normal> normalsEtimation;
+    pcl::PointCloud<pcl::Normal>::Ptr normals1(new pcl::PointCloud<pcl::Normal>());
+    pcl::PointCloud<pcl::Normal>::Ptr normals2(new pcl::PointCloud<pcl::Normal>());
+    pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZRGB>());
+    normalsEtimation.setInputCloud(cloud1);
+    normalsEtimation.setSearchMethod(tree);
+    normalsEtimation.setRadiusSearch(50);
+    normalsEtimation.compute(*normals1);
+    normalsEtimation.setInputCloud(cloud2);
+    normalsEtimation.compute(*normals2);
+
+    // 计算FPFH特征
+    pcl::PointCloud<pcl::FPFHSignature33>::Ptr featureCloud1(new pcl::PointCloud<pcl::FPFHSignature33>());
+    pcl::PointCloud<pcl::FPFHSignature33>::Ptr featureCloud2(new pcl::PointCloud<pcl::FPFHSignature33>());
+    pcl::FPFHEstimation<pcl::PointXYZRGB, pcl::Normal, pcl::FPFHSignature33> fpfh_estimation;
+    fpfh_estimation.setInputCloud(cloud1);
+    fpfh_estimation.setInputNormals(normals1);
+    fpfh_estimation.setSearchMethod(tree);
+    fpfh_estimation.setRadiusSearch(50);
+    fpfh_estimation.compute(*featureCloud1);
+    fpfh_estimation.setInputCloud(cloud2);
+    fpfh_estimation.setInputNormals(normals2);
+    fpfh_estimation.setSearchMethod(tree);
+    fpfh_estimation.setRadiusSearch(50);
+    fpfh_estimation.compute(*featureCloud2);
+
+    // SAC-IA粗配准
+    pcl::SampleConsensusInitialAlignment<pcl::PointXYZRGB, pcl::PointXYZRGB, pcl::FPFHSignature33> sac_ia;
+    sac_ia.setInputSource(cloud1);
+    sac_ia.setInputTarget(cloud2);
+    sac_ia.setSourceFeatures(featureCloud2);
+    sac_ia.setTargetFeatures(featureCloud1);
+    sac_ia.setMaximumIterations(100);  // 设置最大迭代次数
+    sac_ia.setMinSampleDistance(0.01f);  // 设置最小采样距离
+    sac_ia.setMaxCorrespondenceDistance(0.1f);  // 设置最大对应点距离
+    pcl::PointCloud<pcl::PointXYZRGB> sacAlignedCloud;
+    sac_ia.align(sacAlignedCloud);  // 粗配准
+    if (!sac_ia.hasConverged()) {
+        return;
+    }
+}
+
 
 void VtkWidget::poissonReconstruction()
 {

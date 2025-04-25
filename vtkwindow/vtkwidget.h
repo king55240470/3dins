@@ -42,6 +42,7 @@
 #include <vtkGenericRenderWindowInteractor.h>
 #include <vtkLine.h>
 #include <vtkActor.h>
+#include <vtkMath.h>
 #include <vtkSmartPointer.h>
 #include <vtkSphereSource.h>
 #include <vtkPolyDataMapper.h>
@@ -114,10 +115,16 @@ public:
     void onRightView(); // 右侧
     void onFrontView(); // 正视
     void onIsometricView(); // 旋转立体
+    double* getViewAngles();
+    double* getBoundboxData(CEntity* entity); // 返回长宽高
+    CPosition getBoundboxCenter(CEntity* entity); // 返回外包盒中心
 
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr onFilter(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud); // 点云滤波
     void onCompare();// 比较两个点云
     void onAlign();    // 配准的函数
     void poissonReconstruction(); // 泊松重建
+    void sacAlign(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud1,
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud2);
     float calculateSamplingRadius(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud); // 估计采样半径
 
     // 显示选中的图形的信息
@@ -166,6 +173,7 @@ private:
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr comparisonCloud;
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr alignedCloud;
     vtkSmartPointer<vtkActor2D> colorBarActor; // 色温条
+    QMap<CPosition, double> pointToDistances; // 存储对比点云每个点的偏差值
 
     vtkSmartPointer<vtkTextActor> infoTextActor;// 浮动信息文本演员
     vtkSmartPointer<vtkTextActor> titleTextActor; // 第一行作为标题行
@@ -196,7 +204,7 @@ private:
     QMap<CEntity*, vtkSmartPointer<vtkActor2D>> entityToIcons; // 每个图形对应的关闭图标
     QMap<CEntity*, CPosition> entityToEndPoints; // 每个显示信息的centity对应一个指向线段的落点
     double increaseDis[2] = {0, 0}; // 每增加一个文本显示，自动间隔一段距离
-    double textWidth, textHeight;
+    double textWidth, textHeight, titleWidth, titleHeight;
     double* position; // infoTextActor 的位置
     double textBox[4];
     // 以下变量用于中键平移窗口时改变指向线段

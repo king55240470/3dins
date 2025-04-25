@@ -455,7 +455,7 @@ vtkSmartPointer<vtkActor> CCuboid::draw() {
     // 创建执行器
     auto actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
-    actor->GetProperty()->SetColor(MainWindow::InfoTextColor);
+    actor->GetProperty()->SetColor(MainWindow::ActorColor);
     actor->GetProperty()->SetRepresentationToWireframe();
     actor->GetProperty()->SetLineWidth(MainWindow::ActorLineWidth);
 
@@ -516,6 +516,7 @@ vtkSmartPointer<vtkActor> CPointCloud::draw(){
     vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
     polyData->SetPoints(points);
     polyData->GetPointData()->SetScalars(colors);
+    cloudPolyData = polyData; // 用于记录点集的集合容器
 
     // 创建一个顶点过滤器来生成顶点表示
     vtkSmartPointer<vtkVertexGlyphFilter> glyphFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
@@ -1189,7 +1190,7 @@ QString CDistance::getCEntityInfo()
     QString underTol_str;
     QString q;
     // 给文本添加字符串
-    type_str = QString("distance \nactual  %1\n").arg(QString::number(getdistance(), 'f',  6));
+    type_str = QString("distance \nactual  %1\n").arg(QString::number(qAbs(getdistance()), 'f',  6));
     upTol_str = QString("max  %1\n").arg(QString::number(getUptolerance(), 'f',  6));
     underTol_str = QString("min  %1\n").arg(QString::number(getUndertolerance(), 'f',  6));
     if(judge())

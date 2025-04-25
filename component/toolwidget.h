@@ -102,6 +102,7 @@ public:
     QString getTimeString();
     //保存图片
     void SaveImage(QString path,std::string format="png");
+    void SaveImage(CEntity* entity);
     QString getCompareImagePath();
     //初始化所有输出文件夹
     void InitOutputFolder();
@@ -145,6 +146,7 @@ public slots:
     void onSaveWord();
     void onSaveImage();
     void onSavePointCloud();
+    void createDistanceMeasurementReport();
 
     //打开文件
     void onOpenExcel();
@@ -155,8 +157,19 @@ public slots:
 
     //设置是否自动化
     void setauto(bool Auto);
+    //用来保存最佳视角下拍摄图片的路径
+    QMap<CEntity*,QString>& getCheckpoint_imagePath(){
+        return m_checkpoint_imagePath;
+    }
+    //用来提取点云，监测点数据
+    void   ExtractData(QVector<CEntity *>& entitylist,QList<QList<QString>>& dataAll,QList<QString>& data_PointCloud);
 
+    void   ExtractData(QVector<CEntity *>& entitylist,QList<QList<QString>>& dataAll,QList<QList<QString>>& data_accepted,QList<QList<QString>>& data_not_accepted);
+
+    void   ExtractData(QVector<CEntity *>& entitylist,QList<QList<QString>>& dataAll);
 private:
+
+    QMap<CEntity*,QString>m_checkpoint_imagePath;
     //对比点云保存路径
     QString CompareImagePath;
     //输出保存路径

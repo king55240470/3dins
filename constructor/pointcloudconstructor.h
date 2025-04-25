@@ -25,13 +25,21 @@ public:
     PointCloudConstructor();
     CEntity* create(QVector<CEntity*>& entitylist)override;
     CPointCloud* createPointCloud(vtkPolyData*ployData,pcl::PointCloud<pcl::PointXYZRGB>::Ptr sourceCloud);
+
     CPointCloud* createPointCloud(CSphere* sphere,pcl::PointCloud<pcl::PointXYZRGB>::Ptr sourceCloud);
+
     CPointCloud* createPointCloud(CCylinder* cylinder,pcl::PointCloud<pcl::PointXYZRGB>::Ptr sourceCloud);
+
     CPointCloud* createPointCloud(CCone* cone,pcl::PointCloud<pcl::PointXYZRGB>::Ptr sourceCloud);
+
     CPointCloud* createPointCloud(CPosition center, QVector4D XAxis,QVector4D YAxis,QVector4D ZAxis,double XLength,double YLength,double ZLength,pcl::PointCloud<pcl::PointXYZRGB>::Ptr sourceCloud);
+
     CPointCloud* createPointCloud(vtkPolyData*ployData,vtkSmartPointer<vtkPolyData> pointsPolydata);
+
     void setSourceCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr sourceCloud);
+
     vtkSmartPointer<vtkPolyData> getPointsPolydata(pcl::PointCloud<pcl::PointXYZRGB>::Ptr sourceCloud);
+    //立方体
     CPointCloud* createPointCloud(CCuboid* cuboid,pcl::PointCloud<pcl::PointXYZRGB>::Ptr sourceCloud);
 
 };
