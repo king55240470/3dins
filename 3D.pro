@@ -150,6 +150,9 @@ INCLUDEPATH += \
     $$3rdParty_VTK/include/vtk-9.1\
     $$OpenNI_ROOT/Include
 
+# INCLUDEPATH += "C:\Program Files\Assimp-5.4.2\include"
+# INCLUDEPATH += "C:\Program Files\Autodesk\FBX\FBX SDK\2020.3.4\include"
+
 LIBS+= \
     -L$$PCL_ROOT/lib \
     -L$$3rdParty_Qhull/lib \
@@ -160,6 +163,8 @@ LIBS+= \
     -L$$OpenNI_ROOT/Lib
 
 LIBS += -lOpenNI2
+# LIBS += -L"C:\Program Files\Assimp-5.4.2\lib"
+# LIBS += -L"C:\Program Files\Autodesk\FBX\FBX SDK\2020.3.4\lib\vs2019\x64\release" -lfbxsdk
 
 win32:CONFIG(release, debug|release): LIBS += \
     -lpcl_common \
@@ -810,5 +815,3 @@ CONFIG(debug, debug|release){
     TARGET = ../_release32/3D-Measure-v1.0
     }
 }
-
-

@@ -857,6 +857,9 @@ public:
     bool isMeasureCloud=false; // 是否是实测点云
     bool isCut=false; //是否是切割后的点云
     bool isOver=false; //是否已经完成测量
+    double minError; //误差
+    double maxError;
+    double avgError;
     static bool haveSaved;
     static bool haveOpened;
 
@@ -864,6 +867,7 @@ public:
         CEntity::serialize(out);  // 先序列化基类部分
         out <<m_pt <<pointCloudSize <<pointCloudCount<< currentPointCloudId;
         out <<isFileCloud  <<isComparsionCloud <<isAlignCloud<<isModelCloud<<isMeasureCloud<<isCut<<isOver;
+        out <<minError <<maxError <<avgError;
 
         if(!haveSaved){
             // std::string file_path = "D:/modelCloud.ply";
@@ -907,6 +911,7 @@ public:
         CEntity::deserialize(in);  // 先反序列化基类部分
         in >>m_pt >>pointCloudSize>> pointCloudCount >> currentPointCloudId;
         in>>isFileCloud  >>isComparsionCloud >>isAlignCloud>>isModelCloud>>isMeasureCloud>>isCut>>isOver;
+        in >>minError>>maxError>>avgError;
 
         if(!haveOpened){
             QString path;
@@ -930,6 +935,9 @@ public:
         isModelCloud=false;
         isMeasureCloud=false;
         isCut=false;
+        minError=0;
+        maxError=0;
+        avgError=0;
         currentPointCloudId = ++pointCloudCount;
         m_strAutoName = QString("点云%1").arg(currentPointCloudId);
         m_strCName = QString("点云%1").arg(currentPointCloudId);

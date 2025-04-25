@@ -24,6 +24,8 @@
 #include <pcl/filters/random_sample.h>
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
+// #include <fbxsdk.h>
+// #pragma comment(lib, "C:\Program Files\FBX SDK\2020.3.7\lib\x64\release\libfbxsdk.lib")
 
 VtkWidget::VtkWidget(QWidget *parent)
     : QWidget(parent),
@@ -1159,6 +1161,60 @@ void VtkWidget::onIsometricView(){
     }
 }
 
+// void VtkWidget::ExportPointCloudToFBX(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud, const std::string& filepath) {
+//     // 初始化 FBX 管理器
+//     FbxManager* manager = FbxManager::Create();
+
+//     // 设置 IO 设置
+//     FbxIOSettings* ios = FbxIOSettings::Create(manager, IOSROOT);
+//     manager->SetIOSettings(ios);
+
+//     // 创建场景
+//     FbxScene* scene = FbxScene::Create(manager, "PointCloudScene");
+
+//     // 创建 mesh
+//     FbxMesh* mesh = FbxMesh::Create(scene, "PointCloudMesh");
+
+//     int numVertices = cloud->size();
+//     mesh->InitControlPoints(numVertices);
+//     FbxVector4* controlPoints = mesh->GetControlPoints();
+
+//     for (int i = 0; i < numVertices; ++i) {
+//         const auto& pt = cloud->points[i];
+//         controlPoints[i] = FbxVector4(pt.x, pt.y, pt.z);
+//     }
+
+//     // 添加颜色
+//     FbxGeometryElementVertexColor* vertexColor = mesh->CreateElementVertexColor();
+//     vertexColor->SetMappingMode(FbxGeometryElement::eByControlPoint);
+//     vertexColor->SetReferenceMode(FbxGeometryElement::eDirect);
+
+//     for (int i = 0; i < numVertices; ++i) {
+//         const auto& pt = cloud->points[i];
+//         vertexColor->GetDirectArray().Add(FbxColor(pt.r / 255.0, pt.g / 255.0, pt.b / 255.0, 1.0));
+//     }
+
+//     // 创建节点
+//     FbxNode* meshNode = FbxNode::Create(scene, "PointCloudNode");
+//     meshNode->SetNodeAttribute(mesh);
+//     scene->GetRootNode()->AddChild(meshNode);
+
+//     // 创建导出器
+//     FbxExporter* exporter = FbxExporter::Create(manager, "");
+
+//     if (!exporter->Initialize(filepath.c_str(), -1, manager->GetIOSettings())) {
+//         printf("Failed to initialize FBX exporter: %s\n", exporter->GetStatus().GetErrorString());
+//         return;
+//     }
+
+//     // 导出场景
+//     exporter->Export(scene);
+//     exporter->Destroy();
+
+//     // 清理
+//     manager->Destroy();
+// }
+
 // 比较两个点云的处理函数
 void VtkWidget::onCompare()
 {
@@ -1249,6 +1305,13 @@ void VtkWidget::onCompare()
     m_pMainWin->NotifySubscribe();
 
     m_pMainWin->getPWinFileManagerWidget()->allHide();
+
+    // 导出为ply文件
+    pcl::PLYWriter writer;
+    writer.write("D:/testFiles/compareCloud.ply", *comparisonCloud, true); // true = 写入ASCII格式（false 为二进制）
+
+    // 导出为fbx文件
+    // ExportPointCloudToFBX(comparisonCloud,"D:/outout.fbx");
 
     //调用保存图像函数
     m_pMainWin->getPWinToolWidget()->onSaveImage();

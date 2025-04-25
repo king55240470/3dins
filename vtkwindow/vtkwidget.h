@@ -140,6 +140,7 @@ public:
     void closeTextActor(CEntity* entity);
     void GetScreenCoordinates(vtkRenderer* renderer, double pt[3], double screenCoord[2]);
     CEntity* getEntityFromTextActor(vtkSmartPointer<vtkTextActor> textActor); // 从文本演员找到对应的entity
+    void ExportPointCloudToFBX(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud, const std::string& filepath); //转换fbx文件
 
     void ShowColorBar(double minDistance, double maxDistance);
     //标度尺
