@@ -25,7 +25,7 @@
 #include <pcl/filters/random_sample.h>
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
-// #include <fbxsdk.h>
+#include <fbxsdk.h>
 // #pragma comment(lib, "C:\Program Files\FBX SDK\2020.3.7\lib\x64\release\libfbxsdk.lib")
 
 VtkWidget::VtkWidget(QWidget *parent)
@@ -1170,59 +1170,59 @@ void VtkWidget::onIsometricView(){
     }
 }
 
-// void VtkWidget::ExportPointCloudToFBX(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud, const std::string& filepath) {
-//     // 初始化 FBX 管理器
-//     FbxManager* manager = FbxManager::Create();
+void VtkWidget::ExportPointCloudToFBX(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud, const std::string& filepath) {
+    // 初始化 FBX 管理器
+    FbxManager* manager = FbxManager::Create();
 
-//     // 设置 IO 设置
-//     FbxIOSettings* ios = FbxIOSettings::Create(manager, IOSROOT);
-//     manager->SetIOSettings(ios);
+    // 设置 IO 设置
+    FbxIOSettings* ios = FbxIOSettings::Create(manager, IOSROOT);
+    manager->SetIOSettings(ios);
 
-//     // 创建场景
-//     FbxScene* scene = FbxScene::Create(manager, "PointCloudScene");
+    // 创建场景
+    FbxScene* scene = FbxScene::Create(manager, "PointCloudScene");
 
-//     // 创建 mesh
-//     FbxMesh* mesh = FbxMesh::Create(scene, "PointCloudMesh");
+    // 创建 mesh
+    FbxMesh* mesh = FbxMesh::Create(scene, "PointCloudMesh");
 
-//     int numVertices = cloud->size();
-//     mesh->InitControlPoints(numVertices);
-//     FbxVector4* controlPoints = mesh->GetControlPoints();
+    int numVertices = cloud->size();
+    mesh->InitControlPoints(numVertices);
+    FbxVector4* controlPoints = mesh->GetControlPoints();
 
-//     for (int i = 0; i < numVertices; ++i) {
-//         const auto& pt = cloud->points[i];
-//         controlPoints[i] = FbxVector4(pt.x, pt.y, pt.z);
-//     }
+    for (int i = 0; i < numVertices; ++i) {
+        const auto& pt = cloud->points[i];
+        controlPoints[i] = FbxVector4(pt.x, pt.y, pt.z);
+    }
 
-//     // 添加颜色
-//     FbxGeometryElementVertexColor* vertexColor = mesh->CreateElementVertexColor();
-//     vertexColor->SetMappingMode(FbxGeometryElement::eByControlPoint);
-//     vertexColor->SetReferenceMode(FbxGeometryElement::eDirect);
+    // 添加颜色
+    FbxGeometryElementVertexColor* vertexColor = mesh->CreateElementVertexColor();
+    vertexColor->SetMappingMode(FbxGeometryElement::eByControlPoint);
+    vertexColor->SetReferenceMode(FbxGeometryElement::eDirect);
 
-//     for (int i = 0; i < numVertices; ++i) {
-//         const auto& pt = cloud->points[i];
-//         vertexColor->GetDirectArray().Add(FbxColor(pt.r / 255.0, pt.g / 255.0, pt.b / 255.0, 1.0));
-//     }
+    for (int i = 0; i < numVertices; ++i) {
+        const auto& pt = cloud->points[i];
+        vertexColor->GetDirectArray().Add(FbxColor(pt.r / 255.0, pt.g / 255.0, pt.b / 255.0, 1.0));
+    }
 
-//     // 创建节点
-//     FbxNode* meshNode = FbxNode::Create(scene, "PointCloudNode");
-//     meshNode->SetNodeAttribute(mesh);
-//     scene->GetRootNode()->AddChild(meshNode);
+    // 创建节点
+    FbxNode* meshNode = FbxNode::Create(scene, "PointCloudNode");
+    meshNode->SetNodeAttribute(mesh);
+    scene->GetRootNode()->AddChild(meshNode);
 
-//     // 创建导出器
-//     FbxExporter* exporter = FbxExporter::Create(manager, "");
+    // 创建导出器
+    FbxExporter* exporter = FbxExporter::Create(manager, "");
 
-//     if (!exporter->Initialize(filepath.c_str(), -1, manager->GetIOSettings())) {
-//         printf("Failed to initialize FBX exporter: %s\n", exporter->GetStatus().GetErrorString());
-//         return;
-//     }
+    if (!exporter->Initialize(filepath.c_str(), -1, manager->GetIOSettings())) {
+        printf("Failed to initialize FBX exporter: %s\n", exporter->GetStatus().GetErrorString());
+        return;
+    }
 
-//     // 导出场景
-//     exporter->Export(scene);
-//     exporter->Destroy();
+    // 导出场景
+    exporter->Export(scene);
+    exporter->Destroy();
 
-//     // 清理
-//     manager->Destroy();
-// }
+    // 清理
+    manager->Destroy();
+}
 
 double *VtkWidget::getViewAngles()
 {
@@ -1417,7 +1417,7 @@ void VtkWidget::onCompare()
     writer.write("D:/testFiles/compareCloud.ply", *comparisonCloud, true); // true = 写入ASCII格式（false 为二进制）
 
     // 导出为fbx文件
-    // ExportPointCloudToFBX(comparisonCloud,"D:/outout.fbx");
+    ExportPointCloudToFBX(comparisonCloud,"D:/outout.fbx");
 
     //调用保存图像函数
     m_pMainWin->getPWinToolWidget()->onSaveImage();
@@ -1489,12 +1489,12 @@ void VtkWidget::onAlign()
     float radius2 = calculateSamplingRadius(cloud2);
 
     // 如果点云较小，则不进行采样
-    if(radius2 > 0.05f && radius1> 0.05f){
+    if(radius2 >= 0.1f && radius1 >= 0.1f){
          // 如果点云较大，则动态设置采样半径
         float initialRadius = 0.01f; // 初始采样半径
         float maxRadius = 0.2f;  // 最大采样半径
         float targetSize = 10000;    // 目标点云大小
-        float reductionFactor = 1.0 / 10.0; // 点云缩减比例
+        float reductionFactor = 1.0 / 5.0; // 点云缩减比例
         // 初始化当前待采样的点云和采样半径
         pcl::PointCloud<pcl::PointXYZRGB>::Ptr currentSource = cloud2;
         pcl::PointCloud<pcl::PointXYZRGB>::Ptr currentTarget = cloud1;
@@ -1550,7 +1550,7 @@ void VtkWidget::onAlign()
 
     // 如果仍未收敛，则进行动态迭代
     if (!icp.hasConverged()) {
-        int maxIter = 500; // 最大迭代次数
+        int maxIter = 300; // 最大迭代次数
         int iniIter = 150; // 初始迭代次数
         float corDis = 1.0f; // 最大点距离阈值
         while(iniIter <= maxIter){
@@ -1752,7 +1752,7 @@ float VtkWidget::calculateSamplingRadius(const pcl::PointCloud<pcl::PointXYZRGB>
         return 0.01f;
     } else if (cloud->size() < 500000 && cloud->size() > 100000) {
         return 0.05f;
-    } else if (cloud->size() < 1000000) {
+    } else if (cloud->size() < 1000000 && cloud->size() >= 500000) {
         return 0.1f;
     } else {
         return 0.2f;

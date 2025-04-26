@@ -51,7 +51,6 @@ void MouseInteractorHighlightActor::OnLeftButtonDown()
         if(entity->GetUniqueType() == enPointCloud){
             auto cloudEntity = (CPointCloud*)entity;
             m_pMainWin->getpWinFileMgr()->cloudptr = cloudEntity->m_pointCloud.makeShared(); // 给拟合用的cloudptr赋值
-            ShowBoundBox(newPickedActor);
 
             // 如果选中对比点云，则得到点的真实坐标
             if(cloudEntity->isComparsionCloud){
@@ -203,7 +202,7 @@ void MouseInteractorHighlightActor::CancelHighlightActors()
         ResetActor(item->first); // 恢复actor的属性
     }
     DeleteHighLightPoint();
-    renderer->RemoveActor(boxActor);
+    if(boxActor != nullptr) renderer->RemoveActor(boxActor);
     renderer->Render();
 }
 
@@ -231,6 +230,7 @@ void MouseInteractorHighlightActor::HighlightActor(vtkActor* actor)
             renderer->RemoveActor(actor);
             renderer->AddActor(actor);
         }
+        if(entity->GetUniqueType() == enPointCloud) ShowBoundBox(actor);
     }
 }
 
@@ -263,8 +263,8 @@ void MouseInteractorHighlightActor::ShowBoundBox(vtkActor *actor)
     boxMapper->SetInputConnection(boundBox->GetOutputPort());
     boxActor = vtkSmartPointer<vtkActor>::New();
     boxActor->SetMapper(boxMapper);
-    boxActor->GetProperty()->SetColor(1, 1, 0); // 设置边界框的颜色
-    boxActor->GetProperty()->SetLineWidth(MainWindow::ActorLineWidth);       // 设置边界框的线宽
+    boxActor->GetProperty()->SetColor(1, 1, 0);
+    boxActor->GetProperty()->SetLineWidth(MainWindow::ActorLineWidth);
 
     if (renderer != nullptr && boxActor != nullptr){
         renderer->RemoveActor(boxActor);

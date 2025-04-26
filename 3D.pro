@@ -154,7 +154,7 @@ INCLUDEPATH += \
     $$OpenNI_ROOT/Include
 
 # INCLUDEPATH += "C:\Program Files\Assimp-5.4.2\include"
-# INCLUDEPATH += "C:\Program Files\Autodesk\FBX\FBX SDK\2020.3.4\include"
+INCLUDEPATH += "C:\Program Files\Autodesk\FBX\FBX SDK\2020.3.7\include"
 
 LIBS+= \
     -L$$PCL_ROOT/lib \
@@ -167,7 +167,7 @@ LIBS+= \
 
 LIBS += -lOpenNI2
 # LIBS += -L"C:\Program Files\Assimp-5.4.2\lib"
-# LIBS += -L"C:\Program Files\Autodesk\FBX\FBX SDK\2020.3.4\lib\vs2019\x64\release" -lfbxsdk
+LIBS += -L"C:\Program Files\Autodesk\FBX\FBX SDK\2020.3.7\lib\x64\release" -llibfbxsdk
 
 win32:CONFIG(release, debug|release): LIBS += \
     -lpcl_common \
