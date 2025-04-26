@@ -1139,6 +1139,21 @@ bool ElementListWidget::getIsProcess()
     return isProcessing;
 }
 
+QVector<CPointCloud *> ElementListWidget::getisComparsionCloud()
+{
+    isComparsionCloudList.clear();
+    for(int i =0;i<m_pMainWin->getEntityListMgr()->m_entityList.size();i++){
+        CEntity*entity = m_pMainWin->getEntityListMgr()->m_entityList[i];
+        if(entity->GetUniqueType()==enPointCloud){
+            CPointCloud*could = (CPointCloud*)entity;
+            if(could->isComparsionCloud){
+                isComparsionCloudList.append(could);
+            }
+        }
+    }
+    return isComparsionCloudList;
+}
+
 
 
 void ElementListWidget::mouseDoubleClickEvent(QMouseEvent *event)

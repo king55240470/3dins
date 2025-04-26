@@ -42,6 +42,7 @@
 #include <vtkGenericRenderWindowInteractor.h>
 #include <vtkLine.h>
 #include <vtkActor.h>
+#include <vtkMath.h>
 #include <vtkSmartPointer.h>
 #include <vtkSphereSource.h>
 #include <vtkPolyDataMapper.h>
@@ -114,10 +115,14 @@ public:
     void onRightView(); // 右侧
     void onFrontView(); // 正视
     void onIsometricView(); // 旋转立体
+    double* getViewAngles();
 
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr onFilter(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud); // 点云滤波
     void onCompare();// 比较两个点云
     void onAlign();    // 配准的函数
     void poissonReconstruction(); // 泊松重建
+    void sacAlign(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud1,
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud2);
     float calculateSamplingRadius(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud); // 估计采样半径
 
     // 显示选中的图形的信息
@@ -165,6 +170,7 @@ private:
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr comparisonCloud;
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr alignedCloud;
     vtkSmartPointer<vtkActor2D> colorBarActor; // 色温条
+    QMap<CPosition, double> pointToDistances; // 存储对比点云每个点的偏差值
 
     vtkSmartPointer<vtkTextActor> infoTextActor;// 浮动信息文本演员
     vtkSmartPointer<vtkTextActor> titleTextActor; // 第一行作为标题行

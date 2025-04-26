@@ -5,7 +5,7 @@ QT += opengl
 LIBS += -lOpengl32
 QT += statemachine
 QT += network
-QT += core network httpserver  # 关键配置
+QT += core network httpserver
 INCLUDEPATH += $$PWD/QTHttpServer
 
 QMAKE_CXXFLAGS += /arch:AVX2

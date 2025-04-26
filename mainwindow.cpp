@@ -31,8 +31,8 @@ double MainWindow::HighLightColor[3] = {1, 1, 0};
 double MainWindow::InfoTextColor[3] = {0.9, 0.9, 0.9};
 
 // 控制图形渲染的粗细
-double MainWindow::ActorPointSize = 4;
-double MainWindow::ActorLineWidth = 3;
+double MainWindow::ActorPointSize = 1;
+double MainWindow::ActorLineWidth = 1;
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -445,7 +445,7 @@ void MainWindow::EnterInterface()
         // 返回JSON响应
         return QHttpServerResponse(QJsonObject{
                                        {"status", "success"},
-                                       {"message", "功能已启动"}
+                                       {"程序已启动", "功能已启动"}
                                    }, QHttpServerResponder::StatusCode::Ok);
     });
 
@@ -459,6 +459,19 @@ void MainWindow::EnterInterface()
         return QHttpServerResponse(QJsonObject{
                                        {"status", "success"},
                                        {s, "!"}
+                                   }, QHttpServerResponder::StatusCode::Ok);
+    });
+
+    server.route("/open", QHttpServerRequest::Method::Get, [this](
+                                                                  const QHttpServerRequest &request) {
+
+        // 触发核心功能
+        openbuild();
+
+        // 返回JSON响应
+        return QHttpServerResponse(QJsonObject{
+                                       {"status", "success"},
+                                       {"报告已打开", "功能已启动"}
                                    }, QHttpServerResponder::StatusCode::Ok);
     });
 
@@ -490,6 +503,25 @@ QString MainWindow::getIsProcess()
         return "检测未完成";
     }else{
         return "检测已完成";
+    }
+}
+
+void MainWindow::openbuild()
+{
+    // 直接指定D盘的output文件夹路径
+    QString folderPath = "D:/output";
+
+    // 检查文件夹是否存在
+    QDir dir(folderPath);
+    if (!dir.exists()) {
+        qWarning() << "Directory does not exist:" << folderPath;
+        return;
+    }
+
+    // 使用资源管理器打开
+    QUrl url = QUrl::fromLocalFile(dir.absolutePath());
+    if (!QDesktopServices::openUrl(url)) {
+        qWarning() << "Failed to open explorer at:" << dir.absolutePath();
     }
 }
 
@@ -549,7 +581,7 @@ void MainWindow::openFile(){
         QString fileName = fileInfo.fileName();
         auto fileLowName = fileName.toLower();
         // 根据文件名是否含有 "stand"来判断，先转成小写
-        if (fileLowName.contains("stand")) {
+        if (fileLowName.contains("stand") && (filePath.endsWith("ply") || filePath.endsWith("pcd"))) {
             modelCloudExist=true; // 用于保证后续序列化文件
 
             //在modelFileMap中添加添加新文件，并分配新的cloud
@@ -575,7 +607,9 @@ void MainWindow::openFile(){
 
             //pWinFileManagerWidget->openModelFile(fileName, filePath);
             pWinVtkPresetWidget->setWidget(fileName+"文件已打开");
-        } else if(fileLowName.contains(".pcd")){
+        }
+        else if(!fileLowName.contains("stand") && (filePath.endsWith("ply")
+                                                    || filePath.endsWith("pcd"))){
             //在measuredFileMap中添加新文件，并分配新的cloud
             getpWinFileMgr()->getMeasuredFileMap().insert(filePath, true);
             auto cloud = getPointCloudListMgr()->CreateCloudFromFile(filePath);
@@ -1519,6 +1553,8 @@ void MainWindow::onConvertLightGreyTheme()
     MainWindow::InfoTextColor[2] = 0;
 
     pWinVtkWidget->getRenderer()->SetBackground(0.5, 0.5, 0.5);
+    pWinVtkWidget->getRenderer()->SetBackground(1, 1, 1);
+    pWinVtkWidget->getRenderer()->SetGradientBackground(true);
     pWinVtkWidget->UpdateInfo();
 }
 

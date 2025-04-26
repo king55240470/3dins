@@ -85,6 +85,7 @@ public:
     void isAdd();
     void createrule();
     bool getIsProcess();
+    QVector<CPointCloud*> getisComparsionCloud();
 protected:
     void mouseDoubleClickEvent(QMouseEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
@@ -139,6 +140,7 @@ private:
     Worker* worker;
     QProgressBar *progressBar;
     ProgressDialogs *progressDialog;
+    QVector<CPointCloud*>isComparsionCloudList;
 signals:
     void itemSelected(int index);
 public slots:
