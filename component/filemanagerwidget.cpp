@@ -584,21 +584,21 @@ void FileManagerWidget::UpdateInfo(){
     createIdentifyItem();
 }
 
-void FileManagerWidget::allHide(){
+void FileManagerWidget::allHide(QString a){
 
     contentItemMapTemp=m_pMainWin->getpWinFileMgr()->getContentItemMap();
     identifyItemMapTemp=m_pMainWin->getpWinFileMgr()->getIdentifyItemMap();
 
     QMap<QString, bool>& mapOFContent = m_pMainWin->getpWinFileMgr()->getContentItemMap();
     for (auto it = mapOFContent.begin(); it != mapOFContent.end(); ++it) {
-        if(!it.key().contains("对比")){
+        if(!it.key().contains(a)){
             it.value() = false;
         }
     }
 
     QMap<QString, bool>& mapOFIdentify = m_pMainWin->getpWinFileMgr()->getIdentifyItemMap();
     for (auto it = mapOFIdentify.begin(); it != mapOFIdentify.end(); ++it) {
-        if(!it.key().contains("对比")){
+        if(!it.key().contains(a)){
             it.value() = false;
         }
     }

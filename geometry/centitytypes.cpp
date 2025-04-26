@@ -455,7 +455,7 @@ vtkSmartPointer<vtkActor> CCuboid::draw() {
     // 创建执行器
     auto actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
-    actor->GetProperty()->SetColor(MainWindow::InfoTextColor);
+    actor->GetProperty()->SetColor(MainWindow::ActorColor);
     actor->GetProperty()->SetRepresentationToWireframe();
     actor->GetProperty()->SetLineWidth(MainWindow::ActorLineWidth);
 
@@ -1194,9 +1194,9 @@ QString CDistance::getCEntityInfo()
     upTol_str = QString("max  %1\n").arg(QString::number(getUptolerance(), 'f',  6));
     underTol_str = QString("min  %1\n").arg(QString::number(getUndertolerance(), 'f',  6));
     if(judge())
-        q = QString("IsQualified  True");
+        q = QString("Qualified  Yes");
     else {
-        q = QString("IsQualified  False");
+        q = QString("Qualified  No");
     }
     return type_str + upTol_str + underTol_str+q;
 }

@@ -25,6 +25,8 @@
 #include <pcl/filters/random_sample.h>
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
+#include <fbxsdk.h>
+// #pragma comment(lib, "C:\Program Files\FBX SDK\2020.3.7\lib\x64\release\libfbxsdk.lib")
 
 VtkWidget::VtkWidget(QWidget *parent)
     : QWidget(parent),
@@ -228,9 +230,30 @@ void VtkWidget::createText(CEntity* entity)
     infoTextActor->GetTextProperty()->SetBold(1);
     infoTextActor->SetLayerNumber(1);
 
+    // 创建标题文本演员
+    titleTextActor = vtkSmartPointer<vtkTextActor>::New();
+    titleTextActor->GetTextProperty()->SetFontSize(18); // 设置字体大小
+    titleTextActor->GetTextProperty()->SetFontFamilyToTimes(); // 设置字体样式
+    titleTextActor->GetTextProperty()->SetColor(1, 1, 0);
+    titleTextActor->GetTextProperty()->SetBold(1); // 设置加粗
+    titleTextActor->SetInput(firstLine.toUtf8().constData()); // 设置输入文本
+
+    // 计算两个actor大小
+    double infoBox[4];
+    infoTextActor->GetBoundingBox(renderer, infoBox);
+    textWidth = infoBox[1] - infoBox[0];
+    textHeight = infoBox[3] - infoBox[2];
+
+    double titleBox[4];
+    titleTextActor->GetBoundingBox(renderer, titleBox);
+    titleWidth = titleBox[1] - titleBox[0];
+    titleHeight = titleBox[3] - titleBox[2];
+    double width = titleWidth > textWidth ? titleWidth:textWidth + 30;
+    double height = textHeight + titleHeight + 20;
+
     // 计算文本框的位置
-    double x = renWin->GetSize()[0] - 320 - increaseDis[0];
-    double y = renWin->GetSize()[1] - 170 - increaseDis[1];
+    double x = renWin->GetSize()[0] - width - increaseDis[0];
+    double y = renWin->GetSize()[1] - height - increaseDis[1];
     infoTextActor->SetPosition(x, y);
     if(increaseDis[1]  <= renWin->GetSize()[1] - 300){
         increaseDis[1] += 200;
@@ -239,14 +262,6 @@ void VtkWidget::createText(CEntity* entity)
         increaseDis[1] = 0;
         increaseDis[0] += renWin->GetSize()[0] - 300; // 放到窗口左边显示
     }
-
-    // 检查是否重叠，并调整位置
-    double bbox[4];
-    infoTextActor->GetBoundingBox(renderer, bbox);
-    textWidth = bbox[1] - bbox[0];
-    textHeight = bbox[3] - bbox[2];
-    double width = textWidth + 20;
-    double height = textHeight + 10;
 
     // 检查是否与其他文本框重叠
     for (auto it = entityToTextActors.begin(); it != entityToTextActors.end(); ++it)
@@ -261,13 +276,6 @@ void VtkWidget::createText(CEntity* entity)
         }
     }
 
-    // 创建标题文本演员
-    titleTextActor = vtkSmartPointer<vtkTextActor>::New();
-    titleTextActor->GetTextProperty()->SetFontSize(18); // 设置字体大小
-    titleTextActor->GetTextProperty()->SetFontFamilyToTimes(); // 设置字体样式
-    titleTextActor->GetTextProperty()->SetColor(1, 1, 0);
-    titleTextActor->GetTextProperty()->SetBold(1); // 设置加粗
-    titleTextActor->SetInput(firstLine.toUtf8().constData()); // 设置输入文本
     titleTextActor->SetPosition(x, y + textHeight); // 设置标题文本的位置
 
     // 创建文本框
@@ -310,10 +318,10 @@ vtkSmartPointer<vtkActor2D> VtkWidget::createTextBox(vtkSmartPointer<vtkTextActo
     points = vtkSmartPointer<vtkPoints>::New();
     double bbox[4];
     textActor->GetBoundingBox(renderer, bbox);
-    double textWidth = bbox[1] - bbox[0];
-    double textHeight = bbox[3] - bbox[2];
+    textWidth = bbox[1] - bbox[0];
+    textHeight = bbox[3] - bbox[2];
     double width = textWidth + 25;
-    double height = textHeight + 45; // 加上标题行的高度
+    double height = textHeight + 40; // 加上标题行的高度
 
     points->InsertNextPoint(0, 0, 0);
     points->InsertNextPoint(width, 0, 0);
@@ -361,66 +369,64 @@ vtkSmartPointer<vtkActor2D> VtkWidget::createLine(CEntity* entity, vtkSmartPoint
     CPosition b;
     QString filename;
 
-    if (entity->getEntityType() == enDistance)
+    if (entity->GetUniqueType() == enDistance)
     {
-        CDistance* dis = static_cast<CDistance*>(entity); // 安全转换类型
-        double distance = dis->getdistance();
+        CDistance* dis = static_cast<CDistance*>(entity); // 安全类型转换
         CPosition begin = dis->getbegin();
-        CPosition projection = dis->getProjection();
         b.x = begin.x;
         b.y = begin.y;
         b.z = begin.z;
     }
-    else if (entity->getEntityType() == enPoint)
+    else if (entity->GetUniqueType() == enPoint)
     {
         CPoint* point = static_cast<CPoint*>(entity);
         b = point->GetPt();
     }
-    else if (entity->getEntityType() == enLine)
+    else if (entity->GetUniqueType() == enLine)
     {
         CLine* line = static_cast<CLine*>(entity);
-        b = line->GetObjectCenterLocalPoint();
+        b = line->getBegin();
     }
-    else if (entity->getEntityType() == enCircle)
+    else if (entity->GetUniqueType() == enCircle)
     {
         CCircle* circle = static_cast<CCircle*>(entity);
         b = circle->getCenter();
     }
-    else if (entity->getEntityType() == enSphere)
+    else if (entity->GetUniqueType() == enSphere)
     {
         CSphere* s = static_cast<CSphere*>(entity);
         b = s->getCenter();
     }
-    else if (entity->getEntityType() == enPlane)
+    else if (entity->GetUniqueType() == enPlane)
     {
         CPlane* s = static_cast<CPlane*>(entity);
         b = s->getCenter();
     }
-    else if (entity->getEntityType() == enCylinder)
+    else if (entity->GetUniqueType() == enCylinder)
     {
         CCylinder* s = static_cast<CCylinder*>(entity);
         b = s->getBtm_center();
     }
-    else if (entity->getEntityType() == enCone)
+    else if (entity->GetUniqueType() == enCone)
     {
         CCone* s = static_cast<CCone*>(entity);
         b = s->getVertex();
     }
-    else if(entity->getEntityType() == enAngle){
+    else if(entity->GetUniqueType() == enAngle){
         CAngle* angle = static_cast<CAngle*>(entity);
         b = angle->getVertex(); // 指向线段终点是两条线的 "交点"
     }
-    else if(entity->getEntityType() == enPointCloud){
+    else if(entity->GetUniqueType() == enPointCloud){
         CPointCloud* cloud = static_cast<CPointCloud*>(entity);
         auto point = cloud->m_pointCloud.points[0];
         b = CPosition(point.x, point.y, point.z);
     }
-    else if(entity->getEntityType() == enSurfaces){
+    else if(entity->GetUniqueType() == enSurfaces){
         CSurfaces* surface = static_cast<CSurfaces*>(entity);
         auto point = surface->m_pointCloud.points[0];
         b = CPosition(point.x, point.y, point.z);
     }
-    entityToEndPoints[entity] = b; // 将该线段的终点存入map
+    entityToEndPoints[entity] = b;
 
     coordinate = vtkSmartPointer<vtkCoordinate>::New();
     coordinate->SetValue(b.x, b.y, b.z);
@@ -1164,6 +1170,60 @@ void VtkWidget::onIsometricView(){
     }
 }
 
+void VtkWidget::ExportPointCloudToFBX(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud, const std::string& filepath) {
+    // 初始化 FBX 管理器
+    FbxManager* manager = FbxManager::Create();
+
+    // 设置 IO 设置
+    FbxIOSettings* ios = FbxIOSettings::Create(manager, IOSROOT);
+    manager->SetIOSettings(ios);
+
+    // 创建场景
+    FbxScene* scene = FbxScene::Create(manager, "PointCloudScene");
+
+    // 创建 mesh
+    FbxMesh* mesh = FbxMesh::Create(scene, "PointCloudMesh");
+
+    int numVertices = cloud->size();
+    mesh->InitControlPoints(numVertices);
+    FbxVector4* controlPoints = mesh->GetControlPoints();
+
+    for (int i = 0; i < numVertices; ++i) {
+        const auto& pt = cloud->points[i];
+        controlPoints[i] = FbxVector4(pt.x, pt.y, pt.z);
+    }
+
+    // 添加颜色
+    FbxGeometryElementVertexColor* vertexColor = mesh->CreateElementVertexColor();
+    vertexColor->SetMappingMode(FbxGeometryElement::eByControlPoint);
+    vertexColor->SetReferenceMode(FbxGeometryElement::eDirect);
+
+    for (int i = 0; i < numVertices; ++i) {
+        const auto& pt = cloud->points[i];
+        vertexColor->GetDirectArray().Add(FbxColor(pt.r / 255.0, pt.g / 255.0, pt.b / 255.0, 1.0));
+    }
+
+    // 创建节点
+    FbxNode* meshNode = FbxNode::Create(scene, "PointCloudNode");
+    meshNode->SetNodeAttribute(mesh);
+    scene->GetRootNode()->AddChild(meshNode);
+
+    // 创建导出器
+    FbxExporter* exporter = FbxExporter::Create(manager, "");
+
+    if (!exporter->Initialize(filepath.c_str(), -1, manager->GetIOSettings())) {
+        printf("Failed to initialize FBX exporter: %s\n", exporter->GetStatus().GetErrorString());
+        return;
+    }
+
+    // 导出场景
+    exporter->Export(scene);
+    exporter->Destroy();
+
+    // 清理
+    manager->Destroy();
+}
+
 double *VtkWidget::getViewAngles()
 {
     vtkCamera *camera = renderer->GetActiveCamera();
@@ -1206,6 +1266,41 @@ double *VtkWidget::getViewAngles()
     angles[2] = psi;   // 绕 Z 轴的旋转角度
 
     return angles;
+}
+
+double *VtkWidget::getBoundboxData(CEntity* entity)
+{
+    // 得到对应的actor
+    auto& actorMap = m_pMainWin->getactorToEntityMap();
+    auto actor = actorMap.key(entity);
+    double* boxData = new double();
+
+    // 获取 actor 的边界框
+    double bounds[6];
+    actor->GetBounds(bounds);
+    double length = bounds[1] - bounds[0];
+    double width = bounds[3] - bounds[2];
+    double height = bounds[5] - bounds[4];
+    boxData[0] = length;
+    boxData[1] = width;
+    boxData[2] = height;
+
+    return boxData;
+}
+
+CPosition VtkWidget::getBoundboxCenter(CEntity *entity)
+{
+    // 得到对应的actor
+    auto& actorMap = m_pMainWin->getactorToEntityMap();
+    auto actor = actorMap.key(entity);
+
+    // 获取 actor 的边界框
+    double bounds[6];
+    actor->GetBounds(bounds);
+    CPosition center(bounds[1] - bounds[0], bounds[3] - bounds[2], bounds[5] - bounds[4]);
+    qDebug() << center.x << center.y << center.z;
+
+    return CPosition(center.x/2, center.y/2, center.z);
 }
 
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr VtkWidget::onFilter(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud)
@@ -1315,7 +1410,14 @@ void VtkWidget::onCompare()
     m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
     m_pMainWin->NotifySubscribe();
 
-    m_pMainWin->getPWinFileManagerWidget()->allHide();
+    m_pMainWin->getPWinFileManagerWidget()->allHide("对比");
+
+    // 导出为ply文件
+    pcl::PLYWriter writer;
+    writer.write("D:/testFiles/compareCloud.ply", *comparisonCloud, true); // true = 写入ASCII格式（false 为二进制）
+
+    // 导出为fbx文件
+    ExportPointCloudToFBX(comparisonCloud,"D:/outout.fbx");
 
     //调用保存图像函数
     m_pMainWin->getPWinToolWidget()->onSaveImage();
@@ -1386,22 +1488,13 @@ void VtkWidget::onAlign()
     float radius1 = calculateSamplingRadius(cloud1);
     float radius2 = calculateSamplingRadius(cloud2);
 
-    // 如果点云较小，则只进行一轮采样
-    if(radius2 <= 0.05f){
-        // 均匀下采样
-        pcl::UniformSampling<pcl::PointXYZRGB> uniformSampling;
-        uniformSampling.setRadiusSearch(radius1); // 设置采样半径，这个参数是关键
-        uniformSampling.setInputCloud(cloud1);
-        uniformSampling.filter(*downsampledCloud1);
-        uniformSampling.setRadiusSearch(radius2);
-        uniformSampling.setInputCloud(cloud2);
-        uniformSampling.filter(*downsampledCloud2);
-    }
-    else{ // 如果点云较大，则动态设置采样半径
+    // 如果点云较小，则不进行采样
+    if(radius2 >= 0.1f && radius1 >= 0.1f){
+         // 如果点云较大，则动态设置采样半径
         float initialRadius = 0.01f; // 初始采样半径
         float maxRadius = 0.2f;  // 最大采样半径
         float targetSize = 10000;    // 目标点云大小
-        float reductionFactor = 1.0 / 10.0; // 点云缩减比例
+        float reductionFactor = 1.0 / 5.0; // 点云缩减比例
         // 初始化当前待采样的点云和采样半径
         pcl::PointCloud<pcl::PointXYZRGB>::Ptr currentSource = cloud2;
         pcl::PointCloud<pcl::PointXYZRGB>::Ptr currentTarget = cloud1;
@@ -1457,7 +1550,7 @@ void VtkWidget::onAlign()
 
     // 如果仍未收敛，则进行动态迭代
     if (!icp.hasConverged()) {
-        int maxIter = 500; // 最大迭代次数
+        int maxIter = 300; // 最大迭代次数
         int iniIter = 150; // 初始迭代次数
         float corDis = 1.0f; // 最大点距离阈值
         while(iniIter <= maxIter){
@@ -1659,7 +1752,7 @@ float VtkWidget::calculateSamplingRadius(const pcl::PointCloud<pcl::PointXYZRGB>
         return 0.01f;
     } else if (cloud->size() < 500000 && cloud->size() > 100000) {
         return 0.05f;
-    } else if (cloud->size() < 1000000) {
+    } else if (cloud->size() < 1000000 && cloud->size() >= 500000) {
         return 0.1f;
     } else {
         return 0.2f;

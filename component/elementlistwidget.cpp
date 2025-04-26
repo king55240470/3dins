@@ -1106,8 +1106,10 @@ void ElementListWidget::UpdateDisNowFun(QVector<CEntity*>distancelist)
             //qDebug()<<"距离"<<dis->getdistancepoint();
             QTreeWidgetItem *item = treeWidgetNames->topLevelItem(i);
             m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
+
             m_pMainWin->getPWinVtkWidget()->onHighLightActor(m_pMainWin->getEntityListMgr()->getEntityList()[i]);
             treeWidgetNames->setCurrentItem(item);
+            m_pMainWin->getPWinToolWidget()->SaveImage(m_pMainWin->getEntityListMgr()->getEntityList()[i]);
             break;
         }
     }

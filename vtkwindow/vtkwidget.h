@@ -116,6 +116,8 @@ public:
     void onFrontView(); // 正视
     void onIsometricView(); // 旋转立体
     double* getViewAngles();
+    double* getBoundboxData(CEntity* entity); // 返回长宽高
+    CPosition getBoundboxCenter(CEntity* entity); // 返回外包盒中心
 
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr onFilter(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud); // 点云滤波
     void onCompare();// 比较两个点云
@@ -145,6 +147,7 @@ public:
     void closeTextActor(CEntity* entity);
     void GetScreenCoordinates(vtkRenderer* renderer, double pt[3], double screenCoord[2]);
     CEntity* getEntityFromTextActor(vtkSmartPointer<vtkTextActor> textActor); // 从文本演员找到对应的entity
+    void ExportPointCloudToFBX(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud, const std::string& filepath); //转换fbx文件
 
     void ShowColorBar(double minDistance, double maxDistance);
     //标度尺
@@ -201,7 +204,7 @@ private:
     QMap<CEntity*, vtkSmartPointer<vtkActor2D>> entityToIcons; // 每个图形对应的关闭图标
     QMap<CEntity*, CPosition> entityToEndPoints; // 每个显示信息的centity对应一个指向线段的落点
     double increaseDis[2] = {0, 0}; // 每增加一个文本显示，自动间隔一段距离
-    double textWidth, textHeight;
+    double textWidth, textHeight, titleWidth, titleHeight;
     double* position; // infoTextActor 的位置
     double textBox[4];
     // 以下变量用于中键平移窗口时改变指向线段
