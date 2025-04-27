@@ -1,7 +1,7 @@
 #include "vtkwindow/vtkwidget.h"
 #include "vtkwindow/vtkpresetwidget.h"
 #include "component/filemanagerwidget.h"
-#include <QFileDialog>  // 用于文件对话框
+#include <QFileDialog>
 #include <QOpenGLContext>
 #include <qopenglfunctions.h>
 #include <QMessageBox>
@@ -26,7 +26,6 @@
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 #include <fbxsdk.h>
-// #pragma comment(lib, "C:\Program Files\FBX SDK\2020.3.7\lib\x64\release\libfbxsdk.lib")
 
 VtkWidget::VtkWidget(QWidget *parent)
     : QWidget(parent),
@@ -1321,6 +1320,39 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr VtkWidget::onFilter(pcl::PointCloud<pcl::
     return cloud_filtered;
 }
 
+void VtkWidget::onFilter()
+{
+    auto entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud;
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZRGB>);
+
+    for(int i=0;i<entityList.size();i++){
+        CEntity* entity=entityList[i];
+        if(entity->GetUniqueType()==enPointCloud && entity->IsSelected()){
+            auto& temp=((CPointCloud*)entity)->m_pointCloud;
+            cloud = temp.makeShared();
+            break;
+        }
+    }
+
+    if(cloud->empty()){
+        m_pMainWin->getPWinVtkPresetWidget()->setWidget(QString("点云为空，去噪失败！"));
+        return;
+    }
+
+    // 对所有选中的点云进行统计滤波
+    pcl::StatisticalOutlierRemoval<pcl::PointXYZRGB> sor;
+    sor.setInputCloud(cloud);
+    sor.setMeanK(50);   // 考虑的邻近点的数量
+    sor.setStddevMulThresh(1.0);  // 判断离群点的阈值
+    sor.filter(*cloud_filtered);
+
+    auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateFittingCloud(*cloud_filtered);
+    m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
+    m_pMainWin->NotifySubscribe();
+
+}
+
 // 比较两个点云的处理函数
 void VtkWidget::onCompare()
 {
@@ -1490,7 +1522,7 @@ void VtkWidget::onAlign()
 
     // 如果点云较小，则不进行采样
     if(radius2 >= 0.1f && radius1 >= 0.1f){
-         // 如果点云较大，则动态设置采样半径
+        // 如果点云较大，则动态设置采样半径
         float initialRadius = 0.01f; // 初始采样半径
         float maxRadius = 0.2f;  // 最大采样半径
         float targetSize = 10000;    // 目标点云大小

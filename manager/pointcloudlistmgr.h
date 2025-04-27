@@ -21,7 +21,6 @@ public:
     void DeleteFileCloud(QString filepath); // 删除文件对应的点云
     CPointCloud* CreateFittingCloud(pcl::PointCloud<pcl::PointXYZRGB> plane);
     CPointCloud* CreateCompareCloud(pcl::PointCloud<pcl::PointXYZRGB> cloud);
-    // CPointCloud* CreateAlignCloud(pcl::PointCloud<pcl::PointXYZRGB> cloud);
     CPointCloud *CreateAlignCloud(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud);
     CPointCloud *CreateReconstructedCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud);
 
