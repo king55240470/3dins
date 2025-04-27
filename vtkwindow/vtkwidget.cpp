@@ -1566,9 +1566,9 @@ void VtkWidget::onAlign()
         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
         return;
     }
-
     // 保存采样后的点云到文件
     pcl::io::savePCDFileASCII("downsampled_cloud2.pcd", *downsampledCloud2);
+
 
     // 使用XYZRGB类型进行ICP配准
     pcl::IterativeClosestPoint<pcl::PointXYZRGB, pcl::PointXYZRGB> icp;
@@ -1605,10 +1605,10 @@ void VtkWidget::onAlign()
     auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateAlignCloud(alignedCloud);
     m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
     m_pMainWin->NotifySubscribe();
-    double rmse = icp.getFitnessScore();
+    //double rmse = icp.getFitnessScore();
     // 添加日志输出
     logInfo += "对齐完成，误差:";
-    logInfo += std::to_string(rmse);
+    //logInfo += std::to_string(rmse);
     m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
 }
 

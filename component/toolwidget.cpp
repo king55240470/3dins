@@ -2367,6 +2367,7 @@ void ToolWidget::onConstructPointCloud(){
         }
         newPointCloud->isCut=true;
         newPointCloud->m_strAutoName+="(切割)";
+        newPointCloud->parent.append(pointClouds[i]);
         addToList(newPointCloud);
     }
 

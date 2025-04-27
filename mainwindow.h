@@ -29,6 +29,7 @@
 #include <QHostAddress>
 #include <QJsonObject>
 #include <QJsonDocument>
+#include <QDesktopServices>
 
 class DataWidget;
 class ElementListWidget;
@@ -151,6 +152,8 @@ public:
     void setupUi();
     void EnterInterface();//开放接口
     void beginStartButton();
+    QString getIsProcess();
+    void openbuild();
     void showPresetElemWidget(int);
 
     QHttpServer server;// 创建HTTP服务器
