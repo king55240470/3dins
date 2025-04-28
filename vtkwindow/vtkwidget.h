@@ -119,6 +119,9 @@ public:
     double* getBoundboxData(CEntity* entity); // 返回长宽高
     CPosition getBoundboxCenter(CEntity* entity); // 返回外包盒中心
 
+    int adjustMeanK(size_t pointCount); // 估算滤波的近邻点数量
+    double adjustStddevThresh(size_t pointCount); // 估算离群点阈值
+    int FilterCount(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud); // 计算去噪次数
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr onFilter(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud); // 点云滤波
     void onFilter(); // 重载的滤波方法，用于单独生成去噪后的点云
     void onCompare();// 比较两个点云
@@ -169,6 +172,7 @@ private:
     vtkSmartPointer<vtkOrientationMarkerWidget> axeWidget; // 显示坐标器的浮动窗口
 
     pcl::PointCloud<pcl::PointXYZRGB> tempCloud; // 转换rgb点云用的临时点云
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_filtered; // 去噪后的点云
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud1; // 对比用的两个点云
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud2;
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr comparisonCloud;

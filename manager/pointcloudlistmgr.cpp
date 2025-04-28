@@ -69,3 +69,11 @@ CPointCloud *PointCloudListMgr::CreateReconstructedCloud(pcl::PointCloud<pcl::Po
     CloudEntity->m_strAutoName += "(重建)";
     return CloudEntity;
 }
+
+CPointCloud *PointCloudListMgr::CreateFilterCloud(pcl::PointCloud<pcl::PointXYZRGB> &cloud)
+{
+    CPointCloud* CloudEntity = new CPointCloud();
+    CloudEntity->isFilteredCloud = true;
+    CloudEntity->setPointCloud(cloud);
+    return CloudEntity;
+}
