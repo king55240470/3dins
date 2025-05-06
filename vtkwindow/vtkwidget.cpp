@@ -1278,12 +1278,23 @@ double *VtkWidget::getBoundboxData(CEntity* entity)
     // 获取 actor 的边界框
     double bounds[6];
     actor->GetBounds(bounds);
-    double length = bounds[1] - bounds[0];
-    double width = bounds[3] - bounds[2];
-    double height = bounds[5] - bounds[4];
-    boxData[0] = length;
-    boxData[1] = width;
-    boxData[2] = height;
+    boxData[0] = bounds[1] - bounds[0];
+    boxData[1] = bounds[3] - bounds[2];
+    boxData[2] = bounds[5] - bounds[4];
+
+    return boxData;
+}
+
+double *VtkWidget::getBoundboxData(vtkActor *actor)
+{
+    double* boxData = new double();
+
+    // 获取 actor 的边界框
+    double bounds[6];
+    actor->GetBounds(bounds);
+    boxData[0] = bounds[1] - bounds[0];
+    boxData[1] = bounds[3] - bounds[2];
+    boxData[2] = bounds[5] - bounds[4];
 
     return boxData;
 }
@@ -1297,10 +1308,46 @@ CPosition VtkWidget::getBoundboxCenter(CEntity *entity)
     // 获取 actor 的边界框
     double bounds[6];
     actor->GetBounds(bounds);
-    CPosition center(bounds[1] - bounds[0], bounds[3] - bounds[2], bounds[5] - bounds[4]);
-    qDebug() << center.x << center.y << center.z;
+    double centers[3];
+    centers[0] = (bounds[0] + bounds[1]) / 2;
+    centers[1] = (bounds[2] + bounds[3]) / 2;
+    centers[2] = (bounds[4] + bounds[5]) / 2;
 
-    return CPosition(center.x/2, center.y/2, center.z);
+    return CPosition (centers[0], centers[1], centers[2]);
+}
+
+CPosition VtkWidget::getBoundboxCenter(vtkActor *actor)
+{
+    // 获取 actor 的边界框
+    double bounds[6];
+    actor->GetBounds(bounds);
+    double centers[3];
+    centers[0] = (bounds[0] + bounds[1]) / 2;
+    centers[1] = (bounds[2] + bounds[3]) / 2;
+    centers[2] = (bounds[4] + bounds[5]) / 2;
+
+    return CPosition (centers[0], centers[1], centers[2]);
+}
+
+void VtkWidget::FocusOnActor(vtkActor *actor)
+{
+    if(actor == nullptr) return;
+    auto center = getBoundboxCenter(actor); // 获取外包盒中心
+    auto actorSize = getBoundboxData(actor);
+
+    // 计算相机与actor中心的距离，这里取actor最大尺寸的两倍作为距离
+    double maxSize = std::max({actorSize[0], actorSize[1], actorSize[2]});
+    double distance = maxSize * 2.0;
+
+    // 调整相机
+    vtkCamera *camera = renderer->GetActiveCamera();
+    camera->SetFocalPoint(center.x, center.y, center.z);
+    camera->SetPosition(center.x, center.y, center.z + distance);
+    camera->SetViewUp(0.0, 1.0, 0.0); // 相机的上方向为y轴正方向
+
+    // 将相机设置为渲染器的活动相机
+    renderer->SetActiveCamera(camera);
+    renderer->ResetCameraClippingRange(); // 重置近远裁剪面
 }
 
 int VtkWidget::adjustMeanK(size_t pointCount)

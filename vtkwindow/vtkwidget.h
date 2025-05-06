@@ -117,7 +117,10 @@ public:
     void onIsometricView(); // 旋转立体
     double* getViewAngles();
     double* getBoundboxData(CEntity* entity); // 返回长宽高
+    double* getBoundboxData(vtkActor* actor);
     CPosition getBoundboxCenter(CEntity* entity); // 返回外包盒中心
+    CPosition getBoundboxCenter(vtkActor* actor);
+    void FocusOnActor(vtkActor* actor); // 设置相机以聚焦指定的actor
 
     int adjustMeanK(size_t pointCount); // 估算滤波的近邻点数量
     double adjustStddevThresh(size_t pointCount); // 估算离群点阈值
