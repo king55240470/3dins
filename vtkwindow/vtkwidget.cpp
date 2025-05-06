@@ -1325,13 +1325,18 @@ CPosition VtkWidget::getBoundboxCenter(vtkActor *actor)
     centers[0] = (bounds[0] + bounds[1]) / 2;
     centers[1] = (bounds[2] + bounds[3]) / 2;
     centers[2] = (bounds[4] + bounds[5]) / 2;
+    CPosition center(centers[0], centers[1], centers[2]);
 
-    return CPosition (centers[0], centers[1], centers[2]);
+    return center;
 }
 
-void VtkWidget::FocusOnActor(vtkActor *actor)
+void VtkWidget::FocusOnActor(CEntity* entity)
 {
+    // 得到对应的actor
+    auto& actorMap = m_pMainWin->getactorToEntityMap();
+    auto actor = actorMap.key(entity);
     if(actor == nullptr) return;
+
     auto center = getBoundboxCenter(actor); // 获取外包盒中心
     auto actorSize = getBoundboxData(actor);
 
