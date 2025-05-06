@@ -1481,6 +1481,7 @@ void VtkWidget::onCompare()
     ExportPointCloudToFBX(comparisonCloud,"D:/outout.fbx");
 
     //调用保存图像函数
+    ShowColorBar(minDistance, maxDistance);
     m_pMainWin->getPWinToolWidget()->onSaveImage();
     QString path_front=m_pMainWin->getPWinToolWidget()->getlastCreatedImageFileFront();
     QString path_top=m_pMainWin->getPWinToolWidget()->getlastCreatedImageFileTop();
@@ -1502,7 +1503,6 @@ void VtkWidget::onCompare()
         PathList.append( path_right);
     }
 
-    ShowColorBar(minDistance, maxDistance);
     // 添加日志输出
     logInfo += "对比完成";
     m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
@@ -1514,6 +1514,7 @@ void VtkWidget::onAlign()
     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
     QVector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> clouds;
     QString logInfo;
+    bool isModel = false; // 判断clouds[0]是否是标准点云
 
     // 收集选中的点云（确保不修改原始实体）
     for (int i = 0; i < entityList.size(); i++) {
@@ -1524,6 +1525,7 @@ void VtkWidget::onAlign()
             auto pcEntity = static_cast<CPointCloud*>(entity);
             clouds.append(pcl::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>(pcEntity->m_pointCloud));
             logInfo += ((CPointCloud*)entity)->m_strCName + " ";
+            if(clouds.size() == 1 && pcEntity->isModelCloud) isModel = true;
         }
     }
 
@@ -1533,8 +1535,17 @@ void VtkWidget::onAlign()
         return;
     }
 
-    // 滤波去噪
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud2_filter;
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud1_filter(clouds[0]);
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud2_filter(clouds[1]);
+
+    // 滤波去噪，模型点云不用去噪
+    if(!isModel){
+        int cnt = FilterCount(cloud1_filter);
+        for(int i = 0;i < cnt;i++){
+            cloud1_filter = onFilter(clouds[0]);
+            clouds[0] = cloud1_filter;
+        }
+    }
     int cnt = FilterCount(cloud2_filter);
     for(int i = 0;i < cnt;i++){
         cloud2_filter = onFilter(clouds[1]);
@@ -1550,8 +1561,8 @@ void VtkWidget::onAlign()
     // 用于采样的两个点云
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledCloud1(new pcl::PointCloud<pcl::PointXYZRGB>());
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledCloud2(new pcl::PointCloud<pcl::PointXYZRGB>());
-    float radius1 = calculateSamplingRadius(clouds[0]);
-    float radius2 = calculateSamplingRadius(clouds[1]);
+    float radius1 = calculateSamplingRadius(cloud1_filter);
+    float radius2 = calculateSamplingRadius(cloud2_filter);
 
     // 如果点云较小，则不进行采样
     if(radius2 >= 0.1f && radius1 >= 0.1f){
@@ -1561,8 +1572,8 @@ void VtkWidget::onAlign()
         float targetSize = 10000;    // 目标点云大小
         float reductionFactor = 1.0 / 5.0; // 点云缩减比例
         // 初始化当前待采样的点云和采样半径
-        pcl::PointCloud<pcl::PointXYZRGB>::Ptr currentSource = clouds[1];
-        pcl::PointCloud<pcl::PointXYZRGB>::Ptr currentTarget = clouds[0];
+        pcl::PointCloud<pcl::PointXYZRGB>::Ptr currentSource = cloud2_filter;
+        pcl::PointCloud<pcl::PointXYZRGB>::Ptr currentTarget = cloud1_filter;
         float currentRadius = initialRadius;
 
         while (true) {
