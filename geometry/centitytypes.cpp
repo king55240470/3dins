@@ -482,6 +482,7 @@ QString CSurfaces::getCEntityInfo()
 }
 
 int CPointCloud::pointCloudCount = 0;
+int CPointCloud::filterCount = 0;
 QString CPointCloud::getCEntityInfo()
 {
     auto infoText = QString("PointCloud\npoints: %1")

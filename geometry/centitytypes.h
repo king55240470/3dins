@@ -849,6 +849,7 @@ public:
     vtkSmartPointer<vtkPolyData> cloudPolyData;
     double pointCloudSize; // 点云的大小，即包含点的数量
     static int pointCloudCount;
+    static int filterCount; // 同个文件点云的去噪次数
     int currentPointCloudId;
     bool isFileCloud = false; // 是否是文件生成的点云
     bool isComparsionCloud = false; //  是否是对比得到的点云
@@ -856,6 +857,7 @@ public:
     bool isReconstructedCloud=false; // 泊松重建
     bool isModelCloud=false;// 是否是模型点云
     bool isMeasureCloud=false; // 是否是实测点云
+    bool isFilteredCloud = false; // 是否是去噪后的点云
     bool isCut=false; //是否是切割后的点云
     bool isOver=false; //是否已经完成测量
     double minError; //误差

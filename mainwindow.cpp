@@ -328,7 +328,13 @@ void MainWindow::setupUi(){
     connect(ReconstructionAction,&QAction::triggered,this,[&](){
         pWinVtkWidget->poissonReconstruction();
     });
-
+    QAction* filterAction=cloudOperation->addAction("点云滤波");
+    filterAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_F));
+    filterAction->setShortcutContext(Qt::ApplicationShortcut);
+    // filterAction->setIcon(QIcon(reconstructIcon.pixmap(QSize(40, 40))));
+    connect(filterAction,&QAction::triggered,this,[&](){
+        pWinVtkWidget->onFilter();
+    });
     QMenu * switchTheme = bar->addMenu("主题(T)");
     QAction* showThemeMenu = new QAction();
     showThemeMenu->setShortcut(QKeySequence(Qt::Key_T));

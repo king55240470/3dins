@@ -1,7 +1,7 @@
 #include "vtkwindow/vtkwidget.h"
 #include "vtkwindow/vtkpresetwidget.h"
 #include "component/filemanagerwidget.h"
-#include <QFileDialog>  // 用于文件对话框
+#include <QFileDialog>
 #include <QOpenGLContext>
 #include <qopenglfunctions.h>
 #include <QMessageBox>
@@ -26,10 +26,10 @@
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 #include <fbxsdk.h>
-// #pragma comment(lib, "C:\Program Files\FBX SDK\2020.3.7\lib\x64\release\libfbxsdk.lib")
 
 VtkWidget::VtkWidget(QWidget *parent)
     : QWidget(parent),
+    cloud_filtered(new pcl::PointCloud<pcl::PointXYZRGB>()),
     cloud1(new pcl::PointCloud<pcl::PointXYZ>()),  // 初始化第一个点云对象
     cloud2(new pcl::PointCloud<pcl::PointXYZ>()), // 初始化第二个点云对象
     comparisonCloud(new pcl::PointCloud<pcl::PointXYZRGB>()), // 初始化比较好的点云对象
@@ -1341,12 +1341,23 @@ double *VtkWidget::getBoundboxData(CEntity* entity)
     // 获取 actor 的边界框
     double bounds[6];
     actor->GetBounds(bounds);
-    double length = bounds[1] - bounds[0];
-    double width = bounds[3] - bounds[2];
-    double height = bounds[5] - bounds[4];
-    boxData[0] = length;
-    boxData[1] = width;
-    boxData[2] = height;
+    boxData[0] = bounds[1] - bounds[0];
+    boxData[1] = bounds[3] - bounds[2];
+    boxData[2] = bounds[5] - bounds[4];
+
+    return boxData;
+}
+
+double *VtkWidget::getBoundboxData(vtkActor *actor)
+{
+    double* boxData = new double();
+
+    // 获取 actor 的边界框
+    double bounds[6];
+    actor->GetBounds(bounds);
+    boxData[0] = bounds[1] - bounds[0];
+    boxData[1] = bounds[3] - bounds[2];
+    boxData[2] = bounds[5] - bounds[4];
 
     return boxData;
 }
@@ -1360,28 +1371,130 @@ CPosition VtkWidget::getBoundboxCenter(CEntity *entity)
     // 获取 actor 的边界框
     double bounds[6];
     actor->GetBounds(bounds);
-    CPosition center(bounds[1] - bounds[0], bounds[3] - bounds[2], bounds[5] - bounds[4]);
-    qDebug() << center.x << center.y << center.z;
+    double centers[3];
+    centers[0] = (bounds[0] + bounds[1]) / 2;
+    centers[1] = (bounds[2] + bounds[3]) / 2;
+    centers[2] = (bounds[4] + bounds[5]) / 2;
 
-    return CPosition(center.x/2, center.y/2, center.z);
+    return CPosition (centers[0], centers[1], centers[2]);
+}
+
+CPosition VtkWidget::getBoundboxCenter(vtkActor *actor)
+{
+    // 获取 actor 的边界框
+    double bounds[6];
+    actor->GetBounds(bounds);
+    double centers[3];
+    centers[0] = (bounds[0] + bounds[1]) / 2;
+    centers[1] = (bounds[2] + bounds[3]) / 2;
+    centers[2] = (bounds[4] + bounds[5]) / 2;
+    CPosition center(centers[0], centers[1], centers[2]);
+
+    return center;
+}
+
+void VtkWidget::FocusOnActor(CEntity* entity)
+{
+    // 得到对应的actor
+    auto& actorMap = m_pMainWin->getactorToEntityMap();
+    auto actor = actorMap.key(entity);
+    if(actor == nullptr) return;
+
+    auto center = getBoundboxCenter(actor); // 获取外包盒中心
+    auto actorSize = getBoundboxData(actor);
+
+    // 计算相机与actor中心的距离，这里取actor最大尺寸的两倍作为距离
+    double maxSize = std::max({actorSize[0], actorSize[1], actorSize[2]});
+    double distance = maxSize * 2.0;
+
+    // 调整相机
+    vtkCamera *camera = renderer->GetActiveCamera();
+    camera->SetFocalPoint(center.x, center.y, center.z);
+    camera->SetPosition(center.x, center.y, center.z + distance);
+    camera->SetViewUp(0.0, 1.0, 0.0); // 相机的上方向为y轴正方向
+
+    // 将相机设置为渲染器的活动相机
+    renderer->SetActiveCamera(camera);
+    renderer->ResetCameraClippingRange(); // 重置近远裁剪面
+}
+
+int VtkWidget::adjustMeanK(size_t pointCount)
+{
+    if(pointCount <= 10000)
+        return 20;
+    else if(pointCount > 10000 && pointCount <= 100000)
+        return 50;
+    else if(pointCount > 10000 && pointCount <= 500000)
+        return 100;
+    else return 150;
+}
+
+double VtkWidget::adjustStddevThresh(size_t pointCount)
+{
+    if(pointCount <= 10000)
+        return 3.0;
+    else if(pointCount > 10000 && pointCount <= 100000)
+        return 2.0;
+    else return 1.0;
+}
+
+int VtkWidget::FilterCount(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud)
+{
+    if(cloud->size() > 1500000) return 4;
+    else if(cloud->size() > 1000000 && cloud->size() < 1500000) return 3;
+    else if(cloud->size() > 500000 && cloud->size() < 1000000) return 2;
+    else if(cloud->size() > 100000 && cloud->size() < 500000) return 1;
+    else return 0;
 }
 
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr VtkWidget::onFilter(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud)
 {
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZRGB>);
-
     if(!cloud){
         m_pMainWin->getPWinVtkPresetWidget()->setWidget("滤波的输入点云为空！");
+        return nullptr;
     }
 
-    // 统计滤波
+    // 统计滤波去噪
     pcl::StatisticalOutlierRemoval<pcl::PointXYZRGB> sor;
+    int kMean = adjustMeanK(cloud->size());
+    double thresh = adjustStddevThresh(cloud->size());
     sor.setInputCloud(cloud);
-    sor.setMeanK(50);   // 考虑的邻近点的数量
-    sor.setStddevMulThresh(1.0);  // 判断离群点的阈值
+    sor.setMeanK(kMean);   // 考虑的邻近点的数量
+    sor.setStddevMulThresh(thresh);  // 判断离群点的阈值
     sor.filter(*cloud_filtered);
 
     return cloud_filtered;
+}
+
+void VtkWidget::onFilter()
+{
+    auto entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud;
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZRGB>);
+
+    for(int i=0;i<entityList.size();i++){
+        CEntity* entity=entityList[i];
+        if(entity->GetUniqueType()==enPointCloud && entity->IsSelected()){
+            auto& temp=((CPointCloud*)entity)->m_pointCloud;
+            cloud = temp.makeShared();
+            break;
+        }
+    }
+
+    if(cloud->empty()){
+        m_pMainWin->getPWinVtkPresetWidget()->setWidget(QString("点云为空！"));
+        return;
+    }
+
+    int cnt = FilterCount(cloud);
+    for(int i = 0;i < cnt;i++){
+        cloud_filtered = onFilter(cloud);
+        cloud = cloud_filtered;
+    }
+
+    auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateFilterCloud(*cloud_filtered);
+    m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
+    m_pMainWin->NotifySubscribe();
 }
 
 // 比较两个点云的处理函数
@@ -1483,6 +1596,7 @@ void VtkWidget::onCompare()
     ExportPointCloudToFBX(comparisonCloud,"D:/outout.fbx");
 
     //调用保存图像函数
+    ShowColorBar(minDistance, maxDistance);
     m_pMainWin->getPWinToolWidget()->onSaveImage();
     QString path_front=m_pMainWin->getPWinToolWidget()->getlastCreatedImageFileFront();
     QString path_top=m_pMainWin->getPWinToolWidget()->getlastCreatedImageFileTop();
@@ -1504,7 +1618,6 @@ void VtkWidget::onCompare()
         PathList.append( path_right);
     }
 
-    ShowColorBar(minDistance, maxDistance);
     // 添加日志输出
     logInfo += "对比完成";
     m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
@@ -1516,6 +1629,7 @@ void VtkWidget::onAlign()
     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
     QVector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> clouds;
     QString logInfo;
+    bool isModel = false; // 判断clouds[0]是否是标准点云
 
     // 收集选中的点云（确保不修改原始实体）
     for (int i = 0; i < entityList.size(); i++) {
@@ -1526,6 +1640,7 @@ void VtkWidget::onAlign()
             auto pcEntity = static_cast<CPointCloud*>(entity);
             clouds.append(pcl::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>(pcEntity->m_pointCloud));
             logInfo += ((CPointCloud*)entity)->m_strCName + " ";
+            if(clouds.size() == 1 && pcEntity->isModelCloud) isModel = true;
         }
     }
 
@@ -1535,12 +1650,25 @@ void VtkWidget::onAlign()
         return;
     }
 
-    // 滤波去噪
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud1 = onFilter(clouds[0]);
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud2 = onFilter(clouds[1]);
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud1_filter(clouds[0]);
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud2_filter(clouds[1]);
 
-    if (!cloud1 || cloud1->empty() || !cloud2 || cloud2->empty()) {
-        logInfo += "点云为空!";
+    // 滤波去噪，模型点云不用去噪
+    if(!isModel){
+        int cnt = FilterCount(cloud1_filter);
+        for(int i = 0;i < cnt;i++){
+            cloud1_filter = onFilter(clouds[0]);
+            clouds[0] = cloud1_filter;
+        }
+    }
+    int cnt = FilterCount(cloud2_filter);
+    for(int i = 0;i < cnt;i++){
+        cloud2_filter = onFilter(clouds[1]);
+        clouds[1] = cloud2_filter;
+    }
+
+    if (cloud2_filter->empty()) {
+        logInfo += "去噪后点云为空!";
         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
         return;
     }
@@ -1548,19 +1676,19 @@ void VtkWidget::onAlign()
     // 用于采样的两个点云
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledCloud1(new pcl::PointCloud<pcl::PointXYZRGB>());
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledCloud2(new pcl::PointCloud<pcl::PointXYZRGB>());
-    float radius1 = calculateSamplingRadius(cloud1);
-    float radius2 = calculateSamplingRadius(cloud2);
+    float radius1 = calculateSamplingRadius(cloud1_filter);
+    float radius2 = calculateSamplingRadius(cloud2_filter);
 
     // 如果点云较小，则不进行采样
     if(radius2 >= 0.1f && radius1 >= 0.1f){
-         // 如果点云较大，则动态设置采样半径
+        // 如果点云较大，则动态设置采样半径
         float initialRadius = 0.01f; // 初始采样半径
         float maxRadius = 0.2f;  // 最大采样半径
         float targetSize = 10000;    // 目标点云大小
         float reductionFactor = 1.0 / 5.0; // 点云缩减比例
         // 初始化当前待采样的点云和采样半径
-        pcl::PointCloud<pcl::PointXYZRGB>::Ptr currentSource = cloud2;
-        pcl::PointCloud<pcl::PointXYZRGB>::Ptr currentTarget = cloud1;
+        pcl::PointCloud<pcl::PointXYZRGB>::Ptr currentSource = cloud2_filter;
+        pcl::PointCloud<pcl::PointXYZRGB>::Ptr currentTarget = cloud1_filter;
         float currentRadius = initialRadius;
 
         while (true) {
@@ -1600,12 +1728,11 @@ void VtkWidget::onAlign()
     // 保存采样后的点云到文件
     pcl::io::savePCDFileASCII("downsampled_cloud2.pcd", *downsampledCloud2);
 
-
     // 使用XYZRGB类型进行ICP配准
     pcl::IterativeClosestPoint<pcl::PointXYZRGB, pcl::PointXYZRGB> icp;
     icp.setInputSource(downsampledCloud2);
     icp.setInputTarget(downsampledCloud1);
-    icp.setMaximumIterations(150);
+    icp.setMaximumIterations(100);
     icp.setTransformationEpsilon(1e-8);
     icp.setMaxCorrespondenceDistance(0.2f);
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr icpFinalCloudPtr(new pcl::PointCloud<pcl::PointXYZRGB>());
@@ -1613,8 +1740,8 @@ void VtkWidget::onAlign()
 
     // 如果仍未收敛，则进行动态迭代
     if (!icp.hasConverged()) {
-        int maxIter = 300; // 最大迭代次数
-        int iniIter = 150; // 初始迭代次数
+        int maxIter = 400; // 最大迭代次数
+        int iniIter = 100; // 初始迭代次数
         float corDis = 1.0f; // 最大点距离阈值
         while(iniIter <= maxIter){
             icp.setMaxCorrespondenceDistance(corDis);
