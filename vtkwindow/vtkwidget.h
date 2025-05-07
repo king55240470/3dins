@@ -127,6 +127,7 @@ public:
     int FilterCount(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud); // 计算去噪次数
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr onFilter(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud); // 点云滤波
     void onFilter(); // 重载的滤波方法，用于单独生成去噪后的点云
+    void onRadiusFilter(); // 半径滤波
     void onCompare();// 比较两个点云
     void onAlign();    // 配准的函数
     void poissonReconstruction(); // 泊松重建

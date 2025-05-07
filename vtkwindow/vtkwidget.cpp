@@ -19,7 +19,7 @@
 #include <pcl/filters/statistical_outlier_removal.h>
 #include <pcl/filters/normal_refinement.h>
 #include <pcl/filters/conditional_removal.h>
-
+#include <pcl/filters/radius_outlier_removal.h>
 #include <pcl/surface/poisson.h>
 #include <pcl/surface/impl/poisson.hpp>
 #include <pcl/filters/random_sample.h>
@@ -1312,8 +1312,9 @@ CPosition VtkWidget::getBoundboxCenter(CEntity *entity)
     centers[0] = (bounds[0] + bounds[1]) / 2;
     centers[1] = (bounds[2] + bounds[3]) / 2;
     centers[2] = (bounds[4] + bounds[5]) / 2;
+    CPosition center(centers[0], centers[1], centers[2]);
 
-    return CPosition (centers[0], centers[1], centers[2]);
+    return center;
 }
 
 CPosition VtkWidget::getBoundboxCenter(vtkActor *actor)
@@ -1361,9 +1362,11 @@ int VtkWidget::adjustMeanK(size_t pointCount)
         return 20;
     else if(pointCount > 10000 && pointCount <= 100000)
         return 50;
-    else if(pointCount > 10000 && pointCount <= 500000)
+    else if(pointCount > 100000 && pointCount <= 500000)
         return 100;
-    else return 150;
+    else if(pointCount > 500000 && pointCount <= 1000000)
+        return 150;
+    else return 200;
 }
 
 double VtkWidget::adjustStddevThresh(size_t pointCount)
@@ -1419,7 +1422,7 @@ void VtkWidget::onFilter()
     }
 
     if(cloud->empty()){
-        m_pMainWin->getPWinVtkPresetWidget()->setWidget(QString("点云为空！"));
+        m_pMainWin->getPWinVtkPresetWidget()->setWidget(QString("点云为空，无法进行滤波！"));
         return;
     }
 
@@ -1427,6 +1430,47 @@ void VtkWidget::onFilter()
     for(int i = 0;i < cnt;i++){
         cloud_filtered = onFilter(cloud);
         cloud = cloud_filtered;
+    }
+
+    auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateFilterCloud(*cloud_filtered);
+    m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
+    m_pMainWin->NotifySubscribe();
+}
+
+void VtkWidget::onRadiusFilter()
+{
+    auto entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud;
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZRGB>);
+
+    for(int i=0;i<entityList.size();i++){
+        CEntity* entity=entityList[i];
+        if(entity->GetUniqueType()==enPointCloud && entity->IsSelected()){
+            auto& temp=((CPointCloud*)entity)->m_pointCloud;
+            cloud = temp.makeShared();
+            break;
+        }
+    }
+
+    if(cloud->empty()){
+        m_pMainWin->getPWinVtkPresetWidget()->setWidget(QString("点云为空，无法进行滤波！"));
+        return;
+    }
+
+    // 半径滤波
+    pcl::RadiusOutlierRemoval<pcl::PointXYZRGB> outrm;
+    int cnt = FilterCount(cloud);
+    for(int i = 0;i < 2 * cnt;i++){
+        outrm.setInputCloud(cloud);
+        outrm.setRadiusSearch(0.1);
+        outrm.setMinNeighborsInRadius(2); // 删除邻近点数量小于2的点
+        outrm.filter(*cloud_filtered);
+        cloud = cloud_filtered;
+    }
+
+    if(cloud_filtered->empty()){
+        m_pMainWin->getPWinVtkPresetWidget()->setWidget(QString("滤波后点云为空！"));
+        return;
     }
 
     auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateFilterCloud(*cloud_filtered);
@@ -1611,21 +1655,20 @@ void VtkWidget::onAlign()
     }
 
     // 用于采样的两个点云
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledCloud1(new pcl::PointCloud<pcl::PointXYZRGB>());
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledCloud2(new pcl::PointCloud<pcl::PointXYZRGB>());
-    float radius1 = calculateSamplingRadius(cloud1_filter);
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledCloud1(cloud1_filter);
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledCloud2(cloud2_filter);
     float radius2 = calculateSamplingRadius(cloud2_filter);
 
     // 如果点云较小，则不进行采样
-    if(radius2 >= 0.1f && radius1 >= 0.1f){
+    if(radius2 >= 0.1f){
         // 如果点云较大，则动态设置采样半径
         float initialRadius = 0.01f; // 初始采样半径
         float maxRadius = 0.2f;  // 最大采样半径
         float targetSize = 10000;    // 目标点云大小
         float reductionFactor = 1.0 / 5.0; // 点云缩减比例
         // 初始化当前待采样的点云和采样半径
-        pcl::PointCloud<pcl::PointXYZRGB>::Ptr currentSource = cloud2_filter;
-        pcl::PointCloud<pcl::PointXYZRGB>::Ptr currentTarget = cloud1_filter;
+        pcl::PointCloud<pcl::PointXYZRGB>::Ptr currentSource = downsampledCloud2;
+        pcl::PointCloud<pcl::PointXYZRGB>::Ptr currentTarget = downsampledCloud1;
         float currentRadius = initialRadius;
 
         while (true) {
@@ -1667,8 +1710,8 @@ void VtkWidget::onAlign()
 
     // 使用XYZRGB类型进行ICP配准
     pcl::IterativeClosestPoint<pcl::PointXYZRGB, pcl::PointXYZRGB> icp;
-    icp.setInputSource(downsampledCloud2);
-    icp.setInputTarget(downsampledCloud1);
+    icp.setInputSource(downsampledCloud1);
+    icp.setInputTarget(downsampledCloud2);
     icp.setMaximumIterations(100);
     icp.setTransformationEpsilon(1e-8);
     icp.setMaxCorrespondenceDistance(0.2f);

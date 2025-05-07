@@ -298,6 +298,7 @@ void MainWindow::setupUi(){
     QIcon compareIcon(":/component/save/compare.png");
     QIcon reconstructIcon(":/component/save/reconstruct.png");
     QIcon alignIcon(":/component/save/ICP.png");
+    QIcon filterIcon(":/component/save/filter.png");
 
     QMenu *cloudOperation=bar->addMenu("点云操作(V)");
     QAction* showCloudMenu = new QAction();
@@ -331,9 +332,9 @@ void MainWindow::setupUi(){
     QAction* filterAction=cloudOperation->addAction("点云滤波");
     filterAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_F));
     filterAction->setShortcutContext(Qt::ApplicationShortcut);
-    // filterAction->setIcon(QIcon(reconstructIcon.pixmap(QSize(40, 40))));
+    filterAction->setIcon(filterIcon);
     connect(filterAction,&QAction::triggered,this,[&](){
-        pWinVtkWidget->onFilter();
+        pWinVtkWidget->onRadiusFilter();
     });
     QMenu * switchTheme = bar->addMenu("主题(T)");
     QAction* showThemeMenu = new QAction();
