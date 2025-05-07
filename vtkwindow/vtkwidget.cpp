@@ -1171,57 +1171,120 @@ void VtkWidget::onIsometricView(){
 }
 
 void VtkWidget::ExportPointCloudToFBX(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud, const std::string& filepath) {
-    // 初始化 FBX 管理器
-    FbxManager* manager = FbxManager::Create();
-
-    // 设置 IO 设置
-    FbxIOSettings* ios = FbxIOSettings::Create(manager, IOSROOT);
-    manager->SetIOSettings(ios);
-
-    // 创建场景
-    FbxScene* scene = FbxScene::Create(manager, "PointCloudScene");
-
-    // 创建 mesh
-    FbxMesh* mesh = FbxMesh::Create(scene, "PointCloudMesh");
-
-    int numVertices = cloud->size();
-    mesh->InitControlPoints(numVertices);
-    FbxVector4* controlPoints = mesh->GetControlPoints();
-
-    for (int i = 0; i < numVertices; ++i) {
-        const auto& pt = cloud->points[i];
-        controlPoints[i] = FbxVector4(pt.x, pt.y, pt.z);
-    }
-
-    // 添加颜色
-    FbxGeometryElementVertexColor* vertexColor = mesh->CreateElementVertexColor();
-    vertexColor->SetMappingMode(FbxGeometryElement::eByControlPoint);
-    vertexColor->SetReferenceMode(FbxGeometryElement::eDirect);
-
-    for (int i = 0; i < numVertices; ++i) {
-        const auto& pt = cloud->points[i];
-        vertexColor->GetDirectArray().Add(FbxColor(pt.r / 255.0, pt.g / 255.0, pt.b / 255.0, 1.0));
-    }
-
-    // 创建节点
-    FbxNode* meshNode = FbxNode::Create(scene, "PointCloudNode");
-    meshNode->SetNodeAttribute(mesh);
-    scene->GetRootNode()->AddChild(meshNode);
-
-    // 创建导出器
-    FbxExporter* exporter = FbxExporter::Create(manager, "");
-
-    if (!exporter->Initialize(filepath.c_str(), -1, manager->GetIOSettings())) {
-        printf("Failed to initialize FBX exporter: %s\n", exporter->GetStatus().GetErrorString());
+    // === 1. 检查输入点云是否有效 ===
+    if (!cloud || cloud->empty()) {
+        qWarning() << "错误：点云数据为空！";
         return;
     }
 
-    // 导出场景
-    exporter->Export(scene);
-    exporter->Destroy();
+    // ========== 1. FBX SDK初始化 ==========
+    FbxManager* lSdkManager = FbxManager::Create();
+    FbxIOSettings* pIOSettings = FbxIOSettings::Create(lSdkManager, IOSROOT);
+    lSdkManager->SetIOSettings(pIOSettings);
 
-    // 清理
-    manager->Destroy();
+    // 创建场景并设置坐标系
+    FbxScene* pScene = FbxScene::Create(lSdkManager, "Scene");
+    FbxAxisSystem axisSystem(
+        FbxAxisSystem::eYAxis,      // Y-up
+        FbxAxisSystem::eParityOdd,  // 奇校验
+        FbxAxisSystem::eRightHanded // 右手坐标系
+        );
+    axisSystem.ConvertScene(pScene);
+
+    // ========== 3. 创建网格节点 ==========
+    FbxNode* pNode = FbxNode::Create(pScene, "PointCloud");
+    FbxMesh* pMesh = FbxMesh::Create(pScene, "PointCloudMesh");
+
+    // 初始化顶点数据
+    const int numPoints = cloud->size();
+    pMesh->InitControlPoints(numPoints);
+    FbxVector4* vertices = pMesh->GetControlPoints();
+
+    // ========== 4. 填充顶点坐标（转换为Y-up） ==========
+    for(int i=0; i<numPoints; ++i) {
+        const auto& pt = cloud->points[i];
+        vertices[i] = FbxVector4(pt.x, pt.z, -pt.y); // 转换为Y-up
+    }
+
+    // ========== 5. 生成有效微三角形 ==========
+    for(int i=0; i<numPoints; ++i) {
+        pMesh->BeginPolygon();
+        // 创建微小偏移的三角形（边长0.001单位）
+        pMesh->AddPolygon(i);
+        pMesh->AddPolygon((i+1)%numPoints);
+        pMesh->AddPolygon((i+2)%numPoints);
+        pMesh->EndPolygon();
+    }
+
+    // ========== 6. 顶点颜色设置 ==========
+    FbxGeometryElementVertexColor* colorElement = pMesh->CreateElementVertexColor();
+    colorElement->SetMappingMode(FbxGeometryElement::eByControlPoint);
+    colorElement->SetReferenceMode(FbxGeometryElement::eDirect);
+
+    FbxLayerElementArrayTemplate<FbxColor>& colorArray = colorElement->GetDirectArray();
+    colorArray.SetCount(numPoints);
+
+    for(int i=0; i<numPoints; ++i) {
+        const auto& pt = cloud->points[i];
+        uint32_t rgb = *reinterpret_cast<const uint32_t*>(&pt.rgb);
+        colorArray.SetAt(i, FbxColor(
+                                ((rgb >> 16) & 0xFF)/255.0,
+                                ((rgb >> 8) & 0xFF)/255.0,
+                                (rgb & 0xFF)/255.0
+                                ));
+    }
+
+    // ========== 7. 法线生成 ==========
+    FbxGeometryElementNormal* normalElement = pMesh->CreateElementNormal();
+    normalElement->SetMappingMode(FbxGeometryElement::eByControlPoint);
+    normalElement->SetReferenceMode(FbxGeometryElement::eDirect);
+
+    FbxLayerElementArrayTemplate<FbxVector4>& normalArray = normalElement->GetDirectArray();
+    normalArray.SetCount(numPoints);
+    const FbxVector4 defaultNormal(0, 1, 0); // Y-up默认法线
+    for(int i=0; i<numPoints; ++i) {
+        normalArray.SetAt(i, defaultNormal);
+    }
+
+    // ========== 8. 材质绑定 ==========
+    FbxSurfacePhong* pMaterial = FbxSurfacePhong::Create(pScene, "PointMaterial");
+    pMaterial->Diffuse.Set(FbxDouble3(1,1,1));
+    pMaterial->Ambient.Set(FbxDouble3(1,1,1));
+    pNode->AddMaterial(pMaterial);
+
+    // 创建材质-颜色的连接
+    FbxLayer* pLayer = pMesh->GetLayer(0);
+    if(!pLayer) {
+        pMesh->CreateLayer();
+        pLayer = pMesh->GetLayer(0);
+    }
+    pLayer->SetVertexColors(colorElement);
+
+    // ========== 9. 场景构建 ==========
+    pNode->SetNodeAttribute(pMesh);
+    pScene->GetRootNode()->AddChild(pNode);
+
+    // ========== 10. 导出设置 ==========
+    FbxExporter* pExporter = FbxExporter::Create(lSdkManager, "");
+    if(!pExporter->Initialize(filepath.c_str(), -1, lSdkManager->GetIOSettings())) {
+        std::cerr << "导出器初始化失败: " << pExporter->GetStatus().GetErrorString() << std::endl;
+        lSdkManager->Destroy();
+        return;
+    }
+
+    // 设置导出选项
+    FbxIOSettings* pExportSettings = lSdkManager->GetIOSettings();
+    pExportSettings->SetBoolProp(EXP_FBX_MATERIAL, true);
+    pExportSettings->SetBoolProp(EXP_FBX_TEXTURE, false);
+    pExportSettings->SetBoolProp(EXP_FBX_EMBEDDED, false);
+
+    if(!pExporter->Export(pScene)) {
+        std::cerr << "导出失败: " << pExporter->GetStatus().GetErrorString() << std::endl;
+    }
+
+    // ========== 11. 资源清理 ==========
+    pExporter->Destroy();
+    lSdkManager->Destroy();
 }
 
 double *VtkWidget::getViewAngles()

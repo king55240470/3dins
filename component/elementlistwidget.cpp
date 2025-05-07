@@ -191,6 +191,12 @@ void ElementListWidget::onDeleteEllipse()
                     entityindex=i;
                 }
             }
+            if(obj->GetUniqueType()==enPointCloud){
+                CPointCloud*could = (CPointCloud*)obj;
+                if(pointCouldlists.contains(could->m_pointCloud.makeShared())){
+                    pointCouldlists.removeOne(could->m_pointCloud.makeShared());
+                }
+            }
             auto& objectList = m_pMainWin->m_ObjectListMgr->getObjectList();
             auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
             QVector<CEntity*> constructEntityList = m_pMainWin->getPWinToolWidget()->getConstructEntityList();//存储构建元素的列表

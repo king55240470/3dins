@@ -482,6 +482,19 @@ void MainWindow::EnterInterface()
                                    }, QHttpServerResponder::StatusCode::Ok);
     });
 
+    server.route("/comparsion", QHttpServerRequest::Method::Get, [this](
+                                                                const QHttpServerRequest &request) {
+
+        // 触发核心功能
+        getisComparsionCloud();
+
+        // 返回JSON响应
+        return QHttpServerResponse(QJsonObject{
+                                       {"status", "success"},
+                                       {"获得对比点云", "功能已启动"}
+                                   }, QHttpServerResponder::StatusCode::Ok);
+    });
+
     // 设置CORS头（可选）
     server.afterRequest([](QHttpServerResponse &&resp) {
         resp.setHeader("Access-Control-Allow-Origin", "*");
@@ -530,6 +543,11 @@ void MainWindow::openbuild()
     if (!QDesktopServices::openUrl(url)) {
         qWarning() << "Failed to open explorer at:" << dir.absolutePath();
     }
+}
+
+QVector<CPointCloud *> MainWindow::getisComparsionCloud()
+{
+    return pWinElementListWidget->getisComparsionCloud();
 }
 
 void MainWindow::LoadWidgets(){
