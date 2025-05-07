@@ -154,6 +154,7 @@ public:
     void beginStartButton();
     QString getIsProcess();
     void openbuild();
+    QVector<CPointCloud*> getisComparsionCloud();
     void showPresetElemWidget(int);
 
     QHttpServer server;// 创建HTTP服务器
