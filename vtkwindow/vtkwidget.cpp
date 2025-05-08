@@ -1594,7 +1594,8 @@ void VtkWidget::onCompare()
     // 初始化最大和最小距离变量
     float maxDistance = std::numeric_limits<float>::min();
     float minDistance = std::numeric_limits<float>::max();
-
+    float averageDistance=0;
+    int count_distance=0;
     // 用于存储最近邻搜索的结果
     std::vector<int> pointIdxNKNSearch(1);
     std::vector<float> pointNKNSquaredDistance(1);
@@ -1603,6 +1604,8 @@ void VtkWidget::onCompare()
     for (size_t i = 0; i < cloud2->size(); ++i) {
         if (kdtree.nearestKSearch(cloud2->at(i), 1, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
             float dist = std::sqrt(pointNKNSquaredDistance[0]);
+            averageDistance+=dist;
+            count_distance++;
             // 更新最大和最小距离
             if (dist > maxDistance) {
                 maxDistance = dist;
@@ -1638,9 +1641,16 @@ void VtkWidget::onCompare()
 
     // 导出为fbx文件
     ExportPointCloudToFBX(comparisonCloud,"D:/outout.fbx");
-
+    //平均距离
+    averageDistance/=count_distance;
     //调用保存图像函数
     ShowColorBar(minDistance, maxDistance);
+    QVector<double> DistanceValue;
+    DistanceValue.push_back(maxDistance);
+    DistanceValue.push_back(minDistance);
+    DistanceValue.push_back(averageDistance);
+    m_distanceValue[cloudEntity]= DistanceValue;
+
     m_pMainWin->getPWinToolWidget()->onSaveImage();
     QString path_front=m_pMainWin->getPWinToolWidget()->getlastCreatedImageFileFront();
     QString path_top=m_pMainWin->getPWinToolWidget()->getlastCreatedImageFileTop();
@@ -1665,6 +1675,9 @@ void VtkWidget::onCompare()
     // 添加日志输出
     logInfo += "对比完成";
     m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
+}
+ QMap<CEntity*,QVector<double>>& VtkWidget::getDistanceValue(){
+    return m_distanceValue;
 }
 
 //FPFH+ICP

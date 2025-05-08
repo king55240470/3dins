@@ -23,6 +23,36 @@ void onRightViewAngle();
 void onUpViewAngle();
 }
 
+//用于提取监测点数据
+struct MeasurementData {
+    QString pointNumber;
+    QString measuredValue;
+    QString maxValue;
+    QString minValue;
+    QString angle;
+    QString cameraCoordinates;
+    QString isQualified;
+    QString imagePath;
+    QString type;
+};
+//用于提取点云尺寸测量数据
+struct Size_MeasurementData{
+    QString type;
+    QString name;
+    QString isVisible;//全局独有
+    QString isColorful;
+    QString isNormal;
+    QString pointNumber;//全局独有
+    QString max_error;
+    QString min_error;
+    QString average_error;
+    QString num_triangularmesh;//局部独有
+    QString three_dimensional;
+    QString center_point;
+    QString imagePath;//图片路径
+};
+
+
 class ToolWidget : public QWidget {
     Q_OBJECT
 public:
@@ -167,6 +197,8 @@ public slots:
     void   ExtractData(QVector<CEntity *>& entitylist,QList<QList<QString>>& dataAll,QList<QList<QString>>& data_accepted,QList<QList<QString>>& data_not_accepted);
 
     void   ExtractData(QVector<CEntity *>& entitylist,QList<QList<QString>>& dataAll);
+
+    void   ExtractData(QVector<CEntity *>& entitylist,QList<Size_MeasurementData>&dataAll_size,Size_MeasurementData& data_pointCloud_size);
 private:
 
     QMap<CEntity*,QString>m_checkpoint_imagePath;

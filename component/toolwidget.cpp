@@ -1072,6 +1072,87 @@ void  ToolWidget:: ExtractData(QVector<CEntity *>& entitylist,QList<QList<QStrin
     }
 }
 
+void   ToolWidget::ExtractData(QVector<CEntity *>& entitylist,QList<Size_MeasurementData>&dataAll_size,Size_MeasurementData& data_pointCloud_size){
+    qDebug()<<"提取数据2";
+    for (int i = 0; i < entitylist.size(); i++) {
+        Size_MeasurementData tmp;
+        CEntity* entity=entitylist[i];
+        if(entity->GetUniqueType()==enPointCloud){
+
+            CPointCloud* point_cloud=(CPointCloud*)entity;
+            if(point_cloud->isComparsionCloud){
+            }else{
+                continue;
+            }
+            // CEntity* parent=nullptr;
+            CPointCloud* parent=nullptr;
+            bool isGlobal=true;//是否为全局
+            if(point_cloud->parent.size()!=0){//有源
+                if(point_cloud->parent[0]->GetUniqueType()==enPointCloud)//是点云
+                {
+                    parent=(CPointCloud*)point_cloud->parent[0];
+                    if(point_cloud->isCut){
+                        isGlobal=false;
+                    }
+                }
+            }
+            qDebug()<<"到0";
+            //double* boxData=m_pMainWin->getPWinVtkWidget()->getBoundboxData(entity);
+            double boxData[3]={0,0,0};
+            //CPosition boxCenter= m_pMainWin->getPWinVtkWidget()->getBoundboxCenter(entity);
+            CPosition boxCenter;
+
+            qDebug()<<"到0.25";
+            //名字 是否可见 法向量 颜色
+            tmp.name=point_cloud->m_strAutoName;
+
+            tmp.isVisible="True";
+            tmp.isColorful="True";
+            tmp.isNormal="True";
+            qDebug()<<"到0.5";
+            QVector<double>distanceValue=m_pMainWin->getPWinVtkWidget()->getDistanceValue()[point_cloud];
+
+            if(distanceValue.size()==3){
+                tmp.max_error=QString::number(distanceValue[0]);
+                tmp.min_error=QString::number(distanceValue[1]);
+                tmp.average_error=QString::number(distanceValue[2]);
+            }
+            qDebug()<<"到1";
+
+            tmp.three_dimensional=("长:"+QString::number(boxData[0])
+                                     +" 宽:"+QString::number(boxData[1])
+                                     +" 高:"+QString::number(boxData[2]));;
+            tmp.center_point=("X:"+QString::number(boxCenter.x)
+                                +" Y:"+QString::number(boxCenter.y)
+                                +" Z:"+QString::number(boxCenter.z));
+            qDebug()<<"到1.5";
+            SaveImage(entity);
+
+            tmp.imagePath=QDir::toNativeSeparators(QDir::toNativeSeparators(m_checkpoint_imagePath[entity]));//图片路径
+            qDebug()<<"到2";
+            if(isGlobal){
+                tmp.type="Global";
+                tmp.pointNumber=QString::number(point_cloud->getPointCloudSize());
+                data_pointCloud_size=tmp;
+
+                qDebug()<<"全局对比点云更新为"<<entity->m_strAutoName;
+                qDebug()<<"保存路径为"<<m_checkpoint_imagePath[entity];
+
+            }else{
+                tmp.type="Local";
+                tmp.num_triangularmesh="1";//局部独有
+                dataAll_size.push_back(tmp);
+                qDebug()<<"局部对比点云更新为"<<entity->m_strAutoName;
+            }
+
+
+        }
+    }
+
+    qDebug()<<"提取数据完毕2";
+
+}
+
 
 void insertImageIntoPdf(const QString &imagePath, const QString &pdfPath) {
     // 创建一个新的QTextDocument
@@ -1656,32 +1737,27 @@ void   ToolWidget::onSaveWord(){
 }
 
 
-struct MeasurementData {
-    QString pointNumber;
-    QString measuredValue;
-    QString maxValue;
-    QString minValue;
-    QString angle;
-    QString cameraCoordinates;
-    QString isQualified;
-    QString imagePath;
-    QString type;
-};
+
 
 void ToolWidget::createDistanceMeasurementReport()
 {
+
     //记录检测编号
     static int count=1;
     //提取点云、监测点信息
 
     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
-    QVector<CEntity*> check_points;//存储监测点
+    //QVector<CEntity*> check_points;//存储监测点
     QVector<CPointCloud*> compare_clouds;//存储点云
-    QList<QList<QString>> dataAll;
+    QList<QList<QString>> dataAll;//存储监测点测量
 
-    QList<QString>  data_pointCloud;
+    QList<Size_MeasurementData>dataAll_size;//存储尺寸测量
+
+    QList<QString>  data_pointCloud;//存储检测点中点云数据
+
+    Size_MeasurementData  data_pointCloud_size;//存储尺寸测量的点云数据
     ExtractData(entityList, dataAll,data_pointCloud);
-
+    ExtractData(entityList,dataAll_size,data_pointCloud_size);
     QAxObject* word = nullptr;
     QAxObject* document = nullptr;
 
@@ -1880,16 +1956,16 @@ void ToolWidget::createDistanceMeasurementReport()
         // 9. 添加检测点数据
         QVector<MeasurementData> measurements;
         for(auto &dataList:dataAll){
-                MeasurementData data;
-                data.type=dataList[0];
-                data.pointNumber=QString::number(extractFirstNumber(dataList[1]));//检测点序号
-                data.measuredValue=dataList[2];
-                data.maxValue=dataList[3];
-                data.minValue=dataList[4];
-                data.isQualified=dataList[5];
-                data.imagePath= QDir::toNativeSeparators(dataList[6]);
-                qDebug()<<data.imagePath;
-                measurements.push_back(data);
+            MeasurementData data;
+            data.type=dataList[0];
+            data.pointNumber=QString::number(extractFirstNumber(dataList[1]));//检测点序号
+            data.measuredValue=dataList[2];
+            data.maxValue=dataList[3];
+            data.minValue=dataList[4];
+            data.isQualified=dataList[5];
+            data.imagePath= QDir::toNativeSeparators(dataList[6]);
+            qDebug()<<data.imagePath;
+            measurements.push_back(data);
         }
 
         for (const MeasurementData& data : measurements) {
@@ -1940,8 +2016,135 @@ void ToolWidget::createDistanceMeasurementReport()
             selection->dynamicCall("EndKey(QVariant)", 6);
 
 
+
+            //selection->dynamicCall("MoveDown()");
+            selection->dynamicCall("InsertBreak(int)", 7); // 分页符
+        }
+        font->setProperty("Size", 14);
+        font->setProperty("Bold", true);
+        selection->dynamicCall("TypeText(const QString&)", "整体检测");
+        selection->dynamicCall("TypeParagraph()");
+        font->setProperty("Size", 10.5);
+        font->setProperty("Bold", false);
+
+        QStringList propertyHeaders_size = {"类型", "名称", "是否可视化", "是否有法向量",
+                                            "是否有颜色", "外包盒三维", "外包盒中心点", "点的数目",
+                                            "最大误差", "最小误差","平均误差"};
+        QAxObject* rangeForTable_size = selection->querySubObject("Range");
+        QAxObject* propertyTable_size = tables->querySubObject("Add(QVariant, QVariant, QVariant, QVariant)",
+                                                               rangeForTable_size->asVariant(), propertyHeaders_size.size()+1, 2);
+        if (!propertyTable_size || propertyTable_size->isNull()) {
+            throw std::runtime_error("无法创建属性表格");
+        }
+
+        // 设置表格样式
+        propertyTable_size->setProperty("Style", "网格型");
+        propertyTable_size->querySubObject("Rows")->setProperty("Height", 23);
+        QAxObject* tableRange_size= propertyTable_size->querySubObject("Range");
+
+
+
+        tableRange_size->querySubObject("ParagraphFormat")->setProperty("Alignment","wdAlignParagraphCenter");//水平居中
+        tableRange_size->querySubObject("Cells")->setProperty("VerticalAlignment","wdCellAlignVerticalCenter");//垂直居中
+
+
+        QStringList propertyValues_size;
+        propertyValues_size<<data_pointCloud_size.type<<data_pointCloud_size.name
+                            <<data_pointCloud_size.isVisible<<data_pointCloud_size.isNormal<<data_pointCloud_size.isColorful
+                            <<data_pointCloud_size.three_dimensional<<data_pointCloud_size.center_point
+                            <<data_pointCloud_size.pointNumber<<data_pointCloud_size.max_error<<data_pointCloud_size.min_error
+                            <<data_pointCloud_size.average_error;
+
+        for (int row = 2; row <= propertyHeaders_size.size()+1; ++row) {
+            // 设置第一列（属性标题）的文本和居中
+            QAxObject* cellHeader = propertyTable_size->querySubObject("Cell(int, int)", row, 1);
+            QAxObject* rangeHeader = cellHeader->querySubObject("Range");
+            rangeHeader->dynamicCall("SetText(const QString&)", propertyHeaders_size[row - 2]);
+
+            // 设置第二列（属性值）的文本和居中
+            QAxObject* cellValue = propertyTable_size->querySubObject("Cell(int, int)", row, 2);
+            QAxObject* rangeValue = cellValue->querySubObject("Range");
+            rangeValue->dynamicCall("SetText(const QString&)", propertyValues_size[row - 2]);
+
+
+            // 合并单元格（除第5和第6行外）
+
+        }
+
+        QAxObject* cell1_size = propertyTable_size->querySubObject("Cell(int, int)", 1, 1);
+        QAxObject* cell2_size = propertyTable_size->querySubObject("Cell(int, int)", 1, 2);
+        cell1_size->dynamicCall("Merge(QVariant)", cell2_size->asVariant());
+        QAxObject* inlineShapes_size = document->querySubObject("InlineShapes");
+        inlineShapes_size->dynamicCall("AddPicture(const QString&)",data_pointCloud_size.imagePath);
+
+        // // 可选：调整图片大小（单位：磅，1磅≈1/72英寸）
+        // QAxObject* picture = inlineShapes->querySubObject("Item(int)", 1);  // 获取刚插入的图片
+        // picture->setProperty("Width", 1156);  // 设置宽度（磅）
+        // picture->setProperty("Height", 856);   // 设置高度（磅）
+        qDebug()<<"1";
+
+        //结束表格填写并换页
+        selection->dynamicCall("EndKey(QVariant)", 6);
+        selection->dynamicCall("InsertBreak(int)", 7); // 分页符
+        int num_size=1;
+        for (const Size_MeasurementData& data : dataAll_size) {
+
+            // 添加检测点标题
+            font->setProperty("Size", 14);
+            font->setProperty("Bold", true);
+            selection->dynamicCall("TypeText(const QString&)", "局部检测" +QString::number(num_size++));
+            selection->dynamicCall("TypeParagraph()");
+            font->setProperty("Size", 10.5);
+            font->setProperty("Bold", false);
+            //生成输出数据
+            QStringList measureHeaders = {"类型","名称", "是否有颜色", "是否有法向量", "三角网格量", "外包盒三维","外包盒中点",
+                                          "最大误差","最小误差","平均误差"};
+            QStringList measureValues ;
+
+            measureValues<<data.type<<data.name
+                          <<data.isColorful<<data.isNormal<<data.num_triangularmesh
+                          <<data.three_dimensional<<data.center_point
+                          <<data.max_error<<data.min_error
+                          <<data.average_error;
+            // 创建检测点表格
+            QAxObject* measureRange = selection->querySubObject("Range");
+            QAxObject* measureTable = tables->querySubObject("Add(QVariant, QVariant, QVariant, QVariant)",
+                                                             measureRange->asVariant(), measureHeaders.size()+1, 2);
+            QAxObject* measureTableRange = measureTable->querySubObject("Range");
+            if (!measureTable || measureTable->isNull()) {
+                throw std::runtime_error("无法创建检测点表格");
+            }
+
+            measureTable->setProperty("Style", "网格型");
+            measureTable->querySubObject("Rows")->setProperty("Height", 23);
+
+
+            measureTableRange->querySubObject("ParagraphFormat")->setProperty("Alignment","wdAlignParagraphCenter");//水平居中
+            measureTableRange->querySubObject("Cells")->setProperty("VerticalAlignment","wdCellAlignVerticalCenter");//垂直居中
+
+            for (int row = 2; row <= measureHeaders.size()+1; ++row) {
+                QAxObject* cell = measureTable->querySubObject("Cell(int, int)", row, 1);
+                QAxObject* range = cell->querySubObject("Range");
+
+                //设置内容
+                range->dynamicCall("SetText(const QString&)", measureHeaders[row-2]);
+                cell = measureTable->querySubObject("Cell(int, int)", row, 2);
+                range = cell->querySubObject("Range");
+                range->dynamicCall("SetText(const QString&)", measureValues[row-2]);
+
+            }
+
+            int row=1;
+            QAxObject* cell1 = measureTable->querySubObject("Cell(int, int)", row, 1);
+            QAxObject* cell2 = measureTable->querySubObject("Cell(int, int)", row, 2);
+            cell1->dynamicCall("Merge(QVariant)", cell2->asVariant());
+            QAxObject* inlineShapes = document->querySubObject("InlineShapes");
+            inlineShapes->dynamicCall("AddPicture(const QString&)",data.imagePath);
+            selection->dynamicCall("EndKey(QVariant)", 6);
+
+
             // 最后一个检测点后不加分页
-            if (&data != &measurements.last()) {
+            if (&data != &dataAll_size.last()) {
                 selection->dynamicCall("EndKey(QVariant)", 6);
                 //selection->dynamicCall("MoveDown()");
                 selection->dynamicCall("InsertBreak(int)", 7); // 分页符
@@ -3218,18 +3421,30 @@ QStringList* ToolWidget::getViewAngleIconPath(){
     return &view_angle_action_iconpath_list_;
 }
 void ToolWidget::SaveImage(CEntity* entity){
+    if(entity->GetUniqueType()==enPointCloud){
+        m_pMainWin->getPWinFileManagerWidget()->allHide("实测");
+    }else{
+        QVector<QString> entitys;
+        entitys.push_back(entity->m_strAutoName);
+        entitys.push_back("实测");
+        for(auto parent:entity->parent)
+            entitys.push_back(parent->m_strAutoName);
+        m_pMainWin->getPWinFileManagerWidget()->allHide(entitys);
+    }
     //得到所有元素
     QVector<CObject*> objlist=m_pMainWin->getObjectListMgr()->getObjectList();
+
     //除了entity的元素全部取消选中
     for(int i=0;i<objlist.size();i++)
         m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
     entity->SetSelected(true);
+    for(auto parent:entity->parent )
+        parent->SetSelected(true);
+    m_pMainWin->getPWinVtkWidget()->FocusOnActor(entity);
     //显示文本框
     m_pMainWin->getPWinElementListWidget()->showInfotext();
     //如果是实测点云，隐藏其他元素
-    if(entity->GetUniqueType()==enPointCloud){
-        m_pMainWin->getPWinFileManagerWidget()->allHide("实测");
-    }
+
 
     //生成路径
     QString path= getOutputPath("image");
@@ -3239,10 +3454,8 @@ void ToolWidget::SaveImage(CEntity* entity){
     m_checkpoint_imagePath[entity]=fileName;
     //保存某一实体的照片
     SaveImage(fileName,"png");
-    //恢复被隐藏的元素
-    if(entity->GetUniqueType()==enPointCloud){
-        m_pMainWin->getPWinFileManagerWidget()->allRecover();
-    }
+    //恢复被隐藏的元素  
+    m_pMainWin->getPWinFileManagerWidget()->allRecover();
     //关闭文本框
     m_pMainWin->getPWinElementListWidget()->closeInfotext();
 }
