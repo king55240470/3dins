@@ -334,7 +334,7 @@ void MainWindow::setupUi(){
     filterAction->setShortcutContext(Qt::ApplicationShortcut);
     filterAction->setIcon(filterIcon);
     connect(filterAction,&QAction::triggered,this,[&](){
-        pWinVtkWidget->onRadiusFilter();
+        pWinVtkWidget->onFilter();
     });
     QAction* templateAction=cloudOperation->addAction("模板匹配");
     templateAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_F));
