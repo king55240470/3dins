@@ -123,16 +123,22 @@ public:
     void FocusOnActor(CEntity* entity); // 设置相机以聚焦指定的actor
 
     int adjustMeanK(size_t pointCount); // 估算滤波的近邻点数量
-    double adjustStddevThresh(size_t pointCount); // 估算离群点阈值
+    double adjustStddevThresh(size_t pointCount); // 估算离群点阈值，用于统计滤波
+    float calculateThreshold(pcl::PointCloud<pcl::PointXYZRGB>::Ptr tagCloud);
     int FilterCount(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud); // 计算去噪次数
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr onFilter(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud); // 点云滤波
-    void onFilter(); // 重载的滤波方法，用于单独生成去噪后的点云
-    void onRadiusFilter(); // 半径滤波
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr onStatisticaFilter(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud);
+    void onFilter(); // 点云去噪
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr onFilter(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& srcCloud,
+                  pcl::PointCloud<pcl::PointXYZRGB>::Ptr& tagCloud); // 重载的滤波方法，用于在对齐中调用
     void onCompare();// 比较两个点云
-    void onAlign();    // 配准的函数
+    void onAlign(); // 配准的函数
+    void TemplateAlign(); // 模版匹配
+    // SAC + ICP
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr Align(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& srcCloud,
+                                                                    pcl::PointCloud<pcl::PointXYZRGB>::Ptr& tagCloud);
+    // 计算均方根误差
+    double calculateRMSE(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud1, pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud2);
     void poissonReconstruction(); // 泊松重建
-    void sacAlign(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud1,
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud2);
     float calculateSamplingRadius(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud); // 估计采样半径
 
     // 显示选中的图形的信息
