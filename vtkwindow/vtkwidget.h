@@ -34,6 +34,9 @@
 #include <pcl/registration/ia_ransac.h>
 // #include <pcl/surface/poisson.h>
 // #include <pcl/surface/impl/poisson.hpp>
+#define PCL_NO_PRECOMPILE
+#include <pcl/recognition/cg/geometric_consistency.h>
+#undef PCL_NO_PRECOMPILE
 
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
@@ -126,18 +129,13 @@ public:
     double adjustStddevThresh(size_t pointCount); // 估算离群点阈值，用于统计滤波
     float calculateThreshold(pcl::PointCloud<pcl::PointXYZRGB>::Ptr tagCloud);
     int FilterCount(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud); // 计算去噪次数
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr onStatisticaFilter(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud);
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr onStatisticalFilter(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud);
     void onFilter(); // 点云去噪
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr onFilter(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& srcCloud,
-                  pcl::PointCloud<pcl::PointXYZRGB>::Ptr& tagCloud); // 重载的滤波方法，用于在对齐中调用
+                                                    pcl::PointCloud<pcl::PointXYZRGB>::Ptr& tagCloud); // 重载的滤波方法，用于在对齐中调用
     void onCompare();// 比较两个点云
     void onAlign(); // 配准的函数
     void TemplateAlign(); // 模版匹配
-    // SAC + ICP
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr Align(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& srcCloud,
-                                                                    pcl::PointCloud<pcl::PointXYZRGB>::Ptr& tagCloud);
-    // 计算均方根误差
-    double calculateRMSE(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud1, pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud2);
     void poissonReconstruction(); // 泊松重建
     float calculateSamplingRadius(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud); // 估计采样半径
 
