@@ -336,6 +336,13 @@ void MainWindow::setupUi(){
     connect(filterAction,&QAction::triggered,this,[&](){
         pWinVtkWidget->onRadiusFilter();
     });
+    QAction* templateAction=cloudOperation->addAction("模板匹配");
+    templateAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_F));
+    templateAction->setShortcutContext(Qt::ApplicationShortcut);
+    templateAction->setIcon(filterIcon);
+    connect(templateAction,&QAction::triggered,this,[&](){
+        pWinVtkWidget->templateCG();
+    });
     QMenu * switchTheme = bar->addMenu("主题(T)");
     QAction* showThemeMenu = new QAction();
     showThemeMenu->setShortcut(QKeySequence(Qt::Key_T));

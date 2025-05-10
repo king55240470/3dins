@@ -1826,7 +1826,184 @@ void VtkWidget::onAlign()
     m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
 }
 
-void sacAlign(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud1, pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud2){
+void VtkWidget::templateCG(){
+    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+    QVector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> clouds;
+    QString logInfo;
+    bool isModel = false; // 判断clouds[0]是否是标准点云
+
+    // 收集选中的点云（确保不修改原始实体）
+    for (int i = 0; i < entityList.size(); i++) {
+        CEntity* entity = entityList[i];
+        if (!entity->IsSelected()) continue;
+        if (entity->GetUniqueType() == enPointCloud) {
+            // 获取点云的共享指针，确保原数据不被释放
+            auto pcEntity = static_cast<CPointCloud*>(entity);
+            clouds.append(pcl::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>(pcEntity->m_pointCloud));
+            logInfo += ((CPointCloud*)entity)->m_strCName + " ";
+            if(clouds.size() == 1 && pcEntity->isModelCloud) isModel = true;
+        }
+    }
+
+    if (clouds.size() != 2) {
+        logInfo += "对齐需要两个点云!";
+        m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
+        return;
+    }
+
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_template(clouds[0]);
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_scene(clouds[1]);
+
+    // 法线估计
+    pcl::NormalEstimation<pcl::PointXYZRGB, pcl::Normal> ne;
+    pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZRGB>());
+    pcl::PointCloud<pcl::Normal>::Ptr normals_template(new pcl::PointCloud<pcl::Normal>());
+    pcl::PointCloud<pcl::Normal>::Ptr normals_scene(new pcl::PointCloud<pcl::Normal>());
+    ne.setSearchMethod(tree);
+    ne.setKSearch(10);
+
+    ne.setInputCloud(cloud_template);
+    ne.compute(*normals_template);
+    ne.setInputCloud(cloud_scene);
+    ne.compute(*normals_scene);
+
+    // 提取关键点
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr keypoints_template(new pcl::PointCloud<pcl::PointXYZRGB>());
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr keypoints_scene(new pcl::PointCloud<pcl::PointXYZRGB>());
+    pcl::UniformSampling<pcl::PointXYZRGB> us;
+    us.setRadiusSearch(0.01f);
+
+    us.setInputCloud(cloud_template);
+    us.filter(*keypoints_template);
+
+    us.setInputCloud(cloud_scene);
+    us.filter(*keypoints_scene);
+
+    // 计算 LRF
+    pcl::PointCloud<pcl::ReferenceFrame>::Ptr lrf_template(new pcl::PointCloud<pcl::ReferenceFrame>());
+    pcl::PointCloud<pcl::ReferenceFrame>::Ptr lrf_scene(new pcl::PointCloud<pcl::ReferenceFrame>());
+
+    pcl::SHOTLocalReferenceFrameEstimation<pcl::PointXYZRGB> lrf_est;
+    lrf_est.setRadiusSearch(0.4); // 增大搜索半径
+
+    // 计算模板点云的 LRF
+    lrf_est.setInputCloud(keypoints_template);
+    lrf_est.setSearchSurface(cloud_template);
+    lrf_est.compute(*lrf_template);
+
+    // 计算场景点云的 LRF
+    lrf_est.setInputCloud(keypoints_scene);
+    lrf_est.setSearchSurface(cloud_scene);
+    lrf_est.compute(*lrf_scene);
+
+
+    // 计算SHOT特征
+    pcl::PointCloud<pcl::SHOT352>::Ptr descriptors_template(new pcl::PointCloud<pcl::SHOT352>());
+    pcl::PointCloud<pcl::SHOT352>::Ptr descriptors_scene(new pcl::PointCloud<pcl::SHOT352>());
+
+    pcl::SHOTEstimation<pcl::PointXYZRGB, pcl::Normal, pcl::SHOT352> shot;
+    shot.setRadiusSearch(0.4); // 设置SHOT特征的搜索半径
+
+    shot.setInputCloud(keypoints_template);
+    shot.setInputNormals(normals_template);
+    shot.setSearchSurface(cloud_template);
+    shot.setInputReferenceFrames(lrf_template);
+    shot.compute(*descriptors_template);
+
+    shot.setInputCloud(keypoints_scene);
+    shot.setInputNormals(normals_scene);
+    shot.setSearchSurface(cloud_scene);
+    shot.setInputReferenceFrames(lrf_scene);
+    shot.compute(*descriptors_scene);
+
+
+    // // 计算SHOT特征
+    // pcl::PointCloud<pcl::SHOT352>::Ptr descriptors_template(new pcl::PointCloud<pcl::SHOT352>());
+    // pcl::PointCloud<pcl::SHOT352>::Ptr descriptors_scene(new pcl::PointCloud<pcl::SHOT352>());
+
+    // pcl::SHOTEstimation<pcl::PointXYZRGB, pcl::Normal, pcl::SHOT352> shot;
+    // shot.setRadiusSearch(0.05); // 设置SHOT特征的搜索半径
+    // shot.setLRFRadius(0.1);    // 设置LRF的搜索半径
+
+    // shot.setInputCloud(keypoints_template);
+    // shot.setInputNormals(normals_template);
+    // shot.setSearchSurface(cloud_template);
+    // shot.compute(*descriptors_template);
+
+    // shot.setInputCloud(keypoints_scene);
+    // shot.setInputNormals(normals_scene);
+    // shot.setSearchSurface(cloud_scene);
+    // shot.compute(*descriptors_scene);
+
+    // 计算特征空间对应关系
+    pcl::CorrespondencesPtr correspondences(new pcl::Correspondences());
+    pcl::registration::CorrespondenceEstimation<pcl::SHOT352, pcl::SHOT352> corr_est;
+    corr_est.setInputSource(descriptors_template);
+    corr_est.setInputTarget(descriptors_scene);
+    corr_est.determineCorrespondences(*correspondences, 0.25); // 特征距离阈值
+
+    std::cout << "初始对应点对数量: " << correspondences->size() << std::endl;
+
+    // 几何一致性分组
+    std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>> transformations;
+    std::vector<pcl::Correspondences> clustered_corrs;
+
+    pcl::GeometricConsistencyGrouping<pcl::PointXYZRGB, pcl::PointXYZRGB> gc;
+    gc.setInputCloud(keypoints_template);
+    gc.setSceneCloud(keypoints_scene);
+    gc.setModelSceneCorrespondences(correspondences);
+    gc.setGCSize(0.01); // 网格大小
+    gc.setGCThreshold(5); // 至少5个匹配点
+
+    gc.recognize(transformations, clustered_corrs);
+
+    std::cout << "检测到匹配实例数量: " << transformations.size() << std::endl;
+
+    if (transformations.empty()) {
+        std::cerr << "没有识别出任何匹配区域，终止。" << std::endl;
+        return;
+    }
+
+    // 使用第一个匹配进行 ICP 精细对齐
+    Eigen::Matrix4f initial_transform = transformations[0];
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr transformed_template(new pcl::PointCloud<pcl::PointXYZRGB>());
+    pcl::transformPointCloud(*cloud_template, *transformed_template, initial_transform);
+
+    pcl::IterativeClosestPoint<pcl::PointXYZRGB, pcl::PointXYZRGB> icp;
+    icp.setInputSource(transformed_template);
+    icp.setInputTarget(cloud_scene);
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr aligned_template(new pcl::PointCloud<pcl::PointXYZRGB>());
+    icp.align(*aligned_template);
+
+    std::cout << "ICP 配准完成，得分: " << icp.getFitnessScore() << std::endl;
+
+    // 构建 kdtree 搜索匹配区域
+    pcl::search::KdTree<pcl::PointXYZRGB> kdtree;
+    kdtree.setInputCloud(aligned_template);
+
+    pcl::PointIndices::Ptr inlier_indices(new pcl::PointIndices());
+    for (size_t i = 0; i < cloud_scene->size(); ++i) {
+        std::vector<int> indices;
+        std::vector<float> distances;
+        if (kdtree.radiusSearch(cloud_scene->points[i], 0.015, indices, distances) > 0) {
+            inlier_indices->indices.push_back(i);
+        }
+    }
+
+    // 提取匹配区域（去除噪声）
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_denoised(new pcl::PointCloud<pcl::PointXYZRGB>());
+    pcl::ExtractIndices<pcl::PointXYZRGB> extract;
+    extract.setInputCloud(cloud_scene);
+    extract.setIndices(inlier_indices);
+    extract.setNegative(false);
+    extract.filter(*cloud_denoised);
+
+    pcl::io::savePCDFileBinary("D:/desired_path/denoised_output.pcd", *cloud_denoised);
+    std::cout << "去噪后点云保存为 denoised_output.pcd" << std::endl;
+
+}
+
+void VtkWidget::sacAlign(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud1, pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud2){
     // 分别计算两个点云的法向量
     pcl::NormalEstimation<pcl::PointXYZRGB, pcl::Normal> normalsEtimation;
     pcl::PointCloud<pcl::Normal>::Ptr normals1(new pcl::PointCloud<pcl::Normal>());
