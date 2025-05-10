@@ -584,6 +584,37 @@ void FileManagerWidget::UpdateInfo(){
     createIdentifyItem();
 }
 
+void FileManagerWidget::allHide(QVector<QString> s){
+
+    contentItemMapTemp=m_pMainWin->getpWinFileMgr()->getContentItemMap();
+    identifyItemMapTemp=m_pMainWin->getpWinFileMgr()->getIdentifyItemMap();
+
+    QMap<QString, bool>& mapOFContent = m_pMainWin->getpWinFileMgr()->getContentItemMap();
+    for (auto it = mapOFContent.begin(); it != mapOFContent.end(); ++it) {
+            it.value() = false;
+    }
+    for (auto it = mapOFContent.begin(); it != mapOFContent.end(); ++it) {
+        for(auto a:s)
+        if(it.key().contains(a)){
+            it.value() = true;
+        }
+    }
+
+    QMap<QString, bool>& mapOFIdentify = m_pMainWin->getpWinFileMgr()->getIdentifyItemMap();
+    for (auto it = mapOFIdentify.begin(); it != mapOFIdentify.end(); ++it) {
+            it.value() = false;
+    }
+    for (auto it = mapOFIdentify.begin(); it != mapOFIdentify.end(); ++it) {
+        for(auto a:s)
+        if(it.key().contains(a)){
+            it.value() = true;
+        }
+    }
+
+
+
+    m_pMainWin->getPWinVtkWidget()->UpdateInfo();
+}
 void FileManagerWidget::allHide(QString a){
 
     contentItemMapTemp=m_pMainWin->getpWinFileMgr()->getContentItemMap();
@@ -602,6 +633,20 @@ void FileManagerWidget::allHide(QString a){
             it.value() = false;
         }
     }
+
+    for (auto it = mapOFContent.begin(); it != mapOFContent.end(); ++it) {
+        if(!it.key().contains(a)){
+            it.value() = true;
+        }
+    }
+
+    for (auto it = mapOFIdentify.begin(); it != mapOFIdentify.end(); ++it) {
+        if(!it.key().contains(a)){
+            it.value() = true;
+        }
+    }
+
+
 
     m_pMainWin->getPWinVtkWidget()->UpdateInfo();
 }
