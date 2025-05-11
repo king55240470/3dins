@@ -138,6 +138,7 @@ public:
     void TemplateAlign(); // 模版匹配
     void poissonReconstruction(); // 泊松重建
     float calculateSamplingRadius(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud); // 估计采样半径
+    float calculateOctreeResolution(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud); // 估算八叉树分辨率
 
     // 显示选中的图形的信息
     void setCentity(CEntity*entity);  //传入centity对象
