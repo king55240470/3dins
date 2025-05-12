@@ -40,9 +40,6 @@
 #include <pcl/filters/extract_indices.h>
 // #include <pcl/surface/poisson.h>
 // #include <pcl/surface/impl/poisson.hpp>
-#define PCL_NO_PRECOMPILE
-#include <pcl/recognition/cg/geometric_consistency.h>
-#undef PCL_NO_PRECOMPILE
 
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
@@ -141,9 +138,7 @@ public:
                                                     pcl::PointCloud<pcl::PointXYZRGB>::Ptr& tagCloud); // 重载的滤波方法，用于在对齐中调用
     void onCompare();// 比较两个点云
     void onAlign(); // 配准的函数
-    void TemplateAlign(); // 模版匹配
     void poissonReconstruction(); // 泊松重建
-    void templateCG(); //模板匹配
     void sacAlign(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud1,
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud2);
     float calculateSamplingRadius(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud); // 估计采样半径

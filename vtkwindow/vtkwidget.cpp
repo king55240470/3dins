@@ -1551,12 +1551,13 @@ void VtkWidget::onFilter()
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr VtkWidget::onFilter(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& srcCloud, pcl::PointCloud<pcl::PointXYZRGB>::Ptr& tagCloud)
 {
     // 创建一个八叉树索引
-    pcl::octree::OctreePointCloudSearch<pcl::PointXYZRGB> octree(0.05f); // 设置八叉树的分辨率
+    pcl::octree::OctreePointCloudSearch<pcl::PointXYZRGB> octree(calculateOctreeResolution(tagCloud)); // 设置八叉树的分辨率
     octree.setInputCloud(tagCloud);
     octree.addPointsFromInputCloud();
 
     // 去噪后的点云
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr filteredCloud(new pcl::PointCloud<pcl::PointXYZRGB>());
+    auto threshold = calculateThreshold(tagCloud);
 
     // 对每个点进行最近邻搜索
     for (const auto& point : srcCloud->points)
@@ -1566,7 +1567,7 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr VtkWidget::onFilter(pcl::PointCloud<pcl::
         if (octree.nearestKSearch(point, 1, indices, distances) > 0)
         {
             // 如果最近邻距离小于阈值，则保留该点
-            if (distances[0] < 0.1f)
+            if (distances[0] < threshold)
             {
                 filteredCloud->push_back(point);
             }
@@ -1844,8 +1845,7 @@ void VtkWidget::onAlign()
     }
 
     // 处理对齐后的点云
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr alignedCloud(new pcl::PointCloud<pcl::PointXYZRGB>());
-    *alignedCloud = *icpFinalCloudPtr;
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr alignedCloud = onFilter(icpFinalCloudPtr, downsampledCloud1);
     auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateAlignCloud(alignedCloud);
     m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
     m_pMainWin->NotifySubscribe();
@@ -1968,7 +1968,7 @@ void VtkWidget::onAlign()
 
     // // 如果仍未收敛，则进行动态迭代
     // if (!icp.hasConverged()) {
-    //     icp.setMaximumIterations(300);
+    //     icp.setMaximumIterCations(300);
     //     float corDis = 1.0f; // 初始最大点距离阈值
     //     while(corDis <= 50.0f){
     //         icp.setMaxCorrespondenceDistance(corDis);
