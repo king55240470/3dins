@@ -273,11 +273,6 @@ void MouseInteractorHighlightActor::ShowBoundBox(vtkActor *actor)
     }
 }
 
-void MouseInteractorHighlightActor::SetCameraToOptimalView(vtkSmartPointer<vtkActor> actor, vtkRenderer *renderer)
-{
-
-}
-
 QVector<std::pair<vtkSmartPointer<vtkActor>, vtkSmartPointer<vtkProperty>>> &MouseInteractorHighlightActor::getPickedActors()
 {
     return pickedActors;

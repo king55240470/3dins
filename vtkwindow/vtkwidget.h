@@ -140,11 +140,11 @@ public:
                                                     pcl::PointCloud<pcl::PointXYZRGB>::Ptr& tagCloud); // 重载的滤波方法，用于在对齐中调用
     void onCompare();// 比较两个点云
     void onAlign(); // 配准的函数
-    void TemplateAlign(); // 模版匹配
     void poissonReconstruction(); // 泊松重建
     void sacAlign(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud1,
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud2);
     float calculateSamplingRadius(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud); // 估计采样半径
+    float calculateOctreeResolution(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud); // 估算八叉树分辨率
 
     // 显示选中的图形的信息
     void setCentity(CEntity*entity);  //传入centity对象
