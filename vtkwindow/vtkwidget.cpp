@@ -1930,6 +1930,28 @@ void VtkWidget::onAlign()
     shot.compute(*descriptors_scene);
 
     // 计算特征空间对应关系
+    // pcl::CorrespondencesPtr correspondences(new pcl::Correspondences());
+    // pcl::KdTreeFLANN<pcl::SHOT352> match_search;
+    // match_search.setInputCloud(descriptors_template);
+
+    // for (size_t i = 0; i < descriptors_scene->size(); ++i) {
+    //     std::vector<int> neigh_indices(1);
+    //     std::vector<float> neigh_sqr_dists(1);
+
+    //     const auto& descriptor = descriptors_scene->at(i);
+
+    //     if (!pcl_isfinite(descriptor.descriptor[0])) // 跳过无效点
+    //         continue;
+
+    //     int found_neighs = match_search.nearestKSearch(descriptor, 1, neigh_indices, neigh_sqr_dists);
+
+    //     if (found_neighs == 1 && neigh_sqr_dists[0] < threshold) {
+    //         pcl::Correspondence corr(neigh_indices[0], static_cast<int>(i), neigh_sqr_dists[0]);
+    //         correspondences->push_back(corr);
+    //     }
+    // }
+    // std::cout << "匹配到的有效对应关系数量: " << correspondences->size() << std::endl;
+
     pcl::CorrespondencesPtr correspondences(new pcl::Correspondences());
     pcl::registration::CorrespondenceEstimation<pcl::SHOT352, pcl::SHOT352> corr_est;
     pcl::KdTreeFLANN<pcl::SHOT352> match_search;
@@ -1949,7 +1971,7 @@ void VtkWidget::onAlign()
     gc.setSceneCloud(keypoints_scene);
     gc.setModelSceneCorrespondences(correspondences);
     gc.setGCSize(0.01f); // 网格大小
-    gc.setGCThreshold(5); // 至少5个匹配点
+    gc.setGCThreshold(10); // 至少5个匹配点
     gc.recognize(transformations, clustered_corrs);
 
     std::cout << "检测到匹配实例数量: " << transformations.size() << std::endl;
@@ -1962,11 +1984,11 @@ void VtkWidget::onAlign()
     // 使用第一个匹配进行 ICP 精细对齐
     Eigen::Matrix4f initial_transform = transformations[0];
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr transformed_template(new pcl::PointCloud<pcl::PointXYZRGB>());
-    pcl::transformPointCloud(*cloud_template, *transformed_template, initial_transform);
+    pcl::transformPointCloud(*keypoints_template, *transformed_template, initial_transform);
 
     pcl::IterativeClosestPoint<pcl::PointXYZRGB, pcl::PointXYZRGB> icp;
     icp.setInputSource(transformed_template);
-    icp.setInputTarget(cloud_scene);
+    icp.setInputTarget(keypoints_scene);
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr aligned_template(new pcl::PointCloud<pcl::PointXYZRGB>());
     icp.align(*aligned_template);
 
@@ -1976,10 +1998,10 @@ void VtkWidget::onAlign()
     pcl::search::KdTree<pcl::PointXYZRGB> kdtree;
     kdtree.setInputCloud(aligned_template);
     pcl::PointIndices::Ptr inlier_indices(new pcl::PointIndices());
-    for (size_t i = 0; i < cloud_scene->size(); ++i) {
+    for (size_t i = 0; i < keypoints_template->size(); ++i) {
         std::vector<int> indices;
         std::vector<float> distances;
-        if (kdtree.radiusSearch(cloud_scene->points[i], 0.015, indices, distances) > 0) {
+        if (kdtree.radiusSearch(keypoints_template->points[i], rad, indices, distances) > 0) {
             inlier_indices->indices.push_back(i);
         }
     }
@@ -1987,13 +2009,13 @@ void VtkWidget::onAlign()
     // 提取匹配区域（去除噪声）
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_denoised(new pcl::PointCloud<pcl::PointXYZRGB>());
     pcl::ExtractIndices<pcl::PointXYZRGB> extract;
-    extract.setInputCloud(cloud_scene);
+    extract.setInputCloud(keypoints_template);
     extract.setIndices(inlier_indices);
     extract.setNegative(false);
     extract.filter(*cloud_denoised);
 
-    pcl::io::savePCDFileBinary("D:/align_output.pcd", *aligned_template);
-    auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateFilterCloud(*aligned_template);
+    pcl::io::savePCDFileBinary("D:/cloud_denoised.pcd", *cloud_denoised);
+    auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateFilterCloud(*cloud_denoised);
     m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
     m_pMainWin->NotifySubscribe();
 }
