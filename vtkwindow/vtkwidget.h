@@ -1,6 +1,8 @@
 #ifndef VTKWIDGET_H
 #define VTKWIDGET_H
 
+#define pcl_isfinite(x) std::isfinite(x)
+
 #include "mainwindow.h"
 #include "clickhighlightstyle.h"
 #include "manager/filemgr.h"
