@@ -3421,16 +3421,6 @@ QStringList* ToolWidget::getViewAngleIconPath(){
     return &view_angle_action_iconpath_list_;
 }
 void ToolWidget::SaveImage(CEntity* entity){
-    if(entity->GetUniqueType()==enPointCloud){
-        m_pMainWin->getPWinFileManagerWidget()->allHide("实测");
-    }else{
-        QVector<QString> entitys;
-        entitys.push_back(entity->m_strAutoName);
-        entitys.push_back("实测");
-        for(auto parent:entity->parent)
-            entitys.push_back(parent->m_strAutoName);
-        m_pMainWin->getPWinFileManagerWidget()->allHide(entitys);
-    }
     //得到所有元素
     QVector<CObject*> objlist=m_pMainWin->getObjectListMgr()->getObjectList();
 
@@ -3444,7 +3434,16 @@ void ToolWidget::SaveImage(CEntity* entity){
     //显示文本框
     m_pMainWin->getPWinElementListWidget()->showInfotext();
     //如果是实测点云，隐藏其他元素
-
+    if(entity->GetUniqueType()==enPointCloud){
+        m_pMainWin->getPWinFileManagerWidget()->allHide("实测");
+    }else{
+        QVector<QString> entitys;
+        entitys.push_back(entity->m_strAutoName);
+        entitys.push_back("实测");
+        for(auto parent:entity->parent)
+            entitys.push_back(parent->m_strAutoName);
+        m_pMainWin->getPWinFileManagerWidget()->allHide(entitys);
+    }
 
     //生成路径
     QString path= getOutputPath("image");
