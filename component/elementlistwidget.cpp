@@ -675,7 +675,9 @@ void ElementListWidget::CompareCloud()
             m_pMainWin->getEntityListMgr()->getEntityList()[CurrentMeasureindex]->SetSelected(false);
             m_pMainWin->getEntityListMgr()->getEntityList()[size]->SetSelected(true);
             entity->SetSelected(true);
+            qDebug()<<"进入切割之前";
             m_pMainWin->getPWinToolWidget()->onConstructPointCloud();
+            qDebug()<<"进入切割之后";
             entity->SetSelected(false);
         }
     }else{
@@ -1115,7 +1117,7 @@ void ElementListWidget::UpdateDisNowFun(QVector<CEntity*>distancelist)
 
             m_pMainWin->getPWinVtkWidget()->onHighLightActor(m_pMainWin->getEntityListMgr()->getEntityList()[i]);
             treeWidgetNames->setCurrentItem(item);
-            m_pMainWin->getPWinToolWidget()->SaveImage(m_pMainWin->getEntityListMgr()->getEntityList()[i]);
+            //m_pMainWin->getPWinToolWidget()->SaveImage(m_pMainWin->getEntityListMgr()->getEntityList()[i]);
             break;
         }
     }
@@ -1305,4 +1307,6 @@ void ElementListWidget::updateProgress(int value)
     }
 }
 
-
+QTreeWidget * ElementListWidget::getTreeWidgetNames(){
+    return treeWidgetNames;
+}

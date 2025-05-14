@@ -112,7 +112,6 @@ public:
     QDataStream& serializeEntityList(QDataStream& out, const QVector<CEntity*>& entityList);
     QDataStream& deserializeEntityList(QDataStream& in, QVector<CEntity*>& entityList);
 
-
     //返回UniqueToolBar的引用，以便contralwidget操作
     UniqueToolBar& getSave();
     UniqueToolBar& getFind();
@@ -132,7 +131,7 @@ public:
     QString getTimeString();
     //保存图片
     void SaveImage(QString path,std::string format="png");
-    void SaveImage(CEntity* entity);
+    void SaveImage(CEntity* entity,Size_MeasurementData* PointCloudData=nullptr);
     QString getCompareImagePath();
     //初始化所有输出文件夹
     void InitOutputFolder();
@@ -177,6 +176,7 @@ public slots:
     void onSaveImage();
     void onSavePointCloud();
     void createDistanceMeasurementReport();
+    void createDistanceMeasurementReport_Pdf();
 
     //打开文件
     void onOpenExcel();
