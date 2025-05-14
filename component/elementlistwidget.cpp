@@ -636,25 +636,33 @@ void ElementListWidget::CompareCloud()
     for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
         m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
     }
-    bool found=false;
+    foundmodel=false;
     for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
         if(m_pMainWin->getEntityListMgr()->getEntityList()[i]->GetUniqueType()==enPointCloud){
             CPointCloud*could=(CPointCloud*)m_pMainWin->getEntityListMgr()->getEntityList()[i];
             if(could->isModelCloud){
-                found=true;
+                foundmodel=true;
                 m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
                 break;
             }
         }
     }
-    if(found==false){
+    if(foundmodel==false){
         return;
     }
     bool isHaveShape=false;
     QVector<CEntity*>Shapelist;
-    int CurrentMeasureindex;
+    int CurrentMeasureindex=-1;
     for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
+        if(m_pMainWin->getEntityListMgr()->getEntityList()[i]->GetUniqueType()==enCuboid){
+            Shapelist.push_back(m_pMainWin->getEntityListMgr()->getEntityList()[i]);
+            //m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
+            isHaveShape=true;
+        }
         if(m_pMainWin->getEntityListMgr()->getEntityList()[i]->GetUniqueType()==enPointCloud){
+            if(CurrentMeasureindex!=-1){
+                continue;
+            }
             CPointCloud*could=(CPointCloud*)m_pMainWin->getEntityListMgr()->getEntityList()[i];
             if(could->isMeasureCloud&&could->isOver==false){
                 m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
@@ -662,23 +670,9 @@ void ElementListWidget::CompareCloud()
                 could->isOver=true;
             }
         }
-        if(m_pMainWin->getEntityListMgr()->getEntityList()[i]->GetUniqueType()==enCuboid){
-            Shapelist.push_back(m_pMainWin->getEntityListMgr()->getEntityList()[i]);
-            //m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
-            isHaveShape=true;
-        }
     }
-    if(isHaveShape){
-        m_pMainWin->getPWinVtkWidget()->onAlign();
-        int size=m_pMainWin->getEntityListMgr()->getEntityList().size()-1;
-        for(CEntity*entity:Shapelist){
-            m_pMainWin->getEntityListMgr()->getEntityList()[CurrentMeasureindex]->SetSelected(false);
-            m_pMainWin->getEntityListMgr()->getEntityList()[size]->SetSelected(true);
-            entity->SetSelected(true);
-            m_pMainWin->getPWinToolWidget()->onConstructPointCloud();
-            entity->SetSelected(false);
-        }
-    }else{
+    //先执行全局对比
+    if(true){
         m_pMainWin->getPWinToolWidget()->setauto(true);
         qDebug()<<"进入对齐之前";
         m_pMainWin->getPWinVtkWidget()->onAlign();
@@ -690,6 +684,20 @@ void ElementListWidget::CompareCloud()
         m_pMainWin->getPWinVtkWidget()->onCompare();
         m_pMainWin->getPWinToolWidget()->onSaveImage();
         m_pMainWin->getPWinToolWidget()->setauto(false);
+        //return;
+    }
+    //判断是否有局部对比，若无则直接返回
+    if(isHaveShape){
+        //m_pMainWin->getPWinVtkWidget()->onAlign();
+        //int size=m_pMainWin->getEntityListMgr()->getEntityList().size()-1;
+        for(CEntity*entity:Shapelist){
+            //m_pMainWin->getEntityListMgr()->getEntityList()[CurrentMeasureindex]->SetSelected(false);
+            //m_pMainWin->getEntityListMgr()->getEntityList()[size]->SetSelected(true);
+            entity->SetSelected(true);
+            m_pMainWin->getPWinToolWidget()->onConstructPointCloud();
+            entity->SetSelected(false);
+        }
+    }else{
         return;
     }
     for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
@@ -719,6 +727,9 @@ void ElementListWidget::CompareCloud()
 void ElementListWidget::updateDistance()
 {
     qDebug()<<"进入updateDistance";
+    if(!foundmodel){
+        return;
+    }
     if(timer){
         timer->stop();
         delete timer;
@@ -1160,6 +1171,11 @@ QVector<CPointCloud *> ElementListWidget::getisComparsionCloud()
         }
     }
     return isComparsionCloudList;
+}
+
+QTreeWidget *ElementListWidget::getTreeWidgetNames()
+{
+    return treeWidgetNames;
 }
 
 

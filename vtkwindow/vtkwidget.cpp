@@ -1170,121 +1170,297 @@ void VtkWidget::onIsometricView(){
     }
 }
 
-void VtkWidget::ExportPointCloudToFBX(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud, const std::string& filepath) {
-    // === 1. 检查输入点云是否有效 ===
-    if (!cloud || cloud->empty()) {
-        qWarning() << "错误：点云数据为空！";
-        return;
+void VtkWidget::ExportPointCloudToFBX(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud, const std::string& filepath) {
+
+    // 临时文件路径
+    QString tempDir = QDir::tempPath() + "/poisson_temp";
+    QDir().mkpath(tempDir);
+
+    QString inputPly = tempDir + "/input_with_normals.ply";
+    QString outputPly = tempDir + "/output_mesh.ply";
+
+    // 1. 保存带法线的PLY
+    if(!savePointCloudToPLY(cloud, inputPly)) {
+        qWarning() << "Failed to save PLY with normals";
+        return ;
     }
 
-    // ========== 1. FBX SDK初始化 ==========
+    // 2. 执行泊松重建
+    if(!runPoissonReconstruction(inputPly, outputPly)) {
+        qWarning() << "Poisson reconstruction failed";
+        return ;
+    }
+
+    // 3. 转换为FBX (使用之前讨论的方法)
+    convertPLYtoFBX(outputPly, filepath.c_str());
+    return ;
+}
+
+bool VtkWidget::preparePointCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud)
+{
+    // 去噪滤波
+    pcl::StatisticalOutlierRemoval<pcl::PointXYZRGB> sor;
+    sor.setInputCloud(cloud);
+    sor.setMeanK(50);
+    sor.setStddevMulThresh(1.0);
+    sor.filter(*cloud);
+
+    // 法线估计
+    pcl::NormalEstimation<pcl::PointXYZRGB, pcl::Normal> ne;
+    pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZRGB>());
+    ne.setInputCloud(cloud);
+    ne.setSearchMethod(tree);
+
+    pcl::PointCloud<pcl::Normal>::Ptr normals(new pcl::PointCloud<pcl::Normal>);
+    ne.setRadiusSearch(0.03);  // 根据点云密度调整
+    ne.compute(*normals);
+
+    // 合并颜色和法线（可选，如果后续需要）
+    pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud_with_normals(new pcl::PointCloud<pcl::PointXYZRGBNormal>);
+    pcl::concatenateFields(*cloud, *normals, *cloud_with_normals);
+
+    return true;
+}
+
+bool VtkWidget::savePointCloudToPLY(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud, const QString& plyPath)
+{
+    // 确保目录存在
+    QFileInfo info(plyPath);
+    if(!info.dir().exists()) {
+        if(!info.dir().mkpath(".")) {
+            qWarning() << "Cannot create directory:" << info.dir().path();
+            return false;
+        }
+    }
+
+    // 重新计算法线（确保一致性）
+    pcl::PointCloud<pcl::Normal>::Ptr normals(new pcl::PointCloud<pcl::Normal>);
+    pcl::NormalEstimation<pcl::PointXYZRGB, pcl::Normal> ne;
+    ne.setInputCloud(cloud);
+    pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZRGB>());
+    ne.setSearchMethod(tree);
+    ne.setRadiusSearch(0.03);
+    ne.compute(*normals);
+
+    // 保存带法线的PLY
+    pcl::PointCloud<pcl::PointXYZRGBNormal> cloud_with_normals;
+    pcl::concatenateFields(*cloud, *normals, cloud_with_normals);
+
+    pcl::PLYWriter writer;
+    if (writer.write(plyPath.toStdString(), cloud_with_normals, false, true) != 0) {
+        qWarning() << "Failed to write PLY file";
+        return false;
+    }
+
+    return true;
+}
+
+
+
+bool VtkWidget::runPoissonReconstruction(const QString &inputPlyPath, const QString &outputPlyPath)
+{
+    QProcess poissonProcess;
+
+    // 设置泊松重建可执行文件路径
+    QString poissonExe = "C:/qcon/AdaptiveSolvers.x64/PoissonRecon.exe"; // 根据实际路径调整
+
+    if (!QFileInfo::exists(poissonExe)) {
+        qWarning() << "Poisson reconstruction executable not found at" << poissonExe;
+        return false;
+    }
+
+    // 准备参数
+    QStringList arguments;
+    arguments << "--in" << inputPlyPath;
+    arguments << "--out" << outputPlyPath;
+    arguments << "--depth" << "8";           // 降低深度避免过度膨胀
+    arguments << "--scale" << "1.0";         // 禁用自动缩放
+    arguments << "--density" << "0";         // 禁用密度权重
+    arguments << "--pointWeight" << "4";
+    arguments << "--colors";                // 保留颜色
+    arguments << "--polygonType" << "0";     // 仅生成三角形
+
+
+    // 启动进程
+    poissonProcess.start(poissonExe, arguments);
+
+    if (!poissonProcess.waitForStarted()) {
+        qWarning() << "Failed to start Poisson reconstruction process";
+        return false;
+    }
+
+    // 等待完成（设置超时时间，单位毫秒）
+    if (!poissonProcess.waitForFinished(300000)) { // 5分钟超时
+        qWarning() << "Poisson reconstruction timed out";
+        poissonProcess.kill();
+        return false;
+    }
+
+    // 检查退出状态
+    if (poissonProcess.exitStatus() != QProcess::NormalExit || poissonProcess.exitCode() != 0) {
+        qWarning() << "Poisson reconstruction failed with exit code" << poissonProcess.exitCode();
+        qWarning() << "Error output:" << poissonProcess.readAllStandardError();
+        return false;
+    }
+
+    // 检查输出文件是否存在
+    if (!QFileInfo::exists(outputPlyPath)) {
+        qWarning() << "Output PLY file not created";
+        return false;
+    }
+
+    return true;
+}
+
+bool VtkWidget::convertPLYtoFBX(const QString &plyPath, const QString &fbxPath)
+{
+    // 使用VTK进行预处理
+    vtkNew<vtkPLYReader> reader;
+    reader->SetFileName(plyPath.toStdString().c_str());
+
+    // 修复1：法向量一致性处理
+    vtkNew<vtkPolyDataNormals> normalFilter;
+    normalFilter->SetInputConnection(reader->GetOutputPort());
+    normalFilter->ConsistencyOn();
+    normalFilter->AutoOrientNormalsOn();
+    normalFilter->SplittingOff();  // 避免创建裂缝
+
+    // 修复2：强制三角化并移除退化面
+    vtkNew<vtkTriangleFilter> triangleFilter;
+    triangleFilter->SetInputConnection(normalFilter->GetOutputPort());
+    triangleFilter->PassVertsOff();
+    triangleFilter->PassLinesOff();
+
+    // 修复3：网格清理
+    vtkNew<vtkCleanPolyData> cleaner;
+    cleaner->SetInputConnection(triangleFilter->GetOutputPort());
+    cleaner->PointMergingOn();
+    cleaner->Update();
+
+    // 转换为FBX（原代码逻辑，增加错误检查）
+    vtkPolyData* mesh = cleaner->GetOutput();
+    if (mesh->GetNumberOfPolys() == 0) {
+        qCritical() << "Invalid mesh: No polygons after processing";
+        return false;
+    }
+
+    // 2. 初始化FBX SDK
     FbxManager* lSdkManager = FbxManager::Create();
-    FbxIOSettings* pIOSettings = FbxIOSettings::Create(lSdkManager, IOSROOT);
-    lSdkManager->SetIOSettings(pIOSettings);
-
-    // 创建场景并设置坐标系
-    FbxScene* pScene = FbxScene::Create(lSdkManager, "Scene");
-    FbxAxisSystem axisSystem(
-        FbxAxisSystem::eYAxis,      // Y-up
-        FbxAxisSystem::eParityOdd,  // 奇校验
-        FbxAxisSystem::eRightHanded // 右手坐标系
-        );
-    axisSystem.ConvertScene(pScene);
-
-    // ========== 3. 创建网格节点 ==========
-    FbxNode* pNode = FbxNode::Create(pScene, "PointCloud");
-    FbxMesh* pMesh = FbxMesh::Create(pScene, "PointCloudMesh");
-
-    // 初始化顶点数据
-    const int numPoints = cloud->size();
-    pMesh->InitControlPoints(numPoints);
-    FbxVector4* vertices = pMesh->GetControlPoints();
-
-    // ========== 4. 填充顶点坐标（转换为Y-up） ==========
-    for(int i=0; i<numPoints; ++i) {
-        const auto& pt = cloud->points[i];
-        vertices[i] = FbxVector4(pt.x, pt.z, -pt.y); // 转换为Y-up
+    if (!lSdkManager) {
+        qCritical() << "Unable to create FBX Manager";
+        return false;
     }
 
-    // ========== 5. 生成有效微三角形 ==========
-    for(int i=0; i<numPoints; ++i) {
-        pMesh->BeginPolygon();
-        // 创建微小偏移的三角形（边长0.001单位）
-        pMesh->AddPolygon(i);
-        pMesh->AddPolygon((i+1)%numPoints);
-        pMesh->AddPolygon((i+2)%numPoints);
-        pMesh->EndPolygon();
+    FbxIOSettings* ios = FbxIOSettings::Create(lSdkManager, IOSROOT);
+    lSdkManager->SetIOSettings(ios);
+
+    // 3. 创建场景
+    FbxScene* lScene = FbxScene::Create(lSdkManager, "PLY Conversion Scene");
+    FbxNode* lRootNode = lScene->GetRootNode();
+
+    // 4. 创建网格节点
+    FbxMesh* lMesh = FbxMesh::Create(lScene, "Mesh");
+    FbxNode* lNode = FbxNode::Create(lScene, "MeshNode");
+    lNode->SetNodeAttribute(lMesh);
+    lRootNode->AddChild(lNode);
+
+    // 重置变换（防止缩放/旋转）
+    lNode->SetRotationOrder(FbxNode::eSourcePivot, FbxEuler::eOrderXYZ); // 设置旋转顺序
+    lNode->LclRotation.Set(FbxVector4(0, 0, 0)); // 零旋转
+    lNode->LclScaling.Set(FbxVector4(1, 1, 1));  // 无缩放
+    // 5. 转换顶点数据
+    const vtkIdType numVertices = mesh->GetNumberOfPoints();
+    lMesh->InitControlPoints(numVertices);
+    FbxVector4* controlPoints = lMesh->GetControlPoints();
+
+    for (vtkIdType i = 0; i < numVertices; ++i) {
+        double pos[3];
+        mesh->GetPoint(i, pos);
+        controlPoints[i] = FbxVector4(pos[0], pos[1], pos[2]);
     }
 
-    // ========== 6. 顶点颜色设置 ==========
-    FbxGeometryElementVertexColor* colorElement = pMesh->CreateElementVertexColor();
-    colorElement->SetMappingMode(FbxGeometryElement::eByControlPoint);
-    colorElement->SetReferenceMode(FbxGeometryElement::eDirect);
+    // 6. 转换多边形数据
+    vtkCellArray* polys = mesh->GetPolys();
+    polys->InitTraversal();
 
-    FbxLayerElementArrayTemplate<FbxColor>& colorArray = colorElement->GetDirectArray();
-    colorArray.SetCount(numPoints);
+    vtkIdType npts;
+    const vtkIdType* pts;
+    while (polys->GetNextCell(npts, pts)) {
+        if (npts != 3) continue; // 确保只处理三角形
 
-    for(int i=0; i<numPoints; ++i) {
-        const auto& pt = cloud->points[i];
-        uint32_t rgb = *reinterpret_cast<const uint32_t*>(&pt.rgb);
-        colorArray.SetAt(i, FbxColor(
-                                ((rgb >> 16) & 0xFF)/255.0,
-                                ((rgb >> 8) & 0xFF)/255.0,
-                                (rgb & 0xFF)/255.0
-                                ));
+        lMesh->BeginPolygon();
+        for (int j = 0; j < npts; ++j) {
+            lMesh->AddPolygon(pts[j]);
+        }
+        lMesh->EndPolygon();
     }
 
-    // ========== 7. 法线生成 ==========
-    FbxGeometryElementNormal* normalElement = pMesh->CreateElementNormal();
-    normalElement->SetMappingMode(FbxGeometryElement::eByControlPoint);
-    normalElement->SetReferenceMode(FbxGeometryElement::eDirect);
+    // 7. 转换法线数据
+    if (mesh->GetPointData()->GetNormals()) {
+        FbxLayer* lLayer = lMesh->GetLayer(0);
+        if (!lLayer) {
+            lMesh->CreateLayer();
+            lLayer = lMesh->GetLayer(0);
+        }
 
-    FbxLayerElementArrayTemplate<FbxVector4>& normalArray = normalElement->GetDirectArray();
-    normalArray.SetCount(numPoints);
-    const FbxVector4 defaultNormal(0, 1, 0); // Y-up默认法线
-    for(int i=0; i<numPoints; ++i) {
-        normalArray.SetAt(i, defaultNormal);
+        FbxLayerElementNormal* lLayerElementNormal = FbxLayerElementNormal::Create(lMesh, "");
+        lLayerElementNormal->SetMappingMode(FbxLayerElement::eByControlPoint);
+        lLayerElementNormal->SetReferenceMode(FbxLayerElement::eDirect);
+
+        for (vtkIdType i = 0; i < numVertices; ++i) {
+            double normal[3];
+            mesh->GetPointData()->GetNormals()->GetTuple(i, normal);
+            lLayerElementNormal->GetDirectArray().Add(FbxVector4(normal[0], normal[1], normal[2]));
+        }
+        lLayer->SetNormals(lLayerElementNormal);
     }
 
-    // ========== 8. 材质绑定 ==========
-    FbxSurfacePhong* pMaterial = FbxSurfacePhong::Create(pScene, "PointMaterial");
-    pMaterial->Diffuse.Set(FbxDouble3(1,1,1));
-    pMaterial->Ambient.Set(FbxDouble3(1,1,1));
-    pNode->AddMaterial(pMaterial);
+    // 8. 转换颜色数据
+    if (mesh->GetPointData()->GetScalars() &&
+        mesh->GetPointData()->GetScalars()->GetNumberOfComponents() >= 3) {
+        FbxLayer* lLayer = lMesh->GetLayer(0);
+        if (!lLayer) lLayer = lMesh->GetLayer(0);
 
-    // 创建材质-颜色的连接
-    FbxLayer* pLayer = pMesh->GetLayer(0);
-    if(!pLayer) {
-        pMesh->CreateLayer();
-        pLayer = pMesh->GetLayer(0);
+        FbxLayerElementVertexColor* lLayerElementColor = FbxLayerElementVertexColor::Create(lMesh, "");
+        lLayerElementColor->SetMappingMode(FbxLayerElement::eByControlPoint);
+        lLayerElementColor->SetReferenceMode(FbxLayerElement::eDirect);
+
+        for (vtkIdType i = 0; i < numVertices; ++i) {
+            double color[3];
+            mesh->GetPointData()->GetScalars()->GetTuple(i, color);
+            lLayerElementColor->GetDirectArray().Add(
+                FbxColor(color[0]/255.0, color[1]/255.0, color[2]/255.0));
+        }
+        lLayer->SetVertexColors(lLayerElementColor);
     }
-    pLayer->SetVertexColors(colorElement);
 
-    // ========== 9. 场景构建 ==========
-    pNode->SetNodeAttribute(pMesh);
-    pScene->GetRootNode()->AddChild(pNode);
+    // 9. 导出FBX文件
+    FbxExporter* lExporter = FbxExporter::Create(lSdkManager, "");
+    int lFileFormat = lSdkManager->GetIOPluginRegistry()->FindWriterIDByDescription("FBX ascii (*.fbx)");
 
-    // ========== 10. 导出设置 ==========
-    FbxExporter* pExporter = FbxExporter::Create(lSdkManager, "");
-    if(!pExporter->Initialize(filepath.c_str(), -1, lSdkManager->GetIOSettings())) {
-        std::cerr << "导出器初始化失败: " << pExporter->GetStatus().GetErrorString() << std::endl;
+    if (!lExporter->Initialize(fbxPath.toUtf8().constData(), lFileFormat, lSdkManager->GetIOSettings())) {
+        qCritical() << "Failed to initialize FBX exporter: " << lExporter->GetStatus().GetErrorString();
         lSdkManager->Destroy();
-        return;
+        return false;
     }
 
     // 设置导出选项
-    FbxIOSettings* pExportSettings = lSdkManager->GetIOSettings();
-    pExportSettings->SetBoolProp(EXP_FBX_MATERIAL, true);
-    pExportSettings->SetBoolProp(EXP_FBX_TEXTURE, false);
-    pExportSettings->SetBoolProp(EXP_FBX_EMBEDDED, false);
+    lSdkManager->GetIOSettings()->SetBoolProp(EXP_FBX_MATERIAL, true);
+    lSdkManager->GetIOSettings()->SetBoolProp(EXP_FBX_TEXTURE, true);
+    lSdkManager->GetIOSettings()->SetBoolProp(EXP_FBX_EMBEDDED, false);
 
-    if(!pExporter->Export(pScene)) {
-        std::cerr << "导出失败: " << pExporter->GetStatus().GetErrorString() << std::endl;
+    // 执行导出
+    bool lStatus = lExporter->Export(lScene);
+    lExporter->Destroy();
+    lSdkManager->Destroy();
+
+    if (!lStatus) {
+        qCritical() << "Failed to export FBX file";
+        return false;
     }
 
-    // ========== 11. 资源清理 ==========
-    pExporter->Destroy();
-    lSdkManager->Destroy();
+    qDebug() << "Successfully exported FBX to:" << fbxPath;
+    return true;
 }
 
 double *VtkWidget::getViewAngles()
@@ -1583,6 +1759,7 @@ void VtkWidget::onCompare()
     // 由RGB点云生成cpointcloud对象，并存入entitylist
     auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateCompareCloud(*comparisonCloud);
     cloudEntity->parent=parentlist;
+    if(isCut)cloudEntity->isComparsionCloudPart=true;
     m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
     m_pMainWin->NotifySubscribe();
 
@@ -1934,6 +2111,7 @@ void VtkWidget::poissonReconstruction()
     logInfo += "泊松重建完成";
     m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
 }
+
 
 float VtkWidget::calculateSamplingRadius(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud)
 {
