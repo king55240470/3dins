@@ -59,6 +59,8 @@ public:
     bool isChildOf(QStandardItem*, QStandardItem*);
 
     void allHide(QString a);//全部隐藏
+
+    void allHide(QVector<QString> s);//隐藏除了s包含的字符串之外的所有点云
     void allRecover();//全部恢复
 
 private slots:

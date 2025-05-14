@@ -1,6 +1,8 @@
 #ifndef VTKWIDGET_H
 #define VTKWIDGET_H
 
+#define pcl_isfinite(x) std::isfinite(x)
+
 #include "mainwindow.h"
 #include "clickhighlightstyle.h"
 #include "manager/filemgr.h"
@@ -34,7 +36,12 @@
 #include <pcl/registration/ia_ransac.h>
 #include <pcl/io/obj_io.h>
 #include <pcl/io/vtk_io.h>
-
+#include <pcl/features/shot.h>
+#include <pcl/features/shot_lrf.h>
+#define PCL_NO_PRECOMPILE
+#include <pcl/recognition/cg/geometric_consistency.h>
+#undef PCL_NO_PRECOMPILE
+#include <pcl/filters/extract_indices.h>
 // #include <pcl/surface/poisson.h>
 // #include <pcl/surface/impl/poisson.hpp>
 
@@ -131,16 +138,20 @@ public:
     void FocusOnActor(CEntity* entity); // 设置相机以聚焦指定的actor
 
     int adjustMeanK(size_t pointCount); // 估算滤波的近邻点数量
-    double adjustStddevThresh(size_t pointCount); // 估算离群点阈值
+    double adjustStddevThresh(size_t pointCount); // 估算离群点阈值，用于统计滤波
+    float calculateThreshold(pcl::PointCloud<pcl::PointXYZRGB>::Ptr tagCloud);
     int FilterCount(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud); // 计算去噪次数
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr onFilter(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud); // 点云滤波
-    void onFilter(); // 重载的滤波方法，用于单独生成去噪后的点云
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr onStatisticalFilter(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud);
+    void onFilter(); // 点云去噪
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr onFilter(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& srcCloud,
+                                                    pcl::PointCloud<pcl::PointXYZRGB>::Ptr& tagCloud); // 重载的滤波方法，用于在对齐中调用
     void onCompare();// 比较两个点云
-    void onAlign();    // 配准的函数
+    void onAlign(); // 配准的函数
     void poissonReconstruction(); // 泊松重建
     void sacAlign(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud1,
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud2);
     float calculateSamplingRadius(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud); // 估计采样半径
+    float calculateOctreeResolution(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud); // 估算八叉树分辨率
 
     // 显示选中的图形的信息
     void setCentity(CEntity*entity);  //传入centity对象
@@ -174,11 +185,13 @@ public:
     void UpdateScaleBar();
     void attachInteractor();
     double roundToNearestNiceValue(double value);
+    QMap<CEntity*,QVector<double>>& getDistanceValue();
 
 private:
     QVTKOpenGLNativeWidget* vtkWidget; // vtk窗口
     MainWindow *m_pMainWin = nullptr; // mainwindow指针
     QMenu* vtkMenu;
+    QMap<CEntity*,QVector<double>>m_distanceValue;//映射器 对比点云->距离值 【0】最大 【1】最小 【2】平均
 
     // 创建渲染器、渲染窗口和交互器
     vtkSmartPointer<vtkRenderer> renderer;

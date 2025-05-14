@@ -57,5 +57,6 @@
         <file>component/save/reconstruct.png</file>
         <file>component/save/ICP.png</file>
         <file>component/save/pointcloud.png</file>
+        <file>component/save/filter.png</file>
     </qresource>
 </RCC>
