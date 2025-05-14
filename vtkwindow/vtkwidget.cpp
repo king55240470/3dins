@@ -896,6 +896,7 @@ vtkSmartPointer<vtkRenderer>& VtkWidget::getRenderer(){
 // 刷新vtk窗口
 void VtkWidget::UpdateInfo(){
     reDrawCentity();
+    closeText();
 }
 
 void VtkWidget::reDrawCentity(){
@@ -906,6 +907,7 @@ void VtkWidget::reDrawCentity(){
     QVector<CEntity*> constructEntityList = m_pMainWin->getPWinToolWidget()->getConstructEntityList();//存储构建元素的列表
     QVector<CEntity*> identifyEntityList = m_pMainWin->getPWinToolWidget()->getIdentifyEntityList();//存储识别元素的列表
     QMap<vtkSmartPointer<vtkActor>, CEntity*>& actorToEntity = m_pMainWin->getactorToEntityMap();
+    auto pickedActors = m_highlightstyle->getPickedActors(); // 记录所有高亮的actor
 
     // 获取渲染器中的所有 actor
     auto* actorCollection = getRenderer()->GetViewProps();
@@ -917,20 +919,13 @@ void VtkWidget::reDrawCentity(){
     actorCollection->InitTraversal(it);
 
     vtkSmartPointer<vtkProp> prop;
-    // 遍历并移除 vtkProp 对象，若有点云actor则跳过
+    // 遍历并移除 vtkProp
     while ((prop = actorCollection->GetNextProp(it)) != nullptr)
     {
         renderer->RemoveViewProp(prop);
     }
-
     actorToEntity.clear();
-    // 清除所有文本标注的记录
-    entityToTextActors.clear();
-    entityToTextBoxs.clear();
-    entityToLines.clear();
-    entityToIcons.clear();
 
-    CPointCloud::getActorToPointCloud().clear();
     // 遍历entitylist绘制图形并加入渲染器
     for(auto i = 0;i < entitylist.size();i++){
         int constructFlag=0;
@@ -948,9 +943,6 @@ void VtkWidget::reDrawCentity(){
                     getRenderer()->AddActor(actor);
                     break;
                 }
-                else{ // 如果隐藏，则删除高亮前的记录
-                    // m_highlightstyle->getPickedActors().erase()
-                }
             }
         }
 
@@ -961,7 +953,7 @@ void VtkWidget::reDrawCentity(){
                 QString name=entitylist[i]->GetObjectCName()+"  "+entitylist[i]->GetObjectAutoName();
                 if(name == key){//是构建的元素
                     identifyFlag=1;
-                    if(identifyItemmap[key]){ // 如果不隐藏
+                    if(identifyItemmap[key]){
                         vtkSmartPointer<vtkActor>actor = entitylist[i]->draw();
                         actorToEntity.insert(actor,entitylist[i]);
                         getRenderer()->AddActor(actor);
@@ -1584,9 +1576,9 @@ void VtkWidget::FocusOnActor(CEntity* entity)
     auto center = getBoundboxCenter(actor); // 获取外包盒中心
     auto actorSize = getBoundboxData(actor);
 
-    // 计算相机与actor中心的距离，这里取actor最大尺寸的两倍作为距离
+    // 计算相机与actor中心的距离
     double maxSize = std::max({actorSize[0], actorSize[1], actorSize[2]});
-    double distance = maxSize * 2.0;
+    double distance = maxSize * 3.0;
 
     // 调整相机
     vtkCamera *camera = renderer->GetActiveCamera();
@@ -1640,7 +1632,7 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr VtkWidget::onStatisticalFilter(pcl::Point
     // 统计滤波去噪
     pcl::StatisticalOutlierRemoval<pcl::PointXYZRGB> sor;
     int kMean = adjustMeanK(cloud->size());
-    double thresh = adjustStddevThresh(cloud->size());
+    double thresh = calculateThreshold(cloud);
     sor.setInputCloud(cloud);
     sor.setMeanK(kMean);   // 考虑的邻近点的数量
     sor.setStddevMulThresh(thresh);  // 判断离群点的阈值
@@ -1694,7 +1686,7 @@ void VtkWidget::onFilter()
     }
 
     // 创建一个八叉树索引
-    pcl::octree::OctreePointCloudSearch<pcl::PointXYZRGB> octree(0.05f); // 设置八叉树的分辨率
+    pcl::octree::OctreePointCloudSearch<pcl::PointXYZRGB> octree(calculateOctreeResolution((clouds[0]))); // 设置八叉树的分辨率
     octree.setInputCloud(clouds[0]);
     octree.addPointsFromInputCloud();
 
@@ -1724,27 +1716,47 @@ void VtkWidget::onFilter()
     m_pMainWin->NotifySubscribe();
 }
 
-pcl::PointCloud<pcl::PointXYZRGB>::Ptr VtkWidget::onFilter(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& srcCloud, pcl::PointCloud<pcl::PointXYZRGB>::Ptr& tagCloud)
+pcl::PointCloud<pcl::PointXYZRGB>::Ptr VtkWidget:: onFilter(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& srcCloud, pcl::PointCloud<pcl::PointXYZRGB>::Ptr& tagCloud)
 {
     // 创建一个八叉树索引
     pcl::octree::OctreePointCloudSearch<pcl::PointXYZRGB> octree(calculateOctreeResolution(tagCloud)); // 设置八叉树的分辨率
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr filteredCloud(new pcl::PointCloud<pcl::PointXYZRGB>());
+    // 创建KD树索引
+    pcl::search::KdTree<pcl::PointXYZRGB> kdtree(new pcl::search::KdTree<pcl::PointXYZRGB>);
+    kdtree.setInputCloud(tagCloud);
     octree.setInputCloud(tagCloud);
     octree.addPointsFromInputCloud();
-
-    // 去噪后的点云
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr filteredCloud(new pcl::PointCloud<pcl::PointXYZRGB>());
     auto threshold = calculateThreshold(tagCloud);
 
+    // 法线估计
+    // pcl::PointCloud<pcl::Normal>::Ptr normals(new pcl::PointCloud<pcl::Normal>());
+    // pcl::NormalEstimation<pcl::PointXYZRGB, pcl::Normal> ne;
+    // pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZRGB>);
+    // ne.setInputCloud(tagCloud);
+    // ne.setSearchMethod(tree);
+    // ne.setRadiusSearch(calculateSamplingRadius(tagCloud));
+    // ne.compute(*normals);
+
+    // // 将法线附加到点云中
+    // pcl::PointCloud<pcl::PointNormal>::Ptr cloud_with_normals(new pcl::PointCloud<pcl::PointNormal>);
+    // pcl::PointCloud<pcl::PointXYZRGB>::Ptr filtered_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+    // for (int i = 0; i < tagCloud->points.size(); ++i) {
+    //     pcl::PointNormal point;
+    //     point.x = tagCloud->points[i].x;
+    //     point.y = tagCloud->points[i].y;
+    //     point.z = tagCloud->points[i].z;
+    //     point.normal_x = normals->points[i].normal_x;
+    //     point.normal_y = normals->points[i].normal_y;
+    //     point.normal_z = normals->points[i].normal_z;
+    //     cloud_with_normals->points.push_back(point);
+    // }
+
     // 对每个点进行最近邻搜索
-    for (const auto& point : srcCloud->points)
-    {
+    for (const auto& point : srcCloud->points) {
         std::vector<int> indices;
         std::vector<float> distances;
-        if (octree.nearestKSearch(point, 1, indices, distances) > 0)
-        {
-            // 如果最近邻距离小于阈值，则保留该点
-            if (distances[0] < threshold)
-            {
+        if (kdtree.nearestKSearch(point, 2, indices, distances) > 0) {
+            if (distances[0] < threshold) {
                 filteredCloud->push_back(point);
             }
         }
@@ -1857,8 +1869,6 @@ void VtkWidget::onCompare()
     ExportPointCloudToFBX(comparisonCloud,"D:/outout.fbx");
     //平均距离
     averageDistance/=count_distance;
-    //调用保存图像函数
-    ShowColorBar(minDistance, maxDistance);
     QVector<double> DistanceValue;
     DistanceValue.push_back(maxDistance);
     DistanceValue.push_back(minDistance);
@@ -1871,6 +1881,7 @@ void VtkWidget::onCompare()
     QString path_right=m_pMainWin->getPWinToolWidget()->getlastCreatedImageFileRight();
 
     m_pMainWin->getPWinFileManagerWidget()->allRecover();
+    ShowColorBar(minDistance, maxDistance);
 
     if(isCut){
         //存储局部对比点云图像的路径
@@ -1926,11 +1937,8 @@ void VtkWidget::onAlign()
     int cnt = FilterCount(cloud1_filter);
 
     // 滤波去噪，模型点云不用去噪
-    if(!isModel){
-    }
-
     for(int i = 0;i < cnt;i++){
-        cloud1_filter = onStatisticalFilter(cloud1_filter);
+        if(!isModel) cloud1_filter = onStatisticalFilter(cloud1_filter);
         cloud2_filter = onStatisticalFilter(cloud2_filter);
     }
 
@@ -1948,14 +1956,13 @@ void VtkWidget::onAlign()
     // 如果点云较小，则不进行采样
     if(radius2 >= 0.1f){
         // 如果点云较大，则动态设置采样半径
-        float initialRadius = 0.01f; // 初始采样半径
+        float currentRadius = 0.01f; // 初始采样半径
         float maxRadius = 0.2f;  // 最大采样半径
         float targetSize = 10000;    // 目标点云大小
         float reductionFactor = 1.0 / 5.0; // 点云缩减比例
         // 初始化当前待采样的点云和采样半径
         pcl::PointCloud<pcl::PointXYZRGB>::Ptr currentSource = downsampledCloud2;
         pcl::PointCloud<pcl::PointXYZRGB>::Ptr currentTarget = downsampledCloud1;
-        float currentRadius = initialRadius;
 
         while (true) {
             // 均匀下采样
@@ -1972,7 +1979,7 @@ void VtkWidget::onAlign()
                 return;
             }
             // 检查采样后的点云大小，满足条件则结束采样
-            if (downsampledCloud2->size() <= targetSize ||
+            if (downsampledCloud1->size() <= targetSize ||
                 downsampledCloud2->size() <= cloud2->size() * reductionFactor) {
                 break;
             }
@@ -1996,8 +2003,8 @@ void VtkWidget::onAlign()
 
     // 使用XYZRGB类型进行ICP配准
     pcl::IterativeClosestPoint<pcl::PointXYZRGB, pcl::PointXYZRGB> icp;
-    icp.setInputSource(downsampledCloud1);
-    icp.setInputTarget(downsampledCloud2);
+    icp.setInputSource(downsampledCloud2);
+    icp.setInputTarget(downsampledCloud1);
     icp.setMaximumIterations(100);
     icp.setTransformationEpsilon(1e-8);
     icp.setMaxCorrespondenceDistance(0.2f);
@@ -2143,17 +2150,17 @@ void VtkWidget::onAlign()
 //     icp.setTransformationEpsilon(1e-8);
 //     icp.setMaxCorrespondenceDistance(0.2f);
 
-    // // 如果仍未收敛，则进行动态迭代
-    // if (!icp.hasConverged()) {
-    //     icp.setMaximumIterCations(300);
-    //     float corDis = 1.0f; // 初始最大点距离阈值
-    //     while(corDis <= 50.0f){
-    //         icp.setMaxCorrespondenceDistance(corDis);
-    //         icp.align(*icpFinalCloudPtr);
-    //         if(icp.hasConverged()) break;
-    //         if(corDis <= 50.0f)  corDis += 0.5f;
-    //     }
-    // }
+// // 如果仍未收敛，则进行动态迭代
+// if (!icp.hasConverged()) {
+//     icp.setMaximumIterCations(300);
+//     float corDis = 1.0f; // 初始最大点距离阈值
+//     while(corDis <= 50.0f){
+//         icp.setMaxCorrespondenceDistance(corDis);
+//         icp.align(*icpFinalCloudPtr);
+//         if(icp.hasConverged()) break;
+//         if(corDis <= 50.0f)  corDis += 0.5f;
+//     }
+// }
 //     pcl::PointCloud<pcl::PointXYZRGB>::Ptr aligned_src(new pcl::PointCloud<pcl::PointXYZRGB>());
 //     icp.align(*aligned_src);
 
@@ -2323,7 +2330,7 @@ float VtkWidget::calculateOctreeResolution(const pcl::PointCloud<pcl::PointXYZRG
     // 使用VoxelGrid下采样来估计八叉树分辨率
     pcl::VoxelGrid<pcl::PointXYZRGB> voxel_grid;
     pcl::PointCloud<pcl::PointXYZRGB> temp_cloud;
-    float leaf_size = 0.01f; // 初始叶节点大小
+    float leaf_size = calculateSamplingRadius(cloud); // 初始叶节点大小
     voxel_grid.setInputCloud(cloud);
     voxel_grid.setLeafSize(leaf_size, leaf_size, leaf_size);
     voxel_grid.filter(temp_cloud);

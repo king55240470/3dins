@@ -251,6 +251,7 @@ void MouseInteractorHighlightActor::ResetActor(vtkActor* actor)
 
 void MouseInteractorHighlightActor::ShowBoundBox(vtkActor *actor)
 {
+    if(boxActor != nullptr) renderer->RemoveActor(boxActor);
     // 获取 actor 的边界框
     double bounds[6];
     actor->GetBounds(bounds);
@@ -266,8 +267,7 @@ void MouseInteractorHighlightActor::ShowBoundBox(vtkActor *actor)
     boxActor->GetProperty()->SetColor(1, 1, 0);
     boxActor->GetProperty()->SetLineWidth(MainWindow::ActorLineWidth);
 
-    if (renderer != nullptr && boxActor != nullptr){
-        renderer->RemoveActor(boxActor);
+    if (renderer != nullptr){
         renderer->AddActor(boxActor);
         renderer->Render();
     }
