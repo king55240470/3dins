@@ -845,7 +845,6 @@ class CPointCloud : public CEntity
 public:
     CPosition m_pt;
     pcl::PointCloud<pcl::PointXYZRGB> m_pointCloud; // 存储的点云对象（已经加载过的）
-    static QMap<vtkActor*, pcl::PointCloud<pcl::PointXYZRGB>> actorToPointCloud; // 管理RGB点云生成的actor
     vtkSmartPointer<vtkPolyData> cloudPolyData;
     double pointCloudSize; // 点云的大小，即包含点的数量
     static int pointCloudCount;

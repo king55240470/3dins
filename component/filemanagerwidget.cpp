@@ -646,8 +646,6 @@ void FileManagerWidget::allHide(QString a){
         }
     }
 
-
-
     m_pMainWin->getPWinVtkWidget()->UpdateInfo();
 }
 
