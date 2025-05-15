@@ -22,11 +22,6 @@
 #include <vtkDistancePolyDataFilter.h>
 #include <vtkTransformPolyDataFilter.h>
 
-// 定义 getActorToPointCloud 和 actorToPointCloud;
-QMap<vtkActor*, pcl::PointCloud<pcl::PointXYZRGB>> CPointCloud::actorToPointCloud;
-QMap<vtkActor*, pcl::PointCloud<pcl::PointXYZRGB>> &CPointCloud::getActorToPointCloud(){
-    return actorToPointCloud;
-}
 
 bool CPointCloud::haveSaved=false;
 bool CPointCloud::haveOpened=false;

@@ -591,18 +591,30 @@ void FileManagerWidget::allHide(QVector<QString> s){
 
     QMap<QString, bool>& mapOFContent = m_pMainWin->getpWinFileMgr()->getContentItemMap();
     for (auto it = mapOFContent.begin(); it != mapOFContent.end(); ++it) {
-        for(auto a:s){
-            if(!it.key().contains(a)){
-                it.value() = false;
+
+        it.value() = false;
+    }
+    for(auto a:s){
+        for (auto it = mapOFContent.begin(); it != mapOFContent.end(); ++it) {
+            if(it.key().contains(a)){
+                it.value() = true;
+                break;
+
             }
         }
     }
 
     QMap<QString, bool>& mapOFIdentify = m_pMainWin->getpWinFileMgr()->getIdentifyItemMap();
     for (auto it = mapOFIdentify.begin(); it != mapOFIdentify.end(); ++it) {
-        for(auto a:s){
-            if(!it.key().contains(a)){
-                it.value() = false;
+
+        it.value() = false;
+    }
+    for(auto a:s){
+        for (auto it = mapOFIdentify.begin(); it != mapOFIdentify.end(); ++it) {
+            if(it.key().contains(a)){
+                it.value() = true;
+                break;
+
             }
         }
     }

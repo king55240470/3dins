@@ -86,6 +86,7 @@ public:
     void createrule();
     bool getIsProcess();
     QVector<CPointCloud*> getisComparsionCloud();
+
     QTreeWidget * getTreeWidgetNames();
 protected:
     void mouseDoubleClickEvent(QMouseEvent *event) override;
@@ -129,6 +130,8 @@ private:
     int Treelistsize=0;
     int currentIndex;//被测量主元素parent索引
     int distancelistIndex;//被测量主元素队列索引
+
+    bool foundmodel;//检查是否有模型点云
 
     pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree;
     QVector<CEntity*>disAndanglelist;

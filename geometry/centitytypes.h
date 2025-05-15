@@ -845,7 +845,6 @@ class CPointCloud : public CEntity
 public:
     CPosition m_pt;
     pcl::PointCloud<pcl::PointXYZRGB> m_pointCloud; // 存储的点云对象（已经加载过的）
-    static QMap<vtkActor*, pcl::PointCloud<pcl::PointXYZRGB>> actorToPointCloud; // 管理RGB点云生成的actor
     vtkSmartPointer<vtkPolyData> cloudPolyData;
     double pointCloudSize; // 点云的大小，即包含点的数量
     static int pointCloudCount;
@@ -853,6 +852,7 @@ public:
     int currentPointCloudId;
     bool isFileCloud = false; // 是否是文件生成的点云
     bool isComparsionCloud = false; //  是否是对比得到的点云
+    bool isComparsionCloudPart = false; //  是否是局部对比得到的点云
     bool isAlignCloud=false;// 是否是对齐得到的点云
     bool isReconstructedCloud=false; // 泊松重建
     bool isModelCloud=false;// 是否是模型点云

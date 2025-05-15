@@ -1,6 +1,8 @@
 #ifndef VTKWIDGET_H
 #define VTKWIDGET_H
 
+#define pcl_isfinite(x) std::isfinite(x)
+
 #include "mainwindow.h"
 #include "clickhighlightstyle.h"
 #include "manager/filemgr.h"
@@ -18,7 +20,7 @@
 #include <QTimer>
 #include <QPixmap>
 #include <boost/make_shared.hpp>
-
+#include <fbxsdk.h>
 #include <pcl/common/common.h>
 #include <pcl/io/ply_io.h>
 #include <pcl/common/distances.h>  // PCL距离计算函数
@@ -32,6 +34,14 @@
 #include <pcl/registration/sample_consensus_prerejective.h>
 #include <pcl/registration/icp.h>
 #include <pcl/registration/ia_ransac.h>
+#include <pcl/io/obj_io.h>
+#include <pcl/io/vtk_io.h>
+#include <pcl/features/shot.h>
+#include <pcl/features/shot_lrf.h>
+#define PCL_NO_PRECOMPILE
+#include <pcl/recognition/cg/geometric_consistency.h>
+#undef PCL_NO_PRECOMPILE
+#include <pcl/filters/extract_indices.h>
 // #include <pcl/surface/poisson.h>
 // #include <pcl/surface/impl/poisson.hpp>
 
@@ -83,6 +93,11 @@
 #include <vtkImageProperty.h>
 #include <vtkImageViewer2.h>
 #include <vtkLineSource.h>
+#include <vtkPLYReader.h>
+#include <vtkTriangleFilter.h>
+#include <vtkCleanPolyData.h>
+#include <vtkPolyDataNormals.H>
+#include <QProcess>
 VTK_MODULE_INIT(vtkRenderingOpenGL2);
 VTK_MODULE_INIT(vtkInteractionStyle);
 VTK_MODULE_INIT(vtkRenderingVolumeOpenGL2);
@@ -123,17 +138,20 @@ public:
     void FocusOnActor(CEntity* entity); // 设置相机以聚焦指定的actor
 
     int adjustMeanK(size_t pointCount); // 估算滤波的近邻点数量
-    double adjustStddevThresh(size_t pointCount); // 估算离群点阈值
+    double adjustStddevThresh(size_t pointCount); // 估算离群点阈值，用于统计滤波
+    float calculateThreshold(pcl::PointCloud<pcl::PointXYZRGB>::Ptr tagCloud);
     int FilterCount(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud); // 计算去噪次数
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr onFilter(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud); // 点云滤波
-    void onFilter(); // 重载的滤波方法，用于单独生成去噪后的点云
-    void onRadiusFilter(); // 半径滤波
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr onStatisticalFilter(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud);
+    void onFilter(); // 点云去噪
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr onFilter(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& srcCloud,
+                                                    pcl::PointCloud<pcl::PointXYZRGB>::Ptr& tagCloud); // 重载的滤波方法，用于在对齐中调用
     void onCompare();// 比较两个点云
-    void onAlign();    // 配准的函数
+    void onAlign(); // 配准的函数
     void poissonReconstruction(); // 泊松重建
     void sacAlign(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud1,
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud2);
     float calculateSamplingRadius(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud); // 估计采样半径
+    float calculateOctreeResolution(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud); // 估算八叉树分辨率
 
     // 显示选中的图形的信息
     void setCentity(CEntity*entity);  //传入centity对象
@@ -155,7 +173,11 @@ public:
     void closeTextActor(CEntity* entity);
     void GetScreenCoordinates(vtkRenderer* renderer, double pt[3], double screenCoord[2]);
     CEntity* getEntityFromTextActor(vtkSmartPointer<vtkTextActor> textActor); // 从文本演员找到对应的entity
-    void ExportPointCloudToFBX(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud, const std::string& filepath); //转换fbx文件
+    void ExportPointCloudToFBX(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud,const std::string& filepath); //转换fbx文件
+    bool preparePointCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud);
+    bool savePointCloudToPLY(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud, const QString& plyPath);
+    bool runPoissonReconstruction(const QString& inputPlyPath, const QString& outputPlyPath);
+    bool convertPLYtoFBX(const QString& plyPath, const QString& fbxPath);
 
     void ShowColorBar(double minDistance, double maxDistance);
     //标度尺

@@ -334,7 +334,7 @@ void MainWindow::setupUi(){
     filterAction->setShortcutContext(Qt::ApplicationShortcut);
     filterAction->setIcon(filterIcon);
     connect(filterAction,&QAction::triggered,this,[&](){
-        pWinVtkWidget->onRadiusFilter();
+        pWinVtkWidget->onFilter();
     });
     QMenu * switchTheme = bar->addMenu("主题(T)");
     QAction* showThemeMenu = new QAction();
