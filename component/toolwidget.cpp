@@ -977,11 +977,11 @@ void   ToolWidget::ExtractData(QVector<CEntity *>& entitylist,QList<QList<QStrin
             inList<<QString::number(Distance->getUndertolerance(),'f',6);
             if (Distance->judge())
                 inList<<"合格";
-            else
-                inList<<"不合格";
-            if(m_checkpoint_imagePath.find(entity)==m_checkpoint_imagePath.end()){
+            else{
+                inList<<"不合格";}
+
                 SaveImage(entity);
-            }
+
             inList<<QDir::toNativeSeparators(m_checkpoint_imagePath[entity]);
 
         }
@@ -994,11 +994,11 @@ void   ToolWidget::ExtractData(QVector<CEntity *>& entitylist,QList<QList<QStrin
             inList<<QString::number(Angle->getUndertolerance(),'f',6);
             if (Angle->judge())
                 inList<<"合格";
-            else
-                inList<<"不合格";
-            if(m_checkpoint_imagePath.find(entity)==m_checkpoint_imagePath.end()){
+            else{
+        inList<<"不合格";}
+
                 SaveImage(entity);
-            }
+
             inList<<QDir::toNativeSeparators(m_checkpoint_imagePath[entity]);
         }
         else if(entity->GetUniqueType()==enPointCloud){
