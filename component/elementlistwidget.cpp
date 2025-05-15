@@ -737,7 +737,14 @@ void ElementListWidget::updateDistance()
         }
     }
     if(disAndanglelist.size()==0){
-        return;
+        if(pointCouldlists.size()>0)
+        {
+            CompareCloud();
+            updateDistance();
+        }else{
+            isProcessing = false;
+            return;
+        }
     }
     qDebug()<<"进入时间开启之前";
     timer = new QTimer(this);

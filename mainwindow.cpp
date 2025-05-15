@@ -50,7 +50,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 void MainWindow::setupUi(){
     //配置ini文件用于文件传输
-    listenFileINI = new QSettings("Config.ini", QSettings::IniFormat);
+    //listenFileINI = new QSettings("Config.ini", QSettings::IniFormat);
     // if(listenFileINI->value("/con/ip")==""){
     //     listenFileINI->setValue("/con/ip", "192.0.0.0");
     // }
@@ -776,8 +776,8 @@ void MainWindow::saveFile(){
 
 void MainWindow::listeningFile()
 {
-    listenFileINI = new QSettings("Config.ini", QSettings::IniFormat);
-    QString ip=listenFileINI->value("con/ip").toString();
+    //listenFileINI = new QSettings("Config.ini", QSettings::IniFormat);
+    //QString ip=listenFileINI->value("con/ip").toString();
     //listeningfilePath="//"+ip;
     listeningfilePath="C:/qcon/FTPservice";
     qDebug()<<listeningfilePath;
@@ -1449,7 +1449,7 @@ void MainWindow::filechange()
     fileProcessorTimer.setInterval(1000); // 每秒处理一个文件
     connect(&fileProcessorTimer, &QTimer::timeout, this, &MainWindow::processNextFile);
     // 初始化已存在的文件列表
-    existingFiles=listenFileINI->value("/con/HaveFilePath").toStringList();
+    //existingFiles=listenFileINI->value("/con/HaveFilePath").toStringList();
 }
 
 void MainWindow::onFileChanged(const QString &path)
@@ -1462,11 +1462,11 @@ void MainWindow::onFileChanged(const QString &path)
     foreach (const QString &file, currentFiles) {
         if (!existingFiles.contains(file)) {
             QString filePath = path + "/" + file;
-            listenFileINI->setValue("/con/HaveFilePath",file);
+            //listenFileINI->setValue("/con/HaveFilePath",file);
             qDebug() << "发现新文件：" << filePath;
 
             // 根据文件扩展名判断优先级
-            if (file.endsWith(".ply", Qt::CaseInsensitive)) {
+            if (file.contains("stand")) {
                 // 如果是.ply文件，优先添加到队列前面
                 fileQueue.prepend(filePath);
                 qDebug() << "优先添加.ply文件到队列：" << filePath;

@@ -40,8 +40,13 @@
 #include <pcl/recognition/cg/geometric_consistency.h>
 #undef PCL_NO_PRECOMPILE
 #include <pcl/filters/extract_indices.h>
-// #include <pcl/surface/poisson.h>
-// #include <pcl/surface/impl/poisson.hpp>
+#include <pcl/features/normal_3d.h>
+#include <pcl/features/fpfh.h>
+#include <pcl/registration/registration.h>
+#include <pcl/registration/icp.h>
+#include <pcl/registration/transformation_estimation_svd.h>
+#include <pcl/visualization/cloud_viewer.h>
+#include <pcl/filters/statistical_outlier_removal.h>
 
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
@@ -96,6 +101,10 @@ VTK_MODULE_INIT(vtkInteractionStyle);
 VTK_MODULE_INIT(vtkRenderingVolumeOpenGL2);
 VTK_MODULE_INIT(vtkRenderingFreeType);
 
+using namespace  std;
+typedef pcl::Normal NormalT;
+typedef pcl::PointCloud<NormalT> NormalCloud;
+
 class VtkWidget : public QWidget
 {
     Q_OBJECT
@@ -139,10 +148,24 @@ public:
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr onFilter(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& srcCloud,
                                                     pcl::PointCloud<pcl::PointXYZRGB>::Ptr& tagCloud); // 重载的滤波方法，用于在对齐中调用
     void onCompare();// 比较两个点云
-    void onAlign(); // 配准的函数
+
+    // 用于配准的一系列方法
+    pair<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, pcl::PointCloud<pcl::FPFHSignature33>::Ptr> PreprocessPointCloud(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &pcd);
+    pcl::Registration<pcl::PointXYZRGB, pcl::PointXYZRGB>::Ptr ExecuteGlobalRegistration(
+        const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &source_down, const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &target_down,
+        const pcl::PointCloud<pcl::FPFHSignature33>::Ptr &source_fpfh, const pcl::PointCloud<pcl::FPFHSignature33>::Ptr &target_fpfh, double voxel_size);
+    tuple<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, pcl::PointXYZRGB, pcl::PointXYZRGB> GetPointCloudBoundingBox(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &pcd);
+    tuple<Eigen::Vector4f, Eigen::Vector4f> ExpandBoundingBox(
+        const Eigen::Vector4f &min_point, const Eigen::Vector4f &max_point, double margin_ratio);
+    tuple<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, Eigen::Vector4f, Eigen::Vector4f> CropSceneWithTemplateBbox(
+        const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &target, const Eigen::Vector4f &min_point, const Eigen::Vector4f &max_point);
+    tuple<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, Eigen::Matrix4f, double> GlobalRegistrationOnly(
+    const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &template_cloud, const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &scene_cloud, double voxel_size = -1.0);
+    void onAlign(); // 接口
+
     void poissonReconstruction(); // 泊松重建
     void sacAlign(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud1,
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud2);
+                  pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud2);
     float calculateSamplingRadius(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud); // 估计采样半径
     float calculateOctreeResolution(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud); // 估算八叉树分辨率
 
