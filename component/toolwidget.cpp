@@ -361,10 +361,14 @@ void ToolWidget::InitOutputFolder(){
     createFolder(getOutputPath("image"));
     createFolder(getOutputPath("excel"));
     createFolder(getOutputPath("txt"));
-    // createFolder(ParentPath+"/output/pdf");
-    // createFolder(ParentPath+"/output/image");
-    // createFolder(ParentPath+"/output/excel");
-    // createFolder(ParentPath+"/output/txt");
+
+
+    createFolder(m_savePath);
+    createFolder(getOutputPath("excel_检测点信息"));
+    createFolder(getOutputPath("excel_误差信息"));
+    createFolder(getOutputPath("image"));
+    createFolder(getOutputPath("叶片检测报告"));
+
     m_pMainWin->getPWinVtkPresetWidget()->setWidget("已创建文件夹"+getOutputPath(""));
 
 }
@@ -825,7 +829,7 @@ void ToolWidget::connectActionWithF(){
     connect(save_actions_[save_action_name_list_.indexOf("pointcloud")],&QAction::triggered,this,&  ToolWidget::onSavePointCloud);
     //打开
     connect(save_actions_[save_action_name_list_.indexOf("excel")], &QAction::triggered, this, &ToolWidget::onOpenExcel);
-    connect(save_actions_[save_action_name_list_.indexOf("word")], &QAction::triggered, this, &ToolWidget::onOpenWord);
+    connect(save_actions_[save_action_name_list_.indexOf("word")], &QAction::triggered, this, &ToolWidget::onSaveWord);
     connect(save_actions_[save_action_name_list_.indexOf("txt")], &QAction::triggered, this, &ToolWidget::onOpenTxt);
     connect(save_actions_[save_action_name_list_.indexOf("pdf")], &QAction::triggered, this, &ToolWidget::onOpenPdf);
     connect(save_actions_[save_action_name_list_.indexOf("image")], &QAction::triggered, this, &ToolWidget::onOpenImage);
@@ -1835,7 +1839,7 @@ void   ToolWidget::onSaveExcel(){
     QString logInfo1="Excel开始保存";
     m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo1);
 
-    QString path= getOutputPath("excel");
+    QString path= getOutputPath("excel_检测点信息");
     QString name="检测点信息_"+getTimeString();
 
     QString filePath=path+"/"+name+".xlsx";
@@ -2447,7 +2451,7 @@ void ToolWidget::createDistanceMeasurementReport()
 
         // 10. 保存文档
 
-        QString path= getOutputPath("word");
+        QString path= getOutputPath("叶片检测报告");
         QString name=getTimeString();
 
         QString filePath=path+"/"+name+".docx";
@@ -2481,7 +2485,7 @@ void ToolWidget::createDistanceMeasurementReport()
     }
 
     {
-        QString path= getOutputPath("excel");
+        QString path= getOutputPath("excel_误差信息");
         QString name="误差信息_"+getTimeString();
 
         QString filePath=path+"/"+name+".xlsx";
@@ -3744,8 +3748,9 @@ void ToolWidget::createFolder(QString path){
 }
 
 
+
 QString ToolWidget::getOutputPath(QString kind){
-    return "D:/output/" + kind;
+    return m_savePath +"/"+ kind;
 
 }
 QDataStream& ToolWidget::serializeEntityList(QDataStream& out, const QVector<CEntity*>& entityList){
@@ -3945,4 +3950,58 @@ void ToolWidget::SaveImage(CEntity* entity,Size_MeasurementData* pointCloudData)
     //关闭文本框
     m_pMainWin->getPWinElementListWidget()->closeInfotext();
     m_pMainWin->getPWinVtkWidget()->UpdateInfo();
+}
+
+
+void ToolWidget::createFolderWithDialog()
+{
+        QWidget* parent = nullptr;
+        const QString& defaultDir = QDir::homePath();
+        const QString& defaultFolderName = "NewFolder";
+
+    // 弹出文件选择对话框，让用户选择保存位置
+        QString selectedDir = QFileDialog::getExistingDirectory(
+        parent,
+        QObject::tr("选择文件夹保存位置"),
+        defaultDir,
+        QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks
+        );
+
+
+        if (selectedDir.isEmpty()) {
+            // 用户取消了对话框
+            return ;
+        }
+        bool ok;
+        QString folderName = QInputDialog::getText(
+            parent,
+            QObject::tr("输入文件夹名称"),
+            QObject::tr("请输入文件夹名称:"),
+            QLineEdit::Normal,
+            defaultFolderName,
+            &ok
+            );
+
+    if (!ok || folderName.isEmpty()) {
+        // 用户取消了输入或输入为空
+        return ;
+    }
+
+    // 构建完整的文件夹路径
+    QString newFolderPath = QDir(selectedDir).filePath(folderName);
+
+    // 检查文件夹是否已存在
+    if (QDir(newFolderPath).exists()) {
+       return ;
+    }
+
+    // 创建文件夹
+    m_savePath=newFolderPath;
+    createFolder(m_savePath);
+    createFolder(getOutputPath("excel_检测点信息"));
+    createFolder(getOutputPath("excel_误差信息"));
+    createFolder(getOutputPath("image"));
+    createFolder(getOutputPath("叶片检测报告"));
+    m_pMainWin->getPWinVtkPresetWidget()->setWidget("已创建文件夹"+getOutputPath(""));
+
 }

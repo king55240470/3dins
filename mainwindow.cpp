@@ -344,6 +344,14 @@ void MainWindow::setupUi(){
         switchTheme->exec(globalPos);
     });
     addAction(showThemeMenu);
+
+    QAction* SavePathAction=new QAction("设置保存路径(N)");
+    SavePathAction->setShortcut(QKeySequence(Qt::Key_N));
+    bar->addAction(SavePathAction);
+
+    connect(SavePathAction,&QAction::triggered,this,[this](){
+        pWinToolWidget->createFolderWithDialog();
+    });
     QAction* lightBlue = switchTheme->addAction("简约蓝(默认)");
     lightBlue->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_D));
     lightBlue->setShortcutContext(Qt::ApplicationShortcut);

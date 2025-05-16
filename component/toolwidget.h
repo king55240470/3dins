@@ -191,6 +191,8 @@ public slots:
     QMap<CEntity*,QString>& getCheckpoint_imagePath(){
         return m_checkpoint_imagePath;
     }
+
+    void createFolderWithDialog();
     //用来提取点云，监测点数据
     void   ExtractData(QVector<CEntity *>& entitylist,QList<QList<QString>>& dataAll,QList<QString>& data_PointCloud);
 
@@ -200,6 +202,8 @@ public slots:
 
     void   ExtractData(QVector<CEntity *>& entitylist,QList<Size_MeasurementData>&dataAll_size,Size_MeasurementData& data_pointCloud_size);
 private:
+
+    QString m_savePath="D:/output";
 
     QMap<CEntity*,QString>m_checkpoint_imagePath;
     //对比点云保存路径
