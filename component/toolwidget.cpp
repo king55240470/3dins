@@ -824,8 +824,8 @@ void ToolWidget::connectActionWithF(){
     // connect(save_actions_[save_action_name_list_.indexOf("image")],&QAction::triggered,this,&  ToolWidget::onSaveImage);
     connect(save_actions_[save_action_name_list_.indexOf("pointcloud")],&QAction::triggered,this,&  ToolWidget::onSavePointCloud);
     //打开
-    connect(save_actions_[save_action_name_list_.indexOf("excel")], &QAction::triggered, this, &ToolWidget::onSaveExcel);
-    connect(save_actions_[save_action_name_list_.indexOf("word")], &QAction::triggered, this, &ToolWidget::onSaveWord);
+    connect(save_actions_[save_action_name_list_.indexOf("excel")], &QAction::triggered, this, &ToolWidget::onOpenExcel);
+    connect(save_actions_[save_action_name_list_.indexOf("word")], &QAction::triggered, this, &ToolWidget::onOpenWord);
     connect(save_actions_[save_action_name_list_.indexOf("txt")], &QAction::triggered, this, &ToolWidget::onOpenTxt);
     connect(save_actions_[save_action_name_list_.indexOf("pdf")], &QAction::triggered, this, &ToolWidget::onOpenPdf);
     connect(save_actions_[save_action_name_list_.indexOf("image")], &QAction::triggered, this, &ToolWidget::onOpenImage);
@@ -1845,7 +1845,7 @@ void   ToolWidget::onSaveExcel(){
     // }
 
     QStringList headers;
-    headers << "Type" << "检测点" <<"检测数值"<< "Max" << "Min"<<"是否合格";
+    headers << "检测点序号" <<"检测数值"<< "Max" << "Min"<<"是否合格";
     int col = headers.size();
     QList<QList<QString>> dataAll;
     auto& entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
@@ -1882,7 +1882,7 @@ void   ToolWidget::onSaveExcel(){
     foreach(QList<QString> inLst, dataAll) {
         for (int j = 0; j < headers.size(); j++) {
             QAxObject *cell = workSheet->querySubObject("Cells(int, int)", curRow, j + 1);
-            cell->dynamicCall("SetValue(const QString&)", inLst[j]);
+            cell->dynamicCall("SetValue(const QString&)", inLst[j+1]);
         }
         curRow++;
     }
