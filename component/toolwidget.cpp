@@ -364,8 +364,8 @@ void ToolWidget::InitOutputFolder(){
 
 
     createFolder(m_savePath);
-    createFolder(getOutputPath("excel_检测点信息"));
-    createFolder(getOutputPath("excel_误差信息"));
+    createFolder(getOutputPath("excell1"));
+    createFolder(getOutputPath("excellA"));
     createFolder(getOutputPath("image"));
     createFolder(getOutputPath("叶片检测报告"));
 
@@ -829,7 +829,7 @@ void ToolWidget::connectActionWithF(){
     connect(save_actions_[save_action_name_list_.indexOf("pointcloud")],&QAction::triggered,this,&  ToolWidget::onSavePointCloud);
     //打开
     connect(save_actions_[save_action_name_list_.indexOf("excel")], &QAction::triggered, this, &ToolWidget::onOpenExcel);
-    connect(save_actions_[save_action_name_list_.indexOf("word")], &QAction::triggered, this, &ToolWidget::onSaveWord);
+    connect(save_actions_[save_action_name_list_.indexOf("word")], &QAction::triggered, this, &ToolWidget::onOpenWord);
     connect(save_actions_[save_action_name_list_.indexOf("txt")], &QAction::triggered, this, &ToolWidget::onOpenTxt);
     connect(save_actions_[save_action_name_list_.indexOf("pdf")], &QAction::triggered, this, &ToolWidget::onOpenPdf);
     connect(save_actions_[save_action_name_list_.indexOf("image")], &QAction::triggered, this, &ToolWidget::onOpenImage);
@@ -1839,7 +1839,7 @@ void   ToolWidget::onSaveExcel(){
     QString logInfo1="Excel开始保存";
     m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo1);
 
-    QString path= getOutputPath("excel_检测点信息");
+    QString path= getOutputPath("excellA");
     QString name="检测点信息_"+getTimeString();
 
     QString filePath=path+"/"+name+".xlsx";
@@ -2485,7 +2485,7 @@ void ToolWidget::createDistanceMeasurementReport()
     }
 
     {
-        QString path= getOutputPath("excel_误差信息");
+        QString path= getOutputPath("excell1");
         QString name="误差信息_"+getTimeString();
 
         QString filePath=path+"/"+name+".xlsx";
@@ -3972,6 +3972,7 @@ void ToolWidget::createFolderWithDialog()
             // 用户取消了对话框
             return ;
         }
+
         bool ok;
         QString folderName = QInputDialog::getText(
             parent,
@@ -3992,14 +3993,14 @@ void ToolWidget::createFolderWithDialog()
 
     // 检查文件夹是否已存在
     if (QDir(newFolderPath).exists()) {
-       return ;
+       //m_pMainWin->getPWinVtkPresetWidget()->setWidget("新建文件夹并入已有文件夹");
     }
 
     // 创建文件夹
     m_savePath=newFolderPath;
     createFolder(m_savePath);
-    createFolder(getOutputPath("excel_检测点信息"));
-    createFolder(getOutputPath("excel_误差信息"));
+    createFolder(getOutputPath("excell1"));
+    createFolder(getOutputPath("excellA"));
     createFolder(getOutputPath("image"));
     createFolder(getOutputPath("叶片检测报告"));
     m_pMainWin->getPWinVtkPresetWidget()->setWidget("已创建文件夹"+getOutputPath(""));
