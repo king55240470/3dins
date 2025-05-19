@@ -779,7 +779,8 @@ void MainWindow::listeningFile()
     //listenFileINI = new QSettings("Config.ini", QSettings::IniFormat);
     //QString ip=listenFileINI->value("con/ip").toString();
     //listeningfilePath="//"+ip;
-    listeningfilePath="C:/qcon/FTPservice";
+    listeningfilePath="\\\\172.20.10.4\\downFTPfile";
+
     qDebug()<<listeningfilePath;
     filechange();
     pWinVtkPresetWidget->setWidget("开始监听文件");
@@ -1444,6 +1445,10 @@ void MainWindow::onIsometricViewClicked()
 void MainWindow::filechange()
 {
     fileWatcher.addPath(listeningfilePath); // 替换为FTP目录路径
+    bool success = fileWatcher.addPath(listeningfilePath);
+    if (!success) {
+    qDebug() << "Failed to add path to watcher:" << listeningfilePath;
+    }
     connect(&fileWatcher, &QFileSystemWatcher::directoryChanged, this, &MainWindow::onFileChanged);
     // 初始化文件处理定时器
     fileProcessorTimer.setInterval(1000); // 每秒处理一个文件

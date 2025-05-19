@@ -852,6 +852,7 @@ public:
     int currentPointCloudId;
     bool isFileCloud = false; // 是否是文件生成的点云
     bool isComparsionCloud = false; //  是否是对比得到的点云
+    bool isComparsionCloudPart = false; //  是否是局部对比得到的点云
     bool isAlignCloud=false;// 是否是对齐得到的点云
     bool isReconstructedCloud=false; // 泊松重建
     bool isModelCloud=false;// 是否是模型点云

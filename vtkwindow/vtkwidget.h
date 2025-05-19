@@ -20,7 +20,7 @@
 #include <QTimer>
 #include <QPixmap>
 #include <boost/make_shared.hpp>
-
+#include <fbxsdk.h>
 #include <pcl/common/common.h>
 #include <pcl/io/ply_io.h>
 #include <pcl/common/distances.h>  // PCL距离计算函数
@@ -34,6 +34,8 @@
 #include <pcl/registration/sample_consensus_prerejective.h>
 #include <pcl/registration/icp.h>
 #include <pcl/registration/ia_ransac.h>
+#include <pcl/io/obj_io.h>
+#include <pcl/io/vtk_io.h>
 #include <pcl/features/shot.h>
 #include <pcl/features/shot_lrf.h>
 #define PCL_NO_PRECOMPILE
@@ -96,6 +98,11 @@
 #include <vtkImageProperty.h>
 #include <vtkImageViewer2.h>
 #include <vtkLineSource.h>
+#include <vtkPLYReader.h>
+#include <vtkTriangleFilter.h>
+#include <vtkCleanPolyData.h>
+#include <vtkPolyDataNormals.H>
+#include <QProcess>
 VTK_MODULE_INIT(vtkRenderingOpenGL2);
 VTK_MODULE_INIT(vtkInteractionStyle);
 VTK_MODULE_INIT(vtkRenderingVolumeOpenGL2);
@@ -189,7 +196,11 @@ public:
     void closeTextActor(CEntity* entity);
     void GetScreenCoordinates(vtkRenderer* renderer, double pt[3], double screenCoord[2]);
     CEntity* getEntityFromTextActor(vtkSmartPointer<vtkTextActor> textActor); // 从文本演员找到对应的entity
-    void ExportPointCloudToFBX(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud, const std::string& filepath); //转换fbx文件
+    void ExportPointCloudToFBX(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud,const std::string& filepath); //转换fbx文件
+    bool preparePointCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud);
+    bool savePointCloudToPLY(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud, const QString& plyPath);
+    bool runPoissonReconstruction(const QString& inputPlyPath, const QString& outputPlyPath);
+    bool convertPLYtoFBX(const QString& plyPath, const QString& fbxPath);
 
     void ShowColorBar(double minDistance, double maxDistance);
     //标度尺
