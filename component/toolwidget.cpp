@@ -361,10 +361,14 @@ void ToolWidget::InitOutputFolder(){
     createFolder(getOutputPath("image"));
     createFolder(getOutputPath("excel"));
     createFolder(getOutputPath("txt"));
-    // createFolder(ParentPath+"/output/pdf");
-    // createFolder(ParentPath+"/output/image");
-    // createFolder(ParentPath+"/output/excel");
-    // createFolder(ParentPath+"/output/txt");
+
+
+    createFolder(m_savePath);
+    createFolder(getOutputPath("excell1"));
+    createFolder(getOutputPath("excellA"));
+    createFolder(getOutputPath("image"));
+    createFolder(getOutputPath("叶片检测报告"));
+
     m_pMainWin->getPWinVtkPresetWidget()->setWidget("已创建文件夹"+getOutputPath(""));
 
 }
@@ -825,7 +829,7 @@ void ToolWidget::connectActionWithF(){
     connect(save_actions_[save_action_name_list_.indexOf("pointcloud")],&QAction::triggered,this,&  ToolWidget::onSavePointCloud);
     //打开
     connect(save_actions_[save_action_name_list_.indexOf("excel")], &QAction::triggered, this, &ToolWidget::onOpenExcel);
-    connect(save_actions_[save_action_name_list_.indexOf("word")], &QAction::triggered, this, &ToolWidget::onSaveWord);
+    connect(save_actions_[save_action_name_list_.indexOf("word")], &QAction::triggered, this, &ToolWidget::onOpenWord);
     connect(save_actions_[save_action_name_list_.indexOf("txt")], &QAction::triggered, this, &ToolWidget::onOpenTxt);
     connect(save_actions_[save_action_name_list_.indexOf("pdf")], &QAction::triggered, this, &ToolWidget::onOpenPdf);
     connect(save_actions_[save_action_name_list_.indexOf("image")], &QAction::triggered, this, &ToolWidget::onOpenImage);
@@ -1456,375 +1460,375 @@ void ToolWidget::createDistanceMeasurementReport_Pdf()
 
 
 void   ToolWidget::onSavePdf(){
-    createDistanceMeasurementReport_Pdf();
-
-    //  QString logInfo1="Pdf开始保存";
-    //  m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo1);
 
-    // QString path= getOutputPath("pdf");
-    // QString name=getTimeString();
-    // QString filePath=path+"/"+name+".pdf";
-
-
-
-    // // // 插入纯文本数据
-    // auto& entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
-    // QList<QList<QString>> dataAll;
-    // QList<QList<QString>> dataAccepted;
-    // QList<QList<QString>>  dataNotAccepted;
-
-    // int count_accpted=0,count_not_accepted=0;
-
-    // ExtractData(entitylist, dataAll, dataAccepted,dataNotAccepted);
-
-    // count_accpted=dataAccepted.size();
-    // count_not_accepted=dataNotAccepted.size();
-
-
-    // QPdfWriter pdf(filePath);
-
-    // pdf.setPageSize(QPageSize(QPageSize::A4));
-    // pdf.setResolution(300);
-    // pdf.setTitle("专业测量报告");
-
-    // QPainter painter;
-    // if (painter.begin(&pdf)==false){
-    //     QString logInfo="Pdf打开失败,请关闭Pdf重试";
-    //     m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
-    //     return ;
-    // }
-    // painter.setRenderHint(QPainter::Antialiasing);
-
-
-
-    // int PDFheight= pdf.height();
-    // int PDFwidth=pdf.width();
-
-
-    // // 设置字体
-    // QFont font;
-    // font.setFamily("Arial");
-    // font.setPointSize(12);
-    // painter.setFont(font);
-    // int yDistance=60;
-    // int xDistance=300;
-
-    // // 封面页
-    // {
-    //     painter.translate(50, 50); // 左上角偏移
-    //     painter.setPen(Qt::black);
-
-    //     int PDFwidth = pdf.width();
-    //     int yDistance = 240;
-
-    //     // 设置标题
-    //     QFont titleFont("Arial", 35, QFont::Bold);
-    //     painter.setFont(titleFont);
-    //     QString title = "工业测量报告";
-    //     QFontMetrics titleMetrics(titleFont);
-    //     int titleWidth = titleMetrics.horizontalAdvance(title)*3;
-
-    //     // 绘制图片
-    //     QImage image(":/style/ruler.png");
-    //     QImage scaledImage = image.scaled(200, 100);
-    //     int imageWidth = scaledImage.width();
-    //     int imageHeight = scaledImage.height();
-
-    //     // 计算标题和图片的总宽度
-    //     int totalWidth = titleWidth + imageWidth + 20; // 20是标题和图片之间的间距
-    //     int startX = (PDFwidth - totalWidth) / 2;
-    //     int startY=500;
-
-    //     painter.drawText(startX, startY, title);
-    //     painter.drawImage(startX + titleWidth + 20, startY-imageHeight/2 , scaledImage);
-    //     int moreY=500;
-    //     // 设置副标题
-    //     QFont subtitleFont("Arial", 20);
-    //     painter.setFont(subtitleFont);
-    //     QFontMetrics subtitleMetrics(subtitleFont);
-    //     QString project = "测量项目: 3D 测量系统";
-    //     QString date = "测量日期: " + QDateTime::currentDateTime().toString("yyyy-MM-dd");
-    //     QString unit = "测量单位: 三维工业测量软件开发组";
-    //     QString Description1="";
-
-    //     int projectWidth = subtitleMetrics.horizontalAdvance(project)*3;
-    //     int dateWidth = subtitleMetrics.horizontalAdvance(date)*3;
-    //     int unitWidth = subtitleMetrics.horizontalAdvance(unit)*3;
-
-    //     painter.drawText((PDFwidth - unitWidth) / 2, yDistance+startY+moreY, project);
-    //     painter.drawText((PDFwidth - unitWidth) / 2, 2 * yDistance+startY+moreY, date);
-    //     painter.drawText((PDFwidth - unitWidth) / 2, 3 * yDistance+startY+moreY, unit);
-    //     int lessY=300;
-    //     // 为了使内容美观，增加一个水平线
-    //     painter.drawLine(0, PDFheight-yDistance/2*4-lessY, PDFwidth - 100, PDFheight-yDistance/2*4-lessY);
-
-    //     // 添加一些描述性文本
-    //     QFont contentFont("Arial", 16);
-    //     painter.setFont(contentFont);
-    //     QFontMetrics contentMetrics(contentFont);
-    //     QString description1 = "本报告详细记录了使用3D测量系统进行的测量项目。";
-    //     QString description2 = "测量日期为" + QDateTime::currentDateTime().toString("yyyy-MM-dd") + "，";
-    //     QString description3 = "由三维工业测量软件开发组负责执行和分析。";
-
-    //     int description1Width = contentMetrics.horizontalAdvance(description1)*3;
-    //     int description2Width = contentMetrics.horizontalAdvance(description2)*3;
-    //     int description3Width = contentMetrics.horizontalAdvance(description3)*3;
-
-    //     painter.drawText((PDFwidth - description1Width) / 2, PDFheight-yDistance/2*3-lessY, description1);
-    //     painter.drawText((PDFwidth - description2Width) / 2, PDFheight-yDistance/2*2-lessY, description2);
-    //     painter.drawText((PDFwidth - description3Width) / 2, PDFheight-yDistance/2-lessY, description3);
-
-    //     pdf.newPage();
-    // }
-
-    // // 目录
-    // {
-    //     QFont subtitleFont("Arial", 20);
-    //     painter.setFont(subtitleFont);
-    //     QFontMetrics subtitleMetrics(subtitleFont);
-    //     QString description="目录";
-    //     int descrtptionWidth=subtitleMetrics.horizontalAdvance(description)*3;
-    //     painter.resetTransform();
-    //     painter.translate(50, 50);
-    //     painter.setFont(QFont("Arial", 25, QFont::Bold));
-
-    //     int startY=500;
-    //     int startX=300;
-    //     painter.drawText((PDFwidth- descrtptionWidth)/2, startY, "目录");
-    //     painter.setFont(QFont("Arial", 20));
-    //     int moreY=500;
-    //     int yDistance=240;
-
-    //     painter.drawText(startX, startY+moreY, "1. 测量数据概览");
-    //     painter.drawText(startX,startY+moreY+ yDistance, "2. 数据分析");
-    //     painter.drawText(startX,startY+moreY+ yDistance*2, "3. 测量结果图");
-    //     painter.drawText(startX,startY+moreY + yDistance*3, "4. 结论与建议");
-    //     painter.drawText(startX,startY+moreY + yDistance*4, "5. 附录");
-
-    //     pdf.newPage();
-    // }
-
-    // // 测量数据概览
-    // {
-    //     painter.resetTransform();
-    //     painter.translate(50, 50);
-    //     painter.setFont(QFont("Arial", 14, QFont::Bold));
-    //     painter.drawText(0, 0, "1. 测量数据概览");
-
-    //     int tableX = 0;
-    //     int tableY = 40;
-
-
-    //     // 绘制表格边框
-    //     painter.setPen(Qt::black);
-
-
-    //     // 绘制表头
-    //     painter.setFont(QFont("Arial", 12, QFont::Bold));
-    //     painter.drawText(tableX + 20, tableY + 30, "类型");
-    //     painter.drawText(tableX + xDistance+ 20, tableY + 30, "名称");
-    //     painter.drawText(tableX + xDistance*2+ 20, tableY + 30, "数值");
-    //     painter.drawText(tableX + xDistance*3+ 20, tableY + 30, "上公差");
-    //     painter.drawText(tableX + xDistance*4+ 20, tableY + 30, "下公差");
-    //     painter.drawText(tableX + xDistance*5+ 20,tableY + 30,"是否合格");
-
-    //     painter.setFont(QFont("Arial", 12));
-    //     int yPos = 90;
-    //     bool MoreThanOne=false;
-    //     for (const QList<QString>& rowData : dataAll) {
-    //         if(yPos+yDistance>PDFheight){
-    //             if(MoreThanOne==false)
-    //                 painter.drawRect(tableX, tableY+40,tableX + xDistance*6+40,PDFheight-20);
-    //             else
-    //                 painter.drawRect(tableX, 10,tableX + xDistance*6+40, yPos);
-
-    //             pdf.newPage();
-    //             painter.drawText(tableX ,  0, "类型");
-    //             painter.drawText(tableX + xDistance, 0, "名称");
-    //             painter.drawText(tableX + xDistance*2,  0, "数值");
-    //             painter.drawText(tableX + xDistance*3, 0, "上公差");
-    //             painter.drawText(tableX + xDistance*4,  0, "下公差");
-    //             painter.drawText(tableX + xDistance*5,  0, "是否合格");
-    //             yPos=30;
-    //             MoreThanOne=true;
-    //         }
-    //         int count=0;
-    //         for (const QString& cellData : rowData) {
-    //              painter.drawText(tableX + 20+count*xDistance, tableY +yPos, cellData);
-    //              count++;
-    //         }
-
-    //         yPos += yDistance;
-    //     }
-    //     if(MoreThanOne){
-    //         painter.drawRect(tableX, 10,tableX + xDistance*6+40, yPos);
-    //     }else{
-    //         painter.drawRect(tableX, tableY+40,tableX + xDistance*6+40, yPos);
-    //     }
-
-    //     pdf.newPage();
-    // }
-
-    // // 数据分析
-    // {
-
-        //     painter.resetTransform();
-        //     painter.translate(50, 50);
-        //     painter.setFont(QFont("Arial", 14, QFont::Bold));
-        //     painter.drawText(0, 0, "2. 数据分析（不合格参数）");
-
-    //     int tableX = 0;
-    //     int tableY = 40;
-
-
-    //     // 绘制表格边框
-    //     painter.setPen(Qt::black);
-
-
-    //     // 绘制表头
-    //     painter.setFont(QFont("Arial", 12, QFont::Bold));
-    //     painter.drawText(tableX + 20, tableY + 30, "类型");
-    //     painter.drawText(tableX + xDistance+ 20, tableY + 30, "名称");
-    //     painter.drawText(tableX + xDistance*2+ 20, tableY + 30, "数值");
-    //     painter.drawText(tableX + xDistance*3+ 20, tableY + 30, "上公差");
-    //     painter.drawText(tableX + xDistance*4+ 20, tableY + 30, "下公差");
-    //     painter.drawText(tableX + xDistance*5+ 20,tableY + 30,"是否合格");
-
-    //     painter.setFont(QFont("Arial", 12));
-    //     int yPos = 90;
-    //     bool MoreThanOne=false;
-    //     for (const QList<QString>& rowData : dataNotAccepted) {
-    //         if(yPos+yDistance>PDFheight){
-    //             if(MoreThanOne==false)
-    //                 painter.drawRect(tableX, tableY+40,tableX + xDistance*6+40,PDFheight-20);
-    //             else
-    //                 painter.drawRect(tableX, 10,tableX + xDistance*6+40, yPos);
-
-    //             pdf.newPage();
-    //             painter.drawText(tableX ,  0, "类型");
-    //             painter.drawText(tableX + xDistance, 0, "名称");
-    //             painter.drawText(tableX + xDistance*2,  0, "数值");
-    //             painter.drawText(tableX + xDistance*3, 0, "上公差");
-    //             painter.drawText(tableX + xDistance*4,  0, "下公差");
-    //             painter.drawText(tableX + xDistance*5,  0, "是否合格");
-    //             yPos=30;
-    //             MoreThanOne=true;
-    //         }
-    //         int count=0;
-    //         for (const QString& cellData : rowData) {
-    //             painter.drawText(tableX + 20+count*xDistance, tableY +yPos, cellData);
-    //             count++;
-    //         }
-
-    //         yPos += yDistance;
-    //     }
-    //     if(MoreThanOne){
-    //         painter.drawRect(tableX, 10,tableX + xDistance*6+40, yPos);
-    //     }else{
-    //         painter.drawRect(tableX, tableY+40,tableX + xDistance*6+40, yPos);
-    //     }
-
-    //     pdf.newPage();
-
-    // }
-
-    // // 测量结果图
-    // {
-    //     painter.resetTransform();
-    //     painter.translate(50, 50);
-    //     painter.setFont(QFont("Arial", 14, QFont::Bold));
-    //     painter.drawText(0, 0, "3. 测量结果图");
-    //     painter.drawText(0, 60, "（1）全局对比");
-    //     int imageX = 0;
-    //     int imageY = 50+30;
-    //     int imageWidth = 1422;
-    //     int imageHeight = 1002;
-    //     int count=1;
-    //     for (const QString &imagePath : imagePaths) {
-    //         QImage image(imagePath);
-    //         if (!image.isNull()) {
-    //             if (imageY + image.height() > pdf.height() - 100) {
-    //                 pdf.newPage();
-    //                 painter.resetTransform();
-    //                 painter.translate(50, 50);
-    //                 painter.setFont(QFont("Arial", 12));
-    //                 imageY = 50;
-    //             }
-    //             painter.drawImage((PDFwidth-imageWidth)/2, imageY, image.scaled(imageWidth, imageHeight));
-    //             painter.drawText((PDFwidth-imageWidth)/2+400, imageY + imageHeight + 50, "图 " + QString::number(count) + ": 全局对比结果图");
-    //             imageY += imageHeight + 60;
-    //             count++;
-    //         }
-    //     }
-
-    //     pdf.newPage();
-    // }
-    // {
-    //     painter.resetTransform();
-    //     painter.translate(50, 50);
-    //     painter.setFont(QFont("Arial", 14, QFont::Bold));
-    //     painter.drawText(0, 0, "（2）局部对比");
-
-    //     int imageX = 0;
-    //     int imageY = 50;
-    //     int imageWidth = 1422;
-    //     int imageHeight = 1002;
-    //     int count=1;
-    //     for (const QString &imagePath : imagePaths_part) {
-    //         QImage image(imagePath);
-    //         if (!image.isNull()) {
-    //             if (imageY + image.height() > pdf.height() - 100) {
-    //                 pdf.newPage();
-    //                 painter.resetTransform();
-    //                 painter.translate(50, 50);
-    //                 painter.setFont(QFont("Arial", 12));
-    //                 imageY = 50;
-    //             }
-    //             painter.drawImage((PDFwidth-imageWidth)/2, imageY, image.scaled(imageWidth, imageHeight));
-    //             painter.drawText((PDFwidth-imageWidth)/2+400, imageY + imageHeight + 50, "图 " + QString::number(count) + ": 局部对比结果图");
-    //             imageY += imageHeight + 60;
-    //             count++;
-    //         }
-    //     }
-
-    //     pdf.newPage();
-    // }
-
-    // // 结论与建议
-    // {
-    //     painter.resetTransform();
-    //     painter.translate(50, 50);
-    //     painter.setFont(QFont("Arial", 14, QFont::Bold));
-    //     painter.drawText(0, 0, "4. 结论与建议");
-
-    //     painter.setFont(QFont("Arial", 12));
-    //     painter.drawText(0, yDistance, "根据测量数据和分析结果，我们得出以下结论:");
-    //     painter.drawText(0, yDistance*2, "-共检测出"+ QString::number(count_not_accepted)+"个不合格的指标");
-    //     painter.drawText(0, yDistance*3, "-共检测出"+ QString::number(count_accpted)+"个合格的指标");
-
-    //     pdf.newPage();
-    // }
-
-    // // 附录
-    // {
-    //     painter.resetTransform();
-    //     painter.translate(50, 50);
-    //     painter.setFont(QFont("Arial", 14, QFont::Bold));
-    //     painter.drawText(0, 0, "5. 附录");
-
-    //     painter.setFont(QFont("Arial", 12));
-    //     painter.drawText(0, yDistance, "参考文献:");
-    //     painter.drawText(0, yDistance*2, "- 3d工业测量软件开发组测量标准");
-    //     painter.drawText(0, yDistance*3, "- 测量系统用户手册");
-
-    // }
-
-    // painter.end();
-
-    // QString logInfo="Pdf保存成功";
-    // m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
-    // lastCreatedPdfFile=filePath;
-    // m_savePdf=true;
+
+     QString logInfo1="Pdf开始保存";
+     m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo1);
+
+    QString path= getOutputPath("pdf");
+    QString name=getTimeString();
+    QString filePath=path+"/"+name+".pdf";
+
+
+
+    // // 插入纯文本数据
+    auto& entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
+    QList<QList<QString>> dataAll;
+    QList<QList<QString>> dataAccepted;
+    QList<QList<QString>>  dataNotAccepted;
+
+    int count_accpted=0,count_not_accepted=0;
+
+    ExtractData(entitylist, dataAll, dataAccepted,dataNotAccepted);
+
+    count_accpted=dataAccepted.size();
+    count_not_accepted=dataNotAccepted.size();
+
+
+    QPdfWriter pdf(filePath);
+
+    pdf.setPageSize(QPageSize(QPageSize::A4));
+    pdf.setResolution(300);
+    pdf.setTitle("专业测量报告");
+
+    QPainter painter;
+    if (painter.begin(&pdf)==false){
+        QString logInfo="Pdf打开失败,请关闭Pdf重试";
+        m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
+        return ;
+    }
+    painter.setRenderHint(QPainter::Antialiasing);
+
+
+
+    int PDFheight= pdf.height();
+    int PDFwidth=pdf.width();
+
+
+    // 设置字体
+    QFont font;
+    font.setFamily("Arial");
+    font.setPointSize(12);
+    painter.setFont(font);
+    int yDistance=60;
+    int xDistance=300;
+
+    // 封面页
+    {
+        painter.translate(50, 50); // 左上角偏移
+        painter.setPen(Qt::black);
+
+        int PDFwidth = pdf.width();
+        int yDistance = 240;
+
+        // 设置标题
+        QFont titleFont("Arial", 35, QFont::Bold);
+        painter.setFont(titleFont);
+        QString title = "工业测量报告";
+        QFontMetrics titleMetrics(titleFont);
+        int titleWidth = titleMetrics.horizontalAdvance(title)*3;
+
+        // 绘制图片
+        QImage image(":/style/ruler.png");
+        QImage scaledImage = image.scaled(200, 100);
+        int imageWidth = scaledImage.width();
+        int imageHeight = scaledImage.height();
+
+        // 计算标题和图片的总宽度
+        int totalWidth = titleWidth + imageWidth + 20; // 20是标题和图片之间的间距
+        int startX = (PDFwidth - totalWidth) / 2;
+        int startY=500;
+
+        painter.drawText(startX, startY, title);
+        painter.drawImage(startX + titleWidth + 20, startY-imageHeight/2 , scaledImage);
+        int moreY=500;
+        // 设置副标题
+        QFont subtitleFont("Arial", 20);
+        painter.setFont(subtitleFont);
+        QFontMetrics subtitleMetrics(subtitleFont);
+        QString project = "测量项目: 3D 测量系统";
+        QString date = "测量日期: " + QDateTime::currentDateTime().toString("yyyy-MM-dd");
+        QString unit = "测量单位: 三维工业测量软件开发组";
+        QString Description1="";
+
+        int projectWidth = subtitleMetrics.horizontalAdvance(project)*3;
+        int dateWidth = subtitleMetrics.horizontalAdvance(date)*3;
+        int unitWidth = subtitleMetrics.horizontalAdvance(unit)*3;
+
+        painter.drawText((PDFwidth - unitWidth) / 2, yDistance+startY+moreY, project);
+        painter.drawText((PDFwidth - unitWidth) / 2, 2 * yDistance+startY+moreY, date);
+        painter.drawText((PDFwidth - unitWidth) / 2, 3 * yDistance+startY+moreY, unit);
+        int lessY=300;
+        // 为了使内容美观，增加一个水平线
+        painter.drawLine(0, PDFheight-yDistance/2*4-lessY, PDFwidth - 100, PDFheight-yDistance/2*4-lessY);
+
+        // 添加一些描述性文本
+        QFont contentFont("Arial", 16);
+        painter.setFont(contentFont);
+        QFontMetrics contentMetrics(contentFont);
+        QString description1 = "本报告详细记录了使用3D测量系统进行的测量项目。";
+        QString description2 = "测量日期为" + QDateTime::currentDateTime().toString("yyyy-MM-dd") + "，";
+        QString description3 = "由三维工业测量软件开发组负责执行和分析。";
+
+        int description1Width = contentMetrics.horizontalAdvance(description1)*3;
+        int description2Width = contentMetrics.horizontalAdvance(description2)*3;
+        int description3Width = contentMetrics.horizontalAdvance(description3)*3;
+
+        painter.drawText((PDFwidth - description1Width) / 2, PDFheight-yDistance/2*3-lessY, description1);
+        painter.drawText((PDFwidth - description2Width) / 2, PDFheight-yDistance/2*2-lessY, description2);
+        painter.drawText((PDFwidth - description3Width) / 2, PDFheight-yDistance/2-lessY, description3);
+
+        pdf.newPage();
+    }
+
+    // 目录
+    {
+        QFont subtitleFont("Arial", 20);
+        painter.setFont(subtitleFont);
+        QFontMetrics subtitleMetrics(subtitleFont);
+        QString description="目录";
+        int descrtptionWidth=subtitleMetrics.horizontalAdvance(description)*3;
+        painter.resetTransform();
+        painter.translate(50, 50);
+        painter.setFont(QFont("Arial", 25, QFont::Bold));
+
+        int startY=500;
+        int startX=300;
+        painter.drawText((PDFwidth- descrtptionWidth)/2, startY, "目录");
+        painter.setFont(QFont("Arial", 20));
+        int moreY=500;
+        int yDistance=240;
+
+        painter.drawText(startX, startY+moreY, "1. 测量数据概览");
+        painter.drawText(startX,startY+moreY+ yDistance, "2. 数据分析");
+        painter.drawText(startX,startY+moreY+ yDistance*2, "3. 测量结果图");
+        painter.drawText(startX,startY+moreY + yDistance*3, "4. 结论与建议");
+        painter.drawText(startX,startY+moreY + yDistance*4, "5. 附录");
+
+        pdf.newPage();
+    }
+
+    // 测量数据概览
+    {
+        painter.resetTransform();
+        painter.translate(50, 50);
+        painter.setFont(QFont("Arial", 14, QFont::Bold));
+        painter.drawText(0, 0, "1. 测量数据概览");
+
+        int tableX = 0;
+        int tableY = 40;
+
+
+        // 绘制表格边框
+        painter.setPen(Qt::black);
+
+
+        // 绘制表头
+        painter.setFont(QFont("Arial", 12, QFont::Bold));
+        painter.drawText(tableX + 20, tableY + 30, "类型");
+        painter.drawText(tableX + xDistance+ 20, tableY + 30, "名称");
+        painter.drawText(tableX + xDistance*2+ 20, tableY + 30, "数值");
+        painter.drawText(tableX + xDistance*3+ 20, tableY + 30, "上公差");
+        painter.drawText(tableX + xDistance*4+ 20, tableY + 30, "下公差");
+        painter.drawText(tableX + xDistance*5+ 20,tableY + 30,"是否合格");
+
+        painter.setFont(QFont("Arial", 12));
+        int yPos = 90;
+        bool MoreThanOne=false;
+        for (const QList<QString>& rowData : dataAll) {
+            if(yPos+yDistance>PDFheight){
+                if(MoreThanOne==false)
+                    painter.drawRect(tableX, tableY+40,tableX + xDistance*6+40,PDFheight-20);
+                else
+                    painter.drawRect(tableX, 10,tableX + xDistance*6+40, yPos);
+
+                pdf.newPage();
+                painter.drawText(tableX ,  0, "类型");
+                painter.drawText(tableX + xDistance, 0, "名称");
+                painter.drawText(tableX + xDistance*2,  0, "数值");
+                painter.drawText(tableX + xDistance*3, 0, "上公差");
+                painter.drawText(tableX + xDistance*4,  0, "下公差");
+                painter.drawText(tableX + xDistance*5,  0, "是否合格");
+                yPos=30;
+                MoreThanOne=true;
+            }
+            int count=0;
+            for (const QString& cellData : rowData) {
+                 painter.drawText(tableX + 20+count*xDistance, tableY +yPos, cellData);
+                 count++;
+            }
+
+            yPos += yDistance;
+        }
+        if(MoreThanOne){
+            painter.drawRect(tableX, 10,tableX + xDistance*6+40, yPos);
+        }else{
+            painter.drawRect(tableX, tableY+40,tableX + xDistance*6+40, yPos);
+        }
+
+        pdf.newPage();
+    }
+
+    // 数据分析
+    {
+
+            painter.resetTransform();
+            painter.translate(50, 50);
+            painter.setFont(QFont("Arial", 14, QFont::Bold));
+            painter.drawText(0, 0, "2. 数据分析（不合格参数）");
+
+        int tableX = 0;
+        int tableY = 40;
+
+
+        // 绘制表格边框
+        painter.setPen(Qt::black);
+
+
+        // 绘制表头
+        painter.setFont(QFont("Arial", 12, QFont::Bold));
+        painter.drawText(tableX + 20, tableY + 30, "类型");
+        painter.drawText(tableX + xDistance+ 20, tableY + 30, "名称");
+        painter.drawText(tableX + xDistance*2+ 20, tableY + 30, "数值");
+        painter.drawText(tableX + xDistance*3+ 20, tableY + 30, "上公差");
+        painter.drawText(tableX + xDistance*4+ 20, tableY + 30, "下公差");
+        painter.drawText(tableX + xDistance*5+ 20,tableY + 30,"是否合格");
+
+        painter.setFont(QFont("Arial", 12));
+        int yPos = 90;
+        bool MoreThanOne=false;
+        for (const QList<QString>& rowData : dataNotAccepted) {
+            if(yPos+yDistance>PDFheight){
+                if(MoreThanOne==false)
+                    painter.drawRect(tableX, tableY+40,tableX + xDistance*6+40,PDFheight-20);
+                else
+                    painter.drawRect(tableX, 10,tableX + xDistance*6+40, yPos);
+
+                pdf.newPage();
+                painter.drawText(tableX ,  0, "类型");
+                painter.drawText(tableX + xDistance, 0, "名称");
+                painter.drawText(tableX + xDistance*2,  0, "数值");
+                painter.drawText(tableX + xDistance*3, 0, "上公差");
+                painter.drawText(tableX + xDistance*4,  0, "下公差");
+                painter.drawText(tableX + xDistance*5,  0, "是否合格");
+                yPos=30;
+                MoreThanOne=true;
+            }
+            int count=0;
+            for (const QString& cellData : rowData) {
+                painter.drawText(tableX + 20+count*xDistance, tableY +yPos, cellData);
+                count++;
+            }
+
+            yPos += yDistance;
+        }
+        if(MoreThanOne){
+            painter.drawRect(tableX, 10,tableX + xDistance*6+40, yPos);
+        }else{
+            painter.drawRect(tableX, tableY+40,tableX + xDistance*6+40, yPos);
+        }
+
+        pdf.newPage();
+
+    }
+
+    // 测量结果图
+    {
+        painter.resetTransform();
+        painter.translate(50, 50);
+        painter.setFont(QFont("Arial", 14, QFont::Bold));
+        painter.drawText(0, 0, "3. 测量结果图");
+        painter.drawText(0, 60, "（1）全局对比");
+        int imageX = 0;
+        int imageY = 50+30;
+        int imageWidth = 1422;
+        int imageHeight = 1002;
+        int count=1;
+        for (const QString &imagePath : imagePaths) {
+            QImage image(imagePath);
+            if (!image.isNull()) {
+                if (imageY + image.height() > pdf.height() - 100) {
+                    pdf.newPage();
+                    painter.resetTransform();
+                    painter.translate(50, 50);
+                    painter.setFont(QFont("Arial", 12));
+                    imageY = 50;
+                }
+                painter.drawImage((PDFwidth-imageWidth)/2, imageY, image.scaled(imageWidth, imageHeight));
+                painter.drawText((PDFwidth-imageWidth)/2+400, imageY + imageHeight + 50, "图 " + QString::number(count) + ": 全局对比结果图");
+                imageY += imageHeight + 60;
+                count++;
+            }
+        }
+
+        pdf.newPage();
+    }
+    {
+        painter.resetTransform();
+        painter.translate(50, 50);
+        painter.setFont(QFont("Arial", 14, QFont::Bold));
+        painter.drawText(0, 0, "（2）局部对比");
+
+        int imageX = 0;
+        int imageY = 50;
+        int imageWidth = 1422;
+        int imageHeight = 1002;
+        int count=1;
+        for (const QString &imagePath : imagePaths_part) {
+            QImage image(imagePath);
+            if (!image.isNull()) {
+                if (imageY + image.height() > pdf.height() - 100) {
+                    pdf.newPage();
+                    painter.resetTransform();
+                    painter.translate(50, 50);
+                    painter.setFont(QFont("Arial", 12));
+                    imageY = 50;
+                }
+                painter.drawImage((PDFwidth-imageWidth)/2, imageY, image.scaled(imageWidth, imageHeight));
+                painter.drawText((PDFwidth-imageWidth)/2+400, imageY + imageHeight + 50, "图 " + QString::number(count) + ": 局部对比结果图");
+                imageY += imageHeight + 60;
+                count++;
+            }
+        }
+
+        pdf.newPage();
+    }
+
+    // 结论与建议
+    {
+        painter.resetTransform();
+        painter.translate(50, 50);
+        painter.setFont(QFont("Arial", 14, QFont::Bold));
+        painter.drawText(0, 0, "4. 结论与建议");
+
+        painter.setFont(QFont("Arial", 12));
+        painter.drawText(0, yDistance, "根据测量数据和分析结果，我们得出以下结论:");
+        painter.drawText(0, yDistance*2, "-共检测出"+ QString::number(count_not_accepted)+"个不合格的指标");
+        painter.drawText(0, yDistance*3, "-共检测出"+ QString::number(count_accpted)+"个合格的指标");
+
+        pdf.newPage();
+    }
+
+    // 附录
+    {
+        painter.resetTransform();
+        painter.translate(50, 50);
+        painter.setFont(QFont("Arial", 14, QFont::Bold));
+        painter.drawText(0, 0, "5. 附录");
+
+        painter.setFont(QFont("Arial", 12));
+        painter.drawText(0, yDistance, "参考文献:");
+        painter.drawText(0, yDistance*2, "- 3d工业测量软件开发组测量标准");
+        painter.drawText(0, yDistance*3, "- 测量系统用户手册");
+
+    }
+
+    painter.end();
+
+    QString logInfo="Pdf保存成功";
+    m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
+    lastCreatedPdfFile=filePath;
+    m_savePdf=true;
 }
 
 
@@ -1835,8 +1839,8 @@ void   ToolWidget::onSaveExcel(){
     QString logInfo1="Excel开始保存";
     m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo1);
 
-    QString path= getOutputPath("excel");
-    QString name=getTimeString();
+    QString path= getOutputPath("excellA");
+    QString name="检测点信息_"+getTimeString();
 
     QString filePath=path+"/"+name+".xlsx";
     // QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "", QString("Excel(*.xlsx *.xls)"));
@@ -1845,7 +1849,7 @@ void   ToolWidget::onSaveExcel(){
     // }
 
     QStringList headers;
-    headers << "Type" << "检测点" <<"检测数值"<< "Max" << "Min";
+    headers << "检测点序号" <<"检测数值"<< "Max" << "Min"<<"是否合格";
     int col = headers.size();
     QList<QList<QString>> dataAll;
     auto& entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
@@ -1882,7 +1886,7 @@ void   ToolWidget::onSaveExcel(){
     foreach(QList<QString> inLst, dataAll) {
         for (int j = 0; j < headers.size(); j++) {
             QAxObject *cell = workSheet->querySubObject("Cells(int, int)", curRow, j + 1);
-            cell->dynamicCall("SetValue(const QString&)", inLst[j]);
+            cell->dynamicCall("SetValue(const QString&)", inLst[j+1]);
         }
         curRow++;
     }
@@ -2447,11 +2451,11 @@ void ToolWidget::createDistanceMeasurementReport()
 
         // 10. 保存文档
 
-        QString path= getOutputPath("word");
+        QString path= getOutputPath("叶片检测报告");
         QString name=getTimeString();
 
         QString filePath=path+"/"+name+".docx";
-        QString defaultName = "DistanceMeasureReport_" + getTimeString() + ".docx";
+        QString defaultName = "分析报告_" + getTimeString() + ".docx";
         QString fileName =path+"/" +defaultName;
 
         if (!fileName.isEmpty()) {
@@ -2478,6 +2482,98 @@ void ToolWidget::createDistanceMeasurementReport()
             }
             word->dynamicCall("Quit()");
         }
+    }
+
+    {
+        QString path= getOutputPath("excell1");
+        QString name="误差信息_"+getTimeString();
+
+        QString filePath=path+"/"+name+".xlsx";
+        // QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "", QString("Excel(*.xlsx *.xls)"));
+        // if (filePath.isEmpty()){
+        //     return ;
+        // }
+
+        QStringList headers;
+        headers << "工件名称" << "最大误差" <<"最小误差"<< "平均误差" <<"是否合格";
+        int col = headers.size();
+        QList<QList<QString>> dataAll;
+        auto& entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
+        //dataAll.append(headers);
+
+        {
+        QList<QString>inList;
+        inList<<data_pointCloud_size.name<<data_pointCloud_size.max_error<<data_pointCloud_size.min_error<<data_pointCloud_size.average_error;
+        if(data_pointCloud_size.max_error.toDouble()<0.001){
+            inList<<"合格";
+        }else{
+            inList<<"不合格";
+        }
+        dataAll.append(inList);
+        }
+        for(const Size_MeasurementData& data : dataAll_size){
+            QList<QString>inList;
+            inList<<data.name<<data.max_error<<data.min_error<<data.average_error;
+            if(data.max_error.toDouble()<0.001){
+                inList<<"合格";
+            }else{
+                inList<<"不合格";
+            }
+            dataAll.append(inList);
+        }
+        QAxObject excel("Excel.Application");						  //加载Excel驱动
+        excel.dynamicCall("SetVisible (bool Visible)", "false");	  //不显示窗体
+        excel.setProperty("DisplayAlerts", false);					  //不显示任何警告信息。如果为true那么在关闭是会出现类似“文件已修改，是否保存”的提示
+
+        QAxObject *workBooks = excel.querySubObject("WorkBooks");	  //获取工作簿集合
+        workBooks->dynamicCall("Add");								  //新建一个工作簿
+        QAxObject *workBook = excel.querySubObject("ActiveWorkBook"); //获取当前工作簿
+        //QAxObject *workBook = excel.querySubObject("Open(QString&)", filePath); //获取当前工作簿
+        QAxObject *workSheet = workBook->querySubObject("Sheets(int)", 1); //设置为 获取第一页 数据
+
+
+        QAxObject *usedRange = workSheet->querySubObject("UsedRange");
+        QAxObject *font = usedRange->querySubObject("Font");
+        font->setProperty("Name", "宋体");  // 设置字体为宋体
+        font->setProperty("Size", 11);     // 可选：设置字号（默认 11 号）
+
+        // 只设置列标题（无其他格式）
+        // 设置列标题（仅加粗，无其他格式）
+        for (int i = 0; i < col; i++)
+        {
+            QAxObject *cell = workSheet->querySubObject("Cells(int, int)", 1, i + 1);
+            cell->dynamicCall("SetValue(const QString&)", headers[i]);
+            //cell->querySubObject("Font")->setProperty("Bold", true); // 仅保留加粗
+        }
+
+        // 处理数据（从第2行开始）
+        int curRow = 2;
+        foreach(QList<QString> inLst, dataAll) {
+            for (int j = 0; j < headers.size(); j++) {
+                QAxObject *cell = workSheet->querySubObject("Cells(int, int)", curRow, j + 1);
+                cell->dynamicCall("SetValue(const QString&)", inLst[j]);
+            }
+            curRow++;
+        }
+        // 自动调整列宽
+        for (int i = 0; i < col; i++) {
+            QString columnName;
+            QString cars;
+            if (i < 26) {
+                cars = QChar(i + 'A');
+            } else {
+                cars = QChar(i / 26 - 1 + 'A');
+                cars.append(QChar(i % 26 + 'A'));
+            }
+            columnName = cars + ":" + cars;
+            QAxObject *column = workSheet->querySubObject("Columns(const QString&)", columnName);
+            column->dynamicCall("AutoFit()");
+        }
+
+        //保存至filepath，注意一定要用QDir::toNativeSeparators将路径中的"/"转换为"\"，不然一定保存不了。
+        workBook->dynamicCall("SaveAs(const QString&)", QDir::toNativeSeparators(filePath));
+        workBook->dynamicCall("Close()");	//关闭工作簿
+        excel.dynamicCall("Quit()");		//关闭excel
     }
 
 
@@ -3652,8 +3748,9 @@ void ToolWidget::createFolder(QString path){
 }
 
 
+
 QString ToolWidget::getOutputPath(QString kind){
-    return "D:/output/" + kind;
+    return m_savePath +"/"+ kind;
 
 }
 QDataStream& ToolWidget::serializeEntityList(QDataStream& out, const QVector<CEntity*>& entityList){
@@ -3853,4 +3950,59 @@ void ToolWidget::SaveImage(CEntity* entity,Size_MeasurementData* pointCloudData)
     //关闭文本框
     m_pMainWin->getPWinElementListWidget()->closeInfotext();
     m_pMainWin->getPWinVtkWidget()->UpdateInfo();
+}
+
+
+void ToolWidget::createFolderWithDialog()
+{
+        QWidget* parent = nullptr;
+        const QString& defaultDir = QDir::homePath();
+        const QString& defaultFolderName = "NewFolder";
+
+    // 弹出文件选择对话框，让用户选择保存位置
+        QString selectedDir = QFileDialog::getExistingDirectory(
+        parent,
+        QObject::tr("选择文件夹保存位置"),
+        defaultDir,
+        QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks
+        );
+
+
+        if (selectedDir.isEmpty()) {
+            // 用户取消了对话框
+            return ;
+        }
+
+        bool ok;
+        QString folderName = QInputDialog::getText(
+            parent,
+            QObject::tr("输入文件夹名称"),
+            QObject::tr("请输入文件夹名称:"),
+            QLineEdit::Normal,
+            defaultFolderName,
+            &ok
+            );
+
+    if (!ok || folderName.isEmpty()) {
+        // 用户取消了输入或输入为空
+        return ;
+    }
+
+    // 构建完整的文件夹路径
+    QString newFolderPath = QDir(selectedDir).filePath(folderName);
+
+    // 检查文件夹是否已存在
+    if (QDir(newFolderPath).exists()) {
+       //m_pMainWin->getPWinVtkPresetWidget()->setWidget("新建文件夹并入已有文件夹");
+    }
+
+    // 创建文件夹
+    m_savePath=newFolderPath;
+    createFolder(m_savePath);
+    createFolder(getOutputPath("excell1"));
+    createFolder(getOutputPath("excellA"));
+    createFolder(getOutputPath("image"));
+    createFolder(getOutputPath("叶片检测报告"));
+    m_pMainWin->getPWinVtkPresetWidget()->setWidget("已创建文件夹"+getOutputPath(""));
+
 }
