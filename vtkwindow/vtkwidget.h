@@ -147,7 +147,7 @@ public:
     void FocusOnActor(CEntity* entity); // 设置相机以聚焦指定的actor
 
     int adjustMeanK(size_t pointCount); // 估算滤波的近邻点数量
-    double adjustStddevThresh(size_t pointCount); // 估算离群点阈值，用于统计滤波
+    double adjustStddevThresh(pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_cloud, float voxelSize); // 估算离群点阈值，用于统计滤波
     float calculateThreshold(pcl::PointCloud<pcl::PointXYZRGB>::Ptr tagCloud);
     int FilterCount(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud); // 计算去噪次数
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr onStatisticalFilter(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud);
@@ -156,19 +156,9 @@ public:
                                                     pcl::PointCloud<pcl::PointXYZRGB>::Ptr& tagCloud); // 重载的滤波方法，用于在对齐中调用
     void onCompare();// 比较两个点云
 
-    // 用于配准的一系列方法
-    pair<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, pcl::PointCloud<pcl::FPFHSignature33>::Ptr> PreprocessPointCloud(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &pcd);
-    pcl::Registration<pcl::PointXYZRGB, pcl::PointXYZRGB>::Ptr ExecuteGlobalRegistration(
-        const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &source_down, const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &target_down,
-        const pcl::PointCloud<pcl::FPFHSignature33>::Ptr &source_fpfh, const pcl::PointCloud<pcl::FPFHSignature33>::Ptr &target_fpfh, double voxel_size);
-    tuple<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, pcl::PointXYZRGB, pcl::PointXYZRGB> GetPointCloudBoundingBox(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &pcd);
-    tuple<Eigen::Vector4f, Eigen::Vector4f> ExpandBoundingBox(
-        const Eigen::Vector4f &min_point, const Eigen::Vector4f &max_point, double margin_ratio);
-    tuple<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, Eigen::Vector4f, Eigen::Vector4f> CropSceneWithTemplateBbox(
-        const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &target, const Eigen::Vector4f &min_point, const Eigen::Vector4f &max_point);
-    tuple<pcl::PointCloud<pcl::PointXYZRGB>::Ptr, Eigen::Matrix4f, double> GlobalRegistrationOnly(
-    const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &template_cloud, const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &scene_cloud, double voxel_size = -1.0);
-    void onAlign(); // 接口
+    void onAlign(); // 点云模板匹配
+    void onICP(Eigen::Matrix4f transf, pcl::PointCloud<pcl::PointXYZRGB>::Ptr scenCloud,
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr tagCloud); // 配准
 
     void poissonReconstruction(); // 泊松重建
     void sacAlign(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud1,
