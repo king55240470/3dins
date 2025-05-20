@@ -158,6 +158,9 @@ void ElementListWidget::CreateEllipse(CObject*obj)
     if(obj->GetUniqueType()==enPointCloud){
         QIcon icon(":/component/construct/pointCloud.png");
         item->setIcon(0, icon);
+        if(obj->GetObjectCName().contains("stand")){
+            setModelIndex(m_pMainWin->getEntityListMgr()->getEntityList().size());
+        }
     }
     if(obj->GetUniqueType()==enAngle){
         QIcon icon(":/component/construct/angle.png");
@@ -616,10 +619,15 @@ void ElementListWidget::startprocess()
     }
 }
 
-void ElementListWidget::onAddElement(pcl::PointCloud<pcl::PointXYZRGB>::Ptr could)
+void ElementListWidget::onAddElement(pcl::PointCloud<pcl::PointXYZRGB>::Ptr could,QString type)
 {
     if (stateMachine->configuration().contains(runningState)) {
         pointCouldlists.enqueue(could);
+        filetypelists.enqueue(type);
+        m_pMainWin->peopleOpenfile = false;
+        m_pMainWin->filePathChange = "C:/Users/Administrator/Desktop/model/model"+filetypelists.dequeue();
+        m_pMainWin->openFile();
+        m_pMainWin->peopleOpenfile = true;
         if(isProcessing==false){
             isProcessing=true;
             CompareCloud();
@@ -628,6 +636,7 @@ void ElementListWidget::onAddElement(pcl::PointCloud<pcl::PointXYZRGB>::Ptr coul
         }
     }else{
         pointCouldlists.enqueue(could);
+        filetypelists.enqueue(type);
     }
 }
 
@@ -824,7 +833,17 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
             // m_pMainWin->getPWinToolWidget()->onSavePdf();
             // m_pMainWin->getPWinToolWidget()->setauto(false);
         }
+        //删除自动化打开的模型文件
+        // for(int i =0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
+        //     m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
+        // }
+        m_pMainWin->getEntityListMgr()->getEntityList()[modelIndex]->SetSelected(true);
+        onDeleteEllipse();
         if(!pointCouldlists.empty()){
+            m_pMainWin->peopleOpenfile = false;
+            m_pMainWin->filePathChange = "C:/Users/Administrator/Desktop/model/model"+filetypelists.dequeue();
+            m_pMainWin->openFile();
+            m_pMainWin->peopleOpenfile = true;
             CompareCloud();
             updateDistance();
         }else{
@@ -1156,6 +1175,11 @@ void ElementListWidget::createrule()
 bool ElementListWidget::getIsProcess()
 {
     return isProcessing;
+}
+
+void ElementListWidget::setModelIndex(int index)
+{
+    modelIndex = index;
 }
 
 QVector<CPointCloud *> ElementListWidget::getisComparsionCloud()

@@ -647,7 +647,7 @@ void MainWindow::openFile(){
             getpWinFileMgr()->cloudptr = pcl::PointCloud<pcl::PointXYZRGB>::Ptr(newcloud);
             NotifySubscribe();
             getPWinVtkWidget()->onTopView();
-            getPWinElementListWidget()->onAddElement(getpWinFileMgr()->cloudptr);
+            getPWinElementListWidget()->onAddElement(getpWinFileMgr()->cloudptr,filetype);
             qDebug()<<"实测点云加入";
             //pWinFileManagerWidget->openMeasuredFile(fileName, filePath);
             pWinVtkPresetWidget->setWidget(fileName+"文件已打开");
@@ -776,13 +776,35 @@ void MainWindow::saveFile(){
 
 void MainWindow::listeningFile()
 {
-    listenFileINI = new QSettings("Config.ini", QSettings::IniFormat);
-    QString ip=listenFileINI->value("con/ip").toString();
-    //listeningfilePath="//"+ip;
-    listeningfilePath="C:/qcon/FTPservice";
-    qDebug()<<listeningfilePath;
-    filechange();
-    pWinVtkPresetWidget->setWidget("开始监听文件");
+    QDialog dialog(this);
+    QVBoxLayout layout(&dialog);
+
+    QLineEdit pathEdit("C:/Users/Administrator/Desktop/Z/3ddata");
+    QPushButton browseButton("浏览...");
+    QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+
+    layout.addWidget(&pathEdit);
+    layout.addWidget(&browseButton);
+    layout.addWidget(&buttonBox);
+
+    // 连接浏览按钮
+    connect(&browseButton, &QPushButton::clicked, [&]() {
+        QString dir = QFileDialog::getExistingDirectory(this, "选择监听目录", pathEdit.text());
+        if (!dir.isEmpty()) {
+            pathEdit.setText(dir);
+        }
+    });
+
+    // 连接按钮框
+    connect(&buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    connect(&buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+
+    if (dialog.exec() == QDialog::Accepted) {
+        listeningfilePath = pathEdit.text();
+        qDebug() << listeningfilePath;
+        filechange();
+        pWinVtkPresetWidget->setWidget("开始监听文件");
+    }
 }
 
 void MainWindow::CloselisteningFile()
@@ -1443,13 +1465,23 @@ void MainWindow::onIsometricViewClicked()
 
 void MainWindow::filechange()
 {
-    fileWatcher.addPath(listeningfilePath); // 替换为FTP目录路径
+    // 获取当天日期格式为 "yyyy-MM-dd"
+    QString today = QDate::currentDate().toString("yyyy-MM-dd");
+
+    // 构建当天日期的文件夹路径
+    QString todayFolderPath = listeningfilePath + "/" + today;
+
+    // 检查文件夹是否存在
+    if(!QDir(todayFolderPath).exists()) {
+        qDebug() << "当天文件夹不存在:" << todayFolderPath;
+        return;
+    }
+    //初始化文件列表
+    QDir dir(todayFolderPath);
+    existingFiles=dir.entryList(QDir::Files);
+    // 监控当天文件夹的变化
+    fileWatcher.addPath(todayFolderPath);
     connect(&fileWatcher, &QFileSystemWatcher::directoryChanged, this, &MainWindow::onFileChanged);
-    // 初始化文件处理定时器
-    fileProcessorTimer.setInterval(1000); // 每秒处理一个文件
-    connect(&fileProcessorTimer, &QTimer::timeout, this, &MainWindow::processNextFile);
-    // 初始化已存在的文件列表
-    existingFiles=listenFileINI->value("/con/HaveFilePath").toStringList();
 }
 
 void MainWindow::onFileChanged(const QString &path)
@@ -1461,29 +1493,28 @@ void MainWindow::onFileChanged(const QString &path)
     // 检查新增的文件
     foreach (const QString &file, currentFiles) {
         if (!existingFiles.contains(file)) {
+            //正则表达式，格式如2025-05-20#A#001#001
+            QRegularExpression regex("^\\d{4}-\\d{2}-\\d{2}#([A-Z])#\\d{3}#\\d{3}$");
+            QRegularExpressionMatch match = regex.match(file);
             QString filePath = path + "/" + file;
-            listenFileINI->setValue("/con/HaveFilePath",file);
             qDebug() << "发现新文件：" << filePath;
-
-            // 根据文件扩展名判断优先级
-            if (file.endsWith(".ply", Qt::CaseInsensitive)) {
-                // 如果是.ply文件，优先添加到队列前面
-                fileQueue.prepend(filePath);
-                qDebug() << "优先添加.ply文件到队列：" << filePath;
-            } else {
-                // 其他文件正常添加到队列末尾
-                fileQueue.enqueue(filePath);
-                qDebug() << "添加到队列：" << filePath;
+            QStringList files = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
+            if(files.isEmpty()) {
+                qDebug() << "文件夹为空:";
+                return ;
             }
-            // 更新已存在的文件列表
+            QString fileCould = filePath + "/" + files.first();
+            //filePathChange = fileCould;
+            //自动打开
+            peopleOpenfile=false;
+            //判断格式（ABCDEF）
+            filetype = match.captured(1);
+            filePathChange = fileCould;
+            openFile();
             existingFiles.append(file);
+            //自动打开关闭
+            peopleOpenfile=true;
         }
-    }
-    peopleOpenfile=false;
-    //processNextFile();
-    // 如果定时器未启动，启动定时器
-    if (!fileProcessorTimer.isActive()) {
-        fileProcessorTimer.start();
     }
 }
 

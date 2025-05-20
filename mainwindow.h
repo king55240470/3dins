@@ -30,6 +30,7 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QDesktopServices>
+#include <QDialogButtonBox>
 
 class DataWidget;
 class ElementListWidget;
@@ -91,7 +92,7 @@ protected:
     /*private slots:
     void open_clicked();
     void save_clicked();*/
-private:
+public:
     void openFile();
     void saveFile();
     void listeningFile();
@@ -140,6 +141,7 @@ public:
     QString filePathChange;
     bool peopleOpenfile=true; //判断是否为手动打开文件
     QString listeningfilePath;
+    QString filetype;//判断点云类型
     void filechange();
     void onFileChanged(const QString &path);
     void processNextFile();
