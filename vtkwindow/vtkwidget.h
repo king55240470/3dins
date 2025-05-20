@@ -157,8 +157,11 @@ public:
     void onCompare();// 比较两个点云
 
     void onAlign(); // 点云模板匹配
-    void onICP(Eigen::Matrix4f transf, pcl::PointCloud<pcl::PointXYZRGB>::Ptr scenCloud,
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr tagCloud); // 配准
+    Eigen::Matrix4f runSAC(pcl::PointCloud<pcl::PointXYZRGB>::Ptr template_down, pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_down,
+    pcl::PointCloud<pcl::FPFHSignature33>::Ptr template_fpfh, pcl::PointCloud<pcl::FPFHSignature33>::Ptr scene_fpfh,
+    float voxel_size, int iterations);
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr onICP(pcl::PointCloud<pcl::PointXYZRGB>::Ptr scenCloud,
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr tagCloud); // ICP配准
 
     void poissonReconstruction(); // 泊松重建
     void sacAlign(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud1,
@@ -217,7 +220,7 @@ private:
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud1; // 对比用的两个点云
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud2;
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr comparisonCloud;
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr alignedCloud;
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr aligned_template;
     vtkSmartPointer<vtkActor2D> colorBarActor; // 色温条
     QMap<CPosition, double> pointToDistances; // 存储对比点云每个点的偏差值
 
