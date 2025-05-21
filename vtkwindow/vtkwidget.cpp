@@ -1604,6 +1604,25 @@ int VtkWidget::adjustMeanK(size_t pointCount)
     else return 200;
 }
 
+double AlignWorker::adjustStddevThresh(pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_cloud, float voxelSize)
+{
+    // 计算点云的密度（每立方米的点数）
+    pcl::PointXYZRGB minPt, maxPt;
+    pcl::getMinMax3D(*scene_cloud, minPt, maxPt);
+    double volume = static_cast<double>((maxPt.x - minPt.x) * (maxPt.y - minPt.y) * (maxPt.z - minPt.z));
+    if (volume == 0) return 3.0;  // 防止除以零
+    double density = static_cast<double>(scene_cloud->size()) / volume;
+
+    // 根据密度和体素大小调整标准差倍数
+    double baseThresh = 3.0;
+    double densityFactor = 1.0 / density; // 密度越大，因子越小，标准差倍数越小
+    double voxelFactor = voxelSize * 0.5;  // 体素大小越大，因子越大，标准差倍数越大
+
+    // 计算最终的标准差倍数，确保其在合理范围内（例如：1.0到5.0）
+    double stddevThresh = baseThresh * (1.0 + densityFactor + voxelFactor);
+    return std::max(1.0, std::min(5.0, stddevThresh)); // 限制阈值范围
+}
+
 double VtkWidget::adjustStddevThresh(pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_cloud, float voxelSize)
 {
     // 计算点云的密度（每立方米的点数）
@@ -1892,6 +1911,182 @@ QMap<CEntity*,QVector<double>>& VtkWidget::getDistanceValue(){
     return m_distanceValue;
 }
 
+void AlignWorker::doAlign() {
+    try {
+        // 步骤 1: 数据准备 (5%)
+        if (m_stop) return;
+        emit progressUpdated(5, "准备点云数据...");
+
+        auto& template_cloud = m_isCloud1Model ? m_clouds[0] : m_clouds[1];
+        auto& scene_cloud = m_isCloud1Model ? m_clouds[1] : m_clouds[0];
+        if (template_cloud->size() > scene_cloud->size()) {
+            throw std::runtime_error("模型文件选择错误!");
+        }
+
+        // 自适应计算体素大小
+        pcl::PointXYZRGB minpt, maxpt;
+        pcl::getMinMax3D(*template_cloud, minpt, maxpt); // 计算点云的最小/大坐标
+        float diag = std::sqrt(
+            std::pow(maxpt.x - minpt.x, 2) +  // 使用min_pt/max_pt坐标
+            std::pow(maxpt.y - minpt.y, 2) +
+            std::pow(maxpt.z - minpt.z, 2)
+            );
+        float voxel_size = diag / 50.0f;
+
+        // 步骤 2: 下采样 (10%)
+        pcl::VoxelGrid<pcl::PointXYZRGB> voxel;
+        pcl::PointCloud<pcl::PointXYZRGB>::Ptr template_down(new pcl::PointCloud<pcl::PointXYZRGB>());
+        pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_down(new pcl::PointCloud<pcl::PointXYZRGB>());
+        voxel.setLeafSize(voxel_size, voxel_size, voxel_size);
+        voxel.setInputCloud(template_cloud);
+        voxel.filter(*template_down);
+        voxel.setInputCloud(scene_cloud);
+        voxel.filter(*scene_down);
+        if (m_stop) return;
+        emit progressUpdated(10, "点云下采样完成");
+
+        // 步骤 3: 法线估计 (15%)
+        pcl::PointCloud<pcl::Normal>::Ptr template_normals(new pcl::PointCloud<pcl::Normal>());
+        pcl::PointCloud<pcl::Normal>::Ptr scene_normals(new pcl::PointCloud<pcl::Normal>());
+        pcl::NormalEstimation<pcl::PointXYZRGB, pcl::Normal> ne;
+        ne.setRadiusSearch(voxel_size * 2.0);
+        ne.setSearchMethod(pcl::search::KdTree<pcl::PointXYZRGB>::Ptr(new pcl::search::KdTree<pcl::PointXYZRGB>()));
+        ne.setInputCloud(template_down);
+        ne.compute(*template_normals);
+        ne.setInputCloud(scene_down);
+        ne.compute(*scene_normals);
+        if (m_stop) return;
+        emit progressUpdated(15, "法线估计完成");
+
+        // 步骤 4: FPFH特征提取 (20%)
+        pcl::PointCloud<pcl::FPFHSignature33>::Ptr template_fpfh(new pcl::PointCloud<pcl::FPFHSignature33>());
+        pcl::PointCloud<pcl::FPFHSignature33>::Ptr scene_fpfh(new pcl::PointCloud<pcl::FPFHSignature33>());
+        pcl::FPFHEstimation<pcl::PointXYZRGB, pcl::Normal, pcl::FPFHSignature33> fpfh;
+        fpfh.setRadiusSearch(voxel_size * 5.0);
+        fpfh.setSearchMethod(pcl::search::KdTree<pcl::PointXYZRGB>::Ptr(new pcl::search::KdTree<pcl::PointXYZRGB>()));
+        fpfh.setInputCloud(template_down);
+        fpfh.setInputNormals(template_normals);
+        fpfh.setSearchSurface(template_down);
+        fpfh.compute(*template_fpfh);
+        fpfh.setInputCloud(scene_down);
+        fpfh.setInputNormals(scene_normals);
+        fpfh.setSearchSurface(scene_down);
+        fpfh.compute(*scene_fpfh);
+        if (m_stop) return;
+        emit progressUpdated(20, "特征提取完成"); //done!!!!!!!
+
+        // 步骤 5: RANSAC配准 (30%)
+        int items = 5;
+        Eigen::Matrix4f transformation = runSAC(
+            template_down,
+            scene_down,
+            template_fpfh,
+            scene_fpfh,
+            voxel_size,
+            items
+            );
+        if (transformation.isApprox(Eigen::Matrix4f::Zero())) {
+            throw std::runtime_error("RANSAC失败");
+        }
+        emit progressUpdated(50, "粗配准完成");
+
+        // 步骤 6: 点云裁剪和精配准 (20%)
+        pcl::PointCloud<pcl::PointXYZRGB>::Ptr transformed_template(new pcl::PointCloud<pcl::PointXYZRGB>());
+        pcl::transformPointCloud(*template_cloud, *transformed_template, transformation);
+        pcl::PointXYZRGB min_pt, max_pt;
+        pcl::getMinMax3D(*transformed_template, min_pt, max_pt);
+        pcl::CropBox<pcl::PointXYZRGB> crop_filter;
+        pcl::PointCloud<pcl::PointXYZRGB>::Ptr cropped_scene(new pcl::PointCloud<pcl::PointXYZRGB>());
+        crop_filter.setMin(Eigen::Vector4f(min_pt.x, min_pt.y, min_pt.z, 1.0f));
+        crop_filter.setMax(Eigen::Vector4f(max_pt.x, max_pt.y, max_pt.z, 1.15f));
+        crop_filter.setInputCloud(scene_cloud); // 用采样前的点云，保留更多点
+        crop_filter.filter(*cropped_scene);
+
+        pcl::PointCloud<pcl::PointXYZRGB>::Ptr transformed_scene(new pcl::PointCloud<pcl::PointXYZRGB>());
+        pcl::transformPointCloud(*cropped_scene, *transformed_scene, transformation.inverse());
+
+        pcl::io::savePCDFile("E:\\pcl\\transf_scene", *transformed_scene);
+        emit progressUpdated(70, "点云裁剪完成");
+
+        // 步骤 7: 去噪 (10%)
+        pcl::StatisticalOutlierRemoval<pcl::PointXYZRGB> sor;
+        auto stdThresh = adjustStddevThresh(transformed_scene, voxel_size);
+        sor.setInputCloud(transformed_scene);
+        sor.setMeanK(25);
+        sor.setStddevMulThresh(stdThresh);
+        pcl::PointCloud<pcl::PointXYZRGB>::Ptr denoised_scene(new pcl::PointCloud<pcl::PointXYZRGB>());
+        sor.filter(*denoised_scene);
+        emit progressUpdated(90, "去噪完成");
+
+        emit alignmentFinished(transformation, denoised_scene);
+    } catch (const std::exception& e) {
+        emit errorOccurred(QString::fromLocal8Bit(e.what()));
+    }
+}
+
+// void VtkWidget::onAlign()
+// {
+//     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+//     QVector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> clouds;
+//     QString logInfo;
+//     bool isCloud1Model = false;
+
+//     // 收集两个选中的点云
+//     for (int i = 0; i < entityList.size(); i++) {
+//         CEntity* entity = entityList[i];
+//         if (!entity->IsSelected()) continue;
+//         if (entity->GetUniqueType() == enPointCloud) {
+//             auto pcEntity = static_cast<CPointCloud*>(entity);
+//             if(pcEntity->isModelCloud && clouds.isEmpty()) isCloud1Model = true;
+//             clouds.append(pcl::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>(pcEntity->m_pointCloud));
+//             logInfo += pcEntity->m_strCName + " ";
+//         }
+//     }
+
+//     // 创建进度对话框
+//     QProgressDialog* progressDialog = new QProgressDialog("对齐中...", "取消", 0, 100, this);
+//     progressDialog->setWindowModality(Qt::WindowModal);
+//     connect(progressDialog, &QProgressDialog::canceled, [this]() {
+//         if (m_alignWorker) m_alignWorker->stop();
+//     });
+
+//     // 创建线程和 Worker
+//     m_alignThread = new QThread(this);
+//     m_alignWorker = new AlignWorker(clouds, isCloud1Model);
+
+//     // 连接信号槽
+//     connect(m_alignThread, &QThread::started, m_alignWorker, &AlignWorker::doAlign);
+//     connect(m_alignWorker, &AlignWorker::progressUpdated, this, &VtkWidget::handleProgress);
+//     connect(m_alignWorker, &AlignWorker::alignmentFinished, this, &VtkWidget::handleAlignmentResult);
+//     connect(m_alignWorker, &AlignWorker::errorOccurred, this, &VtkWidget::handleError);
+//     connect(m_alignThread, &QThread::finished, progressDialog, &QProgressDialog::deleteLater);
+
+//     // 启动线程
+//     m_alignWorker->moveToThread(m_alignThread);
+//     m_alignThread->start();
+//     progressDialog->show();
+// }
+
+void VtkWidget::handleProgress(int value, const QString& message) {
+    m_pMainWin->getPWinVtkPresetWidget()->setWidget(message); // 更新日志
+    // 如果需要更新进度条数值：
+    QProgressDialog* dialog = findChild<QProgressDialog*>();
+    if (dialog) dialog->setValue(value);
+}
+
+void VtkWidget::handleAlignmentResult(Eigen::Matrix4f transformation, pcl::PointCloud<pcl::PointXYZRGB>::Ptr denoised_scene) {
+    // 在主线程处理结果
+    auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateAlignCloud(denoised_scene);
+    m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
+    m_pMainWin->NotifySubscribe();
+    m_alignThread->quit();
+}
+
+void VtkWidget::handleError(const QString& error) {
+    m_pMainWin->getPWinVtkPresetWidget()->setWidget(error);
+    m_alignThread->quit();
+}
+
 void VtkWidget::onAlign()
 {
     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
@@ -2025,6 +2220,48 @@ void VtkWidget::onAlign()
 }
 
 
+
+Eigen::Matrix4f AlignWorker::runSAC(pcl::PointCloud<pcl::PointXYZRGB>::Ptr template_down, pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_down,
+                                  pcl::PointCloud<pcl::FPFHSignature33>::Ptr template_fpfh, pcl::PointCloud<pcl::FPFHSignature33>::Ptr scene_fpfh,
+                                  float voxel_size, int iterations)
+{
+    pcl::SampleConsensusInitialAlignment<pcl::PointXYZRGB, pcl::PointXYZRGB, pcl::FPFHSignature33> sac;
+    std::vector<std::tuple<Eigen::Matrix4f, double>> ransacResults; // 存储多次 RANSAC 的结果
+
+    for (int i = 0; i < iterations; ++i) {
+        sac.setInputSource(template_down);
+        sac.setSourceFeatures(template_fpfh);
+        sac.setInputTarget(scene_down);
+        sac.setTargetFeatures(scene_fpfh);
+        sac.setMinSampleDistance(voxel_size * 1.0);
+        sac.setMaxCorrespondenceDistance(voxel_size * 1.5);
+        sac.setMaximumIterations(1000);
+
+        sac.align(*aligned_template);
+
+        if (sac.hasConverged()) {
+            Eigen::Matrix4f transformation = sac.getFinalTransformation(); // 得到变换矩阵
+            double fitnessScore = sac.getFitnessScore(); // 拟合度分数
+
+            // 存储结果到 vector 中
+            ransacResults.emplace_back(transformation, fitnessScore);
+        } else {
+            // 如果 RANSAC 不收敛，可以记录一个默认的低质量结果
+            ransacResults.emplace_back(Eigen::Matrix4f::Identity(), std::numeric_limits<double>::max());
+        }
+    }
+    if (ransacResults.empty()) {
+        return Eigen::Matrix4f();
+    }
+
+    // 找到拟合度最高的结果，得到对应的变换矩阵
+    auto bestResult = *std::min_element(ransacResults.begin(), ransacResults.end(),
+                                        [](const auto& a, const auto& b) {
+                                            return std::get<1>(a) < std::get<1>(b); // 只比较拟合度分数
+                                        });
+
+    return std::get<0>(bestResult);
+}
 
 Eigen::Matrix4f VtkWidget::runSAC(pcl::PointCloud<pcl::PointXYZRGB>::Ptr template_down, pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_down,
                                   pcl::PointCloud<pcl::FPFHSignature33>::Ptr template_fpfh, pcl::PointCloud<pcl::FPFHSignature33>::Ptr scene_fpfh,

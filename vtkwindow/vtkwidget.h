@@ -19,6 +19,7 @@
 #include <QImage>
 #include <QTimer>
 #include <QPixmap>
+#include <QProgressDialog>
 #include <boost/make_shared.hpp>
 #include <fbxsdk.h>
 #include <pcl/common/common.h>
@@ -112,6 +113,39 @@ VTK_MODULE_INIT(vtkRenderingFreeType);
 using namespace  std;
 typedef pcl::Normal NormalT;
 typedef pcl::PointCloud<NormalT> NormalCloud;
+
+class AlignWorker : public QObject {
+    Q_OBJECT
+public:
+    explicit AlignWorker(
+        QVector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> clouds,
+        bool isCloud1Model,
+        QObject* parent = nullptr
+        ) : QObject(parent), m_clouds(clouds), m_isCloud1Model(isCloud1Model) {}
+
+public slots:
+    void doAlign();
+
+signals:
+    void progressUpdated(int value, const QString& message); // 进度更新信号（含描述）
+    void alignmentFinished(Eigen::Matrix4f transformation, pcl::PointCloud<pcl::PointXYZRGB>::Ptr denoised_scene); // 完成信号
+    void errorOccurred(const QString& error); // 错误信号
+
+public:
+    void stop() { m_stop.store(true); }
+
+private:
+    std::atomic<bool> m_stop{false};
+    QVector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> m_clouds;
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr aligned_template;
+    bool m_isCloud1Model;
+    float m_voxel_size;
+
+    double adjustStddevThresh(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, float voxel_size);
+    Eigen::Matrix4f runSAC(pcl::PointCloud<pcl::PointXYZRGB>::Ptr template_down, pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_down,
+                           pcl::PointCloud<pcl::FPFHSignature33>::Ptr template_fpfh, pcl::PointCloud<pcl::FPFHSignature33>::Ptr scene_fpfh,
+                           float voxel_size, int iterations);
+};
 
 class VtkWidget : public QWidget
 {
@@ -300,6 +334,15 @@ private:
         normals.swap(filtered_normals);
     }
 
+private slots:
+    void handleProgress(int value, const QString& message);
+    void handleAlignmentResult(Eigen::Matrix4f transformation, pcl::PointCloud<pcl::PointXYZRGB>::Ptr denoised_scene);
+    void handleError(const QString& error);
+
+private:
+    QThread* m_alignThread = nullptr;
+    AlignWorker* m_alignWorker = nullptr;
+    CPointCloud* m_cloudEntity = nullptr;
 };
 
 #endif // VTKWIDGET_H
