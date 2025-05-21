@@ -1851,10 +1851,8 @@ void VtkWidget::onCompare()
     pcl::PLYWriter writer;
     writer.write("D:/testFiles/compareCloud.ply", *comparisonCloud, true); // true = 写入ASCII格式（false 为二进制）
 
-    // 导出为fbx文件
-    //ExportPointCloudToFBX(comparisonCloud,"D:/outout.fbx");
     //平均距离
-    averageDistance/=count_distance;
+    averageDistance = averageDistance / cloud2->size();
     QVector<double> DistanceValue;
     DistanceValue.push_back(maxDistance);
     DistanceValue.push_back(minDistance);
@@ -1974,7 +1972,7 @@ void VtkWidget::onAlign()
     fpfh.compute(*scene_fpfh);
 
     // RANSAC全局粗配准
-    int items = 5;
+    int items = 3;
     Eigen::Matrix4f transformation = runSAC(
         template_down,
         scene_down,
@@ -2006,8 +2004,6 @@ void VtkWidget::onAlign()
     // 将裁剪后的点云向模板进行对齐，这里使用逆变换
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr transformed_scene(new pcl::PointCloud<pcl::PointXYZRGB>());
     pcl::transformPointCloud(*cropped_scene, *transformed_scene, transformation.inverse());
-
-    pcl::io::savePCDFile("E:\\pcl\\transf_scene", *transformed_scene);
 
     // 去噪（统计滤波）
     pcl::StatisticalOutlierRemoval<pcl::PointXYZRGB> sor;
