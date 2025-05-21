@@ -158,6 +158,9 @@ void ElementListWidget::CreateEllipse(CObject*obj)
     if(obj->GetUniqueType()==enPointCloud){
         QIcon icon(":/component/construct/pointCloud.png");
         item->setIcon(0, icon);
+        if(obj->GetObjectCName().contains("stand")){
+            setModelIndex(m_pMainWin->getEntityListMgr()->getEntityList().size());
+        }
     }
     if(obj->GetUniqueType()==enAngle){
         QIcon icon(":/component/construct/angle.png");
@@ -609,17 +612,26 @@ void ElementListWidget::startprocess()
     if(pointCouldlists.empty()){
         m_pMainWin->getPWinVtkPresetWidget()->setWidget("实测点云为空无法进行测量");
     }else{
-        isProcessing=true;
+        loadModelFile();
+        QTimer::singleShot(2000, []() {
+            qDebug() << "2秒后执行的操作";
+        });
+        m_pMainWin->NotifySubscribe();
         CompareCloud();
         updateDistance();
         m_pMainWin->NotifySubscribe();
     }
 }
 
-void ElementListWidget::onAddElement(pcl::PointCloud<pcl::PointXYZRGB>::Ptr could)
+void ElementListWidget::onAddElement(pcl::PointCloud<pcl::PointXYZRGB>::Ptr could,QString type)
 {
     if (stateMachine->configuration().contains(runningState)) {
         pointCouldlists.enqueue(could);
+        filetypelists.enqueue(type);
+        loadModelFile();
+        QTimer::singleShot(2000, []() {
+            qDebug() << "2秒后执行的操作";
+        });
         if(isProcessing==false){
             isProcessing=true;
             CompareCloud();
@@ -628,6 +640,7 @@ void ElementListWidget::onAddElement(pcl::PointCloud<pcl::PointXYZRGB>::Ptr coul
         }
     }else{
         pointCouldlists.enqueue(could);
+        filetypelists.enqueue(type);
     }
 }
 
@@ -750,8 +763,14 @@ void ElementListWidget::updateDistance()
         }
     }
     if(disAndanglelist.size()==0){
+        m_pMainWin->getEntityListMgr()->getEntityList()[modelIndex]->SetSelected(true);
+        onDeleteEllipse();
         if(pointCouldlists.size()>0)
         {
+            loadModelFile();
+            QTimer::singleShot(2000, []() {
+                qDebug() << "2秒后执行的操作";
+            });
             CompareCloud();
             updateDistance();
             return;
@@ -841,7 +860,17 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
             // // m_pMainWin->getPWinToolWidget()->onSavePdf();
             // // m_pMainWin->getPWinToolWidget()->setauto(false);
         }
+        //删除自动化打开的模型文件
+        // for(int i =0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
+        //     m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
+        // }
+        m_pMainWin->getEntityListMgr()->getEntityList()[modelIndex]->SetSelected(true);
+        onDeleteEllipse();
         if(!pointCouldlists.empty()){
+            loadModelFile();
+            QTimer::singleShot(2000, []() {
+                qDebug() << "2秒后执行的操作";
+            });
             CompareCloud();
             updateDistance();
         }else{
@@ -1173,6 +1202,22 @@ void ElementListWidget::createrule()
 bool ElementListWidget::getIsProcess()
 {
     return isProcessing;
+}
+
+void ElementListWidget::setModelIndex(int index)
+{
+    modelIndex = index;
+}
+
+void ElementListWidget::loadModelFile()
+{
+    isProcessing=true;
+    m_pMainWin->peopleOpenfile = false;
+    QString s = filetypelists.dequeue();
+    m_pMainWin->filePathChange = m_pMainWin->modelPath+"/model"+s+"/"+s+"stand.ply";
+    m_pMainWin->openFile();
+    m_pMainWin->peopleOpenfile = true;
+
 }
 
 QVector<CPointCloud *> ElementListWidget::getisComparsionCloud()

@@ -1909,11 +1909,11 @@ void VtkWidget::onAlign()
         }
     }
 
-    if (clouds.size() != 2) {
-        logInfo += "对齐需要两个点云!";
-        m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
-        return;
-    }
+//     if (clouds.size() != 2) {
+//         logInfo += "对齐需要两个点云!";
+//         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
+//         return;
+//     }
 
     auto& template_cloud = isCloud1Model ? clouds[0] : clouds[1];
     auto& scene_cloud = isCloud1Model ? clouds[1] : clouds[0];
@@ -2019,6 +2019,8 @@ void VtkWidget::onAlign()
     m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
     m_pMainWin->NotifySubscribe();
 }
+
+
 
 Eigen::Matrix4f VtkWidget::runSAC(pcl::PointCloud<pcl::PointXYZRGB>::Ptr template_down, pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_down,
                                   pcl::PointCloud<pcl::FPFHSignature33>::Ptr template_fpfh, pcl::PointCloud<pcl::FPFHSignature33>::Ptr scene_fpfh,

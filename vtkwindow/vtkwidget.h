@@ -27,6 +27,7 @@
 #include <pcl/visualization/pcl_visualizer.h>  // PCL可视化库
 #include <pcl/registration/icp.h>
 #include <pcl/kdtree/kdtree_flann.h>
+#include <pcl/kdtree/kdtree.h>
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/filters/uniform_sampling.h>
 #include <pcl/features/normal_3d.h>
@@ -166,6 +167,8 @@ public:
     void poissonReconstruction(); // 泊松重建
     float calculateSamplingRadius(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud); // 估计采样半径
     float calculateOctreeResolution(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud); // 估算八叉树分辨率
+    double computeAdaptiveRadius(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud);
+    double computeSamplingSize(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud);
 
     // 显示选中的图形的信息
     void setCentity(CEntity*entity);  //传入centity对象
@@ -271,7 +274,31 @@ private:
     // 对话框，用于控制渲染的点的大小和线宽
     QDialog* actorAdjustDialog;
 
-public slots:
+    template <typename PointT>
+    void removeNaNNormals(typename pcl::PointCloud<PointT>::Ptr& cloud,
+                          pcl::PointCloud<pcl::Normal>::Ptr& normals) {
+        pcl::PointIndices::Ptr valid_indices(new pcl::PointIndices);
+        for (size_t i = 0; i < cloud->size(); ++i) {
+            if (pcl::isFinite(cloud->at(i)) &&
+                pcl::isFinite(normals->at(i))) { // 同时检查点和法线
+                valid_indices->indices.push_back(i);
+            }
+        }
+
+        pcl::ExtractIndices<PointT> extract;
+        extract.setInputCloud(cloud);
+        extract.setIndices(valid_indices);
+        typename pcl::PointCloud<PointT>::Ptr filtered(new pcl::PointCloud<PointT>);
+        extract.filter(*filtered);
+        cloud.swap(filtered);
+
+        pcl::ExtractIndices<pcl::Normal> extract_normals;
+        extract_normals.setInputCloud(normals);
+        extract_normals.setIndices(valid_indices);
+        pcl::PointCloud<pcl::Normal>::Ptr filtered_normals(new pcl::PointCloud<pcl::Normal>);
+        extract_normals.filter(*filtered_normals);
+        normals.swap(filtered_normals);
+    }
 
 };
 
