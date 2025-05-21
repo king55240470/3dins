@@ -164,8 +164,6 @@ public:
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr tagCloud); // ICP配准
 
     void poissonReconstruction(); // 泊松重建
-    void sacAlign(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud1,
-                  pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud2);
     float calculateSamplingRadius(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud); // 估计采样半径
     float calculateOctreeResolution(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud); // 估算八叉树分辨率
 

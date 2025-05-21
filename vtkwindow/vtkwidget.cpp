@@ -1897,6 +1897,7 @@ void VtkWidget::onAlign()
     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
     QVector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> clouds;
     QString logInfo;
+    bool isCloud1Model, isCloud2Model;
 
     // 收集两个选中的点云
     for (int i = 0; i < entityList.size(); i++) {
@@ -1906,6 +1907,11 @@ void VtkWidget::onAlign()
             auto pcEntity = static_cast<CPointCloud*>(entity);
             clouds.append(pcl::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>(pcEntity->m_pointCloud));
             logInfo += pcEntity->m_strCName + " ";
+            if(pcEntity->isModelCloud && clouds.isEmpty()) isCloud1Model = true;
+            if(pcEntity->isModelCloud){
+                isCloud1Model = false;
+                isCloud2Model = true;
+            }
         }
     }
 
@@ -1915,8 +1921,13 @@ void VtkWidget::onAlign()
         return;
     }
 
-    auto& template_cloud = clouds[0];
-    auto& scene_cloud = clouds[1];
+    auto& template_cloud = isCloud1Model ? clouds[0] : clouds[1];
+    auto& scene_cloud = isCloud1Model ? clouds[1] : clouds[0];
+    if(template_cloud->size() < scene_cloud->size()){
+        QString logInfo = "模型文件选择错误!";
+        m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
+        return;
+    }
 
     // 自适应计算体素大小
     pcl::PointXYZRGB minpt, maxpt;
@@ -1975,7 +1986,7 @@ void VtkWidget::onAlign()
         scene_fpfh,
         voxel_size,
         items
-    );
+        );
 
     // 检查是否有成功的一轮
     if (transformation.isApprox(Eigen::Matrix4f::Zero())) {
@@ -1993,12 +2004,14 @@ void VtkWidget::onAlign()
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr cropped_scene(new pcl::PointCloud<pcl::PointXYZRGB>());
     crop_filter.setMin(Eigen::Vector4f(min_pt.x, min_pt.y, min_pt.z, 1.0f));
     crop_filter.setMax(Eigen::Vector4f(max_pt.x, max_pt.y, max_pt.z, 1.15f));
-    crop_filter.setInputCloud(scene_cloud);
+    crop_filter.setInputCloud(scene_cloud); // 用采样前的点云，保留更多点
     crop_filter.filter(*cropped_scene);
 
     // 将裁剪后的点云向模板进行对齐，这里使用逆变换
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr transformed_scene(new pcl::PointCloud<pcl::PointXYZRGB>());
     pcl::transformPointCloud(*cropped_scene, *transformed_scene, transformation.inverse());
+
+    pcl::io::savePCDFile("E:\\pcl\\transf_scene", *transformed_scene);
 
     // 去噪（统计滤波）
     pcl::StatisticalOutlierRemoval<pcl::PointXYZRGB> sor;
