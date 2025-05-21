@@ -616,6 +616,7 @@ void ElementListWidget::startprocess()
         QTimer::singleShot(2000, []() {
             qDebug() << "2秒后执行的操作";
         });
+        m_pMainWin->NotifySubscribe();
         CompareCloud();
         updateDistance();
         m_pMainWin->NotifySubscribe();
@@ -1212,7 +1213,8 @@ void ElementListWidget::loadModelFile()
 {
     isProcessing=true;
     m_pMainWin->peopleOpenfile = false;
-    m_pMainWin->filePathChange = "C:/Users/Administrator/Desktop/model/model"+filetypelists.dequeue()+"/"+filetypelists.dequeue()+"stand.ply";
+    QString s = filetypelists.dequeue();
+    m_pMainWin->filePathChange = m_pMainWin->modelPath+"/model"+s+"/"+s+"stand.ply";
     m_pMainWin->openFile();
     m_pMainWin->peopleOpenfile = true;
 

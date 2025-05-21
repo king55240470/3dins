@@ -85,6 +85,7 @@ private:
     QTimer fileProcessorTimer; // 用于依次处理文件的定时器
     bool isProcessing = false; // 标记是否正在处理文件
     QStringList existingFiles; // 用于记录已存在的文件
+
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
 
@@ -142,6 +143,7 @@ public:
     bool peopleOpenfile=true; //判断是否为手动打开文件
     QString listeningfilePath;
     QString filetype;//判断点云类型
+    QString modelPath;//用于记录模型文件地址
     void filechange();
     void onFileChanged(const QString &path);
     void processNextFile();

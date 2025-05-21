@@ -1914,10 +1914,8 @@ void VtkWidget::onAlign()
         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
         return;
     }
-
     auto& template_cloud = clouds[0];
     auto& scene_cloud = clouds[1];
-
     // 自适应计算体素大小
     pcl::PointXYZRGB minpt, maxpt;
     pcl::getMinMax3D(*template_cloud, minpt, maxpt); // 计算点云的最小/大坐标
@@ -1948,7 +1946,7 @@ void VtkWidget::onAlign()
     ne.compute(*template_normals);
     ne.setInputCloud(scene_down);
     ne.compute(*scene_normals);
-
+    qDebug()<<"对齐111111";
     // 计算FPFH特征
     pcl::PointCloud<pcl::FPFHSignature33>::Ptr template_fpfh(new pcl::PointCloud<pcl::FPFHSignature33>());
     pcl::PointCloud<pcl::FPFHSignature33>::Ptr scene_fpfh(new pcl::PointCloud<pcl::FPFHSignature33>());
@@ -1965,7 +1963,7 @@ void VtkWidget::onAlign()
     fpfh.setInputNormals(scene_normals);
     fpfh.setSearchSurface(scene_down);
     fpfh.compute(*scene_fpfh);
-
+    qDebug()<<"对齐22222";
     // RANSAC全局粗配准
     int items = 3;
     Eigen::Matrix4f transformation = runSAC(
@@ -1976,14 +1974,14 @@ void VtkWidget::onAlign()
         voxel_size,
         items
     );
-
+    qDebug()<<"对齐33333";
     // 检查是否有成功的一轮
     if (transformation.isApprox(Eigen::Matrix4f::Zero())) {
         QString logInfo = "RANSAC失败";
         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
         return;
     }
-
+    qDebug()<<"对齐44444";
     // 使用变换后的模板裁剪场景点云
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr transformed_template(new pcl::PointCloud<pcl::PointXYZRGB>());
     pcl::transformPointCloud(*template_cloud, *transformed_template, transformation);
@@ -2008,7 +2006,7 @@ void VtkWidget::onAlign()
     sor.setStddevMulThresh(stdThresh);
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr denoised_scene(new pcl::PointCloud<pcl::PointXYZRGB>());
     sor.filter(*denoised_scene);
-
+    qDebug()<<"对齐333333";
     // 加入元素列表
     auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateAlignCloud(denoised_scene);
     m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);

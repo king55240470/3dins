@@ -787,19 +787,40 @@ void MainWindow::listeningFile()
     QDialog dialog(this);
     QVBoxLayout layout(&dialog);
 
+    // 第一个文本框（监听目录）
     QLineEdit pathEdit("C:/Users/Administrator/Desktop/Z/3ddata");
-    QPushButton browseButton("浏览...");
+    QPushButton browsePathButton("浏览...");  // 第一个浏览按钮
+
+    // 第二个文本框（模型路径）
+    QLineEdit modelPathEdit;
+    QPushButton browseModelButton("浏览...");  // 第二个浏览按钮
+
     QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 
+    // 添加控件到布局
+    layout.addWidget(new QLabel("监听目录:"));
     layout.addWidget(&pathEdit);
-    layout.addWidget(&browseButton);
+    layout.addWidget(&browsePathButton);
+
+    layout.addWidget(new QLabel("模型路径:"));
+    layout.addWidget(&modelPathEdit);
+    layout.addWidget(&browseModelButton);
+
     layout.addWidget(&buttonBox);
 
-    // 连接浏览按钮
-    connect(&browseButton, &QPushButton::clicked, [&]() {
+    // 连接第一个浏览按钮（选择监听目录）
+    connect(&browsePathButton, &QPushButton::clicked, [&]() {
         QString dir = QFileDialog::getExistingDirectory(this, "选择监听目录", pathEdit.text());
         if (!dir.isEmpty()) {
             pathEdit.setText(dir);
+        }
+    });
+
+    // 连接第二个浏览按钮（选择模型目录）
+    connect(&browseModelButton, &QPushButton::clicked, [&]() {
+        QString dir = QFileDialog::getExistingDirectory(this, "选择模型目录", modelPathEdit.text());
+        if (!dir.isEmpty()) {
+            modelPathEdit.setText(dir);
         }
     });
 
@@ -809,7 +830,11 @@ void MainWindow::listeningFile()
 
     if (dialog.exec() == QDialog::Accepted) {
         listeningfilePath = pathEdit.text();
-        qDebug() << listeningfilePath;
+        modelPath = modelPathEdit.text();  // 获取第二个文本框的内容
+
+        qDebug() << "监听目录:" << listeningfilePath;
+        qDebug() << "模型目录:" << modelPath;
+
         filechange();
         pWinVtkPresetWidget->setWidget("开始监听文件");
     }
