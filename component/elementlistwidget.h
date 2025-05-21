@@ -86,8 +86,10 @@ public:
     void createrule();
     bool getIsProcess();
     void setModelIndex(int index);
+    void loadModelFile();
     QVector<CPointCloud*> getisComparsionCloud();
-    QTreeWidget *getTreeWidgetNames();
+
+    QTreeWidget * getTreeWidgetNames();
 protected:
     void mouseDoubleClickEvent(QMouseEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;

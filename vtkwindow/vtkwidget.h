@@ -42,8 +42,13 @@
 #include <pcl/recognition/cg/geometric_consistency.h>
 #undef PCL_NO_PRECOMPILE
 #include <pcl/filters/extract_indices.h>
-// #include <pcl/surface/poisson.h>
-// #include <pcl/surface/impl/poisson.hpp>
+#include <pcl/features/normal_3d.h>
+#include <pcl/features/fpfh.h>
+#include <pcl/registration/registration.h>
+#include <pcl/registration/icp.h>
+#include <pcl/registration/transformation_estimation_svd.h>
+#include <pcl/visualization/cloud_viewer.h>
+#include <pcl/filters/statistical_outlier_removal.h>
 
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
@@ -103,6 +108,10 @@ VTK_MODULE_INIT(vtkInteractionStyle);
 VTK_MODULE_INIT(vtkRenderingVolumeOpenGL2);
 VTK_MODULE_INIT(vtkRenderingFreeType);
 
+using namespace  std;
+typedef pcl::Normal NormalT;
+typedef pcl::PointCloud<NormalT> NormalCloud;
+
 class VtkWidget : public QWidget
 {
     Q_OBJECT
@@ -138,7 +147,7 @@ public:
     void FocusOnActor(CEntity* entity); // 设置相机以聚焦指定的actor
 
     int adjustMeanK(size_t pointCount); // 估算滤波的近邻点数量
-    double adjustStddevThresh(size_t pointCount); // 估算离群点阈值，用于统计滤波
+    double adjustStddevThresh(pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_cloud, float voxelSize); // 估算离群点阈值，用于统计滤波
     float calculateThreshold(pcl::PointCloud<pcl::PointXYZRGB>::Ptr tagCloud);
     int FilterCount(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud); // 计算去噪次数
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr onStatisticalFilter(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud);
@@ -146,10 +155,14 @@ public:
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr onFilter(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& srcCloud,
                                                     pcl::PointCloud<pcl::PointXYZRGB>::Ptr& tagCloud); // 重载的滤波方法，用于在对齐中调用
     void onCompare();// 比较两个点云
-    void onAlign(); // 配准的函数
+
+    void onAlign(); // 点云模板匹配
+    void onICP(Eigen::Matrix4f transf, pcl::PointCloud<pcl::PointXYZRGB>::Ptr scenCloud,
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr tagCloud); // 配准
+
     void poissonReconstruction(); // 泊松重建
     void sacAlign(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud1,
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud2);
+                  pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud2);
     float calculateSamplingRadius(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud); // 估计采样半径
     float calculateOctreeResolution(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud); // 估算八叉树分辨率
 

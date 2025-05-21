@@ -50,7 +50,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 void MainWindow::setupUi(){
     //配置ini文件用于文件传输
-    listenFileINI = new QSettings("Config.ini", QSettings::IniFormat);
+    //listenFileINI = new QSettings("Config.ini", QSettings::IniFormat);
     // if(listenFileINI->value("/con/ip")==""){
     //     listenFileINI->setValue("/con/ip", "192.0.0.0");
     // }
@@ -344,6 +344,14 @@ void MainWindow::setupUi(){
         switchTheme->exec(globalPos);
     });
     addAction(showThemeMenu);
+
+    QAction* SavePathAction=new QAction("设置保存路径(N)");
+    SavePathAction->setShortcut(QKeySequence(Qt::Key_N));
+    bar->addAction(SavePathAction);
+
+    connect(SavePathAction,&QAction::triggered,this,[this](){
+        pWinToolWidget->createFolderWithDialog();
+    });
     QAction* lightBlue = switchTheme->addAction("简约蓝(默认)");
     lightBlue->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_D));
     lightBlue->setShortcutContext(Qt::ApplicationShortcut);
@@ -1478,10 +1486,12 @@ void MainWindow::filechange()
     }
     //初始化文件列表
     QDir dir(todayFolderPath);
-    existingFiles=dir.entryList(QDir::Files);
+    existingFiles=dir.entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot);
+    qDebug()<<existingFiles;
     // 监控当天文件夹的变化
     fileWatcher.addPath(todayFolderPath);
     connect(&fileWatcher, &QFileSystemWatcher::directoryChanged, this, &MainWindow::onFileChanged);
+
 }
 
 void MainWindow::onFileChanged(const QString &path)
@@ -1489,7 +1499,9 @@ void MainWindow::onFileChanged(const QString &path)
     qDebug() << "文件发生变化：" << path;
     // 获取目录中的所有文件
     QDir dir(path);
-    QStringList currentFiles = dir.entryList(QDir::Files);
+    QStringList currentFiles = dir.entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot);
+    qDebug()<<currentFiles;
+    qDebug()<<currentFiles.size();
     // 检查新增的文件
     foreach (const QString &file, currentFiles) {
         if (!existingFiles.contains(file)) {
@@ -1498,7 +1510,8 @@ void MainWindow::onFileChanged(const QString &path)
             QRegularExpressionMatch match = regex.match(file);
             QString filePath = path + "/" + file;
             qDebug() << "发现新文件：" << filePath;
-            QStringList files = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
+            QDir dirs(filePath);
+            QStringList files = dirs.entryList(QDir::Files | QDir::NoDotAndDotDot);
             if(files.isEmpty()) {
                 qDebug() << "文件夹为空:";
                 return ;
