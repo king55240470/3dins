@@ -1903,25 +1903,23 @@ void VtkWidget::onAlign()
         if (!entity->IsSelected()) continue;
         if (entity->GetUniqueType() == enPointCloud) {
             auto pcEntity = static_cast<CPointCloud*>(entity);
-            if(pcEntity->isModelCloud && clouds.isEmpty()) isCloud1Model = true;
+            if(pcEntity->isModelCloud && clouds.isEmpty()){
+                isCloud1Model = true;
+                qDebug() << "当前模型点云：" << pcEntity->m_strAutoName;
+            }
             clouds.append(pcl::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>(pcEntity->m_pointCloud));
             logInfo += pcEntity->m_strCName + " ";
         }
     }
 
-//     if (clouds.size() != 2) {
-//         logInfo += "对齐需要两个点云!";
-//         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
-//         return;
-//     }
-
-    auto& template_cloud = isCloud1Model ? clouds[0] : clouds[1];
-    auto& scene_cloud = isCloud1Model ? clouds[1] : clouds[0];
-    if(template_cloud->size() > scene_cloud->size()){
-        QString logInfo = "模型文件选择错误!";
+    if (clouds.size() != 2) {
+        logInfo += "对齐需要两个点云!";
         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
         return;
     }
+
+    auto& template_cloud = isCloud1Model ? clouds[0] : clouds[1];
+    auto& scene_cloud = isCloud1Model ? clouds[1] : clouds[0];
 
     // 自适应计算体素大小
     pcl::PointXYZRGB minpt, maxpt;
