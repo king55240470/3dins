@@ -37,7 +37,7 @@ VtkWidget::VtkWidget(QWidget *parent)
     cloud1(new pcl::PointCloud<pcl::PointXYZ>()),  // 初始化第一个点云对象
     cloud2(new pcl::PointCloud<pcl::PointXYZ>()), // 初始化第二个点云对象
     comparisonCloud(new pcl::PointCloud<pcl::PointXYZRGB>()), // 初始化比较好的点云对象
-    alignedCloud(new pcl::PointCloud<pcl::PointXYZRGB>())
+    aligned_template(new pcl::PointCloud<pcl::PointXYZRGB>())
 {
     vtkObject::GlobalWarningDisplayOff();// 禁用 VTK 的错误处理弹窗
     m_pMainWin = (MainWindow*) parent;
@@ -166,7 +166,7 @@ void VtkWidget::OnLeftButtonPress()
             clickPos[0] <= titlePosition[0] + width &&
             clickPos[1] >= titlePosition[1] + titleSize[1] - closeBoxSize &&
             clickPos[1] <= titlePosition[1] + titleSize[1])
-        {            
+        {
             closeTextActor(it.key()); // 关闭文本框
             return;
         }
@@ -1928,7 +1928,6 @@ void VtkWidget::onAlign()
         );
     float voxel_size = diag / 50.0f;
 
-
     // 滤波下采样
     pcl::VoxelGrid<pcl::PointXYZRGB> voxel;
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr template_down(new pcl::PointCloud<pcl::PointXYZRGB>());
@@ -1962,36 +1961,32 @@ void VtkWidget::onAlign()
     fpfh.setInputNormals(template_normals);
     fpfh.setSearchSurface(template_down);
     fpfh.compute(*template_fpfh);
-
     fpfh.setInputCloud(scene_down);
     fpfh.setInputNormals(scene_normals);
     fpfh.setSearchSurface(scene_down);
     fpfh.compute(*scene_fpfh);
 
-    // RANSAC 全局配准
-    pcl::SampleConsensusInitialAlignment<pcl::PointXYZRGB, pcl::PointXYZRGB, pcl::FPFHSignature33> sac;
-    sac.setInputSource(template_down);
-    sac.setSourceFeatures(template_fpfh);
-    sac.setInputTarget(scene_down);
-    sac.setTargetFeatures(scene_fpfh);
-    sac.setMinSampleDistance(voxel_size * 1.0);
-    sac.setMaxCorrespondenceDistance(voxel_size * 1.5);
-    sac.setMaximumIterations(1000);
+    // RANSAC全局粗配准
+    int items = 3;
+    Eigen::Matrix4f transformation = runSAC(
+        template_down,
+        scene_down,
+        template_fpfh,
+        scene_fpfh,
+        voxel_size,
+        items
+    );
 
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr aligned_template(new pcl::PointCloud<pcl::PointXYZRGB>());
-    sac.align(*aligned_template);
-    if (!sac.hasConverged()) {
-        logInfo += "RANSAC 全局配准失败";
+    // 检查是否有成功的一轮
+    if (transformation.isApprox(Eigen::Matrix4f::Zero())) {
+        QString logInfo = "RANSAC失败";
         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
         return;
     }
 
-    Eigen::Matrix4f transformation = sac.getFinalTransformation(); // 得到变换矩阵
-
     // 使用变换后的模板裁剪场景点云
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr transformed_template(new pcl::PointCloud<pcl::PointXYZRGB>());
     pcl::transformPointCloud(*template_cloud, *transformed_template, transformation);
-
     pcl::PointXYZRGB min_pt, max_pt;
     pcl::getMinMax3D(*transformed_template, min_pt, max_pt);
     pcl::CropBox<pcl::PointXYZRGB> crop_filter;
@@ -2015,172 +2010,68 @@ void VtkWidget::onAlign()
     sor.filter(*denoised_scene);
 
     // 加入元素列表
-    auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateAlignCloud(transformed_scene);
+    auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateAlignCloud(denoised_scene);
     m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
     m_pMainWin->NotifySubscribe();
 }
 
-void VtkWidget::onICP(Eigen::Matrix4f transf, pcl::PointCloud<pcl::PointXYZRGB>::Ptr scenCloud,
-                      pcl::PointCloud<pcl::PointXYZRGB>::Ptr tagCloud)
+Eigen::Matrix4f VtkWidget::runSAC(pcl::PointCloud<pcl::PointXYZRGB>::Ptr template_down, pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_down,
+                                  pcl::PointCloud<pcl::FPFHSignature33>::Ptr template_fpfh, pcl::PointCloud<pcl::FPFHSignature33>::Ptr scene_fpfh,
+                                  float voxel_size, int iterations)
+{
+    pcl::SampleConsensusInitialAlignment<pcl::PointXYZRGB, pcl::PointXYZRGB, pcl::FPFHSignature33> sac;
+    std::vector<std::tuple<Eigen::Matrix4f, double>> ransacResults; // 存储多次 RANSAC 的结果
+
+    for (int i = 0; i < iterations; ++i) {
+        sac.setInputSource(template_down);
+        sac.setSourceFeatures(template_fpfh);
+        sac.setInputTarget(scene_down);
+        sac.setTargetFeatures(scene_fpfh);
+        sac.setMinSampleDistance(voxel_size * 1.0);
+        sac.setMaxCorrespondenceDistance(voxel_size * 1.5);
+        sac.setMaximumIterations(1000);
+
+        sac.align(*aligned_template);
+
+        if (sac.hasConverged()) {
+            Eigen::Matrix4f transformation = sac.getFinalTransformation(); // 得到变换矩阵
+            double fitnessScore = sac.getFitnessScore(); // 拟合度分数
+
+            // 存储结果到 vector 中
+            ransacResults.emplace_back(transformation, fitnessScore);
+        } else {
+            // 如果 RANSAC 不收敛，可以记录一个默认的低质量结果
+            ransacResults.emplace_back(Eigen::Matrix4f::Identity(), std::numeric_limits<double>::max());
+        }
+    }
+    if (ransacResults.empty()) {
+        return Eigen::Matrix4f();
+    }
+
+    // 找到拟合度最高的结果，得到对应的变换矩阵
+    auto bestResult = *std::min_element(ransacResults.begin(), ransacResults.end(),
+                                        [](const auto& a, const auto& b) {
+                                            return std::get<1>(a) < std::get<1>(b); // 只比较拟合度分数
+                                        });
+
+    return std::get<0>(bestResult);
+}
+
+pcl::PointCloud<pcl::PointXYZRGB>::Ptr VtkWidget::onICP(pcl::PointCloud<pcl::PointXYZRGB>::Ptr scenCloud,
+                                                        pcl::PointCloud<pcl::PointXYZRGB>::Ptr tagCloud)
 {
     // 使用XYZRGB类型进行ICP配准
     pcl::IterativeClosestPoint<pcl::PointXYZRGB, pcl::PointXYZRGB> icp;
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr alignedCloud(new pcl::PointCloud<pcl::PointXYZRGB>);
     icp.setInputSource(scenCloud);
     icp.setInputTarget(tagCloud);
     icp.setMaximumIterations(100);
     icp.setTransformationEpsilon(1e-8);
     icp.setMaxCorrespondenceDistance(0.2f);
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr icpFinalCloudPtr(new pcl::PointCloud<pcl::PointXYZRGB>());
-    icp.align(*icpFinalCloudPtr);
+    icp.align(*alignedCloud);
 
-    // 如果仍未收敛，则进行动态迭代
-    if (!icp.hasConverged()) {
-        icp.setMaximumIterations(300);
-        float corDis = 1.0f; // 初始最大点距离阈值
-        while(corDis <= 5.0f){
-            icp.setMaxCorrespondenceDistance(corDis);
-            icp.align(*icpFinalCloudPtr);
-            if(icp.hasConverged()) break;
-            if(corDis <= 5.0f)  corDis += 0.5f;
-        }
-    }
-    if (!icp.hasConverged()) {
-        QString logInfo = "对齐失败";
-        m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
-        return;
-    }
-
+    return icp.hasConverged() ? alignedCloud : nullptr;
 }
-
-// void VtkWidget::onAlign()
-// {
-//     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
-//     QVector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> clouds;
-//     QString logInfo;
-//     bool isModel = false; // 判断clouds[0]是否是标准点云
-
-//     // 收集选中的点云（确保不修改原始实体）
-//     for (int i = 0; i < entityList.size(); i++) {
-//         CEntity* entity = entityList[i];
-//         if (!entity->IsSelected()) continue;
-//         if (entity->GetUniqueType() == enPointCloud) {
-//             // 获取点云的共享指针，确保原数据不被释放
-//             auto pcEntity = static_cast<CPointCloud*>(entity);
-//             clouds.append(pcl::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>(pcEntity->m_pointCloud));
-//             logInfo += ((CPointCloud*)entity)->m_strCName + " ";
-//             if(clouds.size() == 1 && pcEntity->isModelCloud) isModel = true;
-//         }
-//     }
-
-//     if (clouds.size() != 2) {
-//         logInfo += "对齐需要两个点云!";
-//         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
-//         return;
-//     }
-
-//     pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud1_filter(clouds[0]);
-//     pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud2_filter(clouds[1]);
-//     int cnt = FilterCount(cloud1_filter);
-
-//     // 滤波，模型点云不用
-//     for(int i = 0;i < cnt;i++){
-//         if(!isModel) cloud1_filter = onStatisticalFilter(cloud1_filter);
-//         cloud2_filter = onStatisticalFilter(cloud2_filter);
-//     }
-
-//     if (cloud2_filter->empty() || cloud1_filter->empty()) {
-//         logInfo += "去噪后点云为空!";
-//         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
-//         return;
-//     }
-
-//     // 均匀下采样
-//     pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledCloud1(cloud1_filter);
-//     pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledCloud2(cloud2_filter);
-//     float radius2 = calculateSamplingRadius(cloud2_filter);
-
-//     // 如果点云较小，则不进行采样
-//     if(radius2 >= 0.1f){
-//         // 如果点云较大，则动态设置采样半径
-//         float currentRadius = 0.01f; // 初始采样半径
-//         float maxRadius = 0.2f;  // 最大采样半径
-//         float targetSize = 10000;    // 目标点云大小
-//         float reductionFactor = 1.0 / 5.0; // 点云缩减比例
-//         // 初始化当前待采样的点云和采样半径
-//         pcl::PointCloud<pcl::PointXYZRGB>::Ptr currentSource = downsampledCloud2;
-//         pcl::PointCloud<pcl::PointXYZRGB>::Ptr currentTarget = downsampledCloud1;
-
-//         while (true) {
-//             // 均匀下采样
-//             pcl::UniformSampling<pcl::PointXYZRGB> uniformSampling;
-//             uniformSampling.setRadiusSearch(currentRadius);
-//             uniformSampling.setInputCloud(currentSource);
-//             uniformSampling.filter(*downsampledCloud2);
-//             uniformSampling.setInputCloud(currentTarget);
-//             uniformSampling.filter(*downsampledCloud1);
-
-//             if (downsampledCloud1->empty() || downsampledCloud2->empty()) {
-//                 logInfo += "下采样后的点云为空";
-//                 m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
-//                 return;
-//             }
-//             // 检查采样后的点云大小，满足条件则结束采样
-//             if (downsampledCloud1->size() <= targetSize ||
-//                 downsampledCloud2->size() <= cloud2->size() * reductionFactor) {
-//                 break;
-//             }
-//             // 增加采样半径，更新当前源点云和目标点云
-//             currentRadius += 0.01f;
-//             currentSource = downsampledCloud2;
-//             currentTarget = downsampledCloud1;
-//             if (currentRadius > maxRadius) {
-//                 break;
-//             }
-//         }
-//     }
-
-//     if (downsampledCloud1->empty() || downsampledCloud2->empty()) {
-//         logInfo += "下采样后的点云为空";
-//         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
-//         return;
-//     }
-//     // 保存采样后的点云到文件
-//     pcl::io::savePCDFileASCII("downsampled_cloud2.pcd", *downsampledCloud2);
-
-//     // 使用XYZRGB类型进行ICP配准
-//     pcl::IterativeClosestPoint<pcl::PointXYZRGB, pcl::PointXYZRGB> icp;
-//     icp.setInputSource(downsampledCloud2);
-//     icp.setInputTarget(downsampledCloud1);
-//     icp.setMaximumIterations(100);
-//     icp.setTransformationEpsilon(1e-8);
-//     icp.setMaxCorrespondenceDistance(0.2f);
-//     pcl::PointCloud<pcl::PointXYZRGB>::Ptr icpFinalCloudPtr(new pcl::PointCloud<pcl::PointXYZRGB>());
-//     icp.align(*icpFinalCloudPtr);
-
-//     // 如果仍未收敛，则进行动态迭代
-//     if (!icp.hasConverged()) {
-//         icp.setMaximumIterations(300);
-//         float corDis = 1.0f; // 初始最大点距离阈值
-//         while(corDis <= 50.0f){
-//             icp.setMaxCorrespondenceDistance(corDis);
-//             icp.align(*icpFinalCloudPtr);
-//             if(icp.hasConverged()) break;
-//             if(corDis <= 50.0f)  corDis += 1.0f;
-//         }
-//     }
-//     if (!icp.hasConverged()) {
-//         logInfo += "对齐失败";
-//         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
-//         return;
-//     }
-
-//     // 处理对齐后的点云
-//     pcl::PointCloud<pcl::PointXYZRGB>::Ptr alignedCloud = onFilter(icpFinalCloudPtr, downsampledCloud1);
-//     auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateAlignCloud(alignedCloud);
-//     m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
-//     m_pMainWin->NotifySubscribe();
-//     m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
-// }
 
 void VtkWidget::poissonReconstruction()
 {
