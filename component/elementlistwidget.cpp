@@ -158,6 +158,9 @@ void ElementListWidget::CreateEllipse(CObject*obj)
     if(obj->GetUniqueType()==enPointCloud){
         QIcon icon(":/component/construct/pointCloud.png");
         item->setIcon(0, icon);
+        if(obj->GetObjectCName().contains("stand")){
+            setModelIndex(m_pMainWin->getEntityListMgr()->getEntityList().size());
+        }
     }
     if(obj->GetUniqueType()==enAngle){
         QIcon icon(":/component/construct/angle.png");
@@ -609,17 +612,26 @@ void ElementListWidget::startprocess()
     if(pointCouldlists.empty()){
         m_pMainWin->getPWinVtkPresetWidget()->setWidget("实测点云为空无法进行测量");
     }else{
-        isProcessing=true;
+        loadModelFile();
+        QTimer::singleShot(2000, []() {
+            qDebug() << "2秒后执行的操作";
+        });
+        m_pMainWin->NotifySubscribe();
         CompareCloud();
         updateDistance();
         m_pMainWin->NotifySubscribe();
     }
 }
 
-void ElementListWidget::onAddElement(pcl::PointCloud<pcl::PointXYZRGB>::Ptr could)
+void ElementListWidget::onAddElement(pcl::PointCloud<pcl::PointXYZRGB>::Ptr could,QString type)
 {
     if (stateMachine->configuration().contains(runningState)) {
         pointCouldlists.enqueue(could);
+        filetypelists.enqueue(type);
+        loadModelFile();
+        QTimer::singleShot(2000, []() {
+            qDebug() << "2秒后执行的操作";
+        });
         if(isProcessing==false){
             isProcessing=true;
             CompareCloud();
@@ -628,6 +640,7 @@ void ElementListWidget::onAddElement(pcl::PointCloud<pcl::PointXYZRGB>::Ptr coul
         }
     }else{
         pointCouldlists.enqueue(could);
+        filetypelists.enqueue(type);
     }
 }
 
@@ -684,7 +697,7 @@ void ElementListWidget::CompareCloud()
         m_pMainWin->getEntityListMgr()->getEntityList().back()->SetSelected(true);
         qDebug()<<"进入对比之前";
         m_pMainWin->getPWinVtkWidget()->onCompare();
-        m_pMainWin->getPWinToolWidget()->onSaveImage();
+        //m_pMainWin->getPWinToolWidget()->onSaveImage();
         m_pMainWin->getPWinToolWidget()->setauto(false);
         //return;
     }
@@ -750,7 +763,28 @@ void ElementListWidget::updateDistance()
         }
     }
     if(disAndanglelist.size()==0){
-        return;
+        m_pMainWin->getEntityListMgr()->getEntityList()[modelIndex]->SetSelected(true);
+        onDeleteEllipse();
+        if(pointCouldlists.size()>0)
+        {
+            loadModelFile();
+            QTimer::singleShot(2000, []() {
+                qDebug() << "2秒后执行的操作";
+            });
+            CompareCloud();
+            updateDistance();
+            return;
+        }else{
+            isProcessing = false;
+            //进行图片保存，不用进度条
+            // m_pMainWin->getPWinToolWidget()->setauto(true);
+            // m_pMainWin->getPWinToolWidget()->onSaveTxt();
+            // m_pMainWin->getPWinToolWidget()->onSaveWord();
+            // m_pMainWin->getPWinToolWidget()->onSaveExcel();
+            // m_pMainWin->getPWinToolWidget()->onSavePdf();
+            // m_pMainWin->getPWinToolWidget()->setauto(false);
+            return;
+        }
     }
     qDebug()<<"进入时间开启之前";
     timer = new QTimer(this);
@@ -784,49 +818,59 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
             //     workerThread = nullptr;
             // }
 
-            progressBar = new QProgressBar();
-            Qt::WindowFlags flags=Qt::Dialog|Qt::WindowCloseButtonHint;
-            progressBar->setWindowFlags(flags);//设置窗口标志
-            QFont font=QFont(tr("宋体"),10);
-            progressBar->setFont(font);//设置进度条的字体
-            progressBar->setWindowTitle(tr("Please Wait Progress Bar"));//设置进度条的窗口标题
-            progressBar->setRange(0,100);//设置进度条的数值范围，0~mTotalNum
-            progressBar->setValue(0);//设置进度条的初始值
-            progressBar->show();//显示进度条
+            // progressBar = new QProgressBar();
+            // Qt::WindowFlags flags=Qt::Dialog|Qt::WindowCloseButtonHint;
+            // progressBar->setWindowFlags(flags);//设置窗口标志
+            // QFont font=QFont(tr("宋体"),10);
+            // progressBar->setFont(font);//设置进度条的字体
+            // progressBar->setWindowTitle(tr("Please Wait Progress Bar"));//设置进度条的窗口标题
+            // progressBar->setRange(0,100);//设置进度条的数值范围，0~mTotalNum
+            // progressBar->setValue(0);//设置进度条的初始值
+            // progressBar->show();//显示进度条
 
-            workerThread = new QThread(this);
-            worker = new Worker();
-            connect(worker, &Worker::requestSaveOperation, this, [this](int type) {
-                switch(type) {
-                case 0: m_pMainWin->getPWinToolWidget()->setauto(true);m_pMainWin->getPWinToolWidget()->onSaveTxt(); break;
-                case 1: m_pMainWin->getPWinToolWidget()->onSaveWord(); break;
-                case 2: m_pMainWin->getPWinToolWidget()->onSaveExcel(); break;
-                case 3: m_pMainWin->getPWinToolWidget()->onSavePdf();m_pMainWin->getPWinToolWidget()->setauto(false); break;
-                }
-            },Qt::QueuedConnection);
-            worker->moveToThread(workerThread);
+            // workerThread = new QThread(this);
+            // worker = new Worker();
+            // connect(worker, &Worker::requestSaveOperation, this, [this](int type) {
+            //     switch(type) {
+            //     case 0: m_pMainWin->getPWinToolWidget()->setauto(true);m_pMainWin->getPWinToolWidget()->onSaveTxt(); break;
+            //     case 1: m_pMainWin->getPWinToolWidget()->onSaveWord(); break;
+            //     case 2: m_pMainWin->getPWinToolWidget()->onSaveExcel(); break;
+            //     case 3: m_pMainWin->getPWinToolWidget()->onSavePdf();m_pMainWin->getPWinToolWidget()->setauto(false); break;
+            //     }
+            // },Qt::QueuedConnection);
+            // worker->moveToThread(workerThread);
 
 
-            // 信号连接
-            // 使用队列连接确保跨线程安全
-            connect(workerThread, &QThread::started, worker, &Worker::doWork);
-            connect(worker, &Worker::progress, this,
-                    &ElementListWidget::updateProgress, Qt::QueuedConnection);
-            connect(worker, &Worker::finished, workerThread, &QThread::quit);
-            connect(worker, &Worker::finished, worker, &Worker::deleteLater);
-            connect(workerThread, &QThread::finished, workerThread,
-                    &QThread::deleteLater);
+            // // 信号连接
+            // // 使用队列连接确保跨线程安全
+            // connect(workerThread, &QThread::started, worker, &Worker::doWork);
+            // connect(worker, &Worker::progress, this,
+            //         &ElementListWidget::updateProgress, Qt::QueuedConnection);
+            // connect(worker, &Worker::finished, workerThread, &QThread::quit);
+            // connect(worker, &Worker::finished, worker, &Worker::deleteLater);
+            // connect(workerThread, &QThread::finished, workerThread,
+            //         &QThread::deleteLater);
 
-            workerThread->start();
+            // workerThread->start();
 
-            // m_pMainWin->getPWinToolWidget()->setauto(true);
-            // m_pMainWin->getPWinToolWidget()->onSaveTxt();
-            // m_pMainWin->getPWinToolWidget()->onSaveWord();
-            // m_pMainWin->getPWinToolWidget()->onSaveExcel();
-            // m_pMainWin->getPWinToolWidget()->onSavePdf();
-            // m_pMainWin->getPWinToolWidget()->setauto(false);
+            // // m_pMainWin->getPWinToolWidget()->setauto(true);
+            // // m_pMainWin->getPWinToolWidget()->onSaveTxt();
+            // // m_pMainWin->getPWinToolWidget()->onSaveWord();
+            // // m_pMainWin->getPWinToolWidget()->onSaveExcel();
+            // // m_pMainWin->getPWinToolWidget()->onSavePdf();
+            // // m_pMainWin->getPWinToolWidget()->setauto(false);
         }
+        //删除自动化打开的模型文件
+        // for(int i =0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
+        //     m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
+        // }
+        m_pMainWin->getEntityListMgr()->getEntityList()[modelIndex]->SetSelected(true);
+        onDeleteEllipse();
         if(!pointCouldlists.empty()){
+            loadModelFile();
+            QTimer::singleShot(2000, []() {
+                qDebug() << "2秒后执行的操作";
+            });
             CompareCloud();
             updateDistance();
         }else{
@@ -1158,6 +1202,22 @@ void ElementListWidget::createrule()
 bool ElementListWidget::getIsProcess()
 {
     return isProcessing;
+}
+
+void ElementListWidget::setModelIndex(int index)
+{
+    modelIndex = index;
+}
+
+void ElementListWidget::loadModelFile()
+{
+    isProcessing=true;
+    m_pMainWin->peopleOpenfile = false;
+    QString s = filetypelists.dequeue();
+    m_pMainWin->filePathChange = m_pMainWin->modelPath+"/model"+s+"/"+s+"stand.ply";
+    m_pMainWin->openFile();
+    m_pMainWin->peopleOpenfile = true;
+
 }
 
 QVector<CPointCloud *> ElementListWidget::getisComparsionCloud()

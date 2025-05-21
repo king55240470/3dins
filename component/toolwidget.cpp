@@ -1455,7 +1455,7 @@ void ToolWidget::createDistanceMeasurementReport_Pdf()
 
 
 void   ToolWidget::onSavePdf(){
-    return ;
+
     createFolder();
      QString logInfo1="Pdf开始保存";
      m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo1);
@@ -3757,11 +3757,13 @@ QString ToolWidget::getOutputPath(QString kind){
     int hour = currentDateTime.time().hour();
     int minute = currentDateTime.time().minute();
     int second = currentDateTime.time().second();
-    QString dateTimeString = QString("%1_%2_%3")
+    QString dateTimeString = QString("%1-%2-%3")
                                  .arg(year, 4, 10, QChar('0'))
                                  .arg(month, 2, 10, QChar('0'))
                                  .arg(day, 2, 10, QChar('0'));
-    return m_savePath +"/"+dateTimeString+"/"+ kind;
+    QString Path=m_savePath +"/"+dateTimeString+"/"+QString::number(year)+QString::number(month)+QString::number(day)+"#"+m_charBeforeDot;
+    createFolder(Path);
+    return Path+"/"+ kind;
 
 }
 QDataStream& ToolWidget::serializeEntityList(QDataStream& out, const QVector<CEntity*>& entityList){
@@ -3981,7 +3983,7 @@ void ToolWidget:: createFolder(){
             }
         }
     }
-
+    m_charBeforeDot=charBeforeDot;
 
     createFolder(getOutputPath("excell1"));
     createFolder(getOutputPath("excell"+charBeforeDot));

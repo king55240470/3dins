@@ -77,7 +77,7 @@ public:
     void continueUpdate();
     void beginStartButton();
     void startprocess();
-    void onAddElement(pcl::PointCloud<pcl::PointXYZRGB>::Ptr could);
+    void onAddElement(pcl::PointCloud<pcl::PointXYZRGB>::Ptr could,QString type);
     void CompareCloud();
     void updateDistance();//开启更新
     void startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree, QVector<CEntity*>distancelist);//timer关联函数
@@ -85,6 +85,8 @@ public:
     void isAdd();
     void createrule();
     bool getIsProcess();
+    void setModelIndex(int index);
+    void loadModelFile();
     QVector<CPointCloud*> getisComparsionCloud();
 
     QTreeWidget * getTreeWidgetNames();
@@ -130,6 +132,7 @@ private:
     int Treelistsize=0;
     int currentIndex;//被测量主元素parent索引
     int distancelistIndex;//被测量主元素队列索引
+    int modelIndex;//模型点云的索引，用于删除
 
     bool foundmodel;//检查是否有模型点云
 
@@ -137,6 +140,7 @@ private:
     QVector<CEntity*>disAndanglelist;
     QTimer* timer=nullptr;
     QQueue<pcl::PointCloud<pcl::PointXYZRGB>::Ptr>pointCouldlists;
+    QQueue<QString>filetypelists;
     bool isProcessing=false;
     QVector<CEntity*>list;
     //创建线程用来进行保存文件工作

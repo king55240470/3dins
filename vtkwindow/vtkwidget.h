@@ -27,6 +27,7 @@
 #include <pcl/visualization/pcl_visualizer.h>  // PCL可视化库
 #include <pcl/registration/icp.h>
 #include <pcl/kdtree/kdtree_flann.h>
+#include <pcl/kdtree/kdtree.h>
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/filters/uniform_sampling.h>
 #include <pcl/features/normal_3d.h>
@@ -42,8 +43,13 @@
 #include <pcl/recognition/cg/geometric_consistency.h>
 #undef PCL_NO_PRECOMPILE
 #include <pcl/filters/extract_indices.h>
-// #include <pcl/surface/poisson.h>
-// #include <pcl/surface/impl/poisson.hpp>
+#include <pcl/features/normal_3d.h>
+#include <pcl/features/fpfh.h>
+#include <pcl/registration/registration.h>
+#include <pcl/registration/icp.h>
+#include <pcl/registration/transformation_estimation_svd.h>
+#include <pcl/visualization/cloud_viewer.h>
+#include <pcl/filters/statistical_outlier_removal.h>
 
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
@@ -103,6 +109,10 @@ VTK_MODULE_INIT(vtkInteractionStyle);
 VTK_MODULE_INIT(vtkRenderingVolumeOpenGL2);
 VTK_MODULE_INIT(vtkRenderingFreeType);
 
+using namespace  std;
+typedef pcl::Normal NormalT;
+typedef pcl::PointCloud<NormalT> NormalCloud;
+
 class VtkWidget : public QWidget
 {
     Q_OBJECT
@@ -138,7 +148,7 @@ public:
     void FocusOnActor(CEntity* entity); // 设置相机以聚焦指定的actor
 
     int adjustMeanK(size_t pointCount); // 估算滤波的近邻点数量
-    double adjustStddevThresh(size_t pointCount); // 估算离群点阈值，用于统计滤波
+    double adjustStddevThresh(pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_cloud, float voxelSize); // 估算离群点阈值，用于统计滤波
     float calculateThreshold(pcl::PointCloud<pcl::PointXYZRGB>::Ptr tagCloud);
     int FilterCount(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud); // 计算去噪次数
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr onStatisticalFilter(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud);
@@ -146,12 +156,19 @@ public:
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr onFilter(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& srcCloud,
                                                     pcl::PointCloud<pcl::PointXYZRGB>::Ptr& tagCloud); // 重载的滤波方法，用于在对齐中调用
     void onCompare();// 比较两个点云
-    void onAlign(); // 配准的函数
+
+    void onAlign(); // 点云模板匹配
+    Eigen::Matrix4f runSAC(pcl::PointCloud<pcl::PointXYZRGB>::Ptr template_down, pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_down,
+    pcl::PointCloud<pcl::FPFHSignature33>::Ptr template_fpfh, pcl::PointCloud<pcl::FPFHSignature33>::Ptr scene_fpfh,
+    float voxel_size, int iterations);
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr onICP(pcl::PointCloud<pcl::PointXYZRGB>::Ptr scenCloud,
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr tagCloud); // ICP配准
+
     void poissonReconstruction(); // 泊松重建
-    void sacAlign(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud1,
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud2);
     float calculateSamplingRadius(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud); // 估计采样半径
     float calculateOctreeResolution(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud); // 估算八叉树分辨率
+    double computeAdaptiveRadius(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud);
+    double computeSamplingSize(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud);
 
     // 显示选中的图形的信息
     void setCentity(CEntity*entity);  //传入centity对象
@@ -204,7 +221,7 @@ private:
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud1; // 对比用的两个点云
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud2;
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr comparisonCloud;
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr alignedCloud;
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr aligned_template;
     vtkSmartPointer<vtkActor2D> colorBarActor; // 色温条
     QMap<CPosition, double> pointToDistances; // 存储对比点云每个点的偏差值
 
@@ -257,7 +274,31 @@ private:
     // 对话框，用于控制渲染的点的大小和线宽
     QDialog* actorAdjustDialog;
 
-public slots:
+    template <typename PointT>
+    void removeNaNNormals(typename pcl::PointCloud<PointT>::Ptr& cloud,
+                          pcl::PointCloud<pcl::Normal>::Ptr& normals) {
+        pcl::PointIndices::Ptr valid_indices(new pcl::PointIndices);
+        for (size_t i = 0; i < cloud->size(); ++i) {
+            if (pcl::isFinite(cloud->at(i)) &&
+                pcl::isFinite(normals->at(i))) { // 同时检查点和法线
+                valid_indices->indices.push_back(i);
+            }
+        }
+
+        pcl::ExtractIndices<PointT> extract;
+        extract.setInputCloud(cloud);
+        extract.setIndices(valid_indices);
+        typename pcl::PointCloud<PointT>::Ptr filtered(new pcl::PointCloud<PointT>);
+        extract.filter(*filtered);
+        cloud.swap(filtered);
+
+        pcl::ExtractIndices<pcl::Normal> extract_normals;
+        extract_normals.setInputCloud(normals);
+        extract_normals.setIndices(valid_indices);
+        pcl::PointCloud<pcl::Normal>::Ptr filtered_normals(new pcl::PointCloud<pcl::Normal>);
+        extract_normals.filter(*filtered_normals);
+        normals.swap(filtered_normals);
+    }
 
 };
 

@@ -203,9 +203,10 @@ public slots:
     void   ExtractData(QVector<CEntity *>& entitylist,QList<Size_MeasurementData>&dataAll_size,Size_MeasurementData& data_pointCloud_size);
     void   saveAddress(const QString &address);
     void createFolder();
+
     QString loadAddress();
 private:
-
+    QString m_charBeforeDot="A";
     QString m_savePath="z:/results";//默认保存路径
 
     QMap<CEntity*,QString>m_checkpoint_imagePath;
