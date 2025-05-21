@@ -1897,6 +1897,7 @@ void VtkWidget::onAlign()
     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
     QVector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> clouds;
     QString logInfo;
+    bool isCloud1Model = false;
 
     // 收集两个选中的点云
     for (int i = 0; i < entityList.size(); i++) {
@@ -1904,6 +1905,7 @@ void VtkWidget::onAlign()
         if (!entity->IsSelected()) continue;
         if (entity->GetUniqueType() == enPointCloud) {
             auto pcEntity = static_cast<CPointCloud*>(entity);
+            if(pcEntity->isModelCloud && clouds.isEmpty()) isCloud1Model = true;
             clouds.append(pcl::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>(pcEntity->m_pointCloud));
             logInfo += pcEntity->m_strCName + " ";
         }
@@ -1914,8 +1916,15 @@ void VtkWidget::onAlign()
         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
         return;
     }
-    auto& template_cloud = clouds[0];
-    auto& scene_cloud = clouds[1];
+
+    auto& template_cloud = isCloud1Model ? clouds[0] : clouds[1];
+    auto& scene_cloud = isCloud1Model ? clouds[1] : clouds[0];
+    if(template_cloud->size() > scene_cloud->size()){
+        QString logInfo = "模型文件选择错误!";
+        m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
+        return;
+    }
+
     // 自适应计算体素大小
     pcl::PointXYZRGB minpt, maxpt;
     pcl::getMinMax3D(*template_cloud, minpt, maxpt); // 计算点云的最小/大坐标
@@ -1946,7 +1955,7 @@ void VtkWidget::onAlign()
     ne.compute(*template_normals);
     ne.setInputCloud(scene_down);
     ne.compute(*scene_normals);
-    qDebug()<<"对齐111111";
+
     // 计算FPFH特征
     pcl::PointCloud<pcl::FPFHSignature33>::Ptr template_fpfh(new pcl::PointCloud<pcl::FPFHSignature33>());
     pcl::PointCloud<pcl::FPFHSignature33>::Ptr scene_fpfh(new pcl::PointCloud<pcl::FPFHSignature33>());
@@ -1963,7 +1972,7 @@ void VtkWidget::onAlign()
     fpfh.setInputNormals(scene_normals);
     fpfh.setSearchSurface(scene_down);
     fpfh.compute(*scene_fpfh);
-    qDebug()<<"对齐22222";
+
     // RANSAC全局粗配准
     int items = 3;
     Eigen::Matrix4f transformation = runSAC(
@@ -1973,15 +1982,15 @@ void VtkWidget::onAlign()
         scene_fpfh,
         voxel_size,
         items
-    );
-    qDebug()<<"对齐33333";
+        );
+
     // 检查是否有成功的一轮
     if (transformation.isApprox(Eigen::Matrix4f::Zero())) {
         QString logInfo = "RANSAC失败";
         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
         return;
     }
-    qDebug()<<"对齐44444";
+
     // 使用变换后的模板裁剪场景点云
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr transformed_template(new pcl::PointCloud<pcl::PointXYZRGB>());
     pcl::transformPointCloud(*template_cloud, *transformed_template, transformation);
@@ -1991,12 +2000,14 @@ void VtkWidget::onAlign()
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr cropped_scene(new pcl::PointCloud<pcl::PointXYZRGB>());
     crop_filter.setMin(Eigen::Vector4f(min_pt.x, min_pt.y, min_pt.z, 1.0f));
     crop_filter.setMax(Eigen::Vector4f(max_pt.x, max_pt.y, max_pt.z, 1.15f));
-    crop_filter.setInputCloud(scene_cloud);
+    crop_filter.setInputCloud(scene_cloud); // 用采样前的点云，保留更多点
     crop_filter.filter(*cropped_scene);
 
     // 将裁剪后的点云向模板进行对齐，这里使用逆变换
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr transformed_scene(new pcl::PointCloud<pcl::PointXYZRGB>());
     pcl::transformPointCloud(*cropped_scene, *transformed_scene, transformation.inverse());
+
+    pcl::io::savePCDFile("E:\\pcl\\transf_scene", *transformed_scene);
 
     // 去噪（统计滤波）
     pcl::StatisticalOutlierRemoval<pcl::PointXYZRGB> sor;
@@ -2006,12 +2017,14 @@ void VtkWidget::onAlign()
     sor.setStddevMulThresh(stdThresh);
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr denoised_scene(new pcl::PointCloud<pcl::PointXYZRGB>());
     sor.filter(*denoised_scene);
-    qDebug()<<"对齐333333";
+
     // 加入元素列表
     auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateAlignCloud(denoised_scene);
     m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
     m_pMainWin->NotifySubscribe();
 }
+
+
 
 Eigen::Matrix4f VtkWidget::runSAC(pcl::PointCloud<pcl::PointXYZRGB>::Ptr template_down, pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_down,
                                   pcl::PointCloud<pcl::FPFHSignature33>::Ptr template_fpfh, pcl::PointCloud<pcl::FPFHSignature33>::Ptr scene_fpfh,
