@@ -1974,7 +1974,7 @@ void VtkWidget::onAlign()
     fpfh.compute(*scene_fpfh);
 
     // RANSAC全局粗配准
-    int items = 3;
+    int items = 5;
     Eigen::Matrix4f transformation = runSAC(
         template_down,
         scene_down,
