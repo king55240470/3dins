@@ -1533,15 +1533,7 @@ void MainWindow::onFileChanged(const QString &path)
             //正则表达式，格式如2025-05-20#A#001#001
             QRegularExpression regex("^\\d{4}-\\d{2}-\\d{2}#([A-Z])#\\d{3}#\\d{3}$");
             QRegularExpressionMatch match = regex.match(file);
-            QString filePath = path + "/" + file+"fusion";
-            qDebug() << "发现新文件：" << filePath;
-            QDir dirs(filePath);
-            QStringList files = dirs.entryList(QDir::Files | QDir::NoDotAndDotDot);
-            if(files.isEmpty()) {
-                qDebug() << "文件夹为空:";
-                return ;
-            }
-            QString fileCould = filePath + "/" + files.first();
+            QString fileCould = path + "/" + file;
             //filePathChange = fileCould;
             //自动打开
             peopleOpenfile=false;
