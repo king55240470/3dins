@@ -1897,7 +1897,7 @@ void VtkWidget::onAlign()
     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
     QVector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> clouds;
     QString logInfo;
-    bool isCloud1Model, isCloud2Model;
+    bool isCloud1Model = false;
 
     // 收集两个选中的点云
     for (int i = 0; i < entityList.size(); i++) {
@@ -1905,13 +1905,9 @@ void VtkWidget::onAlign()
         if (!entity->IsSelected()) continue;
         if (entity->GetUniqueType() == enPointCloud) {
             auto pcEntity = static_cast<CPointCloud*>(entity);
+            if(pcEntity->isModelCloud && clouds.isEmpty()) isCloud1Model = true;
             clouds.append(pcl::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>(pcEntity->m_pointCloud));
             logInfo += pcEntity->m_strCName + " ";
-            if(pcEntity->isModelCloud && clouds.isEmpty()) isCloud1Model = true;
-            if(pcEntity->isModelCloud){
-                isCloud1Model = false;
-                isCloud2Model = true;
-            }
         }
     }
 
@@ -1923,7 +1919,7 @@ void VtkWidget::onAlign()
 
     auto& template_cloud = isCloud1Model ? clouds[0] : clouds[1];
     auto& scene_cloud = isCloud1Model ? clouds[1] : clouds[0];
-    if(template_cloud->size() < scene_cloud->size()){
+    if(template_cloud->size() > scene_cloud->size()){
         QString logInfo = "模型文件选择错误!";
         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
         return;
@@ -1978,7 +1974,7 @@ void VtkWidget::onAlign()
     fpfh.compute(*scene_fpfh);
 
     // RANSAC全局粗配准
-    int items = 3;
+    int items = 5;
     Eigen::Matrix4f transformation = runSAC(
         template_down,
         scene_down,
