@@ -591,30 +591,37 @@ void FileManagerWidget::allHide(QVector<QString> s){
 
     QMap<QString, bool>& mapOFContent = m_pMainWin->getpWinFileMgr()->getContentItemMap();
     for (auto it = mapOFContent.begin(); it != mapOFContent.end(); ++it) {
-            it.value() = false;
+
+        it.value() = false;
     }
-    for (auto it = mapOFContent.begin(); it != mapOFContent.end(); ++it) {
-        for(auto a:s)
-        if(it.key().contains(a)){
-            it.value() = true;
+    for(auto a:s){
+        for (auto it = mapOFContent.begin(); it != mapOFContent.end(); ++it) {
+            if(it.key().contains(a)){
+                it.value() = true;
+                break;
+
+            }
         }
     }
 
     QMap<QString, bool>& mapOFIdentify = m_pMainWin->getpWinFileMgr()->getIdentifyItemMap();
     for (auto it = mapOFIdentify.begin(); it != mapOFIdentify.end(); ++it) {
-            it.value() = false;
+
+        it.value() = false;
     }
-    for (auto it = mapOFIdentify.begin(); it != mapOFIdentify.end(); ++it) {
-        for(auto a:s)
-        if(it.key().contains(a)){
-            it.value() = true;
+    for(auto a:s){
+        for (auto it = mapOFIdentify.begin(); it != mapOFIdentify.end(); ++it) {
+            if(it.key().contains(a)){
+                it.value() = true;
+                break;
+
+            }
         }
     }
 
-
-
     m_pMainWin->getPWinVtkWidget()->UpdateInfo();
 }
+
 void FileManagerWidget::allHide(QString a){
 
     contentItemMapTemp=m_pMainWin->getpWinFileMgr()->getContentItemMap();
@@ -634,31 +641,14 @@ void FileManagerWidget::allHide(QString a){
         }
     }
 
-    for (auto it = mapOFContent.begin(); it != mapOFContent.end(); ++it) {
-        if(!it.key().contains(a)){
-            it.value() = true;
-        }
-    }
-
-    for (auto it = mapOFIdentify.begin(); it != mapOFIdentify.end(); ++it) {
-        if(!it.key().contains(a)){
-            it.value() = true;
-        }
-    }
-
-
-
     m_pMainWin->getPWinVtkWidget()->UpdateInfo();
 }
-
 void FileManagerWidget::allRecover(){
-
     m_pMainWin->getpWinFileMgr()->getContentItemMap()=contentItemMapTemp;
     m_pMainWin->getpWinFileMgr()->getIdentifyItemMap()=identifyItemMapTemp;
 
     int contentItemCount = contentItem->rowCount(); // 获取子项数量
-    for (int i=contentItemCount-1;i>=0;i--) {
-        QStandardItem *item = contentItem->child(i);
+    for (int i=contentItemCount-1;i>=0;i--) {QStandardItem *item = contentItem->child(i);
         item->setData(contentItemMapTemp[item->data(Qt::UserRole).toString()], Qt::UserRole+1);
     }
 
@@ -670,6 +660,8 @@ void FileManagerWidget::allRecover(){
 
     m_pMainWin->getPWinVtkWidget()->UpdateInfo();
 }
+
+
 
 
 //用于绘制图形元素到界面上//包含绘制项时需要的样式选项，如项的矩形区域、样式等//表示当前绘制的模型项的索引

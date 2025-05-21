@@ -112,7 +112,6 @@ public:
     QDataStream& serializeEntityList(QDataStream& out, const QVector<CEntity*>& entityList);
     QDataStream& deserializeEntityList(QDataStream& in, QVector<CEntity*>& entityList);
 
-
     //返回UniqueToolBar的引用，以便contralwidget操作
     UniqueToolBar& getSave();
     UniqueToolBar& getFind();
@@ -132,7 +131,7 @@ public:
     QString getTimeString();
     //保存图片
     void SaveImage(QString path,std::string format="png");
-    void SaveImage(CEntity* entity);
+    void SaveImage(CEntity* entity,Size_MeasurementData* PointCloudData=nullptr);
     QString getCompareImagePath();
     //初始化所有输出文件夹
     void InitOutputFolder();
@@ -177,6 +176,7 @@ public slots:
     void onSaveImage();
     void onSavePointCloud();
     void createDistanceMeasurementReport();
+    void createDistanceMeasurementReport_Pdf();
 
     //打开文件
     void onOpenExcel();
@@ -191,6 +191,8 @@ public slots:
     QMap<CEntity*,QString>& getCheckpoint_imagePath(){
         return m_checkpoint_imagePath;
     }
+
+    void createFolderWithDialog();
     //用来提取点云，监测点数据
     void   ExtractData(QVector<CEntity *>& entitylist,QList<QList<QString>>& dataAll,QList<QString>& data_PointCloud);
 
@@ -200,6 +202,8 @@ public slots:
 
     void   ExtractData(QVector<CEntity *>& entitylist,QList<Size_MeasurementData>&dataAll_size,Size_MeasurementData& data_pointCloud_size);
 private:
+
+    QString m_savePath="D:/output";
 
     QMap<CEntity*,QString>m_checkpoint_imagePath;
     //对比点云保存路径
