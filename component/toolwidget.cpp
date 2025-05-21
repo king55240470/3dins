@@ -190,12 +190,13 @@ ToolWidget::ToolWidget(QWidget *parent)
 
     m_pMainWin =(MainWindow*)parent;
 
-
+   m_savePath=loadAddress();
     InitOutputFolder();
 
     m_savePdf=false;
     Action_Checked=nullptr;
     Is_FindPoint_Cheked=false;
+
 
 
     resize(400,250);
@@ -354,13 +355,6 @@ void ToolWidget::InitOutputFolder(){
     CompareImagePath= ParentPath+"/点云对比图像/screenshot"+"/";
 
     // createFolder(ParentPath+"/点云对比图像/screenshot");
-    createFolder(getOutputPath("pcd"));
-    createFolder(getOutputPath("ply"));
-    createFolder(getOutputPath("word"));
-    createFolder(getOutputPath("pdf"));
-    createFolder(getOutputPath("image"));
-    createFolder(getOutputPath("excel"));
-    createFolder(getOutputPath("txt"));
 
 
     createFolder(m_savePath);
@@ -369,7 +363,7 @@ void ToolWidget::InitOutputFolder(){
     createFolder(getOutputPath("image"));
     createFolder(getOutputPath("叶片检测报告"));
 
-    m_pMainWin->getPWinVtkPresetWidget()->setWidget("已创建文件夹"+getOutputPath(""));
+    m_pMainWin->getPWinVtkPresetWidget()->setWidget("保存路径:"+getOutputPath(""));
 
 }
 void ToolWidget::clearToolWidget(){
@@ -824,7 +818,7 @@ void ToolWidget::connectActionWithF(){
     //connect(save_actions_[save_action_name_list_.indexOf("excel")],&QAction::triggered,this,&  ToolWidget::onSaveExcel);
     //connect(save_actions_[save_action_name_list_.indexOf("word")],&QAction::triggered,this,&  ToolWidget::onSaveWord);
     // connect(save_actions_[save_action_name_list_.indexOf("txt")],&QAction::triggered,this,&  ToolWidget::onSaveTxt);
-    // connect(save_actions_[save_action_name_list_.indexOf("pdf")],&QAction::triggered,this,&  ToolWidget::onSavePdf);
+    // connect(save_actions_[save_action_name_list_.indexOf("pdf")],&QAction::triggered,this,&  ToolWidget::);
     // connect(save_actions_[save_action_name_list_.indexOf("image")],&QAction::triggered,this,&  ToolWidget::onSaveImage);
     connect(save_actions_[save_action_name_list_.indexOf("pointcloud")],&QAction::triggered,this,&  ToolWidget::onSavePointCloud);
     //打开
@@ -1198,6 +1192,7 @@ void insertImageIntoPdf(const QString &imagePath, const QString &pdfPath) {
 
 void ToolWidget::createDistanceMeasurementReport_Pdf()
 {
+    createFolder();
     // 记录检测编号
     static int count = 1;
     // 提取点云、监测点信息
@@ -1392,7 +1387,7 @@ void ToolWidget::createDistanceMeasurementReport_Pdf()
             }
         }
     }
-    qDebug()<<"pdf9";
+
     // 绘制局部检测部分
     int num_size = 1;
     for (const Size_MeasurementData& data : dataAll_size) {
@@ -1420,7 +1415,7 @@ void ToolWidget::createDistanceMeasurementReport_Pdf()
             painter.drawRect(cellRect);
             painter.drawText(cellRect, Qt::AlignCenter, measureHeaders[col]);
         }
-        qDebug()<<"pdf10";
+
         // 绘制局部检测表格数据行
         for (int row = 0; row < measureValues.size(); ++row) {
             for (int col = 0; col < 2; ++col) {
@@ -1433,7 +1428,7 @@ void ToolWidget::createDistanceMeasurementReport_Pdf()
                 }
             }
         }
-        qDebug()<<"pdf11";
+
         sizeTableY = measureTableY + (measureValues.size() + 2) * rowHeight;
 
         // 添加图片
@@ -1460,8 +1455,8 @@ void ToolWidget::createDistanceMeasurementReport_Pdf()
 
 
 void   ToolWidget::onSavePdf(){
-
-
+    return ;
+    createFolder();
      QString logInfo1="Pdf开始保存";
      m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo1);
 
@@ -1836,6 +1831,7 @@ void   ToolWidget::onSavePdf(){
 
 
 void   ToolWidget::onSaveExcel(){
+    createFolder();
     QString logInfo1="Excel开始保存";
     m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo1);
 
@@ -1916,6 +1912,7 @@ void   ToolWidget::onSaveExcel(){
 }
 
 void ToolWidget::onSaveTxt(){
+    createFolder();
     QString logInfo1="Txt开始保存";
     m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo1);
     QString filePath;
@@ -2016,6 +2013,7 @@ void ToolWidget::onSaveTxt(){
 
 
 void   ToolWidget::onSaveWord(){
+    createFolder();
     createDistanceMeasurementReport();
 
 }
@@ -3750,7 +3748,20 @@ void ToolWidget::createFolder(QString path){
 
 
 QString ToolWidget::getOutputPath(QString kind){
-    return m_savePath +"/"+ kind;
+    QDateTime currentDateTime = QDateTime::currentDateTime();
+
+    // 获取年、月、日、小时、分钟和秒
+    int year = currentDateTime.date().year();
+    int month = currentDateTime.date().month();
+    int day = currentDateTime.date().day();
+    int hour = currentDateTime.time().hour();
+    int minute = currentDateTime.time().minute();
+    int second = currentDateTime.time().second();
+    QString dateTimeString = QString("%1_%2_%3")
+                                 .arg(year, 4, 10, QChar('0'))
+                                 .arg(month, 2, 10, QChar('0'))
+                                 .arg(day, 2, 10, QChar('0'));
+    return m_savePath +"/"+dateTimeString+"/"+ kind;
 
 }
 QDataStream& ToolWidget::serializeEntityList(QDataStream& out, const QVector<CEntity*>& entityList){
@@ -3816,8 +3827,8 @@ void ToolWidget::SaveImage(CEntity* entity,Size_MeasurementData* pointCloudData)
 
 
     //得到所有元素
-    auto entitylist=m_pMainWin->getEntityListMgr()->getEntityList();
-    QVector<CObject*> objlist=m_pMainWin->getObjectListMgr()->getObjectList();
+    auto& entitylist=m_pMainWin->getEntityListMgr()->getEntityList();
+    QVector<CObject*>& objlist=m_pMainWin->getObjectListMgr()->getObjectList();
     auto& actorMap = m_pMainWin->getactorToEntityMap();
     auto treeWidget = m_pMainWin->getPWinElementListWidget()->getTreeWidgetNames();
     std::vector<vtkActor*> actors;
@@ -3952,9 +3963,36 @@ void ToolWidget::SaveImage(CEntity* entity,Size_MeasurementData* pointCloudData)
     m_pMainWin->getPWinVtkWidget()->UpdateInfo();
 }
 
+void ToolWidget:: createFolder(){
+    auto& entitylist=m_pMainWin->getEntityListMgr()->getEntityList();
+    createFolder(m_savePath);
 
+    QString charBeforeDot="";
+    for(auto entity: entitylist ){
+        if(entity->GetUniqueType()==enPointCloud){
+            CPointCloud* pointCloud=( CPointCloud*)entity;
+            if(pointCloud->isMeasureCloud||pointCloud->m_strAutoName.contains("实测")){
+                int dotPos = pointCloud->m_strAutoName.indexOf('.');
+                // 2. 检查是否存在 '.'，并确保前面有字符
+                if (dotPos > 0) {
+                    charBeforeDot =pointCloud->m_strAutoName.at(dotPos - 1);
+                    qDebug() << "小数点前的一个字符是：" << charBeforeDot;
+                }
+            }
+        }
+    }
+
+
+    createFolder(getOutputPath("excell1"));
+    createFolder(getOutputPath("excell"+charBeforeDot));
+    createFolder(getOutputPath("image"));
+    createFolder(getOutputPath("叶片检测报告"));
+
+}
 void ToolWidget::createFolderWithDialog()
 {
+
+    auto& entitylist=m_pMainWin->getEntityListMgr()->getEntityList();
         QWidget* parent = nullptr;
         const QString& defaultDir = QDir::homePath();
         const QString& defaultFolderName = "NewFolder";
@@ -3998,11 +4036,20 @@ void ToolWidget::createFolderWithDialog()
 
     // 创建文件夹
     m_savePath=newFolderPath;
-    createFolder(m_savePath);
-    createFolder(getOutputPath("excell1"));
-    createFolder(getOutputPath("excellA"));
-    createFolder(getOutputPath("image"));
-    createFolder(getOutputPath("叶片检测报告"));
-    m_pMainWin->getPWinVtkPresetWidget()->setWidget("已创建文件夹"+getOutputPath(""));
+    saveAddress(m_savePath);
+    createFolder();
 
+    m_pMainWin->getPWinVtkPresetWidget()->setWidget("保存路径:"+getOutputPath(""));
+
+}
+
+
+void ToolWidget::saveAddress(const QString &address) {
+    QSettings settings("3D", "3D_path");
+    settings.setValue("lastAddress", address);
+}
+
+QString ToolWidget::loadAddress() {
+    QSettings settings("3D", "3D_path");
+    return settings.value("lastAddress", "z:/results").toString(); // 默认值空字符串
 }
