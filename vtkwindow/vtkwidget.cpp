@@ -1870,10 +1870,8 @@ void VtkWidget::onCompare()
     pcl::PLYWriter writer;
     writer.write("D:/testFiles/compareCloud.ply", *comparisonCloud, true); // true = 写入ASCII格式（false 为二进制）
 
-    // 导出为fbx文件
-    //ExportPointCloudToFBX(comparisonCloud,"D:/outout.fbx");
     //平均距离
-    averageDistance/=count_distance;
+    averageDistance = averageDistance / cloud2->size();
     QVector<double> DistanceValue;
     DistanceValue.push_back(maxDistance);
     DistanceValue.push_back(minDistance);
@@ -2100,25 +2098,23 @@ void VtkWidget::onAlign()
         if (!entity->IsSelected()) continue;
         if (entity->GetUniqueType() == enPointCloud) {
             auto pcEntity = static_cast<CPointCloud*>(entity);
-            if(pcEntity->isModelCloud && clouds.isEmpty()) isCloud1Model = true;
+            if(pcEntity->isModelCloud && clouds.isEmpty()){
+                isCloud1Model = true;
+                qDebug() << "当前模型点云：" << pcEntity->m_strAutoName;
+            }
             clouds.append(pcl::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>(pcEntity->m_pointCloud));
             logInfo += pcEntity->m_strCName + " ";
         }
     }
 
-//     if (clouds.size() != 2) {
-//         logInfo += "对齐需要两个点云!";
-//         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
-//         return;
-//     }
-
-    auto& template_cloud = isCloud1Model ? clouds[0] : clouds[1];
-    auto& scene_cloud = isCloud1Model ? clouds[1] : clouds[0];
-    if(template_cloud->size() > scene_cloud->size()){
-        QString logInfo = "模型文件选择错误!";
+    if (clouds.size() != 2) {
+        logInfo += "对齐需要两个点云!";
         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
         return;
     }
+
+    auto& template_cloud = isCloud1Model ? clouds[0] : clouds[1];
+    auto& scene_cloud = isCloud1Model ? clouds[1] : clouds[0];
 
     // 自适应计算体素大小
     pcl::PointXYZRGB minpt, maxpt;
@@ -2169,7 +2165,7 @@ void VtkWidget::onAlign()
     fpfh.compute(*scene_fpfh);
 
     // RANSAC全局粗配准
-    int items = 5;
+    int items = 3;
     Eigen::Matrix4f transformation = runSAC(
         template_down,
         scene_down,
@@ -2201,8 +2197,6 @@ void VtkWidget::onAlign()
     // 将裁剪后的点云向模板进行对齐，这里使用逆变换
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr transformed_scene(new pcl::PointCloud<pcl::PointXYZRGB>());
     pcl::transformPointCloud(*cropped_scene, *transformed_scene, transformation.inverse());
-
-    pcl::io::savePCDFile("E:\\pcl\\transf_scene", *transformed_scene);
 
     // 去噪（统计滤波）
     pcl::StatisticalOutlierRemoval<pcl::PointXYZRGB> sor;

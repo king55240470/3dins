@@ -763,6 +763,9 @@ void ElementListWidget::updateDistance()
         }
     }
     if(disAndanglelist.size()==0){
+        for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
+            m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
+        }
         m_pMainWin->getEntityListMgr()->getEntityList()[modelIndex]->SetSelected(true);
         onDeleteEllipse();
         if(pointCouldlists.size()>0)
@@ -864,6 +867,9 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
         // for(int i =0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
         //     m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
         // }
+        for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
+            m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
+        }
         m_pMainWin->getEntityListMgr()->getEntityList()[modelIndex]->SetSelected(true);
         onDeleteEllipse();
         if(!pointCouldlists.empty()){
