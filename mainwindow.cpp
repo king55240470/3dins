@@ -1531,8 +1531,11 @@ void MainWindow::onFileChanged(const QString &path)
     foreach (const QString &file, currentFiles) {
         if (!existingFiles.contains(file)) {
             //正则表达式，格式如2025-05-20#A#001#001
-            QRegularExpression regex("^\\d{4}-\\d{2}-\\d{2}#([A-Z])#\\d{3}#\\d{3}$");
+            QRegularExpression regex("^\\d{8}#([A-Z])#\\d{3}#\\d{3}$");
             QRegularExpressionMatch match = regex.match(file);
+            if(file.contains("single")){
+                return;
+            }
             QString fileCould = path + "/" + file;
             //filePathChange = fileCould;
             //自动打开

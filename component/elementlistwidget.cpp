@@ -762,10 +762,12 @@ void ElementListWidget::updateDistance()
         }
     }
     if(disAndanglelist.size()==0){
-        for(int i =0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
+        for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
             m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
         }
-        m_pMainWin->getEntityListMgr()->getEntityList()[modelIndex]->SetSelected(true);
+        for(int i=modelIndex;i<modelIndex+qinsSize;i++){
+            m_pMainWin->getEntityListMgr()->getEntityList()[modelIndex]->SetSelected(true);
+        }
         onDeleteEllipse();
         if(pointCouldlists.size()>0)
         {
@@ -863,13 +865,16 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
             // // m_pMainWin->getPWinToolWidget()->setauto(false);
         }
         //删除自动化打开的模型文件
-        for(int i =0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
+        for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
             m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
         }
-        m_pMainWin->getEntityListMgr()->getEntityList()[modelIndex]->SetSelected(true);
+        for(int i=modelIndex;i<modelIndex+qinsSize;i++){
+            m_pMainWin->getEntityListMgr()->getEntityList()[modelIndex]->SetSelected(true);
+        }
         onDeleteEllipse();
         if(!pointCouldlists.empty()){
             loadModelFile();
+
             QTimer::singleShot(2000, []() {
                 qDebug() << "2秒后执行的操作";
             });
@@ -1213,13 +1218,14 @@ void ElementListWidget::setModelIndex(int index)
 
 void ElementListWidget::loadModelFile()
 {
+    int size = m_pMainWin->getEntityListMgr()->getEntityList().size();
     isProcessing=true;
     m_pMainWin->peopleOpenfile = false;
     QString s = filetypelists.dequeue();
     m_pMainWin->filePathChange = m_pMainWin->modelPath+"/model"+s+"/"+s+"stand.ply";
     m_pMainWin->openFile();
     m_pMainWin->peopleOpenfile = true;
-
+    qinsSize = m_pMainWin->getEntityListMgr()->getEntityList().size()-size;
 }
 
 QVector<CPointCloud *> ElementListWidget::getisComparsionCloud()
