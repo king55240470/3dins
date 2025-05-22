@@ -4053,5 +4053,5 @@ void ToolWidget::saveAddress(const QString &address) {
 
 QString ToolWidget::loadAddress() {
     QSettings settings("3D", "3D_path");
-    return settings.value("lastAddress", "z:/results").toString(); // 默认值空字符串
+    return settings.value("lastAddress", "z:/result").toString(); // 默认值空字符串
 }
