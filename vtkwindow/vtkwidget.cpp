@@ -1868,7 +1868,7 @@ void VtkWidget::onCompare()
     // pcl::PLYWriter writer;
     // writer.write("D:/testFiles/compareCloud.ply", *comparisonCloud, true); // true = 写入ASCII格式（false 为二进制）
 
-    //平均距离
+    // //平均距离
     // averageDistance = averageDistance / cloud2->size();
     // QVector<double> DistanceValue;
     // DistanceValue.push_back(maxDistance);
@@ -1876,27 +1876,27 @@ void VtkWidget::onCompare()
     // DistanceValue.push_back(averageDistance);
     // m_distanceValue[cloudEntity]= DistanceValue;
 
-    ShowColorBar(minDistance, maxDistance);
-    m_pMainWin->getPWinToolWidget()->onSaveImage();
-    QString path_front=m_pMainWin->getPWinToolWidget()->getlastCreatedImageFileFront();
-    QString path_top=m_pMainWin->getPWinToolWidget()->getlastCreatedImageFileTop();
-    QString path_right=m_pMainWin->getPWinToolWidget()->getlastCreatedImageFileRight();
+    // ShowColorBar(minDistance, maxDistance);
+    // m_pMainWin->getPWinToolWidget()->onSaveImage();
+    // QString path_front=m_pMainWin->getPWinToolWidget()->getlastCreatedImageFileFront();
+    // QString path_top=m_pMainWin->getPWinToolWidget()->getlastCreatedImageFileTop();
+    // QString path_right=m_pMainWin->getPWinToolWidget()->getlastCreatedImageFileRight();
 
-    m_pMainWin->getPWinFileManagerWidget()->allRecover();
+    // m_pMainWin->getPWinFileManagerWidget()->allRecover();
 
-    if(isCut){
-        //存储局部对比点云图像的路径
-        QVector<QString>& PathList=m_pMainWin->getPWinToolWidget()->getImagePaths_part();
-        PathList.append( path_front);
-        PathList.append( path_top);
-        PathList.append( path_right);
-    }else{
-        //存储全局对比点云图像的路径
-        QVector<QString>& PathList=m_pMainWin->getPWinToolWidget()->getImagePaths();
-        PathList.append( path_front);
-        PathList.append( path_top);
-        PathList.append( path_right);
-    }
+    // if(isCut){
+    //     //存储局部对比点云图像的路径
+    //     QVector<QString>& PathList=m_pMainWin->getPWinToolWidget()->getImagePaths_part();
+    //     PathList.append( path_front);
+    //     PathList.append( path_top);
+    //     PathList.append( path_right);
+    // }else{
+    //     //存储全局对比点云图像的路径
+    //     QVector<QString>& PathList=m_pMainWin->getPWinToolWidget()->getImagePaths();
+    //     PathList.append( path_front);
+    //     PathList.append( path_top);
+    //     PathList.append( path_right);
+    // }
 
     // 添加日志输出
     logInfo += "对比完成";
