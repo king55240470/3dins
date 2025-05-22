@@ -104,7 +104,7 @@ QDataStream& operator>>(QDataStream& in, CObjectMgr& mgr){
     qsizetype objectListSize=0;
     in >> objectListSize;
     qDebug()<<"objectListSize:"<<objectListSize;
-    mgr.RemoveAll();
+    // mgr.RemoveAll();
     for (qsizetype i = 0; i < objectListSize; ++i) {
         int typeInt=0;
         in >> typeInt;
