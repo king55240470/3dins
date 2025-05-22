@@ -616,7 +616,6 @@ void ElementListWidget::startprocess()
         QTimer::singleShot(2000, []() {
             qDebug() << "2秒后执行的操作";
         });
-        m_pMainWin->NotifySubscribe();
         CompareCloud();
         updateDistance();
         m_pMainWin->NotifySubscribe();
@@ -695,7 +694,6 @@ void ElementListWidget::CompareCloud()
         m_pMainWin->getEntityListMgr()->getEntityList().back()->SetSelected(true);
         qDebug()<<"进入对比之前";
         m_pMainWin->getPWinVtkWidget()->onCompare();
-        //return;
     }
     //判断是否有局部对比，若无则直接返回
     if(isHaveShape){
