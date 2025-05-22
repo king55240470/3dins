@@ -627,12 +627,12 @@ void ElementListWidget::onAddElement(pcl::PointCloud<pcl::PointXYZRGB>::Ptr coul
     if (stateMachine->configuration().contains(runningState)) {
         pointCouldlists.enqueue(could);
         filetypelists.enqueue(type);
-        loadModelFile();
-        QTimer::singleShot(2000, []() {
-            qDebug() << "2秒后执行的操作";
-        });
         if(isProcessing==false){
             isProcessing=true;
+            loadModelFile();
+            QTimer::singleShot(2000, []() {
+                qDebug() << "2秒后执行的操作";
+            });
             CompareCloud();
             updateDistance();
             m_pMainWin->NotifySubscribe();
@@ -851,12 +851,12 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
 
             // workerThread->start();
 
-            // // m_pMainWin->getPWinToolWidget()->setauto(true);
-            // // m_pMainWin->getPWinToolWidget()->onSaveTxt();
-            // // m_pMainWin->getPWinToolWidget()->onSaveWord();
-            // // m_pMainWin->getPWinToolWidget()->onSaveExcel();
-            // // m_pMainWin->getPWinToolWidget()->onSavePdf();
-            // // m_pMainWin->getPWinToolWidget()->setauto(false);
+            // m_pMainWin->getPWinToolWidget()->setauto(true);
+            // m_pMainWin->getPWinToolWidget()->onSaveTxt();
+            // m_pMainWin->getPWinToolWidget()->onSaveWord();
+            // m_pMainWin->getPWinToolWidget()->onSaveExcel();
+            // m_pMainWin->getPWinToolWidget()->onSavePdf();
+            // m_pMainWin->getPWinToolWidget()->setauto(false);
         }
         //删除自动化打开的模型文件
         for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
@@ -1218,6 +1218,7 @@ void ElementListWidget::loadModelFile()
     m_pMainWin->peopleOpenfile = false;
     QString s = filetypelists.dequeue();
     m_pMainWin->filePathChange = m_pMainWin->modelPath+"/model"+s+"/"+s+"stand.ply";
+    m_pMainWin->filePathChange = m_pMainWin->modelPath+"/model"+s+"/"+s+"stand.qins";
     m_pMainWin->openFile();
     m_pMainWin->peopleOpenfile = true;
     qinsSize = m_pMainWin->getEntityListMgr()->getEntityList().size()-size;

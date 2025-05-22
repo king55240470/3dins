@@ -1625,6 +1625,18 @@ double AlignWorker::adjustStddevThresh(pcl::PointCloud<pcl::PointXYZRGB>::Ptr sc
 
 double VtkWidget::adjustStddevThresh(pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_cloud, float voxelSize)
 {
+    // 体素网格大小异常，则进行估算
+    if(voxelSize < 0.01f){
+        pcl::PointXYZRGB minpt, maxpt;
+        pcl::getMinMax3D(*scene_cloud, minpt, maxpt); // 计算点云的最小/大坐标
+        float diag = std::sqrt(
+            std::pow(maxpt.x - minpt.x, 2) +  // 使用min_pt/max_pt坐标
+            std::pow(maxpt.y - minpt.y, 2) +
+            std::pow(maxpt.z - minpt.z, 2)
+            );
+        voxelSize = diag / 50.0f;
+    }
+
     // 计算点云的密度（每立方米的点数）
     pcl::PointXYZRGB minPt, maxPt;
     pcl::getMinMax3D(*scene_cloud, minPt, maxPt);
@@ -2468,7 +2480,7 @@ float VtkWidget::calculateSamplingRadius(const pcl::PointCloud<pcl::PointXYZRGB>
     } else if (cloud->size() < 1000000 && cloud->size() >= 500000) {
         return 0.1f;
     } else {
-        return 0.2f;
+        return 0.3f;
     }
 }
 
