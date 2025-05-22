@@ -1537,16 +1537,17 @@ void MainWindow::onFileChanged(const QString &path)
                 return;
             }
             QString fileCould = path + "/" + file;
-            //filePathChange = fileCould;
-            //自动打开
-            peopleOpenfile=false;
-            //判断格式（ABCDEF）
-            filetype = match.captured(1);
-            filePathChange = fileCould;
-            openFile();
-            existingFiles.append(file);
-            //自动打开关闭
-            peopleOpenfile=true;
+            QTimer::singleShot(500, this, [this, fileCould, file]() {
+                QFileInfo fi(fileCould);
+                if(fi.size() > 0) {  // 确保文件有内容
+                    peopleOpenfile = false;
+                    filetype = QRegularExpression("^\\d{8}#([A-Z])#\\d{3}#\\d{3}$").match(file).captured(1);
+                    filePathChange = fileCould;
+                    openFile();
+                    existingFiles.append(file);
+                    peopleOpenfile = true;
+                }
+            });
         }
     }
 }

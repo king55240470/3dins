@@ -1806,7 +1806,6 @@ void VtkWidget::onCompare()
     float maxDistance = std::numeric_limits<float>::min();
     float minDistance = std::numeric_limits<float>::max();
     float averageDistance=0;
-    int count_distance=0;
     // 用于存储最近邻搜索的结果
     std::vector<int> pointIdxNKNSearch(1);
     std::vector<float> pointNKNSquaredDistance(1);
@@ -1816,7 +1815,6 @@ void VtkWidget::onCompare()
         if (kdtree.nearestKSearch(cloud2->at(i), 1, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
             float dist = std::sqrt(pointNKNSquaredDistance[0]);
             averageDistance+=dist;
-            count_distance++;
             // 更新最大和最小距离
             if (dist > maxDistance) {
                 maxDistance = dist;
@@ -1848,16 +1846,16 @@ void VtkWidget::onCompare()
     m_pMainWin->getPWinFileManagerWidget()->allHide("对比");
 
     // 导出为ply文件
-    pcl::PLYWriter writer;
-    writer.write("D:/testFiles/compareCloud.ply", *comparisonCloud, true); // true = 写入ASCII格式（false 为二进制）
+    // pcl::PLYWriter writer;
+    // writer.write("D:/testFiles/compareCloud.ply", *comparisonCloud, true); // true = 写入ASCII格式（false 为二进制）
 
     //平均距离
-    averageDistance = averageDistance / cloud2->size();
-    QVector<double> DistanceValue;
-    DistanceValue.push_back(maxDistance);
-    DistanceValue.push_back(minDistance);
-    DistanceValue.push_back(averageDistance);
-    m_distanceValue[cloudEntity]= DistanceValue;
+    // averageDistance = averageDistance / cloud2->size();
+    // QVector<double> DistanceValue;
+    // DistanceValue.push_back(maxDistance);
+    // DistanceValue.push_back(minDistance);
+    // DistanceValue.push_back(averageDistance);
+    // m_distanceValue[cloudEntity]= DistanceValue;
 
     ShowColorBar(minDistance, maxDistance);
     m_pMainWin->getPWinToolWidget()->onSaveImage();
@@ -2017,8 +2015,6 @@ void VtkWidget::onAlign()
     m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
     m_pMainWin->NotifySubscribe();
 }
-
-
 
 Eigen::Matrix4f VtkWidget::runSAC(pcl::PointCloud<pcl::PointXYZRGB>::Ptr template_down, pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_down,
                                   pcl::PointCloud<pcl::FPFHSignature33>::Ptr template_fpfh, pcl::PointCloud<pcl::FPFHSignature33>::Ptr scene_fpfh,

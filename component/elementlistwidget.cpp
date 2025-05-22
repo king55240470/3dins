@@ -158,9 +158,9 @@ void ElementListWidget::CreateEllipse(CObject*obj)
     if(obj->GetUniqueType()==enPointCloud){
         QIcon icon(":/component/construct/pointCloud.png");
         item->setIcon(0, icon);
-        if(obj->GetObjectCName().contains("stand")){
-            setModelIndex(m_pMainWin->getEntityListMgr()->getEntityList().size());
-        }
+        // if(obj->GetObjectCName().contains("stand")){
+        //     setModelIndex(m_pMainWin->getEntityListMgr()->getEntityList().size());
+        // }
     }
     if(obj->GetUniqueType()==enAngle){
         QIcon icon(":/component/construct/angle.png");
@@ -617,8 +617,8 @@ void ElementListWidget::startprocess()
             qDebug() << "2秒后执行的操作";
         });
         m_pMainWin->NotifySubscribe();
-        //CompareCloud();
-        //updateDistance();
+        CompareCloud();
+        updateDistance();
         m_pMainWin->NotifySubscribe();
     }
 }
@@ -687,8 +687,6 @@ void ElementListWidget::CompareCloud()
 
     //先执行全局对比
     if(true){
-
-        m_pMainWin->getPWinToolWidget()->setauto(true);
         qDebug()<<"进入对齐之前";
         m_pMainWin->getPWinVtkWidget()->onAlign();
         qDebug()<<"进入对齐之后";
@@ -697,8 +695,6 @@ void ElementListWidget::CompareCloud()
         m_pMainWin->getEntityListMgr()->getEntityList().back()->SetSelected(true);
         qDebug()<<"进入对比之前";
         m_pMainWin->getPWinVtkWidget()->onCompare();
-        m_pMainWin->getPWinToolWidget()->onSaveImage();
-        m_pMainWin->getPWinToolWidget()->setauto(false);
         //return;
     }
     //判断是否有局部对比，若无则直接返回
@@ -1219,6 +1215,7 @@ void ElementListWidget::setModelIndex(int index)
 void ElementListWidget::loadModelFile()
 {
     int size = m_pMainWin->getEntityListMgr()->getEntityList().size();
+    setModelIndex(size);
     isProcessing=true;
     m_pMainWin->peopleOpenfile = false;
     QString s = filetypelists.dequeue();
