@@ -980,7 +980,7 @@ void   ToolWidget::ExtractData(QVector<CEntity *>& entitylist,QList<QList<QStrin
             }
             qDebug()<<"提取照片"<<entity->m_strAutoName;
                 SaveImage(entity);
-                 qDebug()<<"提取照片"<<entity->m_strAutoName<<"结束";
+            qDebug()<<"提取照片"<<entity->m_strAutoName<<"结束";
 
             inList<<QDir::toNativeSeparators(m_checkpoint_imagePath[entity]);
 
@@ -2187,9 +2187,16 @@ void ToolWidget::createDistanceMeasurementReport()
         // selection->dynamicCall("TypeParagraph()");
         selection->dynamicCall("TypeText(const QString&)", "检测编号: "+QString("%1").arg(count++, 3, 10, QLatin1Char('0')));
         selection->dynamicCall("TypeParagraph()");
+
         // 8. 创建属性表格
           qDebug()<<"这里-4.5";
-        QAxObject* tables = document->querySubObject("Tables");
+        QStringList propertyHeaders = {"名称", "是否可见", "法向量", "颜色",
+                                       "盒维数", "盒中心", "点云数量", "Golbal Shift",
+                                       "Global Scale", "点云大小"};
+        QStringList propertyValues =data_pointCloud;
+         QAxObject* tables = document->querySubObject("Tables");
+        if(propertyValues.size()){
+
         QAxObject* rangeForTable = selection->querySubObject("Range");
         QAxObject* propertyTable = tables->querySubObject("Add(QVariant, QVariant, QVariant, QVariant)",
                                                           rangeForTable->asVariant(), 11, 2);
@@ -2209,44 +2216,44 @@ void ToolWidget::createDistanceMeasurementReport()
         tableRange->querySubObject("Cells")->setProperty("VerticalAlignment","wdCellAlignVerticalCenter");//垂直居中
 
 
-        QStringList propertyHeaders = {"名称", "是否可见", "法向量", "颜色",
-                                       "盒维数", "盒中心", "点云数量", "Golbal Shift",
-                                       "Global Scale", "点云大小"};
-        QStringList propertyValues =data_pointCloud;
+
         qDebug()<<"这里";
-        for (int row = 2; row <= propertyHeaders.size()+1; ++row) {
-            // 设置第一列（属性标题）的文本和居中
-            QAxObject* cellHeader = propertyTable->querySubObject("Cell(int, int)", row, 1);
-            QAxObject* rangeHeader = cellHeader->querySubObject("Range");
-            rangeHeader->dynamicCall("SetText(const QString&)", propertyHeaders[row - 2]);
 
-            // 设置第二列（属性值）的文本和居中
-            QAxObject* cellValue = propertyTable->querySubObject("Cell(int, int)", row, 2);
-            QAxObject* rangeValue = cellValue->querySubObject("Range");
-            rangeValue->dynamicCall("SetText(const QString&)", propertyValues[row - 2]);
+            for (int row = 2; row <= propertyHeaders.size()+1; ++row) {
+                // 设置第一列（属性标题）的文本和居中
+                QAxObject* cellHeader = propertyTable->querySubObject("Cell(int, int)", row, 1);
+                QAxObject* rangeHeader = cellHeader->querySubObject("Range");
+                rangeHeader->dynamicCall("SetText(const QString&)", propertyHeaders[row - 2]);
+
+                // 设置第二列（属性值）的文本和居中
+                QAxObject* cellValue = propertyTable->querySubObject("Cell(int, int)", row, 2);
+                QAxObject* rangeValue = cellValue->querySubObject("Range");
+                rangeValue->dynamicCall("SetText(const QString&)", propertyValues[row - 2]);
 
 
-            // 合并单元格（除第5和第6行外）
+                // 合并单元格（除第5和第6行外）
 
+            }
+            qDebug()<<"这里1";
+            int row=1;
+            QAxObject* cell1 = propertyTable->querySubObject("Cell(int, int)", row, 1);
+            QAxObject* cell2 = propertyTable->querySubObject("Cell(int, int)", row, 2);
+            cell1->dynamicCall("Merge(QVariant)", cell2->asVariant());
+            QAxObject* inlineShapes = document->querySubObject("InlineShapes");
+            inlineShapes->dynamicCall("AddPicture(const QString&)",data_pointCloud[data_pointCloud.size()-1] );
+            qDebug()<<"这2";
+
+            // // 可选：调整图片大小（单位：磅，1磅≈1/72英寸）
+            // QAxObject* picture = inlineShapes->querySubObject("Item(int)", 1);  // 获取刚插入的图片
+            // picture->setProperty("Width", 1156);  // 设置宽度（磅）
+            // picture->setProperty("Height", 856);   // 设置高度（磅）
+
+            //结束表格填写
+            selection->dynamicCall("EndKey(QVariant)", 6);
+            selection->dynamicCall("MoveDown()");
+            selection->dynamicCall("InsertBreak(int)", 7);
         }
-        qDebug()<<"这里1";
-        int row=1;
-        QAxObject* cell1 = propertyTable->querySubObject("Cell(int, int)", row, 1);
-        QAxObject* cell2 = propertyTable->querySubObject("Cell(int, int)", row, 2);
-        cell1->dynamicCall("Merge(QVariant)", cell2->asVariant());
-        QAxObject* inlineShapes = document->querySubObject("InlineShapes");
-        inlineShapes->dynamicCall("AddPicture(const QString&)",data_pointCloud[data_pointCloud.size()-1] );
-        qDebug()<<"这2";
 
-        // // 可选：调整图片大小（单位：磅，1磅≈1/72英寸）
-        // QAxObject* picture = inlineShapes->querySubObject("Item(int)", 1);  // 获取刚插入的图片
-        // picture->setProperty("Width", 1156);  // 设置宽度（磅）
-        // picture->setProperty("Height", 856);   // 设置高度（磅）
-
-        //结束表格填写
-        selection->dynamicCall("EndKey(QVariant)", 6);
-        selection->dynamicCall("MoveDown()");
-        selection->dynamicCall("InsertBreak(int)", 7);
 
         // 9. 添加检测点数据
         QVector<MeasurementData> measurements;
@@ -2316,75 +2323,81 @@ void ToolWidget::createDistanceMeasurementReport()
             //selection->dynamicCall("MoveDown()");
             selection->dynamicCall("InsertBreak(int)", 7); // 分页符
         }
-        font->setProperty("Size", 14);
-        font->setProperty("Bold", true);
-        selection->dynamicCall("TypeText(const QString&)", "整体检测");
-        selection->dynamicCall("TypeParagraph()");
-        font->setProperty("Size", 10.5);
-        font->setProperty("Bold", false);
 
         QStringList propertyHeaders_size = {"类型", "名称", "是否可视化", "是否有法向量",
                                             "是否有颜色", "外包盒三维", "外包盒中心点", "点的数目",
                                             "最大误差", "最小误差","平均误差"};
-        QAxObject* rangeForTable_size = selection->querySubObject("Range");
-        QAxObject* propertyTable_size = tables->querySubObject("Add(QVariant, QVariant, QVariant, QVariant)",
-                                                               rangeForTable_size->asVariant(), propertyHeaders_size.size()+1, 2);
-        if (!propertyTable_size || propertyTable_size->isNull()) {
-            throw std::runtime_error("无法创建属性表格");
-        }
-
-        // 设置表格样式
-        propertyTable_size->setProperty("Style", "网格型");
-        propertyTable_size->querySubObject("Rows")->setProperty("Height", 23);
-        QAxObject* tableRange_size= propertyTable_size->querySubObject("Range");
-
-
-
-        tableRange_size->querySubObject("ParagraphFormat")->setProperty("Alignment","wdAlignParagraphCenter");//水平居中
-        tableRange_size->querySubObject("Cells")->setProperty("VerticalAlignment","wdCellAlignVerticalCenter");//垂直居中
-
-
         QStringList propertyValues_size;
         propertyValues_size<<data_pointCloud_size.type<<data_pointCloud_size.name
                             <<data_pointCloud_size.isVisible<<data_pointCloud_size.isNormal<<data_pointCloud_size.isColorful
                             <<data_pointCloud_size.three_dimensional<<data_pointCloud_size.center_point
                             <<data_pointCloud_size.pointNumber<<data_pointCloud_size.max_error<<data_pointCloud_size.min_error
                             <<data_pointCloud_size.average_error;
+        if(data_pointCloud_size.name!=""){
 
-        for (int row = 2; row <= propertyHeaders_size.size()+1; ++row) {
-            // 设置第一列（属性标题）的文本和居中
-            QAxObject* cellHeader = propertyTable_size->querySubObject("Cell(int, int)", row, 1);
-            QAxObject* rangeHeader = cellHeader->querySubObject("Range");
-            rangeHeader->dynamicCall("SetText(const QString&)", propertyHeaders_size[row - 2]);
-
-            // 设置第二列（属性值）的文本和居中
-            QAxObject* cellValue = propertyTable_size->querySubObject("Cell(int, int)", row, 2);
-            QAxObject* rangeValue = cellValue->querySubObject("Range");
-            rangeValue->dynamicCall("SetText(const QString&)", propertyValues_size[row - 2]);
+            font->setProperty("Size", 14);
+            font->setProperty("Bold", true);
+            selection->dynamicCall("TypeText(const QString&)", "整体检测");
+            selection->dynamicCall("TypeParagraph()");
+            font->setProperty("Size", 10.5);
+            font->setProperty("Bold", false);
 
 
-            // 合并单元格（除第5和第6行外）
+            QAxObject* rangeForTable_size = selection->querySubObject("Range");
+            QAxObject* propertyTable_size = tables->querySubObject("Add(QVariant, QVariant, QVariant, QVariant)",
+                                                                   rangeForTable_size->asVariant(), propertyHeaders_size.size()+1, 2);
+            if (!propertyTable_size || propertyTable_size->isNull()) {
+                throw std::runtime_error("无法创建属性表格");
+            }
 
+            // 设置表格样式
+            propertyTable_size->setProperty("Style", "网格型");
+            propertyTable_size->querySubObject("Rows")->setProperty("Height", 23);
+            QAxObject* tableRange_size= propertyTable_size->querySubObject("Range");
+
+
+
+            tableRange_size->querySubObject("ParagraphFormat")->setProperty("Alignment","wdAlignParagraphCenter");//水平居中
+            tableRange_size->querySubObject("Cells")->setProperty("VerticalAlignment","wdCellAlignVerticalCenter");//垂直居中
+
+
+
+            for (int row = 2; row <= propertyHeaders_size.size()+1; ++row) {
+                // 设置第一列（属性标题）的文本和居中
+                QAxObject* cellHeader = propertyTable_size->querySubObject("Cell(int, int)", row, 1);
+                QAxObject* rangeHeader = cellHeader->querySubObject("Range");
+                rangeHeader->dynamicCall("SetText(const QString&)", propertyHeaders_size[row - 2]);
+
+                // 设置第二列（属性值）的文本和居中
+                QAxObject* cellValue = propertyTable_size->querySubObject("Cell(int, int)", row, 2);
+                QAxObject* rangeValue = cellValue->querySubObject("Range");
+                rangeValue->dynamicCall("SetText(const QString&)", propertyValues_size[row - 2]);
+
+
+                // 合并单元格（除第5和第6行外）
+
+            }
+
+            QAxObject* cell1_size = propertyTable_size->querySubObject("Cell(int, int)", 1, 1);
+            QAxObject* cell2_size = propertyTable_size->querySubObject("Cell(int, int)", 1, 2);
+            cell1_size->dynamicCall("Merge(QVariant)", cell2_size->asVariant());
+            QAxObject* inlineShapes_size = document->querySubObject("InlineShapes");
+            inlineShapes_size->dynamicCall("AddPicture(const QString&)",data_pointCloud_size.imagePath);
+
+            // // 可选：调整图片大小（单位：磅，1磅≈1/72英寸）
+            // QAxObject* picture = inlineShapes->querySubObject("Item(int)", 1);  // 获取刚插入的图片
+            // picture->setProperty("Width", 1156);  // 设置宽度（磅）
+            // picture->setProperty("Height", 856);   // 设置高度（磅）
+            qDebug()<<"1";
+
+            //结束表格填写并换页
+            selection->dynamicCall("EndKey(QVariant)", 6);
         }
 
-        QAxObject* cell1_size = propertyTable_size->querySubObject("Cell(int, int)", 1, 1);
-        QAxObject* cell2_size = propertyTable_size->querySubObject("Cell(int, int)", 1, 2);
-        cell1_size->dynamicCall("Merge(QVariant)", cell2_size->asVariant());
-        QAxObject* inlineShapes_size = document->querySubObject("InlineShapes");
-        inlineShapes_size->dynamicCall("AddPicture(const QString&)",data_pointCloud_size.imagePath);
 
-        // // 可选：调整图片大小（单位：磅，1磅≈1/72英寸）
-        // QAxObject* picture = inlineShapes->querySubObject("Item(int)", 1);  // 获取刚插入的图片
-        // picture->setProperty("Width", 1156);  // 设置宽度（磅）
-        // picture->setProperty("Height", 856);   // 设置高度（磅）
-        qDebug()<<"1";
-
-        //结束表格填写并换页
-        selection->dynamicCall("EndKey(QVariant)", 6);
-        selection->dynamicCall("InsertBreak(int)", 7); // 分页符
         int num_size=1;
         for (const Size_MeasurementData& data : dataAll_size) {
-
+            selection->dynamicCall("InsertBreak(int)", 7); // 分页符
             // 添加检测点标题
             font->setProperty("Size", 14);
             font->setProperty("Bold", true);

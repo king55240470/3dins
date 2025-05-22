@@ -1794,6 +1794,7 @@ void VtkWidget::onCompare()
 
     QVector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> clouds;
     QVector<CObject*>parentlist;
+    qDebug()<<"1";
     for(int i=0;i<entityList.size();i++){
         CEntity* entity=entityList[i];
         if(!entity->IsSelected())continue;
@@ -1873,13 +1874,14 @@ void VtkWidget::onCompare()
     if(isCut)cloudEntity->isComparsionCloudPart=true;
     m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
     m_pMainWin->NotifySubscribe();
-
+    qDebug()<<"隐藏对比图像";
     m_pMainWin->getPWinFileManagerWidget()->allHide("对比");
+    qDebug()<<"隐藏对比图像结束";
 
     // 导出为ply文件
     // pcl::PLYWriter writer;
     // writer.write("D:/testFiles/compareCloud.ply", *comparisonCloud, true); // true = 写入ASCII格式（false 为二进制）
-
+    qDebug()<<"计算平均距离";
     //平均距离
     averageDistance = averageDistance / cloud2->size();
     QVector<double> DistanceValue;
@@ -1887,9 +1889,13 @@ void VtkWidget::onCompare()
     DistanceValue.push_back(minDistance);
     DistanceValue.push_back(averageDistance);
     m_distanceValue[cloudEntity]= DistanceValue;
-
+    qDebug()<<"计算平均距离结束";
+    qDebug()<<"温度计";
     ShowColorBar(minDistance, maxDistance);
+    qDebug()<<"温度计结束";
+    qDebug()<<"保存图片";
     m_pMainWin->getPWinToolWidget()->onSaveImage();
+    qDebug()<<"保存图片结束";
     QString path_front=m_pMainWin->getPWinToolWidget()->getlastCreatedImageFileFront();
     QString path_top=m_pMainWin->getPWinToolWidget()->getlastCreatedImageFileTop();
     QString path_right=m_pMainWin->getPWinToolWidget()->getlastCreatedImageFileRight();
