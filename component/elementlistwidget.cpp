@@ -627,12 +627,12 @@ void ElementListWidget::onAddElement(pcl::PointCloud<pcl::PointXYZRGB>::Ptr coul
     if (stateMachine->configuration().contains(runningState)) {
         pointCouldlists.enqueue(could);
         filetypelists.enqueue(type);
-        loadModelFile();
-        QTimer::singleShot(2000, []() {
-            qDebug() << "2秒后执行的操作";
-        });
         if(isProcessing==false){
             isProcessing=true;
+            loadModelFile();
+            QTimer::singleShot(2000, []() {
+                qDebug() << "2秒后执行的操作";
+            });
             CompareCloud();
             updateDistance();
             m_pMainWin->NotifySubscribe();
@@ -1217,7 +1217,8 @@ void ElementListWidget::loadModelFile()
     isProcessing=true;
     m_pMainWin->peopleOpenfile = false;
     QString s = filetypelists.dequeue();
-    m_pMainWin->filePathChange = m_pMainWin->modelPath+"/model"+s+"/"+s+"stand.ply";
+    //m_pMainWin->filePathChange = m_pMainWin->modelPath+"/model"+s+"/"+s+"stand.ply";
+    m_pMainWin->filePathChange = m_pMainWin->modelPath+"/model"+s+"/"+s+"stand.qins";
     m_pMainWin->openFile();
     m_pMainWin->peopleOpenfile = true;
     qinsSize = m_pMainWin->getEntityListMgr()->getEntityList().size()-size;
