@@ -616,7 +616,6 @@ void ElementListWidget::startprocess()
         QTimer::singleShot(2000, []() {
             qDebug() << "2秒后执行的操作";
         });
-        m_pMainWin->NotifySubscribe();
         CompareCloud();
         updateDistance();
         m_pMainWin->NotifySubscribe();
@@ -697,7 +696,7 @@ void ElementListWidget::CompareCloud()
         m_pMainWin->getEntityListMgr()->getEntityList().back()->SetSelected(true);
         qDebug()<<"进入对比之前";
         m_pMainWin->getPWinVtkWidget()->onCompare();
-        m_pMainWin->getPWinToolWidget()->onSaveImage();
+        // m_pMainWin->getPWinToolWidget()->onSaveImage();
         m_pMainWin->getPWinToolWidget()->setauto(false);
         //return;
     }
@@ -763,6 +762,9 @@ void ElementListWidget::updateDistance()
         }
     }
     if(disAndanglelist.size()==0){
+        for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
+            m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
+        }
         m_pMainWin->getEntityListMgr()->getEntityList()[modelIndex]->SetSelected(true);
         onDeleteEllipse();
         if(pointCouldlists.size()>0)
@@ -864,6 +866,9 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
         // for(int i =0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
         //     m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
         // }
+        for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
+            m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
+        }
         m_pMainWin->getEntityListMgr()->getEntityList()[modelIndex]->SetSelected(true);
         onDeleteEllipse();
         if(!pointCouldlists.empty()){
