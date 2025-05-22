@@ -1533,28 +1533,21 @@ void MainWindow::onFileChanged(const QString &path)
             //正则表达式，格式如2025-05-20#A#001#001
             QRegularExpression regex("^\\d{8}#([A-Z])#\\d{3}#\\d{3}$");
             QRegularExpressionMatch match = regex.match(file);
-            // QString filePath = path + "/" + file;
-            // qDebug() << "发现新文件：" << filePath;
-            // QDir dirs(filePath);
-            // QStringList files = dirs.entryList(QDir::Files | QDir::NoDotAndDotDot);
-            // if(files.isEmpty()) {
-            //     qDebug() << "文件夹为空:";
-            //     return ;
-            // }
             if(file.contains("single")){
                 return;
             }
             QString fileCould = path + "/" + file;
-            //filePathChange = fileCould;
-            //自动打开
-            peopleOpenfile=false;
-            //判断格式（ABCDEF）
-            filetype = match.captured(1);
-            filePathChange = fileCould;
-            openFile();
-            existingFiles.append(file);
-            //自动打开关闭
-            peopleOpenfile=true;
+            QTimer::singleShot(500, this, [this, fileCould, file]() {
+                QFileInfo fi(fileCould);
+                if(fi.size() > 0) {  // 确保文件有内容
+                    peopleOpenfile = false;
+                    filetype = QRegularExpression("^\\d{8}#([A-Z])#\\d{3}#\\d{3}$").match(file).captured(1);
+                    filePathChange = fileCould;
+                    openFile();
+                    existingFiles.append(file);
+                    peopleOpenfile = true;
+                }
+            });
         }
     }
 }
