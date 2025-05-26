@@ -6,6 +6,7 @@
 #include "pointfitting/fittingcone.h"
 #include "pointfitting/fittingline.h"
 #include "pointfitting/fittingcircle.h"
+#include "vtkwindow/vtkwidget.h"
 
 class VtkWidget;
 
@@ -92,7 +93,11 @@ void setDataWidget::PlaneBtnClick(){
         messagebox->exec();
         return;
     }
-    // plane=new FittingPlane();
+    plane=new FittingPlane();
+    // double radius = m_pMainWin->getPWinVtkWidget()->calculateSamplingRadius(planeCloud);
+    // double distance = m_pMainWin->getPWinVtkWidget()->adjustStddevThresh(planeCloud, 0.0f);
+    // plane->setRadius(radius);  // 设置半径
+    // plane->setDistance(distance);  // 设置距离阈值
     plane->setRadius(rad->text().toDouble());  // 设置半径
     plane->setDistance(dis->text().toDouble());  // 设置距离阈值
     planeCloud= plane->RANSAC(point,cloudptr);

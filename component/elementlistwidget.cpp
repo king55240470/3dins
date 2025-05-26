@@ -851,12 +851,12 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
 
             // workerThread->start();
 
-            // // m_pMainWin->getPWinToolWidget()->setauto(true);
-            // // m_pMainWin->getPWinToolWidget()->onSaveTxt();
-            // // m_pMainWin->getPWinToolWidget()->onSaveWord();
-            // // m_pMainWin->getPWinToolWidget()->onSaveExcel();
-            // // m_pMainWin->getPWinToolWidget()->onSavePdf();
-            // // m_pMainWin->getPWinToolWidget()->setauto(false);
+            // m_pMainWin->getPWinToolWidget()->setauto(true);
+            // m_pMainWin->getPWinToolWidget()->onSaveTxt();
+            // m_pMainWin->getPWinToolWidget()->onSaveWord();
+            // m_pMainWin->getPWinToolWidget()->onSaveExcel();
+            // m_pMainWin->getPWinToolWidget()->onSavePdf();
+            // m_pMainWin->getPWinToolWidget()->setauto(false);
         }
         //删除自动化打开的模型文件
         for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
@@ -1217,7 +1217,7 @@ void ElementListWidget::loadModelFile()
     isProcessing=true;
     m_pMainWin->peopleOpenfile = false;
     QString s = filetypelists.dequeue();
-    //m_pMainWin->filePathChange = m_pMainWin->modelPath+"/model"+s+"/"+s+"stand.ply";
+    m_pMainWin->filePathChange = m_pMainWin->modelPath+"/model"+s+"/"+s+"stand.ply";
     m_pMainWin->filePathChange = m_pMainWin->modelPath+"/model"+s+"/"+s+"stand.qins";
     m_pMainWin->openFile();
     m_pMainWin->peopleOpenfile = true;
