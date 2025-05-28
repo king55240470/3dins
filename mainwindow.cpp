@@ -784,15 +784,21 @@ void MainWindow::saveFile(){
 
 void MainWindow::listeningFile()
 {
+
     QDialog dialog(this);
     QVBoxLayout layout(&dialog);
 
+    // 读取上次保存的路径
+    QSettings settings("listenconfig.ini", QSettings::IniFormat);
+    QString lastListeningPath = settings.value("Paths/listeningfilePath").toString();
+    QString lastModelPath = settings.value("Paths/modelPath").toString();
+
     // 第一个文本框（监听目录）
-    QLineEdit pathEdit("C:/Users/Administrator/Desktop/Z/3ddata");
+    QLineEdit pathEdit(lastListeningPath);
     QPushButton browsePathButton("浏览...");  // 第一个浏览按钮
 
     // 第二个文本框（模型路径）
-    QLineEdit modelPathEdit;
+    QLineEdit modelPathEdit(lastModelPath);
     QPushButton browseModelButton("浏览...");  // 第二个浏览按钮
 
     QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
@@ -831,7 +837,10 @@ void MainWindow::listeningFile()
     if (dialog.exec() == QDialog::Accepted) {
         listeningfilePath = pathEdit.text();
         modelPath = modelPathEdit.text();  // 获取第二个文本框的内容
-
+        // 保存路径到配置文件
+        settings.setValue("Paths/listeningfilePath", listeningfilePath);
+        settings.setValue("Paths/modelPath", modelPath);
+        settings.sync();  // 立即写入文件
         qDebug() << "监听目录:" << listeningfilePath;
         qDebug() << "模型目录:" << modelPath;
 
@@ -1533,28 +1542,21 @@ void MainWindow::onFileChanged(const QString &path)
             //正则表达式，格式如2025-05-20#A#001#001
             QRegularExpression regex("^\\d{8}#([A-Z])#\\d{3}#\\d{3}$");
             QRegularExpressionMatch match = regex.match(file);
-            // QString filePath = path + "/" + file;
-            // qDebug() << "发现新文件：" << filePath;
-            // QDir dirs(filePath);
-            // QStringList files = dirs.entryList(QDir::Files | QDir::NoDotAndDotDot);
-            // if(files.isEmpty()) {
-            //     qDebug() << "文件夹为空:";
-            //     return ;
-            // }
             if(file.contains("single")){
                 return;
             }
             QString fileCould = path + "/" + file;
-            //filePathChange = fileCould;
-            //自动打开
-            peopleOpenfile=false;
-            //判断格式（ABCDEF）
-            filetype = match.captured(1);
-            filePathChange = fileCould;
-            openFile();
-            existingFiles.append(file);
-            //自动打开关闭
-            peopleOpenfile=true;
+            QTimer::singleShot(500, this, [this, fileCould, file]() {
+                QFileInfo fi(fileCould);
+                if(fi.size() > 0) {  // 确保文件有内容
+                    peopleOpenfile = false;
+                    filetype = QRegularExpression("^\\d{8}#([A-Z])#\\d{3}#\\d{3}$").match(file).captured(1);
+                    filePathChange = fileCould;
+                    openFile();
+                    existingFiles.append(file);
+                    peopleOpenfile = true;
+                }
+            });
         }
     }
 }

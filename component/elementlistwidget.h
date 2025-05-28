@@ -133,7 +133,7 @@ private:
     int currentIndex;//被测量主元素parent索引
     int distancelistIndex;//被测量主元素队列索引
     int modelIndex;//模型点云的索引，用于删除
-
+    int qinsSize;//用于储存qins文件内的元素信息，以便删除
     bool foundmodel;//检查是否有模型点云
 
     pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree;

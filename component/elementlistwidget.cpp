@@ -158,9 +158,9 @@ void ElementListWidget::CreateEllipse(CObject*obj)
     if(obj->GetUniqueType()==enPointCloud){
         QIcon icon(":/component/construct/pointCloud.png");
         item->setIcon(0, icon);
-        if(obj->GetObjectCName().contains("stand")){
-            setModelIndex(m_pMainWin->getEntityListMgr()->getEntityList().size());
-        }
+        // if(obj->GetObjectCName().contains("stand")){
+        //     setModelIndex(m_pMainWin->getEntityListMgr()->getEntityList().size());
+        // }
     }
     if(obj->GetUniqueType()==enAngle){
         QIcon icon(":/component/construct/angle.png");
@@ -616,7 +616,6 @@ void ElementListWidget::startprocess()
         QTimer::singleShot(2000, []() {
             qDebug() << "2秒后执行的操作";
         });
-        m_pMainWin->NotifySubscribe();
         CompareCloud();
         updateDistance();
         m_pMainWin->NotifySubscribe();
@@ -628,12 +627,12 @@ void ElementListWidget::onAddElement(pcl::PointCloud<pcl::PointXYZRGB>::Ptr coul
     if (stateMachine->configuration().contains(runningState)) {
         pointCouldlists.enqueue(could);
         filetypelists.enqueue(type);
-        loadModelFile();
-        QTimer::singleShot(2000, []() {
-            qDebug() << "2秒后执行的操作";
-        });
         if(isProcessing==false){
             isProcessing=true;
+            loadModelFile();
+            QTimer::singleShot(2000, []() {
+                qDebug() << "2秒后执行的操作";
+            });
             CompareCloud();
             updateDistance();
             m_pMainWin->NotifySubscribe();
@@ -687,8 +686,6 @@ void ElementListWidget::CompareCloud()
 
     //先执行全局对比
     if(true){
-
-        m_pMainWin->getPWinToolWidget()->setauto(true);
         qDebug()<<"进入对齐之前";
         m_pMainWin->getPWinVtkWidget()->onAlign();
         qDebug()<<"进入对齐之后";
@@ -697,9 +694,6 @@ void ElementListWidget::CompareCloud()
         m_pMainWin->getEntityListMgr()->getEntityList().back()->SetSelected(true);
         qDebug()<<"进入对比之前";
         m_pMainWin->getPWinVtkWidget()->onCompare();
-        m_pMainWin->getPWinToolWidget()->onSaveImage();
-        m_pMainWin->getPWinToolWidget()->setauto(false);
-        //return;
     }
     //判断是否有局部对比，若无则直接返回
     if(isHaveShape){
@@ -757,7 +751,6 @@ void ElementListWidget::updateDistance()
     for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
         if(m_pMainWin->getEntityListMgr()->getEntityList()[i]->GetObjectCName().left(2)=="距离"){
             disAndanglelist.push_back(m_pMainWin->getEntityListMgr()->getEntityList()[i]);
-            //distanceCount++;
         }else if(m_pMainWin->getEntityListMgr()->getEntityList()[i]->GetUniqueType()==enAngle){
             disAndanglelist.push_back(m_pMainWin->getEntityListMgr()->getEntityList()[i]);
         }
@@ -766,7 +759,9 @@ void ElementListWidget::updateDistance()
         for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
             m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
         }
-        m_pMainWin->getEntityListMgr()->getEntityList()[modelIndex]->SetSelected(true);
+        for(int i=modelIndex;i<modelIndex+qinsSize;i++){
+            m_pMainWin->getEntityListMgr()->getEntityList()[modelIndex]->SetSelected(true);
+        }
         onDeleteEllipse();
         if(pointCouldlists.size()>0)
         {
@@ -856,24 +851,24 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
 
             // workerThread->start();
 
-            // // m_pMainWin->getPWinToolWidget()->setauto(true);
-            // // m_pMainWin->getPWinToolWidget()->onSaveTxt();
-            // // m_pMainWin->getPWinToolWidget()->onSaveWord();
-            // // m_pMainWin->getPWinToolWidget()->onSaveExcel();
-            // // m_pMainWin->getPWinToolWidget()->onSavePdf();
-            // // m_pMainWin->getPWinToolWidget()->setauto(false);
+            // m_pMainWin->getPWinToolWidget()->setauto(true);
+            // m_pMainWin->getPWinToolWidget()->onSaveTxt();
+            // m_pMainWin->getPWinToolWidget()->onSaveWord();
+            // m_pMainWin->getPWinToolWidget()->onSaveExcel();
+            // m_pMainWin->getPWinToolWidget()->onSavePdf();
+            // m_pMainWin->getPWinToolWidget()->setauto(false);
         }
         //删除自动化打开的模型文件
-        // for(int i =0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
-        //     m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
-        // }
         for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
             m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
         }
-        m_pMainWin->getEntityListMgr()->getEntityList()[modelIndex]->SetSelected(true);
+        for(int i=modelIndex;i<modelIndex+qinsSize;i++){
+            m_pMainWin->getEntityListMgr()->getEntityList()[modelIndex]->SetSelected(true);
+        }
         onDeleteEllipse();
         if(!pointCouldlists.empty()){
             loadModelFile();
+
             QTimer::singleShot(2000, []() {
                 qDebug() << "2秒后执行的操作";
             });
@@ -1217,13 +1212,16 @@ void ElementListWidget::setModelIndex(int index)
 
 void ElementListWidget::loadModelFile()
 {
+    int size = m_pMainWin->getEntityListMgr()->getEntityList().size();
+    setModelIndex(size);
     isProcessing=true;
     m_pMainWin->peopleOpenfile = false;
     QString s = filetypelists.dequeue();
     m_pMainWin->filePathChange = m_pMainWin->modelPath+"/model"+s+"/"+s+"stand.ply";
+    m_pMainWin->filePathChange = m_pMainWin->modelPath+"/model"+s+"/"+s+"stand.qins";
     m_pMainWin->openFile();
     m_pMainWin->peopleOpenfile = true;
-
+    qinsSize = m_pMainWin->getEntityListMgr()->getEntityList().size()-size;
 }
 
 QVector<CPointCloud *> ElementListWidget::getisComparsionCloud()

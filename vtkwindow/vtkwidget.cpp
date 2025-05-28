@@ -1625,6 +1625,18 @@ double AlignWorker::adjustStddevThresh(pcl::PointCloud<pcl::PointXYZRGB>::Ptr sc
 
 double VtkWidget::adjustStddevThresh(pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_cloud, float voxelSize)
 {
+    // 体素网格大小异常，则进行估算
+    if(voxelSize < 0.01f){
+        pcl::PointXYZRGB minpt, maxpt;
+        pcl::getMinMax3D(*scene_cloud, minpt, maxpt); // 计算点云的最小/大坐标
+        float diag = std::sqrt(
+            std::pow(maxpt.x - minpt.x, 2) +  // 使用min_pt/max_pt坐标
+            std::pow(maxpt.y - minpt.y, 2) +
+            std::pow(maxpt.z - minpt.z, 2)
+            );
+        voxelSize = diag / 50.0f;
+    }
+
     // 计算点云的密度（每立方米的点数）
     pcl::PointXYZRGB minPt, maxPt;
     pcl::getMinMax3D(*scene_cloud, minPt, maxPt);
@@ -1825,7 +1837,6 @@ void VtkWidget::onCompare()
     float maxDistance = std::numeric_limits<float>::min();
     float minDistance = std::numeric_limits<float>::max();
     float averageDistance=0;
-    int count_distance=0;
     // 用于存储最近邻搜索的结果
     std::vector<int> pointIdxNKNSearch(1);
     std::vector<float> pointNKNSquaredDistance(1);
@@ -1835,7 +1846,6 @@ void VtkWidget::onCompare()
         if (kdtree.nearestKSearch(cloud2->at(i), 1, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
             float dist = std::sqrt(pointNKNSquaredDistance[0]);
             averageDistance+=dist;
-            count_distance++;
             // 更新最大和最小距离
             if (dist > maxDistance) {
                 maxDistance = dist;
@@ -1867,8 +1877,8 @@ void VtkWidget::onCompare()
     m_pMainWin->getPWinFileManagerWidget()->allHide("对比");
 
     // 导出为ply文件
-    pcl::PLYWriter writer;
-    writer.write("D:/testFiles/compareCloud.ply", *comparisonCloud, true); // true = 写入ASCII格式（false 为二进制）
+    // pcl::PLYWriter writer;
+    // writer.write("D:/testFiles/compareCloud.ply", *comparisonCloud, true); // true = 写入ASCII格式（false 为二进制）
 
     //平均距离
     averageDistance = averageDistance / cloud2->size();
@@ -2213,11 +2223,9 @@ void VtkWidget::onAlign()
     m_pMainWin->NotifySubscribe();
 }
 
-
-
 Eigen::Matrix4f AlignWorker::runSAC(pcl::PointCloud<pcl::PointXYZRGB>::Ptr template_down, pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_down,
-                                  pcl::PointCloud<pcl::FPFHSignature33>::Ptr template_fpfh, pcl::PointCloud<pcl::FPFHSignature33>::Ptr scene_fpfh,
-                                  float voxel_size, int iterations)
+                                    pcl::PointCloud<pcl::FPFHSignature33>::Ptr template_fpfh, pcl::PointCloud<pcl::FPFHSignature33>::Ptr scene_fpfh,
+                                    float voxel_size, int iterations)
 {
     pcl::SampleConsensusInitialAlignment<pcl::PointXYZRGB, pcl::PointXYZRGB, pcl::FPFHSignature33> sac;
     std::vector<std::tuple<Eigen::Matrix4f, double>> ransacResults; // 存储多次 RANSAC 的结果
@@ -2472,7 +2480,7 @@ float VtkWidget::calculateSamplingRadius(const pcl::PointCloud<pcl::PointXYZRGB>
     } else if (cloud->size() < 1000000 && cloud->size() >= 500000) {
         return 0.1f;
     } else {
-        return 0.2f;
+        return 0.3f;
     }
 }
 
