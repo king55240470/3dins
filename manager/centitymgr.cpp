@@ -132,7 +132,7 @@ QDataStream& operator>>(QDataStream& in, CEntityMgr& mgr) {
         return in;
     }
     qDebug()<<"entityListSize:"<<entityListSize;
-    mgr.m_entityList.clear();  // 清空现有数据
+    // mgr.m_entityList.clear();  // 清空现有数据
     for (int i = 0; i < entityListSize; ++i) {
         int typeInt=0;
         in >> typeInt;
