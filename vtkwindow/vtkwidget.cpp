@@ -2187,7 +2187,7 @@ void VtkWidget::onAlign()
 
     // 检查是否有成功的一轮
     if (transformation.isApprox(Eigen::Matrix4f::Zero())) {
-        QString logInfo = "RANSAC失败";
+        QString logInfo = "粗配准失败";
         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
         return;
     }
@@ -2200,7 +2200,7 @@ void VtkWidget::onAlign()
     pcl::CropBox<pcl::PointXYZRGB> crop_filter;
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr cropped_scene(new pcl::PointCloud<pcl::PointXYZRGB>());
     crop_filter.setMin(Eigen::Vector4f(min_pt.x, min_pt.y, min_pt.z, 1.0f));
-    crop_filter.setMax(Eigen::Vector4f(max_pt.x, max_pt.y, max_pt.z, 1.15f));
+    crop_filter.setMax(Eigen::Vector4f(max_pt.x, max_pt.y, max_pt.z, 1.1f));
     crop_filter.setInputCloud(scene_cloud); // 用采样前的点云，保留更多点
     crop_filter.filter(*cropped_scene);
 
@@ -2208,10 +2208,17 @@ void VtkWidget::onAlign()
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr transformed_scene(new pcl::PointCloud<pcl::PointXYZRGB>());
     pcl::transformPointCloud(*cropped_scene, *transformed_scene, transformation.inverse());
 
+    auto icpFinalCloud = onICP(transformed_scene, template_cloud);
+    if(icpFinalCloud == nullptr){
+        QString logInfo = "ICP失败!";
+        m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
+        icpFinalCloud = transformed_scene; // ICP失败则用粗配准后的点云
+    }
+
     // 去噪（统计滤波）
     pcl::StatisticalOutlierRemoval<pcl::PointXYZRGB> sor;
-    auto stdThresh = adjustStddevThresh(transformed_scene, voxel_size);
-    sor.setInputCloud(transformed_scene);
+    auto stdThresh = adjustStddevThresh(icpFinalCloud, voxel_size);
+    sor.setInputCloud(icpFinalCloud);
     sor.setMeanK(25);
     sor.setStddevMulThresh(stdThresh);
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr denoised_scene(new pcl::PointCloud<pcl::PointXYZRGB>());
@@ -2315,7 +2322,7 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr VtkWidget::onICP(pcl::PointCloud<pcl::Poi
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr alignedCloud(new pcl::PointCloud<pcl::PointXYZRGB>);
     icp.setInputSource(scenCloud);
     icp.setInputTarget(tagCloud);
-    icp.setMaximumIterations(100);
+    icp.setMaximumIterations(150);
     icp.setTransformationEpsilon(1e-8);
     icp.setMaxCorrespondenceDistance(0.2f);
     icp.align(*alignedCloud);
