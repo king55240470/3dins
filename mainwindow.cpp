@@ -1653,7 +1653,7 @@ void MainWindow::onConvertLightGreyTheme()
 
     pWinVtkWidget->getRenderer()->SetBackground(0.5, 0.5, 0.5);
     pWinVtkWidget->getRenderer()->SetBackground(1, 1, 1);
-    pWinVtkWidget->getRenderer()->SetGradientBackground(true);
+    pWinVtkWidget->getRenderer()->SetGradientBackground(false);
     pWinVtkWidget->UpdateInfo();
 }
 
