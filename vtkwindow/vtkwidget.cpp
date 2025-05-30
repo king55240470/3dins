@@ -2185,7 +2185,7 @@ void VtkWidget::onAlign()
         items
         );
 
-    // 检查是否有成功的一轮
+    // 检查是否有成功的一轮sac
     if (transformation.isApprox(Eigen::Matrix4f::Zero())) {
         QString logInfo = "粗配准失败";
         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
@@ -2215,14 +2215,16 @@ void VtkWidget::onAlign()
         icpFinalCloud = transformed_scene; // ICP失败则用粗配准后的点云
     }
 
-    // 去噪（统计滤波）
-    pcl::StatisticalOutlierRemoval<pcl::PointXYZRGB> sor;
-    auto stdThresh = adjustStddevThresh(icpFinalCloud, voxel_size);
-    sor.setInputCloud(icpFinalCloud);
-    sor.setMeanK(25);
-    sor.setStddevMulThresh(stdThresh);
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr denoised_scene(new pcl::PointCloud<pcl::PointXYZRGB>());
-    sor.filter(*denoised_scene);
+    // 统计滤波去噪，点云过小则不用
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr denoised_scene(icpFinalCloud);
+    if(icpFinalCloud->size() > 100000){
+        pcl::StatisticalOutlierRemoval<pcl::PointXYZRGB> sor;
+        auto stdThresh = adjustStddevThresh(icpFinalCloud, voxel_size);
+        sor.setInputCloud(icpFinalCloud);
+        sor.setMeanK(25);
+        sor.setStddevMulThresh(stdThresh);
+        sor.filter(*denoised_scene);
+    }
 
     // 加入元素列表
     auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateAlignCloud(denoised_scene);
@@ -2279,6 +2281,7 @@ Eigen::Matrix4f VtkWidget::runSAC(pcl::PointCloud<pcl::PointXYZRGB>::Ptr templat
     pcl::SampleConsensusInitialAlignment<pcl::PointXYZRGB, pcl::PointXYZRGB, pcl::FPFHSignature33> sac;
     std::vector<std::tuple<Eigen::Matrix4f, double>> ransacResults; // 存储多次 RANSAC 的结果
 
+    // 多次迭代进行随机粗配准，选择效果最好的一轮
     for (int i = 0; i < iterations; ++i) {
         sac.setInputSource(template_down);
         sac.setSourceFeatures(template_fpfh);
