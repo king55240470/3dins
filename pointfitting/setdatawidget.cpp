@@ -95,7 +95,7 @@ void setDataWidget::PlaneBtnClick(){
     }
     plane=new FittingPlane();
     // double radius = m_pMainWin->getPWinVtkWidget()->calculateSamplingRadius(planeCloud);
-    // double distance = m_pMainWin->getPWinVtkWidget()->adjustStddevThresh(planeCloud, 0.0f);
+    // double distance = m_pMainWin->getPWinVtkWidget()->adjustStddevThresh(planeCloud, 0.05f);
     // plane->setRadius(radius);  // 设置半径
     // plane->setDistance(distance);  // 设置距离阈值
     plane->setRadius(rad->text().toDouble());  // 设置半径

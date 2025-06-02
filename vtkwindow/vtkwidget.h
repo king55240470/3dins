@@ -191,7 +191,7 @@ public:
                                                     pcl::PointCloud<pcl::PointXYZRGB>::Ptr& tagCloud); // 重载的滤波方法，用于在对齐中调用
     void onCompare();// 比较两个点云
 
-    void onAlign(); // 点云模板匹配
+    void onAlign(); // 点云去噪加对齐
     Eigen::Matrix4f runSAC(pcl::PointCloud<pcl::PointXYZRGB>::Ptr template_down, pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_down,
     pcl::PointCloud<pcl::FPFHSignature33>::Ptr template_fpfh, pcl::PointCloud<pcl::FPFHSignature33>::Ptr scene_fpfh,
     float voxel_size, int iterations);
