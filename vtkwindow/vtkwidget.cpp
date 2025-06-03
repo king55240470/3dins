@@ -1825,7 +1825,7 @@ void VtkWidget::onCompare()
     }
 
     // 创建KD-Tree用于点云2
-    pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
+    pcl::search::KdTree<pcl::PointXYZ> kdtree;
     kdtree.setInputCloud(cloud1);
 
     // 将比较结果存在comparisonCloud，并设置点云大小
@@ -2232,7 +2232,13 @@ void VtkWidget::onAlign()
         sor.setInputCloud(icpFinalCloud);
         sor.setMeanK(25);
         sor.setStddevMulThresh(stdThresh);
+        qDebug() << "距离阈值" << stdThresh;
         sor.filter(*denoised_scene);
+    }
+    if(denoised_scene == nullptr){
+        QString logInfo = "对齐失败!";
+        m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
+        return;
     }
 
     // 加入元素列表
@@ -2240,6 +2246,7 @@ void VtkWidget::onAlign()
     m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
     m_pMainWin->NotifySubscribe();
 }
+
 
 
 // 区域覆盖判断
