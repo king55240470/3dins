@@ -28,7 +28,9 @@
 #include <pcl/correspondence.h>
 #include <pcl/recognition/cg/hough_3d.h>
 #include <pcl/filters/extract_indices.h>
-#include <fbxsdk.h>
+#include <thread>
+#include <chrono>
+#include <mutex>
 
 
 VtkWidget::VtkWidget(QWidget *parent)
@@ -1823,7 +1825,7 @@ void VtkWidget::onCompare()
     }
 
     // 创建KD-Tree用于点云2
-    pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
+    pcl::search::KdTree<pcl::PointXYZ> kdtree;
     kdtree.setInputCloud(cloud1);
 
     // 将比较结果存在comparisonCloud，并设置点云大小
@@ -2214,7 +2216,8 @@ void VtkWidget::onAlign()
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr transformed_scene(new pcl::PointCloud<pcl::PointXYZRGB>());
     pcl::transformPointCloud(*cropped_scene, *transformed_scene, transformation.inverse());
 
-    auto icpFinalCloud = onICP(transformed_scene, template_cloud);
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr icpFinalCloud;
+    // icpFinalCloud = onICP(transformed_scene, template_cloud);
     if(icpFinalCloud == nullptr){
         QString logInfo = "ICP失败!";
         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
@@ -2229,7 +2232,13 @@ void VtkWidget::onAlign()
         sor.setInputCloud(icpFinalCloud);
         sor.setMeanK(25);
         sor.setStddevMulThresh(stdThresh);
+        qDebug() << "距离阈值" << stdThresh;
         sor.filter(*denoised_scene);
+    }
+    if(denoised_scene == nullptr){
+        QString logInfo = "对齐失败!";
+        m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
+        return;
     }
 
     // 加入元素列表
@@ -2239,13 +2248,13 @@ void VtkWidget::onAlign()
 }
 
 
+
 // 区域覆盖判断
 void VtkWidget::CompletePointCloud()
 {
     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
     QVector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> clouds;
     QString logInfo;
-    bool isCloud1Model = false;
 
     // 收集两个选中的点云
     for (int i = 0; i < entityList.size(); i++) {
@@ -2253,10 +2262,6 @@ void VtkWidget::CompletePointCloud()
         if (!entity->IsSelected()) continue;
         if (entity->GetUniqueType() == enPointCloud) {
             auto pcEntity = static_cast<CPointCloud*>(entity);
-            if(pcEntity->isModelCloud && clouds.isEmpty()){
-                isCloud1Model = true;
-                qDebug() << "当前模型点云：" << pcEntity->m_strAutoName;
-            }
             clouds.append(pcl::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>(pcEntity->m_pointCloud));
             logInfo += pcEntity->m_strCName + " ";
         }
@@ -2581,6 +2586,7 @@ Eigen::Matrix4f VtkWidget::runSAC(pcl::PointCloud<pcl::PointXYZRGB>::Ptr templat
     return std::get<0>(bestResult);
 }
 
+
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr VtkWidget::onICP(pcl::PointCloud<pcl::PointXYZRGB>::Ptr scenCloud,
                                                         pcl::PointCloud<pcl::PointXYZRGB>::Ptr tagCloud)
 {
@@ -2620,7 +2626,8 @@ void VtkWidget::poissonReconstruction()
     }
 
     if (cloud->empty()) {
-        QMessageBox::warning(this, "警告", "点云不能为空");
+        QString logInfo = "重建用的点云为空!";
+        m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
         return;
     }
 
