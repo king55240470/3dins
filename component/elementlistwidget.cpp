@@ -639,11 +639,6 @@ void ElementListWidget::onAddElement(pcl::PointCloud<pcl::PointXYZRGB>::Ptr coul
             QTimer::singleShot(2000, []() {
                 qDebug() << "2秒后执行的操作";
             });
-            QScopedPointer<QProcess>process(new QProcess);
-            process->start("./compare_cloud_proc");
-            if(!process->waitForFinished(30000)){
-                qDebug()<<"子进程崩溃或超时";
-            }
             CompareCloud();
             updateDistance();
             m_pMainWin->NotifySubscribe();
