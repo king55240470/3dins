@@ -1796,6 +1796,7 @@ void VtkWidget::onCompare()
 
     QVector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> clouds;
     QVector<CObject*>parentlist;
+    qDebug()<<"1";
     for(int i=0;i<entityList.size();i++){
         CEntity* entity=entityList[i];
         if(!entity->IsSelected())continue;
@@ -1875,13 +1876,14 @@ void VtkWidget::onCompare()
     if(isCut)cloudEntity->isComparsionCloudPart=true;
     m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
     m_pMainWin->NotifySubscribe();
-
+    qDebug()<<"隐藏对比图像";
     m_pMainWin->getPWinFileManagerWidget()->allHide("对比");
+    qDebug()<<"隐藏对比图像结束";
 
     // 导出为ply文件
     // pcl::PLYWriter writer;
     // writer.write("D:/testFiles/compareCloud.ply", *comparisonCloud, true); // true = 写入ASCII格式（false 为二进制）
-
+    qDebug()<<"计算平均距离";
     //平均距离
     averageDistance = averageDistance / cloud2->size();
     QVector<double> DistanceValue;
@@ -1889,9 +1891,13 @@ void VtkWidget::onCompare()
     DistanceValue.push_back(minDistance);
     DistanceValue.push_back(averageDistance);
     m_distanceValue[cloudEntity]= DistanceValue;
-
+    qDebug()<<"计算平均距离结束";
+    qDebug()<<"温度计";
     ShowColorBar(minDistance, maxDistance);
+    qDebug()<<"温度计结束";
+    qDebug()<<"保存图片";
     m_pMainWin->getPWinToolWidget()->onSaveImage();
+    qDebug()<<"保存图片结束";
     QString path_front=m_pMainWin->getPWinToolWidget()->getlastCreatedImageFileFront();
     QString path_top=m_pMainWin->getPWinToolWidget()->getlastCreatedImageFileTop();
     QString path_right=m_pMainWin->getPWinToolWidget()->getlastCreatedImageFileRight();
@@ -2234,6 +2240,264 @@ void VtkWidget::onAlign()
     m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
     m_pMainWin->NotifySubscribe();
 }
+
+
+// 区域覆盖判断
+void VtkWidget::CompletePointCloud()
+{
+    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+    QVector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> clouds;
+    QString logInfo;
+    bool isCloud1Model = false;
+
+    // 收集两个选中的点云
+    for (int i = 0; i < entityList.size(); i++) {
+        CEntity* entity = entityList[i];
+        if (!entity->IsSelected()) continue;
+        if (entity->GetUniqueType() == enPointCloud) {
+            auto pcEntity = static_cast<CPointCloud*>(entity);
+            if(pcEntity->isModelCloud && clouds.isEmpty()){
+                isCloud1Model = true;
+                qDebug() << "当前模型点云：" << pcEntity->m_strAutoName;
+            }
+            clouds.append(pcl::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>(pcEntity->m_pointCloud));
+            logInfo += pcEntity->m_strCName + " ";
+        }
+    }
+
+    // 检查选中点云数量
+    if (clouds.size() != 2) {
+        QMessageBox::warning(this, "点云补全", "请选择两个点云（一个模型点云，一个残缺点云）！");
+        return;
+    }
+
+    auto& modelCloud = clouds[0];
+    auto& damagedCloud = clouds[1];
+
+    // 计算自适应参数
+    pcl::PointXYZRGB minPt, maxPt;
+    pcl::getMinMax3D(*modelCloud, minPt, maxPt);
+    float diag = std::sqrt(std::pow(maxPt.x - minPt.x, 2) +
+                           std::pow(maxPt.y - minPt.y, 2) +
+                           std::pow(maxPt.z - minPt.z, 2));
+    const float voxelSize = diag / 100.0f;
+    const float searchRadius = voxelSize * 2.0f;
+
+    // 关键优化1：处理前下采样（仅用于加速分析）------------------------------------
+    pcl::VoxelGrid<pcl::PointXYZRGB> voxelFilter;
+    voxelFilter.setLeafSize(voxelSize, voxelSize, voxelSize);
+
+    // 创建下采样版本的点云（用于覆盖检查和边界检测）
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr modelDownsampled(new pcl::PointCloud<pcl::PointXYZRGB>);
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr damagedDownsampled(new pcl::PointCloud<pcl::PointXYZRGB>);
+
+    voxelFilter.setInputCloud(modelCloud);
+    voxelFilter.filter(*modelDownsampled);
+
+    voxelFilter.setInputCloud(damagedCloud);
+    voxelFilter.filter(*damagedDownsampled);
+
+    if (modelDownsampled->empty() || damagedDownsampled->empty()) {
+        qDebug() << "下采样失败：点云为空";
+        return;
+    }
+
+    // 关键优化2：覆盖式补全逻辑 -------------------------------------------------
+    pcl::KdTreeFLANN<pcl::PointXYZRGB> damagedTree;
+    damagedTree.setInputCloud(damagedDownsampled);  // 使用下采样点云构建KD树
+
+    // 步骤1: 识别模型点云中未被覆盖的点（使用下采样点云）
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr uncoveredPoints(new pcl::PointCloud<pcl::PointXYZRGB>);
+
+    for (const auto& modelPoint : modelDownsampled->points) {
+        std::vector<int> indices;
+        std::vector<float> dists;
+
+        // 检查模型点是否被残缺点云覆盖
+        if (damagedTree.radiusSearch(modelPoint, searchRadius, indices, dists) == 0) {
+            uncoveredPoints->push_back(modelPoint);
+        }
+    }
+
+    // 步骤2: 边界感知过滤（使用下采样点云）
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr boundaryPoints(new pcl::PointCloud<pcl::PointXYZRGB>);
+    pcl::KdTreeFLANN<pcl::PointXYZRGB> damagedTreeDensity;
+    damagedTreeDensity.setInputCloud(damagedDownsampled);
+
+    // 识别残缺点云的边界区域
+    for (const auto& point : *damagedDownsampled) {
+        std::vector<int> indices;
+        std::vector<float> dists;
+        // 查找邻近点（使用更大的搜索半径）
+        if (damagedTreeDensity.radiusSearch(point, searchRadius * 1.5, indices, dists) < 15) {
+            boundaryPoints->push_back(point);
+        }
+    }
+
+    // 构建边界KD树
+    pcl::KdTreeFLANN<pcl::PointXYZRGB> boundaryTree;
+    if (!boundaryPoints->empty()) {
+        boundaryTree.setInputCloud(boundaryPoints);
+    }
+
+    // 步骤3: 只保留靠近边界的未覆盖点
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr validMissingPoints(new pcl::PointCloud<pcl::PointXYZRGB>);
+    const float boundaryDistance = searchRadius * 3.0f;
+
+    for (const auto& uncoveredPoint : uncoveredPoints->points) {
+        // 如果边界点云为空，则跳过边界检查
+        if (boundaryPoints->empty()) {
+            validMissingPoints->push_back(uncoveredPoint);
+        }
+        // 否则检查未覆盖点是否靠近边界
+        else {
+            std::vector<int> indices;
+            std::vector<float> dists;
+            if (boundaryTree.radiusSearch(uncoveredPoint, boundaryDistance, indices, dists) > 0) {
+                validMissingPoints->push_back(uncoveredPoint);
+            }
+        }
+    }
+
+    // 关键优化3：从原始模型点云提取完整密度点 -----------------------------------
+    pcl::KdTreeFLANN<pcl::PointXYZRGB> originalModelTree;
+    originalModelTree.setInputCloud(modelCloud);
+
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr fullDensityMissingPoints(new pcl::PointCloud<pcl::PointXYZRGB>);
+    const float extractionRadius = voxelSize * 0.5f;  // 小半径提取原始点
+
+    // 为每个下采样的缺失点找到原始密度的对应点
+    for (const auto& samplePoint : validMissingPoints->points) {
+        std::vector<int> indices;
+        std::vector<float> dists;
+        if (originalModelTree.radiusSearch(samplePoint, extractionRadius, indices, dists) > 0) {
+            for (int idx : indices) {
+                fullDensityMissingPoints->push_back(modelCloud->points[idx]);
+            }
+        }
+    }
+
+    // 关键优化4：合并点云（保持原始密度）----------------------------------------
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr completedCloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+    *completedCloud = *damagedCloud;  // 原始残缺点云（完整密度）
+    *completedCloud += *fullDensityMissingPoints;  // 完整密度的补全点
+
+    int result = pcl::io::savePLYFile("D:/output_ascii.ply", *completedCloud);
+
+    // 加入元素并刷新显示
+    auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateCompleteCloud(*completedCloud);
+    m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
+    m_pMainWin->NotifySubscribe();
+}
+
+
+//直接邻近点搜索判断
+// void VtkWidget::CompletePointCloud()
+// {
+//     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+//     QVector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> clouds;
+//     QString logInfo;
+//     bool isCloud1Model = false;
+
+//     // 收集两个选中的点云
+//     for (int i = 0; i < entityList.size(); i++) {
+//         CEntity* entity = entityList[i];
+//         if (!entity->IsSelected()) continue;
+//         if (entity->GetUniqueType() == enPointCloud) {
+//             auto pcEntity = static_cast<CPointCloud*>(entity);
+//             if(pcEntity->isModelCloud && clouds.isEmpty()){
+//                 isCloud1Model = true;
+//                 qDebug() << "当前模型点云：" << pcEntity->m_strAutoName;
+//             }
+//             clouds.append(pcl::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>(pcEntity->m_pointCloud));
+//             logInfo += pcEntity->m_strCName + " ";
+//         }
+//     }
+
+//     auto& modelCloud = clouds[0];
+//     auto& damagedCloud = clouds[1];
+
+//     // 计算自适应参数（基于模型点云）
+//     pcl::PointXYZRGB minPt, maxPt;
+//     pcl::getMinMax3D(*modelCloud, minPt, maxPt);
+//     float diag = std::sqrt(std::pow(maxPt.x - minPt.x, 2) +
+//                            std::pow(maxPt.y - minPt.y, 2) +
+//                            std::pow(maxPt.z - minPt.z, 2));
+
+//     // 关键优化1：更精细的下采样率（保留更多细节）
+//     const float voxelSize = diag / 100.0f;  // 从50提高到100
+
+//     // 下采样点云
+//     pcl::VoxelGrid<pcl::PointXYZRGB> voxelFilter;
+//     voxelFilter.setLeafSize(voxelSize, voxelSize, voxelSize);
+
+//     auto modelDownsampled = pcl::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>();
+//     voxelFilter.setInputCloud(modelCloud);
+//     voxelFilter.filter(*modelDownsampled);
+
+//     auto damagedDownsampled = pcl::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>();
+//     voxelFilter.setInputCloud(damagedCloud);
+//     voxelFilter.filter(*damagedDownsampled);
+
+//     // 关键优化3：多尺度自适应搜索半径
+//     const float baseRadius = voxelSize * 2.5f;  // 增大基础半径
+//     const float maxRadius = baseRadius * 3.0f;  // 最大搜索半径
+
+//     pcl::KdTreeFLANN<pcl::PointXYZRGB> kdTree;
+//     kdTree.setInputCloud(damagedDownsampled);  // 使用完整密度点云构建KD树
+
+//     // 计算点云密度（用于动态调整搜索半径）
+//     pcl::PointXYZRGB centroid;
+//     pcl::computeCentroid(*damagedDownsampled, centroid);
+//     std::vector<int> indices(1);
+//     std::vector<float> dists(1);
+//     kdTree.nearestKSearch(centroid, 1, indices, dists);
+//     const float densityFactor = std::sqrt(dists[0]);
+
+//     pcl::PointCloud<pcl::PointXYZRGB>::Ptr missingPoints(new pcl::PointCloud<pcl::PointXYZRGB>);
+
+//     // 关键优化4：分区域处理点云（提高边界完整性）
+//     for (const auto& modelPoint : modelCloud->points) {
+//         // 计算动态搜索半径（基于与边界的距离）
+//         float dynamicRadius = baseRadius;
+
+//         // 检查是否在边界区域（到最近点的距离）
+//         std::vector<int> boundaryIndices;
+//         std::vector<float> boundaryDists;
+//         if (kdTree.radiusSearch(modelPoint, baseRadius, boundaryIndices, boundaryDists) > 0) {
+//             // 计算到最近点的距离比例
+//             float minDist = *std::min_element(boundaryDists.begin(), boundaryDists.end());
+//             float distRatio = minDist / baseRadius;
+
+//             // 在边界区域使用更大的搜索半径
+//             if (distRatio > 0.7f) {
+//                 dynamicRadius = std::min(maxRadius, baseRadius * 2.0f);
+//             } else if (distRatio > 0.3f) {
+//                 dynamicRadius = baseRadius * 1.5f;
+//             }
+//         }
+
+//         // 应用密度因子调整
+//         dynamicRadius = std::max(dynamicRadius, densityFactor * 1.8f);
+
+//         // 执行搜索
+//         std::vector<int> indices;
+//         std::vector<float> dists;
+//         if (kdTree.radiusSearch(modelPoint, dynamicRadius, indices, dists) == 0) {
+//             missingPoints->push_back(modelPoint);
+//         }
+//     }
+
+//     // 合并点云
+//     pcl::PointCloud<pcl::PointXYZRGB>::Ptr completedCloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+//     *completedCloud = *damagedCloud + *missingPoints;
+
+
+//     // 加入元素列表
+//     auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateCompleteCloud(*completedCloud);
+//     m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
+//     m_pMainWin->NotifySubscribe();
+// }
 
 Eigen::Matrix4f AlignWorker::runSAC(pcl::PointCloud<pcl::PointXYZRGB>::Ptr template_down, pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_down,
                                     pcl::PointCloud<pcl::FPFHSignature33>::Ptr template_fpfh, pcl::PointCloud<pcl::FPFHSignature33>::Ptr scene_fpfh,

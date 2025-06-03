@@ -77,3 +77,12 @@ CPointCloud *PointCloudListMgr::CreateFilterCloud(pcl::PointCloud<pcl::PointXYZR
     CloudEntity->setPointCloud(cloud);
     return CloudEntity;
 }
+
+CPointCloud *PointCloudListMgr::CreateCompleteCloud(pcl::PointCloud<pcl::PointXYZRGB>& cloud)
+{
+    CPointCloud* CloudEntity = new CPointCloud();
+    CloudEntity->isCompleteCloud = true;
+    CloudEntity->setPointCloud(cloud);
+    CloudEntity->m_strAutoName += "(补齐)";
+    return CloudEntity;
+}
