@@ -1794,6 +1794,7 @@ void VtkWidget::onCompare()
 
     QVector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> clouds;
     QVector<CObject*>parentlist;
+    qDebug()<<"1";
     for(int i=0;i<entityList.size();i++){
         CEntity* entity=entityList[i];
         if(!entity->IsSelected())continue;
@@ -1873,13 +1874,14 @@ void VtkWidget::onCompare()
     if(isCut)cloudEntity->isComparsionCloudPart=true;
     m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
     m_pMainWin->NotifySubscribe();
-
+    qDebug()<<"隐藏对比图像";
     m_pMainWin->getPWinFileManagerWidget()->allHide("对比");
+    qDebug()<<"隐藏对比图像结束";
 
     // 导出为ply文件
     // pcl::PLYWriter writer;
     // writer.write("D:/testFiles/compareCloud.ply", *comparisonCloud, true); // true = 写入ASCII格式（false 为二进制）
-
+    qDebug()<<"计算平均距离";
     //平均距离
     averageDistance = averageDistance / cloud2->size();
     QVector<double> DistanceValue;
@@ -1887,9 +1889,13 @@ void VtkWidget::onCompare()
     DistanceValue.push_back(minDistance);
     DistanceValue.push_back(averageDistance);
     m_distanceValue[cloudEntity]= DistanceValue;
-
+    qDebug()<<"计算平均距离结束";
+    qDebug()<<"温度计";
     ShowColorBar(minDistance, maxDistance);
+    qDebug()<<"温度计结束";
+    qDebug()<<"保存图片";
     m_pMainWin->getPWinToolWidget()->onSaveImage();
+    qDebug()<<"保存图片结束";
     QString path_front=m_pMainWin->getPWinToolWidget()->getlastCreatedImageFileFront();
     QString path_top=m_pMainWin->getPWinToolWidget()->getlastCreatedImageFileTop();
     QString path_right=m_pMainWin->getPWinToolWidget()->getlastCreatedImageFileRight();
@@ -2185,9 +2191,9 @@ void VtkWidget::onAlign()
         items
         );
 
-    // 检查是否有成功的一轮
+    // 检查是否有成功的一轮sac
     if (transformation.isApprox(Eigen::Matrix4f::Zero())) {
-        QString logInfo = "RANSAC失败";
+        QString logInfo = "粗配准失败";
         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
         return;
     }
@@ -2200,7 +2206,7 @@ void VtkWidget::onAlign()
     pcl::CropBox<pcl::PointXYZRGB> crop_filter;
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr cropped_scene(new pcl::PointCloud<pcl::PointXYZRGB>());
     crop_filter.setMin(Eigen::Vector4f(min_pt.x, min_pt.y, min_pt.z, 1.0f));
-    crop_filter.setMax(Eigen::Vector4f(max_pt.x, max_pt.y, max_pt.z, 1.15f));
+    crop_filter.setMax(Eigen::Vector4f(max_pt.x, max_pt.y, max_pt.z, 1.1f));
     crop_filter.setInputCloud(scene_cloud); // 用采样前的点云，保留更多点
     crop_filter.filter(*cropped_scene);
 
@@ -2208,14 +2214,23 @@ void VtkWidget::onAlign()
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr transformed_scene(new pcl::PointCloud<pcl::PointXYZRGB>());
     pcl::transformPointCloud(*cropped_scene, *transformed_scene, transformation.inverse());
 
-    // 去噪（统计滤波）
-    pcl::StatisticalOutlierRemoval<pcl::PointXYZRGB> sor;
-    auto stdThresh = adjustStddevThresh(transformed_scene, voxel_size);
-    sor.setInputCloud(transformed_scene);
-    sor.setMeanK(25);
-    sor.setStddevMulThresh(stdThresh);
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr denoised_scene(new pcl::PointCloud<pcl::PointXYZRGB>());
-    sor.filter(*denoised_scene);
+    auto icpFinalCloud = onICP(transformed_scene, template_cloud);
+    if(icpFinalCloud == nullptr){
+        QString logInfo = "ICP失败!";
+        m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
+        icpFinalCloud = transformed_scene; // ICP失败则用粗配准后的点云
+    }
+
+    // 统计滤波去噪，点云过小则不用
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr denoised_scene(icpFinalCloud);
+    if(icpFinalCloud->size() > 100000){
+        pcl::StatisticalOutlierRemoval<pcl::PointXYZRGB> sor;
+        auto stdThresh = adjustStddevThresh(icpFinalCloud, voxel_size);
+        sor.setInputCloud(icpFinalCloud);
+        sor.setMeanK(25);
+        sor.setStddevMulThresh(stdThresh);
+        sor.filter(*denoised_scene);
+    }
 
     // 加入元素列表
     auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateAlignCloud(denoised_scene);
@@ -2530,6 +2545,7 @@ Eigen::Matrix4f VtkWidget::runSAC(pcl::PointCloud<pcl::PointXYZRGB>::Ptr templat
     pcl::SampleConsensusInitialAlignment<pcl::PointXYZRGB, pcl::PointXYZRGB, pcl::FPFHSignature33> sac;
     std::vector<std::tuple<Eigen::Matrix4f, double>> ransacResults; // 存储多次 RANSAC 的结果
 
+    // 多次迭代进行随机粗配准，选择效果最好的一轮
     for (int i = 0; i < iterations; ++i) {
         sac.setInputSource(template_down);
         sac.setSourceFeatures(template_fpfh);
@@ -2573,7 +2589,7 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr VtkWidget::onICP(pcl::PointCloud<pcl::Poi
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr alignedCloud(new pcl::PointCloud<pcl::PointXYZRGB>);
     icp.setInputSource(scenCloud);
     icp.setInputTarget(tagCloud);
-    icp.setMaximumIterations(100);
+    icp.setMaximumIterations(150);
     icp.setTransformationEpsilon(1e-8);
     icp.setMaxCorrespondenceDistance(0.2f);
     icp.align(*alignedCloud);
