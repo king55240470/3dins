@@ -891,7 +891,7 @@ public:
             }
 
             std::ostringstream oss;
-            oss << base_dir << "/" << fileTag.toLatin1() << "Stand.ply";
+            oss << base_dir << "/" << fileTag.toLatin1() << "stand.ply";
             std::string file_path = oss.str();
 
             out<< QString::fromStdString(file_path);
