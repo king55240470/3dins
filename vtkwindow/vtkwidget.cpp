@@ -2183,7 +2183,7 @@ void VtkWidget::onAlign()
     fpfh.compute(*scene_fpfh);
 
     // RANSAC全局粗配准
-    int items = 5;
+    int items = 3;
     Eigen::Matrix4f transformation = runSAC(
         template_down,
         scene_down,
@@ -2216,7 +2216,7 @@ void VtkWidget::onAlign()
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr transformed_scene(new pcl::PointCloud<pcl::PointXYZRGB>());
     pcl::transformPointCloud(*cropped_scene, *transformed_scene, transformation.inverse());
 
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr icpFinalCloud(new pcl::PointCloud<pcl::PointXYZRGB>());
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr icpFinalCloud;
     // icpFinalCloud = onICP(transformed_scene, template_cloud);
     if(icpFinalCloud == nullptr){
         QString logInfo = "ICP失败!";
@@ -2248,7 +2248,6 @@ void VtkWidget::CompletePointCloud()
     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
     QVector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> clouds;
     QString logInfo;
-    bool isCloud1Model = false;
 
     // 收集两个选中的点云
     for (int i = 0; i < entityList.size(); i++) {
@@ -2256,10 +2255,6 @@ void VtkWidget::CompletePointCloud()
         if (!entity->IsSelected()) continue;
         if (entity->GetUniqueType() == enPointCloud) {
             auto pcEntity = static_cast<CPointCloud*>(entity);
-            if(pcEntity->isModelCloud && clouds.isEmpty()){
-                isCloud1Model = true;
-                qDebug() << "当前模型点云：" << pcEntity->m_strAutoName;
-            }
             clouds.append(pcl::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>(pcEntity->m_pointCloud));
             logInfo += pcEntity->m_strCName + " ";
         }
