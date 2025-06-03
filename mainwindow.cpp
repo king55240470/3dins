@@ -690,14 +690,14 @@ void MainWindow::openFile(){
             // //去除原来构建的点云
             // pWinFileMgr->removePointCloudKeys(pWinFileMgr->getContentItemMap());
 
-            // //打开模型点云
-            // in>>modelCloudExist;
-            // if(modelCloudExist){
-            //     CEntity* entity=new CPointCloud();
-            //     entity->deserialize(in);
-            //     m_EntityListMgr->m_entityList.append(entity);
-            //     m_ObjectListMgr->getObjectList().append(entity);
-            // }
+            //打开模型点云
+            in>>modelCloudExist;
+            if(modelCloudExist){
+                CEntity* entity=new CPointCloud();
+                entity->deserialize(in);
+                m_EntityListMgr->m_entityList.append(entity);
+                m_ObjectListMgr->getObjectList().append(entity);
+            }
 
             //反序列化toolWidget中的list
             pWinToolWidget->deserializeEntityList(in,pWinToolWidget->getConstructEntityList()); //构造
@@ -763,17 +763,17 @@ void MainWindow::saveFile(){
         out<<pWinFileMgr->getIdentifyItemMap();
         out<<pWinFileMgr->getModelFileMap();
 
-        //保存模型点云
-        // out<<modelCloudExist;
-        // for(int i=0;i<getEntityListMgr()->getEntityList().size();i++){
-        //     if(getEntityListMgr()->getEntityList()[i]->GetUniqueType()==enPointCloud){
-        //         CPointCloud*could=(CPointCloud*)getEntityListMgr()->getEntityList()[i];
-        //         if(could->isModelCloud){
-        //             could->serialize(out);
-        //             break;
-        //         }
-        //     }
-        // }
+        // 保存模型点云
+        out<<modelCloudExist;
+        for(int i=0;i<getEntityListMgr()->getEntityList().size();i++){
+            if(getEntityListMgr()->getEntityList()[i]->GetUniqueType()==enPointCloud){
+                CPointCloud*could=(CPointCloud*)getEntityListMgr()->getEntityList()[i];
+                if(could->isModelCloud){
+                    could->serialize(out);
+                    break;
+                }
+            }
+        }
 
         //序列化toolWidget中的list
         pWinToolWidget->serializeEntityList(out,pWinToolWidget->getConstructEntityList()); //构造
