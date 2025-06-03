@@ -51,6 +51,8 @@
 #include <pcl/registration/transformation_estimation_svd.h>
 #include <pcl/visualization/cloud_viewer.h>
 #include <pcl/filters/statistical_outlier_removal.h>
+#include <pcl/features/normal_3d_omp.h>
+#include <pcl/segmentation/extract_clusters.h>
 
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
@@ -203,6 +205,8 @@ public:
     float calculateOctreeResolution(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud); // 估算八叉树分辨率
     double computeAdaptiveRadius(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud);
     double computeSamplingSize(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud);
+
+    void CompletePointCloud(); // 点云补全
 
     // 显示选中的图形的信息
     void setCentity(CEntity*entity);  //传入centity对象
