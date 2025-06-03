@@ -357,11 +357,11 @@ void ToolWidget::InitOutputFolder(){
     // createFolder(ParentPath+"/点云对比图像/screenshot");
 
 
-    createFolder(m_savePath);
-    createFolder(getOutputPath("excell1"));
-    createFolder(getOutputPath("excellA"));
-    createFolder(getOutputPath("image"));
-    createFolder(getOutputPath("叶片检测报告"));
+    // createFolder(m_savePath);
+    // createFolder(getOutputPath("excell1"));
+    // createFolder(getOutputPath("excellA"));
+    // createFolder(getOutputPath("image"));
+    // createFolder(getOutputPath("叶片检测报告"));
 
     m_pMainWin->getPWinVtkPresetWidget()->setWidget("保存路径:"+getOutputPath(""));
 
@@ -822,10 +822,10 @@ void ToolWidget::connectActionWithF(){
     // connect(save_actions_[save_action_name_list_.indexOf("image")],&QAction::triggered,this,&  ToolWidget::onSaveImage);
     connect(save_actions_[save_action_name_list_.indexOf("pointcloud")],&QAction::triggered,this,&  ToolWidget::onSavePointCloud);
     //打开
-    connect(save_actions_[save_action_name_list_.indexOf("excel")], &QAction::triggered, this, &ToolWidget::onSaveExcel);
-    connect(save_actions_[save_action_name_list_.indexOf("word")], &QAction::triggered, this, &ToolWidget::onSaveWord);
-    connect(save_actions_[save_action_name_list_.indexOf("txt")], &QAction::triggered, this, &ToolWidget::onSaveTxt);
-    connect(save_actions_[save_action_name_list_.indexOf("pdf")], &QAction::triggered, this, &ToolWidget::onSavePdf);
+    connect(save_actions_[save_action_name_list_.indexOf("excel")], &QAction::triggered, this, &ToolWidget::onOpenExcel);
+    connect(save_actions_[save_action_name_list_.indexOf("word")], &QAction::triggered, this, &ToolWidget::onOpenWord);
+    connect(save_actions_[save_action_name_list_.indexOf("txt")], &QAction::triggered, this, &ToolWidget::onOpenTxt);
+    connect(save_actions_[save_action_name_list_.indexOf("pdf")], &QAction::triggered, this, &ToolWidget::onOpenPdf);
     connect(save_actions_[save_action_name_list_.indexOf("image")], &QAction::triggered, this, &ToolWidget::onOpenImage);
 
     // connect(save_actions_[save_action_name_list_.indexOf("txt")],&QAction::triggered,this,&  ToolWidget::onSaveTxt);
@@ -979,8 +979,8 @@ void   ToolWidget::ExtractData(QVector<CEntity *>& entitylist,QList<QList<QStrin
                 inList<<"不合格";
             }
             qDebug()<<"提取照片"<<entity->m_strAutoName;
-                SaveImage(entity);
-                 qDebug()<<"提取照片"<<entity->m_strAutoName<<"结束";
+            SaveImage(entity);
+            qDebug()<<"提取照片"<<entity->m_strAutoName<<"结束";
 
             inList<<QDir::toNativeSeparators(m_checkpoint_imagePath[entity]);
 
@@ -1014,8 +1014,13 @@ qDebug()<<"提取照片"<<entity->m_strAutoName;
             //盒维数
 
             double* boxData=m_pMainWin->getPWinVtkWidget()->getBoundboxData(entity);
+            double boxData_tmp[3]={0,0,0};
+            if(boxData==nullptr){
+                boxData=boxData_tmp;
+            }
             //double boxData[3]={0,0,0};
             CPosition boxCenter= m_pMainWin->getPWinVtkWidget()->getBoundboxCenter(entity);
+
             //CPosition boxCenter;
             data_PointCloud<<("X:"+QString::number(boxData[0])
                                 +" Y:"+QString::number(boxData[1])
@@ -1087,7 +1092,7 @@ void  ToolWidget:: ExtractData(QVector<CEntity *>& entitylist,QList<QList<QStrin
 }
 
 void   ToolWidget::ExtractData(QVector<CEntity *>& entitylist,QList<Size_MeasurementData>&dataAll_size,Size_MeasurementData& data_pointCloud_size){
-    qDebug()<<"提取数据2";
+
     int  pointCloudindex=0;
     for (int i = 0; i < entitylist.size(); i++) {
         Size_MeasurementData tmp;
@@ -1112,28 +1117,35 @@ void   ToolWidget::ExtractData(QVector<CEntity *>& entitylist,QList<Size_Measure
                     }
                 }
             }
-            qDebug()<<"到0";
+
             double* boxData=m_pMainWin->getPWinVtkWidget()->getBoundboxData(entity);
-            //double boxData[3]={0,0,0};
+            double boxData_tmp[3]={0,0,0};
+            if(boxData==nullptr){
+                boxData=boxData_tmp;
+            }
+
             CPosition boxCenter= m_pMainWin->getPWinVtkWidget()->getBoundboxCenter(entity);
             // CPosition boxCenter;
 
-            qDebug()<<"到0.25";
+
             //名字 是否可见 法向量 颜色
             tmp.name=point_cloud->m_strAutoName;
 
             tmp.isVisible="True";
             tmp.isColorful="True";
             tmp.isNormal="True";
-            qDebug()<<"到0.5";
+
             QVector<double>distanceValue=m_pMainWin->getPWinVtkWidget()->getDistanceValue()[point_cloud];
+
 
             if(distanceValue.size()==3){
                 tmp.max_error=QString::number(distanceValue[0]);
                 tmp.min_error=QString::number(distanceValue[1]);
                 tmp.average_error=QString::number(distanceValue[2]);
+            }else{
+                tmp.max_error=tmp.min_error=tmp.average_error=0;
             }
-            qDebug()<<"到1";
+
 
             tmp.three_dimensional=("长:"+QString::number(boxData[0])
                                      +" 宽:"+QString::number(boxData[1])
@@ -1141,31 +1153,28 @@ void   ToolWidget::ExtractData(QVector<CEntity *>& entitylist,QList<Size_Measure
             tmp.center_point=("X:"+QString::number(boxCenter.x)
                                 +" Y:"+QString::number(boxCenter.y)
                                 +" Z:"+QString::number(boxCenter.z));
-            qDebug()<<"到1.5";
+
 
             SaveImage(entity,&tmp);
             tmp.imagePath=QDir::toNativeSeparators(QDir::toNativeSeparators(m_checkpoint_imagePath[entity]));//图片路径
-            qDebug()<<"到2";
+
             if(pointCloudindex==1){
                 tmp.type="Global";
                 tmp.pointNumber=QString::number(point_cloud->getPointCloudSize());
                 data_pointCloud_size=tmp;
 
-                qDebug()<<"全局对比点云更新为"<<entity->m_strAutoName;
-                qDebug()<<"保存路径为"<<m_checkpoint_imagePath[entity];
 
             }else{
                 tmp.type="Local";
                 tmp.num_triangularmesh="1";//局部独有
                 dataAll_size.push_back(tmp);
-                qDebug()<<"局部对比点云更新为"<<entity->m_strAutoName;
+
             }
 
 
         }
     }
 
-    qDebug()<<"提取数据完毕2";
 
 }
 
@@ -1835,7 +1844,7 @@ void   ToolWidget::onSaveExcel(){
     QString logInfo1="Excel开始保存";
     m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo1);
 
-    QString path= getOutputPath("excellA");
+    QString path= getOutputPath("excell"+m_charBeforeDot);
     QString name="检测点信息_"+getTimeString();
 
     QString filePath=path+"/"+name+".xlsx";
@@ -2029,6 +2038,11 @@ void ToolWidget::createDistanceMeasurementReport()
     //提取点云、监测点信息
 
     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+    if(entityList.size()==0)
+    {
+        QString logInfo="列表为空，无法保存word文档";
+        m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
+    }
     //QVector<CEntity*> check_points;//存储监测点
     QVector<CPointCloud*> compare_clouds;//存储点云
     QList<QList<QString>> dataAll;//存储监测点测量
@@ -2038,11 +2052,11 @@ void ToolWidget::createDistanceMeasurementReport()
     QList<QString>  data_pointCloud;//存储检测点中点云数据
 
     Size_MeasurementData  data_pointCloud_size;//存储尺寸测量的点云数据
-    qDebug()<<"提取数据";
+
     ExtractData(entityList, dataAll,data_pointCloud);
-    qDebug()<<"提取数据完成1";
+
     ExtractData(entityList,dataAll_size,data_pointCloud_size);
-     qDebug()<<"提取数据完成2";
+
     QAxObject* word = nullptr;
     QAxObject* document = nullptr;
 
@@ -2083,21 +2097,12 @@ void ToolWidget::createDistanceMeasurementReport()
         pageSetup->setProperty("TopMargin", 50);
         pageSetup->setProperty("BottomMargin", 50);
 
-         qDebug()<<"这里-9";
+
         // 获取页眉和页脚
         QAxObject* activeDocument = word->querySubObject("ActiveDocument");
         QAxObject* sections = activeDocument->querySubObject("Sections");
         QAxObject* firstSection = sections->querySubObject("First()");
-        // //设置边框
-        // QAxObject* pageSetup2 = firstSection->querySubObject("PageSetup");
-        // QAxObject* borders = pageSetup2->querySubObject("Borders");
 
-        // // 设置四边单实线黑色边框
-        // borders->setProperty("Enable", true);
-        // borders->setProperty("LineStyle", 1);      // 单线
-        // borders->setProperty("LineWidth", 3);      // 0.75磅
-        // borders->setProperty("Color", 0x000000);   // 黑色
-        // borders->setProperty("DistanceFrom", 24);  // 距离正文24磅
 
         // 设置页眉
         QAxObject* header = firstSection->querySubObject("Headers(QVariant)", 1); // 1表示首页页眉
@@ -2141,8 +2146,6 @@ void ToolWidget::createDistanceMeasurementReport()
         QAxObject* footerParagraph = footerRange->querySubObject("ParagraphFormat");
         footerParagraph->setProperty("Alignment", "wdAlignParagraphCenter");
 
-        //footerRange->querySubObject("ParagraphFormat")->setProperty("Alignment","wdAlignParagraphCenter");//水平居中
-        //footerRange->querySubObject("Cells")->setProperty("VerticalAlignment","wdCellAlignVerticalCenter");//垂直居中
 
           qDebug()<<"这里-7";
 
@@ -2159,7 +2162,7 @@ void ToolWidget::createDistanceMeasurementReport()
         } else {
             qDebug() << "无法获取 ParagraphFormat 对象";
         }
-          qDebug()<<"这里-6";
+
         // 6. 添加报告标题
         font->setProperty("Size", 18);
         font->setProperty("Bold", true);
@@ -2174,7 +2177,7 @@ void ToolWidget::createDistanceMeasurementReport()
         // 7. 添加基本信息
         font->setProperty("Size", 10.5);
         font->setProperty("Bold", false);
-        //selection->dynamicCall("TypeText(const QString&)", "检测物件: xxx");
+
         if(data_pointCloud.size()>0){
         selection->dynamicCall("TypeText(const QString&)", "检测物件: "+data_pointCloud[0]);
         }else{
@@ -2183,74 +2186,81 @@ void ToolWidget::createDistanceMeasurementReport()
         selection->dynamicCall("TypeParagraph()");
         selection->dynamicCall("TypeText(const QString&)", "检测日期: " + QDate::currentDate().toString("yyyy/M/d"));
         selection->dynamicCall("TypeParagraph()");
-        // selection->dynamicCall("TypeText(const QString&)", "检测人员:");
-        // selection->dynamicCall("TypeParagraph()");
+
         selection->dynamicCall("TypeText(const QString&)", "检测编号: "+QString("%1").arg(count++, 3, 10, QLatin1Char('0')));
         selection->dynamicCall("TypeParagraph()");
+
         // 8. 创建属性表格
-          qDebug()<<"这里-4.5";
-        QAxObject* tables = document->querySubObject("Tables");
+
+        QStringList propertyHeaders = {"名称", "是否可见", "法向量", "颜色",
+                                       "盒维数", "盒中心", "点云数量", "Golbal Shift",
+                                       "Global Scale", "点云大小"};
+        QStringList propertyValues =data_pointCloud;
+         QAxObject* tables = document->querySubObject("Tables");
+        if(propertyHeaders.size()==propertyValues.size()){
+
         QAxObject* rangeForTable = selection->querySubObject("Range");
         QAxObject* propertyTable = tables->querySubObject("Add(QVariant, QVariant, QVariant, QVariant)",
                                                           rangeForTable->asVariant(), 11, 2);
         if (!propertyTable || propertyTable->isNull()) {
             throw std::runtime_error("无法创建属性表格");
         }
-          qDebug()<<"这里-4";
+
 
         // 设置表格样式
         propertyTable->setProperty("Style", "网格型");
         propertyTable->querySubObject("Rows")->setProperty("Height", 23);
         QAxObject* tableRange = propertyTable->querySubObject("Range");
+        if(tableRange==nullptr){
+            qDebug()<<"tableRange创建失败";
+            return ;
+        }
 
 
-         qDebug()<<"这里-1";
         tableRange->querySubObject("ParagraphFormat")->setProperty("Alignment","wdAlignParagraphCenter");//水平居中
         tableRange->querySubObject("Cells")->setProperty("VerticalAlignment","wdCellAlignVerticalCenter");//垂直居中
 
 
-        QStringList propertyHeaders = {"名称", "是否可见", "法向量", "颜色",
-                                       "盒维数", "盒中心", "点云数量", "Golbal Shift",
-                                       "Global Scale", "点云大小"};
-        QStringList propertyValues =data_pointCloud;
-        qDebug()<<"这里";
-        for (int row = 2; row <= propertyHeaders.size()+1; ++row) {
-            // 设置第一列（属性标题）的文本和居中
-            QAxObject* cellHeader = propertyTable->querySubObject("Cell(int, int)", row, 1);
-            QAxObject* rangeHeader = cellHeader->querySubObject("Range");
-            rangeHeader->dynamicCall("SetText(const QString&)", propertyHeaders[row - 2]);
-
-            // 设置第二列（属性值）的文本和居中
-            QAxObject* cellValue = propertyTable->querySubObject("Cell(int, int)", row, 2);
-            QAxObject* rangeValue = cellValue->querySubObject("Range");
-            rangeValue->dynamicCall("SetText(const QString&)", propertyValues[row - 2]);
 
 
-            // 合并单元格（除第5和第6行外）
+
+            for (int row = 2; row <= propertyHeaders.size()+1; ++row) {
+                // 设置第一列（属性标题）的文本和居中
+                QAxObject* cellHeader = propertyTable->querySubObject("Cell(int, int)", row, 1);
+                QAxObject* rangeHeader = cellHeader->querySubObject("Range");
+                rangeHeader->dynamicCall("SetText(const QString&)", propertyHeaders[row - 2]);
+
+                // 设置第二列（属性值）的文本和居中
+                QAxObject* cellValue = propertyTable->querySubObject("Cell(int, int)", row, 2);
+                QAxObject* rangeValue = cellValue->querySubObject("Range");
+                rangeValue->dynamicCall("SetText(const QString&)", propertyValues[row - 2]);
+
+
+                // 合并单元格（除第5和第6行外）
+
+            }
+
+            int row=1;
+            QAxObject* cell1 = propertyTable->querySubObject("Cell(int, int)", row, 1);
+            QAxObject* cell2 = propertyTable->querySubObject("Cell(int, int)", row, 2);
+            cell1->dynamicCall("Merge(QVariant)", cell2->asVariant());
+            QAxObject* inlineShapes = document->querySubObject("InlineShapes");
+            inlineShapes->dynamicCall("AddPicture(const QString&)",data_pointCloud[data_pointCloud.size()-1] );
+            qDebug()<<"这2";
+
+
+            //结束表格填写
+            selection->dynamicCall("EndKey(QVariant)", 6);
+            selection->dynamicCall("MoveDown()");
+            selection->dynamicCall("InsertBreak(int)", 7);
 
         }
-        qDebug()<<"这里1";
-        int row=1;
-        QAxObject* cell1 = propertyTable->querySubObject("Cell(int, int)", row, 1);
-        QAxObject* cell2 = propertyTable->querySubObject("Cell(int, int)", row, 2);
-        cell1->dynamicCall("Merge(QVariant)", cell2->asVariant());
-        QAxObject* inlineShapes = document->querySubObject("InlineShapes");
-        inlineShapes->dynamicCall("AddPicture(const QString&)",data_pointCloud[data_pointCloud.size()-1] );
-        qDebug()<<"这2";
 
-        // // 可选：调整图片大小（单位：磅，1磅≈1/72英寸）
-        // QAxObject* picture = inlineShapes->querySubObject("Item(int)", 1);  // 获取刚插入的图片
-        // picture->setProperty("Width", 1156);  // 设置宽度（磅）
-        // picture->setProperty("Height", 856);   // 设置高度（磅）
-
-        //结束表格填写
-        selection->dynamicCall("EndKey(QVariant)", 6);
-        selection->dynamicCall("MoveDown()");
-        selection->dynamicCall("InsertBreak(int)", 7);
 
         // 9. 添加检测点数据
         QVector<MeasurementData> measurements;
         for(auto &dataList:dataAll){
+            if(dataList.size()<7)continue;
             MeasurementData data;
             data.type=dataList[0];
             data.pointNumber=QString::number(extractFirstNumber(dataList[1]));//检测点序号
@@ -2259,7 +2269,7 @@ void ToolWidget::createDistanceMeasurementReport()
             data.minValue=dataList[4];
             data.isQualified=dataList[5];
             data.imagePath= QDir::toNativeSeparators(dataList[6]);
-            qDebug()<<data.imagePath;
+
             measurements.push_back(data);
         }
 
@@ -2274,7 +2284,7 @@ void ToolWidget::createDistanceMeasurementReport()
             //生成输出数据
             QStringList measureHeaders = {"检测点序号","类型", "测量值", "最大值", "最小值", "是否合格"};
             QStringList measureValues = {data.pointNumber,data.type, data.measuredValue, data.maxValue, data.minValue, data.isQualified};
-
+            if(measureValues.size()==measureHeaders.size()){
             // 创建检测点表格
             QAxObject* measureRange = selection->querySubObject("Range");
             QAxObject* measureTable = tables->querySubObject("Add(QVariant, QVariant, QVariant, QVariant)",
@@ -2290,7 +2300,7 @@ void ToolWidget::createDistanceMeasurementReport()
 
             measureTableRange->querySubObject("ParagraphFormat")->setProperty("Alignment","wdAlignParagraphCenter");//水平居中
             measureTableRange->querySubObject("Cells")->setProperty("VerticalAlignment","wdCellAlignVerticalCenter");//垂直居中
-            qDebug()<<"这里3";
+
             for (int row = 2; row <= measureHeaders.size()+1; ++row) {
                 QAxObject* cell = measureTable->querySubObject("Cell(int, int)", row, 1);
                 QAxObject* range = cell->querySubObject("Range");
@@ -2302,7 +2312,7 @@ void ToolWidget::createDistanceMeasurementReport()
                 range->dynamicCall("SetText(const QString&)", measureValues[row-2]);
 
             }
-            qDebug()<<"这里4";
+
             int row=1;
             QAxObject* cell1 = measureTable->querySubObject("Cell(int, int)", row, 1);
             QAxObject* cell2 = measureTable->querySubObject("Cell(int, int)", row, 2);
@@ -2310,81 +2320,87 @@ void ToolWidget::createDistanceMeasurementReport()
             QAxObject* inlineShapes = document->querySubObject("InlineShapes");
             inlineShapes->dynamicCall("AddPicture(const QString&)",data.imagePath);
             selection->dynamicCall("EndKey(QVariant)", 6);
-            qDebug()<<"这里5";
 
 
             //selection->dynamicCall("MoveDown()");
             selection->dynamicCall("InsertBreak(int)", 7); // 分页符
+            }
         }
-        font->setProperty("Size", 14);
-        font->setProperty("Bold", true);
-        selection->dynamicCall("TypeText(const QString&)", "整体检测");
-        selection->dynamicCall("TypeParagraph()");
-        font->setProperty("Size", 10.5);
-        font->setProperty("Bold", false);
 
         QStringList propertyHeaders_size = {"类型", "名称", "是否可视化", "是否有法向量",
                                             "是否有颜色", "外包盒三维", "外包盒中心点", "点的数目",
                                             "最大误差", "最小误差","平均误差"};
-        QAxObject* rangeForTable_size = selection->querySubObject("Range");
-        QAxObject* propertyTable_size = tables->querySubObject("Add(QVariant, QVariant, QVariant, QVariant)",
-                                                               rangeForTable_size->asVariant(), propertyHeaders_size.size()+1, 2);
-        if (!propertyTable_size || propertyTable_size->isNull()) {
-            throw std::runtime_error("无法创建属性表格");
-        }
-
-        // 设置表格样式
-        propertyTable_size->setProperty("Style", "网格型");
-        propertyTable_size->querySubObject("Rows")->setProperty("Height", 23);
-        QAxObject* tableRange_size= propertyTable_size->querySubObject("Range");
-
-
-
-        tableRange_size->querySubObject("ParagraphFormat")->setProperty("Alignment","wdAlignParagraphCenter");//水平居中
-        tableRange_size->querySubObject("Cells")->setProperty("VerticalAlignment","wdCellAlignVerticalCenter");//垂直居中
-
-
         QStringList propertyValues_size;
+        if(data_pointCloud_size.name!=""){
+
+
         propertyValues_size<<data_pointCloud_size.type<<data_pointCloud_size.name
                             <<data_pointCloud_size.isVisible<<data_pointCloud_size.isNormal<<data_pointCloud_size.isColorful
                             <<data_pointCloud_size.three_dimensional<<data_pointCloud_size.center_point
                             <<data_pointCloud_size.pointNumber<<data_pointCloud_size.max_error<<data_pointCloud_size.min_error
                             <<data_pointCloud_size.average_error;
 
-        for (int row = 2; row <= propertyHeaders_size.size()+1; ++row) {
-            // 设置第一列（属性标题）的文本和居中
-            QAxObject* cellHeader = propertyTable_size->querySubObject("Cell(int, int)", row, 1);
-            QAxObject* rangeHeader = cellHeader->querySubObject("Range");
-            rangeHeader->dynamicCall("SetText(const QString&)", propertyHeaders_size[row - 2]);
+            font->setProperty("Size", 14);
+            font->setProperty("Bold", true);
+            selection->dynamicCall("TypeText(const QString&)", "整体检测");
+            selection->dynamicCall("TypeParagraph()");
+            font->setProperty("Size", 10.5);
+            font->setProperty("Bold", false);
 
-            // 设置第二列（属性值）的文本和居中
-            QAxObject* cellValue = propertyTable_size->querySubObject("Cell(int, int)", row, 2);
-            QAxObject* rangeValue = cellValue->querySubObject("Range");
-            rangeValue->dynamicCall("SetText(const QString&)", propertyValues_size[row - 2]);
+            if(propertyHeaders_size.size()==propertyValues_size.size()){
+            QAxObject* rangeForTable_size = selection->querySubObject("Range");
+            QAxObject* propertyTable_size = tables->querySubObject("Add(QVariant, QVariant, QVariant, QVariant)",
+                                                                   rangeForTable_size->asVariant(), propertyHeaders_size.size()+1, 2);
+            if (!propertyTable_size || propertyTable_size->isNull()) {
+                throw std::runtime_error("无法创建属性表格");
+            }
+
+            // 设置表格样式
+            propertyTable_size->setProperty("Style", "网格型");
+            propertyTable_size->querySubObject("Rows")->setProperty("Height", 23);
+            QAxObject* tableRange_size= propertyTable_size->querySubObject("Range");
 
 
-            // 合并单元格（除第5和第6行外）
 
+            tableRange_size->querySubObject("ParagraphFormat")->setProperty("Alignment","wdAlignParagraphCenter");//水平居中
+            tableRange_size->querySubObject("Cells")->setProperty("VerticalAlignment","wdCellAlignVerticalCenter");//垂直居中
+
+
+
+            for (int row = 2; row <= propertyHeaders_size.size()+1; ++row) {
+                // 设置第一列（属性标题）的文本和居中
+                QAxObject* cellHeader = propertyTable_size->querySubObject("Cell(int, int)", row, 1);
+                QAxObject* rangeHeader = cellHeader->querySubObject("Range");
+                rangeHeader->dynamicCall("SetText(const QString&)", propertyHeaders_size[row - 2]);
+
+                // 设置第二列（属性值）的文本和居中
+                QAxObject* cellValue = propertyTable_size->querySubObject("Cell(int, int)", row, 2);
+                QAxObject* rangeValue = cellValue->querySubObject("Range");
+                rangeValue->dynamicCall("SetText(const QString&)", propertyValues_size[row - 2]);
+
+
+                // 合并单元格（除第5和第6行外）
+
+            }
+
+            QAxObject* cell1_size = propertyTable_size->querySubObject("Cell(int, int)", 1, 1);
+            QAxObject* cell2_size = propertyTable_size->querySubObject("Cell(int, int)", 1, 2);
+            cell1_size->dynamicCall("Merge(QVariant)", cell2_size->asVariant());
+            QAxObject* inlineShapes_size = document->querySubObject("InlineShapes");
+            inlineShapes_size->dynamicCall("AddPicture(const QString&)",data_pointCloud_size.imagePath);
+
+
+
+
+            //结束表格填写并换页
+            selection->dynamicCall("EndKey(QVariant)", 6);
+            }
         }
 
-        QAxObject* cell1_size = propertyTable_size->querySubObject("Cell(int, int)", 1, 1);
-        QAxObject* cell2_size = propertyTable_size->querySubObject("Cell(int, int)", 1, 2);
-        cell1_size->dynamicCall("Merge(QVariant)", cell2_size->asVariant());
-        QAxObject* inlineShapes_size = document->querySubObject("InlineShapes");
-        inlineShapes_size->dynamicCall("AddPicture(const QString&)",data_pointCloud_size.imagePath);
 
-        // // 可选：调整图片大小（单位：磅，1磅≈1/72英寸）
-        // QAxObject* picture = inlineShapes->querySubObject("Item(int)", 1);  // 获取刚插入的图片
-        // picture->setProperty("Width", 1156);  // 设置宽度（磅）
-        // picture->setProperty("Height", 856);   // 设置高度（磅）
-        qDebug()<<"1";
-
-        //结束表格填写并换页
-        selection->dynamicCall("EndKey(QVariant)", 6);
-        selection->dynamicCall("InsertBreak(int)", 7); // 分页符
         int num_size=1;
         for (const Size_MeasurementData& data : dataAll_size) {
-
+            selection->dynamicCall("InsertBreak(int)", 7); // 分页符
             // 添加检测点标题
             font->setProperty("Size", 14);
             font->setProperty("Bold", true);
@@ -2396,6 +2412,8 @@ void ToolWidget::createDistanceMeasurementReport()
             QStringList measureHeaders = {"类型","名称", "是否有颜色", "是否有法向量", "三角网格量", "外包盒三维","外包盒中点",
                                           "最大误差","最小误差","平均误差"};
             QStringList measureValues ;
+            if(data.name!=""){
+
 
             measureValues<<data.type<<data.name
                           <<data.isColorful<<data.isNormal<<data.num_triangularmesh
@@ -2442,8 +2460,9 @@ void ToolWidget::createDistanceMeasurementReport()
             // 最后一个检测点后不加分页
             if (&data != &dataAll_size.last()) {
                 selection->dynamicCall("EndKey(QVariant)", 6);
-                //selection->dynamicCall("MoveDown()");
+
                 selection->dynamicCall("InsertBreak(int)", 7); // 分页符
+            }
             }
         }
 
@@ -2499,9 +2518,12 @@ void ToolWidget::createDistanceMeasurementReport()
         auto& entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
         //dataAll.append(headers);
 
-        {
+
         QList<QString>inList;
+        if(data_pointCloud_size.name!=""){
+
         inList<<data_pointCloud_size.name<<data_pointCloud_size.max_error<<data_pointCloud_size.min_error<<data_pointCloud_size.average_error;
+
         if(data_pointCloud_size.max_error.toDouble()<0.001){
             inList<<"合格";
         }else{
@@ -2509,8 +2531,11 @@ void ToolWidget::createDistanceMeasurementReport()
         }
         dataAll.append(inList);
         }
+
         for(const Size_MeasurementData& data : dataAll_size){
+            if(data.name!=""){
             QList<QString>inList;
+
             inList<<data.name<<data.max_error<<data.min_error<<data.average_error;
             if(data.max_error.toDouble()<0.001){
                 inList<<"合格";
@@ -2518,6 +2543,7 @@ void ToolWidget::createDistanceMeasurementReport()
                 inList<<"不合格";
             }
             dataAll.append(inList);
+            }
         }
         QAxObject excel("Excel.Application");						  //加载Excel驱动
         excel.dynamicCall("SetVisible (bool Visible)", "false");	  //不显示窗体
@@ -3830,7 +3856,9 @@ void ToolWidget::SaveImage(CEntity* entity,Size_MeasurementData* pointCloudData)
 
     //得到所有元素
     auto& entitylist=m_pMainWin->getEntityListMgr()->getEntityList();
+    if(entitylist.size()==0)return ;
     QVector<CObject*>& objlist=m_pMainWin->getObjectListMgr()->getObjectList();
+    if(objlist.size()==0) return ;
     auto& actorMap = m_pMainWin->getactorToEntityMap();
     auto treeWidget = m_pMainWin->getPWinElementListWidget()->getTreeWidgetNames();
     std::vector<vtkActor*> actors;
@@ -3941,7 +3969,7 @@ void ToolWidget::SaveImage(CEntity* entity,Size_MeasurementData* pointCloudData)
         }
     }
 
-    //显示文本框
+
 
 
     //生成路径
@@ -3967,24 +3995,29 @@ void ToolWidget::SaveImage(CEntity* entity,Size_MeasurementData* pointCloudData)
 
 void ToolWidget:: createFolder(){
     auto& entitylist=m_pMainWin->getEntityListMgr()->getEntityList();
-    createFolder(m_savePath);
 
-    QString charBeforeDot="";
+
+    QString charBeforeDot="A";
     for(auto entity: entitylist ){
         if(entity->GetUniqueType()==enPointCloud){
             CPointCloud* pointCloud=( CPointCloud*)entity;
             if(pointCloud->isMeasureCloud||pointCloud->m_strAutoName.contains("实测")){
-                int dotPos = pointCloud->m_strAutoName.indexOf('.');
-                // 2. 检查是否存在 '.'，并确保前面有字符
-                if (dotPos > 0) {
-                    charBeforeDot =pointCloud->m_strAutoName.at(dotPos - 1);
-                    qDebug() << "小数点前的一个字符是：" << charBeforeDot;
+                QString str=pointCloud->m_strAutoName;
+                charBeforeDot="A";
+                int markerPos = str.indexOf("#");
+                if (markerPos != -1 && markerPos < str.length() - 1) {
+                    QChar firstChar = str.at(markerPos + 1);
+                    qDebug() << "# 后的第一个字符是:" << firstChar;
+                    charBeforeDot=firstChar;
+
+                } else {
+                    qDebug() << "字符串中不存在# 或者# 后没有字符";
                 }
             }
         }
     }
     m_charBeforeDot=charBeforeDot;
-
+    createFolder(m_savePath);
     createFolder(getOutputPath("excell1"));
     createFolder(getOutputPath("excell"+charBeforeDot));
     createFolder(getOutputPath("image"));

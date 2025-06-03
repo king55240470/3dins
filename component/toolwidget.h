@@ -206,7 +206,7 @@ public slots:
 
     QString loadAddress();
 private:
-    QString m_charBeforeDot="A";
+    QString m_charBeforeDot="";
     QString m_savePath="z:/result";//默认保存路径
 
     QMap<CEntity*,QString>m_checkpoint_imagePath;

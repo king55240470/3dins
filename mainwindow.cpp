@@ -336,6 +336,13 @@ void MainWindow::setupUi(){
     connect(filterAction,&QAction::triggered,this,[&](){
         pWinVtkWidget->onFilter();
     });
+    QAction* completeAction=cloudOperation->addAction("点云补齐");
+    completeAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Q));
+    completeAction->setShortcutContext(Qt::ApplicationShortcut);
+    completeAction->setIcon(QIcon(alignIcon.pixmap(QSize(40, 40))));
+    connect(completeAction,&QAction::triggered,this,[&](){
+        pWinVtkWidget->CompletePointCloud();
+    });
     QMenu * switchTheme = bar->addMenu("主题(T)");
     QAction* showThemeMenu = new QAction();
     showThemeMenu->setShortcut(QKeySequence(Qt::Key_T));
@@ -756,7 +763,7 @@ void MainWindow::saveFile(){
         out<<pWinFileMgr->getIdentifyItemMap();
         out<<pWinFileMgr->getModelFileMap();
 
-        //保存模型点云
+        // 保存模型点云
         out<<modelCloudExist;
         for(int i=0;i<getEntityListMgr()->getEntityList().size();i++){
             if(getEntityListMgr()->getEntityList()[i]->GetUniqueType()==enPointCloud){

@@ -858,6 +858,7 @@ public:
     bool isModelCloud=false;// 是否是模型点云
     bool isMeasureCloud=false; // 是否是实测点云
     bool isFilteredCloud = false; // 是否是去噪后的点云
+    bool isCompleteCloud =false; // 是否为补齐点云
     bool isCut=false; //是否是切割后的点云
     bool isOver=false; //是否已经完成测量
     double minError; //误差

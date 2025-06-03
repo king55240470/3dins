@@ -622,11 +622,7 @@ void ElementListWidget::startprocess()
         QTimer::singleShot(2000, []() {
             qDebug() << "2秒后执行的操作";
         });
-        QScopedPointer<QProcess> process(new QProcess);  // 自动释放
-        process->start("./compare_cloud_proc");
-        if (!process->waitForFinished(10000)) {
-            qDebug() << "子进程崩溃或超时";
-        }
+        CompareCloud();
         updateDistance();
         m_pMainWin->NotifySubscribe();
     }
@@ -643,11 +639,12 @@ void ElementListWidget::onAddElement(pcl::PointCloud<pcl::PointXYZRGB>::Ptr coul
             QTimer::singleShot(2000, []() {
                 qDebug() << "2秒后执行的操作";
             });
-            QScopedPointer<QProcess> process(new QProcess);  // 自动释放
-            process->start("./compare_cloud_proc");
-            if (!process->waitForFinished(10000)) {
-                qDebug() << "子进程崩溃或超时";
-            }
+            // QScopedPointer<QProcess>process(new QProcess);
+            // process->start("./compare_cloud_proc");
+            // if(!process->waitForFinished(30000)){
+            //     qDebug()<<"子进程崩溃或超时";
+            // }
+            CompareCloud();
             updateDistance();
             m_pMainWin->NotifySubscribe();
         }
@@ -706,6 +703,8 @@ void ElementListWidget::CompareCloud()
         qDebug()<<CurrentMeasureindex;
         m_pMainWin->getEntityListMgr()->getEntityList()[CurrentMeasureindex]->SetSelected(false);
         m_pMainWin->getEntityListMgr()->getEntityList().back()->SetSelected(true);
+        CPointCloud*could=(CPointCloud*)m_pMainWin->getEntityListMgr()->getEntityList().back();
+        AlignCouldlists.enqueue(could->GetmyCould().makeShared());
         qDebug()<<"进入对比之前";
         m_pMainWin->getPWinVtkWidget()->onCompare();
     }
@@ -759,7 +758,7 @@ void ElementListWidget::updateDistance()
         timer=nullptr;
     }
     qDebug()<<"判断时间是否存在后";
-    kdtree.setInputCloud(pointCouldlists.dequeue());
+    kdtree.setInputCloud(AlignCouldlists.dequeue());
     qDebug()<<"队列的大小"<<pointCouldlists.size();
     disAndanglelist.clear();
     for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
@@ -783,11 +782,12 @@ void ElementListWidget::updateDistance()
             QTimer::singleShot(2000, []() {
                 qDebug() << "2秒后执行的操作";
             });
-            QScopedPointer<QProcess> process(new QProcess);  // 自动释放
-            process->start("./compare_cloud_proc");
-            if (!process->waitForFinished(10000)) {
-                qDebug() << "子进程崩溃或超时";
-            }
+            // QScopedPointer<QProcess> process(new QProcess);  // 自动释放
+            // process->start("./compare_cloud_proc");
+            // if (!process->waitForFinished(10000)) {
+            //     qDebug() << "子进程崩溃或超时";
+            // }
+            CompareCloud();
             updateDistance();
             return;
         }else{
@@ -892,11 +892,12 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
             QTimer::singleShot(2000, []() {
                 qDebug() << "2秒后执行的操作";
             });
-            QScopedPointer<QProcess> process(new QProcess);  // 自动释放
-            process->start("./compare_cloud_proc");
-            if (!process->waitForFinished(10000)) {
-                qDebug() << "子进程崩溃或超时";
-            }
+            // QScopedPointer<QProcess> process(new QProcess);  // 自动释放
+            // process->start("./compare_cloud_proc");
+            // if (!process->waitForFinished(10000)) {
+            //     qDebug() << "子进程崩溃或超时";
+            // }
+            CompareCloud();
             updateDistance();
         }else{
             isProcessing=false;
@@ -1245,7 +1246,7 @@ void ElementListWidget::loadModelFile()
     m_pMainWin->peopleOpenfile = false;
     QString s = filetypelists.dequeue();
     m_pMainWin->filePathChange = m_pMainWin->modelPath+"/model"+s+"/"+s+"stand.ply";
-    //m_pMainWin->filePathChange = m_pMainWin->modelPath+"/model"+s+"/"+s+"stand.qins";
+    m_pMainWin->filePathChange = m_pMainWin->modelPath+"/model"+s+"/"+s+"stand.qins";
     m_pMainWin->openFile();
     m_pMainWin->peopleOpenfile = true;
     qinsSize = m_pMainWin->getEntityListMgr()->getEntityList().size()-size;
