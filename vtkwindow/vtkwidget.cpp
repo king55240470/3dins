@@ -28,7 +28,9 @@
 #include <pcl/correspondence.h>
 #include <pcl/recognition/cg/hough_3d.h>
 #include <pcl/filters/extract_indices.h>
-#include <fbxsdk.h>
+#include <thread>
+#include <chrono>
+#include <mutex>
 
 
 VtkWidget::VtkWidget(QWidget *parent)
@@ -2175,7 +2177,7 @@ void VtkWidget::onAlign()
     fpfh.compute(*scene_fpfh);
 
     // RANSAC全局粗配准
-    int items = 3;
+    int items = 5;
     Eigen::Matrix4f transformation = runSAC(
         template_down,
         scene_down,
@@ -2208,7 +2210,8 @@ void VtkWidget::onAlign()
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr transformed_scene(new pcl::PointCloud<pcl::PointXYZRGB>());
     pcl::transformPointCloud(*cropped_scene, *transformed_scene, transformation.inverse());
 
-    auto icpFinalCloud = onICP(transformed_scene, template_cloud);
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr icpFinalCloud(new pcl::PointCloud<pcl::PointXYZRGB>());
+    // icpFinalCloud = onICP(transformed_scene, template_cloud);
     if(icpFinalCloud == nullptr){
         QString logInfo = "ICP失败!";
         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
@@ -2317,6 +2320,7 @@ Eigen::Matrix4f VtkWidget::runSAC(pcl::PointCloud<pcl::PointXYZRGB>::Ptr templat
     return std::get<0>(bestResult);
 }
 
+
 pcl::PointCloud<pcl::PointXYZRGB>::Ptr VtkWidget::onICP(pcl::PointCloud<pcl::PointXYZRGB>::Ptr scenCloud,
                                                         pcl::PointCloud<pcl::PointXYZRGB>::Ptr tagCloud)
 {
@@ -2356,7 +2360,8 @@ void VtkWidget::poissonReconstruction()
     }
 
     if (cloud->empty()) {
-        QMessageBox::warning(this, "警告", "点云不能为空");
+        QString logInfo = "重建用的点云为空!";
+        m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
         return;
     }
 
