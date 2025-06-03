@@ -2122,6 +2122,7 @@ void VtkWidget::onAlign()
         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
         return;
     }
+    qDebug()<<"1选中两个点云";
 
     auto& template_cloud = isCloud1Model ? clouds[0] : clouds[1];
     auto& scene_cloud = isCloud1Model ? clouds[1] : clouds[0];
@@ -2145,7 +2146,7 @@ void VtkWidget::onAlign()
     voxel.filter(*template_down);
     voxel.setInputCloud(scene_cloud);
     voxel.filter(*scene_down);
-
+    qDebug()<<"2";
     // 法线估计
     pcl::PointCloud<pcl::Normal>::Ptr template_normals(new pcl::PointCloud<pcl::Normal>());
     pcl::PointCloud<pcl::Normal>::Ptr scene_normals(new pcl::PointCloud<pcl::Normal>());
@@ -2184,7 +2185,7 @@ void VtkWidget::onAlign()
         voxel_size,
         items
         );
-
+    qDebug()<<"3";
     // 检查是否有成功的一轮
     if (transformation.isApprox(Eigen::Matrix4f::Zero())) {
         QString logInfo = "粗配准失败";
@@ -2207,7 +2208,7 @@ void VtkWidget::onAlign()
     // 将裁剪后的点云向模板进行对齐，这里使用逆变换
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr transformed_scene(new pcl::PointCloud<pcl::PointXYZRGB>());
     pcl::transformPointCloud(*cropped_scene, *transformed_scene, transformation.inverse());
-
+    qDebug()<<"4";
     auto icpFinalCloud = onICP(transformed_scene, template_cloud);
     if(icpFinalCloud == nullptr){
         QString logInfo = "ICP失败!";
@@ -2223,7 +2224,7 @@ void VtkWidget::onAlign()
     sor.setStddevMulThresh(stdThresh);
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr denoised_scene(new pcl::PointCloud<pcl::PointXYZRGB>());
     sor.filter(*denoised_scene);
-
+    qDebug()<<"5";
     // 加入元素列表
     auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateAlignCloud(denoised_scene);
     m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
