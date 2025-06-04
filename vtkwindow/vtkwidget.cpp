@@ -1596,14 +1596,14 @@ void VtkWidget::FocusOnActor(CEntity* entity)
 int VtkWidget::adjustMeanK(size_t pointCount)
 {
     if(pointCount <= 10000)
-        return 20;
+        return 10;
     else if(pointCount > 10000 && pointCount <= 100000)
-        return 50;
+        return 20;
     else if(pointCount > 100000 && pointCount <= 500000)
-        return 100;
+        return 50;
     else if(pointCount > 500000 && pointCount <= 1000000)
-        return 150;
-    else return 200;
+        return 100;
+    else return 150;
 }
 
 double AlignWorker::adjustStddevThresh(pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_cloud, float voxelSize)
@@ -1651,7 +1651,7 @@ double VtkWidget::adjustStddevThresh(pcl::PointCloud<pcl::PointXYZRGB>::Ptr scen
     double densityFactor = 1.0 / density; // 密度越大，因子越小，标准差倍数越小
     double voxelFactor = voxelSize * 0.5;  // 体素大小越大，因子越大，标准差倍数越大
 
-    // 计算最终的标准差倍数，确保其在合理范围内（例如：1.0到5.0）
+    // 计算最终的标准差倍数，确保其在合理范围内
     double stddevThresh = baseThresh * (1.0 + densityFactor + voxelFactor);
     return std::max(1.0, std::min(5.0, stddevThresh)); // 限制阈值范围
 }
@@ -1824,8 +1824,8 @@ void VtkWidget::onCompare()
         return;
     }
 
-    // 创建KD-Tree用于点云2
-    pcl::search::KdTree<pcl::PointXYZ> kdtree;
+    // 创建KD-Tree用于近邻搜索
+    pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
     kdtree.setInputCloud(cloud1);
 
     // 将比较结果存在comparisonCloud，并设置点云大小
@@ -1834,7 +1834,6 @@ void VtkWidget::onCompare()
     comparisonCloud->height = 0;
     comparisonCloud->is_dense = false;
     comparisonCloud->resize(cloud1->size());
-
 
     // 初始化最大和最小距离变量
     float maxDistance = std::numeric_limits<float>::min();
@@ -2137,8 +2136,9 @@ void VtkWidget::onAlign()
     // 自适应计算体素大小
     pcl::PointXYZRGB minpt, maxpt;
     pcl::getMinMax3D(*template_cloud, minpt, maxpt); // 计算点云的最小/大坐标
+    // 计算外包盒的对角线长度
     float diag = std::sqrt(
-        std::pow(maxpt.x - minpt.x, 2) +  // 使用min_pt/max_pt坐标
+        std::pow(maxpt.x - minpt.x, 2) +
         std::pow(maxpt.y - minpt.y, 2) +
         std::pow(maxpt.z - minpt.z, 2)
         );
@@ -2219,7 +2219,7 @@ void VtkWidget::onAlign()
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr icpFinalCloud;
     // icpFinalCloud = onICP(transformed_scene, template_cloud);
     if(icpFinalCloud == nullptr){
-        QString logInfo = "ICP失败!";
+        QString logInfo = "ICP失败，采用粗配准";
         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
         icpFinalCloud = transformed_scene; // ICP失败则用粗配准后的点云
     }
@@ -2246,7 +2246,6 @@ void VtkWidget::onAlign()
     m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
     m_pMainWin->NotifySubscribe();
 }
-
 
 
 // 区域覆盖判断
