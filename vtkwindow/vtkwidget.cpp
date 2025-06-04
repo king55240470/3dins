@@ -1812,28 +1812,52 @@ void VtkWidget::onCompare()
 
     if(clouds.size()!=2){
         m_pMainWin->getPWinVtkPresetWidget()->setWidget("需要两个点云！");
-        return ;
+        return;
     }
 
-    pcl::copyPointCloud( *clouds[0], *cloud1);
-    pcl::copyPointCloud( *clouds[1], *cloud2);
+    // 定义下采样函数
+    auto downSampleCloud = [](pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, int target = 500000) -> pcl::PointCloud<pcl::PointXYZRGB>::Ptr {
+        if (cloud->size() <= target) return cloud;
 
-    // 检查点云是否为空
+        // 计算下采样步长
+        int k = static_cast<int>(std::ceil(static_cast<double>(cloud->size()) / target));
+        pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampled(new pcl::PointCloud<pcl::PointXYZRGB>);
+        downsampled->reserve(cloud->size() / k + 1);
+
+        for (size_t i = 0; i < cloud->size(); i += k) {
+            downsampled->push_back(cloud->at(i));
+        }
+        downsampled->width = downsampled->size();
+        downsampled->height = 1;
+        return downsampled;
+    };
+
+    // 对点云2进行下采样
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampledCloud2 = downSampleCloud(clouds[1]);
+    pcl::copyPointCloud( *downsampledCloud2, *cloud2);
+    pcl::copyPointCloud( *clouds[0], *cloud1); // 第一个点云默认为模型点云，不用采样
+
+    // 采样后如果点云规模仍差距过大，则认为无法对比
+    if(cloud1->size()*5 < cloud2->size() || cloud2->size()*5 < cloud1->size()){
+        m_pMainWin->getPWinVtkPresetWidget()->setWidget("点云规模相差过大，无法进行对比!");
+        return;
+    }
+    // 判空
     if (cloud1->empty() || cloud2->empty()) {
         m_pMainWin->getPWinVtkPresetWidget()->setWidget("点云为空！");
         return;
     }
 
     // 创建KD-Tree用于近邻搜索
-    pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
+    pcl::search::KdTree<pcl::PointXYZ> kdtree;
     kdtree.setInputCloud(cloud1);
 
     // 将比较结果存在comparisonCloud，并设置点云大小
     comparisonCloud->clear(); // 清除上次比较的结果
-    comparisonCloud->width = 0;
-    comparisonCloud->height = 0;
+    comparisonCloud->width = cloud2->size();
+    comparisonCloud->height = 1;
     comparisonCloud->is_dense = false;
-    comparisonCloud->resize(cloud1->size());
+    comparisonCloud->resize(cloud2->size());
 
     // 初始化最大和最小距离变量
     float maxDistance = std::numeric_limits<float>::min();
@@ -1845,7 +1869,12 @@ void VtkWidget::onCompare()
 
     // 遍历点云2中的每个点，找到与点云1中最近点的距离
     for (size_t i = 0; i < cloud2->size(); ++i) {
-        if (kdtree.nearestKSearch(cloud2->at(i), 1, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
+        pcl::PointXYZ searchPoint;
+        searchPoint.x = cloud2->points[i].x;
+        searchPoint.y = cloud2->points[i].y;
+        searchPoint.z = cloud2->points[i].z;
+
+        if (kdtree.nearestKSearch(searchPoint, 1, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
             float dist = std::sqrt(pointNKNSquaredDistance[0]);
             averageDistance+=dist;
             // 更新最大和最小距离
@@ -1860,9 +1889,9 @@ void VtkWidget::onCompare()
             float normalizedDistance = (dist - minDistance) / (maxDistance - minDistance); // 归一化距离到0-1之间
             int r = static_cast<int>(255 * normalizedDistance);
             int b = 255 - r;
-            point.x = cloud2->at(i).x;
-            point.y = cloud2->at(i).y;
-            point.z = cloud2->at(i).z;
+            point.x = searchPoint.x;
+            point.y = searchPoint.y;
+            point.z = searchPoint.z;
             point.r = r;
             point.g = 0;  // 中间色为0，只显示红蓝变化
             point.b = b;
@@ -1918,7 +1947,7 @@ void VtkWidget::onCompare()
     }
 
     // 添加日志输出
-    logInfo += "对比完成";
+    logInfo += " 对比完成";
     m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
 }
 
@@ -2208,7 +2237,7 @@ void VtkWidget::onAlign()
     pcl::CropBox<pcl::PointXYZRGB> crop_filter;
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr cropped_scene(new pcl::PointCloud<pcl::PointXYZRGB>());
     crop_filter.setMin(Eigen::Vector4f(min_pt.x, min_pt.y, min_pt.z, 1.0f));
-    crop_filter.setMax(Eigen::Vector4f(max_pt.x, max_pt.y, max_pt.z, 1.1f));
+    crop_filter.setMax(Eigen::Vector4f(max_pt.x, max_pt.y, max_pt.z, 1.05f));
     crop_filter.setInputCloud(scene_cloud); // 用采样前的点云，保留更多点
     crop_filter.filter(*cropped_scene);
 
