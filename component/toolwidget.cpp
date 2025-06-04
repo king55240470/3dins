@@ -1038,7 +1038,7 @@ qDebug()<<"提取照片"<<entity->m_strAutoName;
             //点云大小
             data_PointCloud<<QString::number(m_pMainWin->ActorPointSize);
             qDebug()<<"保存图片"<<entity->m_strAutoName;
-            SaveImage(entity);
+            //SaveImage(entity);
             qDebug()<<"保存图片"<<entity->m_strAutoName<<"成功";
             data_PointCloud<<QDir::toNativeSeparators(m_checkpoint_imagePath[entity]);
         }
@@ -3852,7 +3852,7 @@ QStringList* ToolWidget::getViewAngleIconPath(){
 }
 
 void ToolWidget::SaveImage(CEntity* entity,Size_MeasurementData* pointCloudData){
-
+/*
 
     //得到所有元素
     auto& entitylist=m_pMainWin->getEntityListMgr()->getEntityList();
@@ -3991,7 +3991,9 @@ void ToolWidget::SaveImage(CEntity* entity,Size_MeasurementData* pointCloudData)
     //关闭文本框
     m_pMainWin->getPWinElementListWidget()->closeInfotext();
     m_pMainWin->getPWinVtkWidget()->UpdateInfo();
-}
+
+    */
+    }
 
 void ToolWidget:: createFolder(){
     auto& entitylist=m_pMainWin->getEntityListMgr()->getEntityList();
