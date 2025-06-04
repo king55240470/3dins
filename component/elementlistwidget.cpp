@@ -175,72 +175,79 @@ void ElementListWidget::CreateEllipse(CObject*obj)
 
 void ElementListWidget::onDeleteEllipse()
 {
-    QList<QTreeWidgetItem*> selectedItems;
-    for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
-        if(m_pMainWin->getEntityListMgr()->getEntityList()[i]->getSelected()){
-            selectedItems.push_back(treeWidgetNames->topLevelItem(i));
+    // 1. 获取实体列表并筛选选中项
+    auto& entityList = m_pMainWin->getEntityListMgr()->getEntityList();
+    QVector<CEntity*> selectedEntities;
+    for (CEntity* entity : entityList) {
+        if (entity->getSelected()) {
+            selectedEntities.append(entity);
         }
     }
-    //QList<QTreeWidgetItem*> selectedItems = treeWidgetNames->selectedItems();
-    if (!selectedItems.isEmpty()) {
-        /*for(QTreeWidgetItem *selectedItem:selectedItems)*/
-        for(int j=selectedItems.size()-1;j>=0;j--)
-        {
-            QTreeWidgetItem *selectedItem=selectedItems[j];
-            int index=-1;
-            CObject *obj = selectedItem->data(0, Qt::UserRole).value<CObject*>();
-            for(int i=0;i<m_pMainWin->getObjectListMgr()->getObjectList().size();i++){
-                if(m_pMainWin->getObjectListMgr()->getObjectList()[i]==obj){
-                    index=i;
-                }
-            }
-            int entityindex=-1;
-            for(int i=0;i<eleobjlist.size();i++){
-                if(eleobjlist[i]==obj){
-                    entityindex=i;
-                }
-            }
-            if(obj->GetUniqueType()==enPointCloud){
-                CPointCloud*could = (CPointCloud*)obj;
-                if(pointCouldlists.contains(could->m_pointCloud.makeShared())){
-                    pointCouldlists.removeOne(could->m_pointCloud.makeShared());
-                }
-            }
-            auto& objectList = m_pMainWin->m_ObjectListMgr->getObjectList();
-            auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
-            QVector<CEntity*> constructEntityList = m_pMainWin->getPWinToolWidget()->getConstructEntityList();//存储构建元素的列表
-            QVector<CEntity*> identifyEntityList = m_pMainWin->getPWinToolWidget()->getIdentifyEntityList();//存储识别元素的列表
-            if(objectList[index]->GetObjectCName().left(5)=="临时坐标系"||objectList[index]->GetObjectCName().left(5)=="工件坐标系"){
-                objectList.removeAt(index);
-                //pcscount--;
-            }else{              
-                //删除constructEntityList和contentItemMap中的元素
-                for(int i=0;i<constructEntityList.size();i++){
-                    if(constructEntityList[i]==entityList[entityindex]){
-                        QString key=constructEntityList[i]->GetObjectCName()+"  "+constructEntityList[i]->GetObjectAutoName();
-                        m_pMainWin->getpWinFileMgr()->getContentItemMap().remove(key);
-                        constructEntityList.removeAt(i);
-                        break;
-                    }
-                }
 
-                //删除identifyEntityList和identifyItemMap中的元素
-                for(int i=0;i<identifyEntityList.size();i++){
-                    if(identifyEntityList[i]==entityList[entityindex]){
-                        QString key=identifyEntityList[i]->GetObjectCName()+"  "+identifyEntityList[i]->GetObjectAutoName();
-                        m_pMainWin->getpWinFileMgr()->getIdentifyItemMap().remove(key);
-                        identifyEntityList.removeAt(i);
-                        break;
-                    }
-                }
+    if (selectedEntities.isEmpty()) {
+        return; // 无选中项则直接返回
+    }
 
-                objectList.removeAt(index);
-                entityList.removeAt(entityindex);
-                eleobjlist.removeAt(entityindex);
+    // 2. 获取需要操作的关联列表
+    auto& objectList = m_pMainWin->m_ObjectListMgr->getObjectList();
+    auto& constructList = m_pMainWin->getPWinToolWidget()->getConstructEntityList();
+    auto& identifyList = m_pMainWin->getPWinToolWidget()->getIdentifyEntityList();
+    auto& contentMap = m_pMainWin->getpWinFileMgr()->getContentItemMap();
+    auto& identifyMap = m_pMainWin->getpWinFileMgr()->getIdentifyItemMap();
+
+    // 3. 逆序删除（避免索引错乱）
+    for (int i = selectedEntities.size() - 1; i >= 0; --i) {
+        CEntity* entity = selectedEntities[i];
+        int index = entityList.indexOf(entity);
+        if (index == -1) continue;
+
+        CObject* obj = eleobjlist[index];
+
+        // 特殊处理：点云类型
+        if (obj->GetUniqueType() == enPointCloud) {
+            CPointCloud* cloud = static_cast<CPointCloud*>(obj);
+            if(pointCouldlists.contains(cloud->m_pointCloud.makeShared()))
+            {
+                pointCouldlists.removeOne(cloud->m_pointCloud.makeShared());
+            }
+            //pointCouldlists.removeOne(cloud->m_pointCloud.makeShared());
+        }
+
+        // 特殊处理：坐标系对象（临时/工件坐标系）
+        QString objName = objectList[index]->GetObjectCName();
+        if (objName.startsWith("临时坐标系") || objName.startsWith("工件坐标系")) {
+            objectList.removeAt(index);
+            continue;
+        }
+
+        // 从构造列表中移除
+        for (int j = 0; j < constructList.size(); ++j) {
+            if (constructList[j] == entity) {
+                QString key = entity->GetObjectCName() + "  " + entity->GetObjectAutoName();
+                contentMap.remove(key);
+                constructList.removeAt(j);
+                break;
             }
         }
-        m_pMainWin->NotifySubscribe();
+
+        // 从识别列表中移除
+        for (int j = 0; j < identifyList.size(); ++j) {
+            if (identifyList[j] == entity) {
+                QString key = entity->GetObjectCName() + "  " + entity->GetObjectAutoName();
+                identifyMap.remove(key);
+                identifyList.removeAt(j);
+                break;
+            }
+        }
+
+        // 从主列表中统一删除
+        objectList.removeAt(index);
+        entityList.removeAt(index);
+        eleobjlist.removeAt(index);
     }
+
+    // 4. 更新UI和数据
+    m_pMainWin->NotifySubscribe();
     m_pMainWin->getPWinDataWidget()->getobjindex(-1);
     m_pMainWin->getPWinDataWidget()->updateinfo();
 }
@@ -1358,6 +1365,7 @@ void ElementListWidget::selectall()
         QTreeWidgetItem *item = treeWidgetNames->topLevelItem(i);
         item->setSelected(true);
         m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(true);
+        m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
     }
 }
 
