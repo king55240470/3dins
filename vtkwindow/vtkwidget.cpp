@@ -2229,7 +2229,7 @@ void VtkWidget::onAlign()
         return;
     }
 
-    // 使用变换后的模板裁剪场景点云
+    // 使用sac变换后的模板裁剪场景点云
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr transformed_template(new pcl::PointCloud<pcl::PointXYZRGB>());
     pcl::transformPointCloud(*template_cloud, *transformed_template, transformation);
     pcl::PointXYZRGB min_pt, max_pt;
@@ -2237,41 +2237,49 @@ void VtkWidget::onAlign()
     pcl::CropBox<pcl::PointXYZRGB> crop_filter;
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr cropped_scene(new pcl::PointCloud<pcl::PointXYZRGB>());
     crop_filter.setMin(Eigen::Vector4f(min_pt.x, min_pt.y, min_pt.z, 1.0f));
-    crop_filter.setMax(Eigen::Vector4f(max_pt.x, max_pt.y, max_pt.z, 1.05f));
-    crop_filter.setInputCloud(scene_cloud); // 用采样前的点云，保留更多点
+    crop_filter.setMax(Eigen::Vector4f(max_pt.x, max_pt.y, max_pt.z, 1.02f));
+    crop_filter.setInputCloud(scene_cloud);
     crop_filter.filter(*cropped_scene);
 
     // 将裁剪后的点云向模板进行对齐，这里使用逆变换
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr transformed_scene(new pcl::PointCloud<pcl::PointXYZRGB>());
     pcl::transformPointCloud(*cropped_scene, *transformed_scene, transformation.inverse());
 
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr icpFinalCloud;
-    // icpFinalCloud = onICP(transformed_scene, template_cloud);
-    if(icpFinalCloud == nullptr){
-        QString logInfo = "ICP失败，采用粗配准";
-        m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
-        icpFinalCloud = transformed_scene; // ICP失败则用粗配准后的点云
-    }
+    // 二次采样
+    auto downSampleCloud = [](pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, int target = 500000) -> pcl::PointCloud<pcl::PointXYZRGB>::Ptr {
+        if (cloud->size() <= target) return cloud;
 
-    // 统计滤波去噪，点云过小则不用
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr denoised_scene(icpFinalCloud);
-    if(icpFinalCloud->size() > 100000){
-        pcl::StatisticalOutlierRemoval<pcl::PointXYZRGB> sor;
-        auto stdThresh = adjustStddevThresh(icpFinalCloud, voxel_size);
-        sor.setInputCloud(icpFinalCloud);
-        sor.setMeanK(25);
-        sor.setStddevMulThresh(stdThresh);
-        qDebug() << "距离阈值" << stdThresh;
-        sor.filter(*denoised_scene);
-    }
+        // 计算下采样步长
+        int k = static_cast<int>(std::ceil(static_cast<double>(cloud->size()) / target));
+        pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampled(new pcl::PointCloud<pcl::PointXYZRGB>);
+        downsampled->reserve(cloud->size() / k + 1);
+
+        for (size_t i = 0; i < cloud->size(); i += k) {
+            downsampled->push_back(cloud->at(i));
+        }
+        downsampled->width = downsampled->size();
+        downsampled->height = 1;
+        return downsampled;
+    };
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr denoised_scene = downSampleCloud(transformed_scene, template_cloud->size()*0.05);
     if(denoised_scene == nullptr){
-        QString logInfo = "对齐失败!";
+        QString logInfo = "二次采样后点云为空！";
         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
         return;
     }
 
+    // ICP精配准，使用sac变换后的点云
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr icpFinalCloud(new pcl::PointCloud<pcl::PointXYZRGB>());
+    Eigen::Matrix4f tranf = onICP(denoised_scene, template_cloud); // 得到变换矩阵
+    pcl::transformPointCloud(*transformed_scene, *icpFinalCloud, tranf);
+    if(tranf.isZero()){
+        QString logInfo = "ICP失败，采用粗配准结果";
+        m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
+        icpFinalCloud = denoised_scene;
+    }
+
     // 加入元素列表
-    auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateAlignCloud(denoised_scene);
+    auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateAlignCloud(icpFinalCloud);
     m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
     m_pMainWin->NotifySubscribe();
 }
@@ -2587,7 +2595,6 @@ Eigen::Matrix4f VtkWidget::runSAC(pcl::PointCloud<pcl::PointXYZRGB>::Ptr templat
         sac.setMinSampleDistance(voxel_size * 1.0);
         sac.setMaxCorrespondenceDistance(voxel_size * 1.5);
         sac.setMaximumIterations(1000);
-
         sac.align(*aligned_template);
 
         if (sac.hasConverged()) {
@@ -2615,20 +2622,24 @@ Eigen::Matrix4f VtkWidget::runSAC(pcl::PointCloud<pcl::PointXYZRGB>::Ptr templat
 }
 
 
-pcl::PointCloud<pcl::PointXYZRGB>::Ptr VtkWidget::onICP(pcl::PointCloud<pcl::PointXYZRGB>::Ptr scenCloud,
-                                                        pcl::PointCloud<pcl::PointXYZRGB>::Ptr tagCloud)
+Eigen::Matrix4f VtkWidget::onICP(pcl::PointCloud<pcl::PointXYZRGB>::Ptr scenCloud,
+                                 pcl::PointCloud<pcl::PointXYZRGB>::Ptr tagCloud)
 {
     // 使用XYZRGB类型进行ICP配准
     pcl::IterativeClosestPoint<pcl::PointXYZRGB, pcl::PointXYZRGB> icp;
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr alignedCloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr aligned_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
     icp.setInputSource(scenCloud);
     icp.setInputTarget(tagCloud);
     icp.setMaximumIterations(150);
     icp.setTransformationEpsilon(1e-8);
     icp.setMaxCorrespondenceDistance(0.2f);
-    icp.align(*alignedCloud);
-
-    return icp.hasConverged() ? alignedCloud : nullptr;
+    icp.align(*aligned_cloud);
+    if (icp.hasConverged()) {
+        qDebug() << "ICP成功！";
+        return icp.getFinalTransformation(); // 返回最终变换矩阵
+    } else {
+        return Eigen::Matrix4f::Zero(); // 返回零矩阵表示失败
+    }
 }
 
 void VtkWidget::poissonReconstruction()

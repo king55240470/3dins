@@ -197,7 +197,7 @@ public:
     Eigen::Matrix4f runSAC(pcl::PointCloud<pcl::PointXYZRGB>::Ptr template_down, pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_down,
     pcl::PointCloud<pcl::FPFHSignature33>::Ptr template_fpfh, pcl::PointCloud<pcl::FPFHSignature33>::Ptr scene_fpfh,
     float voxel_size, int iterations);
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr onICP(pcl::PointCloud<pcl::PointXYZRGB>::Ptr scenCloud,
+    Eigen::Matrix4f onICP(pcl::PointCloud<pcl::PointXYZRGB>::Ptr scenCloud,
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr tagCloud); // ICP配准
 
     void poissonReconstruction(); // 泊松重建
