@@ -24,6 +24,7 @@ public:
     CPointCloud *CreateAlignCloud(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud);
     CPointCloud *CreateReconstructedCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud);
     CPointCloud* CreateFilterCloud(pcl::PointCloud<pcl::PointXYZRGB>& cloud);
+    CPointCloud* CreateCompleteCloud(pcl::PointCloud<pcl::PointXYZRGB>& cloud);
 
     pcl::PointCloud<pcl::PointXYZRGB>& getTempCloud(){
         return tempCloud;

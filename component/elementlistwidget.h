@@ -140,6 +140,7 @@ private:
     QVector<CEntity*>disAndanglelist;
     QTimer* timer=nullptr;
     QQueue<pcl::PointCloud<pcl::PointXYZRGB>::Ptr>pointCouldlists;
+    QQueue<pcl::PointCloud<pcl::PointXYZRGB>::Ptr>AlignCouldlists;
     QQueue<QString>filetypelists;
     bool isProcessing=false;
     QVector<CEntity*>list;

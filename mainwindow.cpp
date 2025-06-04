@@ -336,6 +336,13 @@ void MainWindow::setupUi(){
     connect(filterAction,&QAction::triggered,this,[&](){
         pWinVtkWidget->onFilter();
     });
+    QAction* completeAction=cloudOperation->addAction("点云补齐");
+    completeAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Q));
+    completeAction->setShortcutContext(Qt::ApplicationShortcut);
+    completeAction->setIcon(QIcon(alignIcon.pixmap(QSize(40, 40))));
+    connect(completeAction,&QAction::triggered,this,[&](){
+        pWinVtkWidget->CompletePointCloud();
+    });
     QMenu * switchTheme = bar->addMenu("主题(T)");
     QAction* showThemeMenu = new QAction();
     showThemeMenu->setShortcut(QKeySequence(Qt::Key_T));
@@ -756,7 +763,7 @@ void MainWindow::saveFile(){
         out<<pWinFileMgr->getIdentifyItemMap();
         out<<pWinFileMgr->getModelFileMap();
 
-        //保存模型点云
+        // 保存模型点云
         out<<modelCloudExist;
         for(int i=0;i<getEntityListMgr()->getEntityList().size();i++){
             if(getEntityListMgr()->getEntityList()[i]->GetUniqueType()==enPointCloud){
@@ -1540,8 +1547,6 @@ void MainWindow::onFileChanged(const QString &path)
     foreach (const QString &file, currentFiles) {
         if (!existingFiles.contains(file)) {
             //正则表达式，格式如2025-05-20#A#001#001
-            QRegularExpression regex("^\\d{8}#([A-Z])#\\d{3}#\\d{3}$");
-            QRegularExpressionMatch match = regex.match(file);
             if(file.contains("single")){
                 return;
             }
@@ -1550,7 +1555,8 @@ void MainWindow::onFileChanged(const QString &path)
                 QFileInfo fi(fileCould);
                 if(fi.size() > 0) {  // 确保文件有内容
                     peopleOpenfile = false;
-                    filetype = QRegularExpression("^\\d{8}#([A-Z])#\\d{3}#\\d{3}$").match(file).captured(1);
+                    filetype = QRegularExpression("^\\d{8}#([A-Z])#\\d{3}#\\d{3}(?:_fused)?\\.ply$").match(file).captured(1);
+                    qDebug()<<"文件类型为："<<filetype;
                     filePathChange = fileCould;
                     openFile();
                     existingFiles.append(file);

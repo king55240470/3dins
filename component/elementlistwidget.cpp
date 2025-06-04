@@ -619,9 +619,9 @@ void ElementListWidget::startprocess()
         m_pMainWin->getPWinVtkPresetWidget()->setWidget("实测点云为空无法进行测量");
     }else{
         loadModelFile();
-        QTimer::singleShot(2000, []() {
-            qDebug() << "2秒后执行的操作";
-        });
+        // QTimer::singleShot(2000, []() {
+        //     qDebug() << "2秒后执行的操作";
+        // });
         CompareCloud();
         updateDistance();
         m_pMainWin->NotifySubscribe();
@@ -698,6 +698,11 @@ void ElementListWidget::CompareCloud()
         qDebug()<<CurrentMeasureindex;
         m_pMainWin->getEntityListMgr()->getEntityList()[CurrentMeasureindex]->SetSelected(false);
         m_pMainWin->getEntityListMgr()->getEntityList().back()->SetSelected(true);
+
+        CPointCloud*could=(CPointCloud*)m_pMainWin->getEntityListMgr()->getEntityList().back();
+        if(could->isAlignCloud){
+            AlignCouldlists.enqueue(could->GetmyCould().makeShared());
+        }
         qDebug()<<"进入对比之前";
         m_pMainWin->getPWinVtkWidget()->onCompare();
     }
@@ -751,8 +756,12 @@ void ElementListWidget::updateDistance()
         timer=nullptr;
     }
     qDebug()<<"判断时间是否存在后";
-    kdtree.setInputCloud(pointCouldlists.dequeue());
-    qDebug()<<"队列的大小"<<pointCouldlists.size();
+    qDebug()<<"队列的大小"<<AlignCouldlists.size();
+    if(AlignCouldlists.size()!=1){
+        return;
+    }
+    kdtree.setInputCloud(AlignCouldlists.dequeue());
+    pointCouldlists.dequeue();
     disAndanglelist.clear();
     for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
         if(m_pMainWin->getEntityListMgr()->getEntityList()[i]->GetObjectCName().left(2)=="距离"){
@@ -762,6 +771,13 @@ void ElementListWidget::updateDistance()
         }
     }
     if(disAndanglelist.size()==0){
+        //进行图片保存，不用进度条
+        m_pMainWin->getPWinToolWidget()->setauto(true);
+        //m_pMainWin->getPWinToolWidget()->onSaveTxt();
+        m_pMainWin->getPWinToolWidget()->onSaveWord();
+        m_pMainWin->getPWinToolWidget()->onSaveExcel();
+        m_pMainWin->getPWinToolWidget()->onSavePdf();
+        m_pMainWin->getPWinToolWidget()->setauto(false);
         for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
             m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
         }
@@ -775,22 +791,11 @@ void ElementListWidget::updateDistance()
             QTimer::singleShot(2000, []() {
                 qDebug() << "2秒后执行的操作";
             });
-            QScopedPointer<QProcess> process(new QProcess);  // 自动释放
-            process->start("./compare_cloud_proc");
-            if (!process->waitForFinished(10000)) {
-                qDebug() << "子进程崩溃或超时";
-            }
+            CompareCloud();
             updateDistance();
             return;
         }else{
             isProcessing = false;
-            //进行图片保存，不用进度条
-            // m_pMainWin->getPWinToolWidget()->setauto(true);
-            // m_pMainWin->getPWinToolWidget()->onSaveTxt();
-            // m_pMainWin->getPWinToolWidget()->onSaveWord();
-            // m_pMainWin->getPWinToolWidget()->onSaveExcel();
-            // m_pMainWin->getPWinToolWidget()->onSavePdf();
-            // m_pMainWin->getPWinToolWidget()->setauto(false);
             return;
         }
     }
@@ -861,12 +866,12 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
 
             // workerThread->start();
 
-            // m_pMainWin->getPWinToolWidget()->setauto(true);
-            // m_pMainWin->getPWinToolWidget()->onSaveTxt();
-            // m_pMainWin->getPWinToolWidget()->onSaveWord();
-            // m_pMainWin->getPWinToolWidget()->onSaveExcel();
-            // m_pMainWin->getPWinToolWidget()->onSavePdf();
-            // m_pMainWin->getPWinToolWidget()->setauto(false);
+            m_pMainWin->getPWinToolWidget()->setauto(true);
+            //m_pMainWin->getPWinToolWidget()->onSaveTxt();
+            m_pMainWin->getPWinToolWidget()->onSaveWord();
+            m_pMainWin->getPWinToolWidget()->onSaveExcel();
+            m_pMainWin->getPWinToolWidget()->onSavePdf();
+            m_pMainWin->getPWinToolWidget()->setauto(false);
         }
         //删除自动化打开的模型文件
         for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
@@ -884,11 +889,12 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
             QTimer::singleShot(2000, []() {
                 qDebug() << "2秒后执行的操作";
             });
-            QScopedPointer<QProcess> process(new QProcess);  // 自动释放
-            process->start("./compare_cloud_proc");
-            if (!process->waitForFinished(10000)) {
-                qDebug() << "子进程崩溃或超时";
-            }
+            // QScopedPointer<QProcess> process(new QProcess);  // 自动释放
+            // process->start("./compare_cloud_proc");
+            // if (!process->waitForFinished(10000)) {
+            //     qDebug() << "子进程崩溃或超时";
+            // }
+            CompareCloud();
             updateDistance();
         }else{
             isProcessing=false;
@@ -1236,8 +1242,9 @@ void ElementListWidget::loadModelFile()
     isProcessing=true;
     m_pMainWin->peopleOpenfile = false;
     QString s = filetypelists.dequeue();
-    m_pMainWin->filePathChange = m_pMainWin->modelPath+"/model"+s+"/"+s+"stand.ply";
-    //m_pMainWin->filePathChange = m_pMainWin->modelPath+"/model"+s+"/"+s+"stand.qins";
+    qDebug()<<s;
+    //m_pMainWin->filePathChange = m_pMainWin->modelPath+"/model"+s+"/"+s+"stand.ply";
+    m_pMainWin->filePathChange = m_pMainWin->modelPath+"/model"+s+"/"+s+"stand.qins";
     m_pMainWin->openFile();
     m_pMainWin->peopleOpenfile = true;
     qinsSize = m_pMainWin->getEntityListMgr()->getEntityList().size()-size;

@@ -858,6 +858,7 @@ public:
     bool isModelCloud=false;// 是否是模型点云
     bool isMeasureCloud=false; // 是否是实测点云
     bool isFilteredCloud = false; // 是否是去噪后的点云
+    bool isCompleteCloud =false; // 是否为补齐点云
     bool isCut=false; //是否是切割后的点云
     bool isOver=false; //是否已经完成测量
     double minError; //误差
@@ -873,35 +874,24 @@ public:
         out <<minError <<maxError <<avgError;
 
         if(!haveSaved){
-            // std::string file_path = "D:/modelCloud.ply";
-            std::string base_dir = "D:/cloud";
+            std::string base_dir = "D:/standCloud";
 
-            // 1. 检查并创建 cloud 文件夹
             if (!fs::exists(base_dir)) {
                 fs::create_directory(base_dir);
             }
 
-            // 2. 遍历文件夹，找最大编号
-            int max_index = 0;
-            std::regex file_pattern(R"((\d+)_stand\.ply)");
+            QString cname = m_strAutoName;
+            QChar fileTag = 'X'; // 默认值
 
-            for (const auto& entry : fs::directory_iterator(base_dir)) {
-                if (entry.is_regular_file()) {
-                    std::smatch match;
-                    std::string filename = entry.path().filename().string();
-                    if (std::regex_match(filename, match, file_pattern)) {
-                        int index = std::stoi(match[1]);
-                        if (index > max_index) {
-                            max_index = index;
-                        }
-                    }
+            for (QChar ch : cname) {
+                if (ch >= 'A' && ch <= 'G') {
+                    fileTag = ch;
+                    break;
                 }
             }
 
-            // 3. 生成新的文件名
-            int new_index = max_index + 1;
             std::ostringstream oss;
-            oss << base_dir << "/" << new_index << "_stand.ply";
+            oss << base_dir << "/" << fileTag.toLatin1() << "stand.ply";
             std::string file_path = oss.str();
 
             out<< QString::fromStdString(file_path);
