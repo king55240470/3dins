@@ -1815,8 +1815,38 @@ void VtkWidget::onCompare()
         return ;
     }
 
-    pcl::copyPointCloud( *clouds[0], *cloud1);
-    pcl::copyPointCloud( *clouds[1], *cloud2);
+    // 定义下采样函数
+    auto downSampleCloud = [](pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, int target = 500000) -> pcl::PointCloud<pcl::PointXYZRGB>::Ptr {
+        if (cloud->size() <= target) return cloud;
+
+        // 计算下采样步长
+        int k = static_cast<int>(std::ceil(static_cast<double>(cloud->size()) / target));
+        pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampled(new pcl::PointCloud<pcl::PointXYZRGB>);
+        downsampled->reserve(cloud->size() / k + 1);
+
+        for (size_t i = 0; i < cloud->size(); i += k) {
+            downsampled->push_back(cloud->at(i));
+        }
+        downsampled->width = downsampled->size();
+        downsampled->height = 1;
+        return downsampled;
+    };
+
+    // 添加下采样日志信息
+    QString downSampleLog;
+    QVector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> downsampledClouds;
+    for (int i = 0; i < clouds.size(); i++) {
+        size_t originalSize = clouds[i]->size();
+        auto downCloud = downSampleCloud(clouds[i]);
+        downsampledClouds.push_back(downCloud);
+
+        if (originalSize > 500000) {
+            downSampleLog += QString(" (点云%1: %2->%3)").arg(i+1).arg(originalSize).arg(downCloud->size());
+        }
+    }
+
+    pcl::copyPointCloud( *downsampledClouds[0], *cloud1);
+    pcl::copyPointCloud( *downsampledClouds[1], *cloud2);
 
     // 检查点云是否为空
     if (cloud1->empty() || cloud2->empty()) {
@@ -1824,17 +1854,18 @@ void VtkWidget::onCompare()
         return;
     }
 
-    // 创建KD-Tree用于点云2
+    // 创建KD-Tree用于点云2（修正类型转换问题）
     pcl::search::KdTree<pcl::PointXYZ> kdtree;
-    kdtree.setInputCloud(cloud1);
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud1_xyz(new pcl::PointCloud<pcl::PointXYZ>);
+    pcl::copyPointCloud(*cloud1, *cloud1_xyz);  // 转换为XYZ点云
+    kdtree.setInputCloud(cloud1_xyz);
 
     // 将比较结果存在comparisonCloud，并设置点云大小
     comparisonCloud->clear(); // 清除上次比较的结果
-    comparisonCloud->width = 0;
-    comparisonCloud->height = 0;
+    comparisonCloud->width = cloud2->size();
+    comparisonCloud->height = 1;
     comparisonCloud->is_dense = false;
-    comparisonCloud->resize(cloud1->size());
-
+    comparisonCloud->resize(cloud2->size());
 
     // 初始化最大和最小距离变量
     float maxDistance = std::numeric_limits<float>::min();
@@ -1846,7 +1877,12 @@ void VtkWidget::onCompare()
 
     // 遍历点云2中的每个点，找到与点云1中最近点的距离
     for (size_t i = 0; i < cloud2->size(); ++i) {
-        if (kdtree.nearestKSearch(cloud2->at(i), 1, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
+        pcl::PointXYZ searchPoint;
+        searchPoint.x = cloud2->points[i].x;
+        searchPoint.y = cloud2->points[i].y;
+        searchPoint.z = cloud2->points[i].z;
+
+        if (kdtree.nearestKSearch(searchPoint, 1, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
             float dist = std::sqrt(pointNKNSquaredDistance[0]);
             averageDistance+=dist;
             // 更新最大和最小距离
@@ -1861,9 +1897,9 @@ void VtkWidget::onCompare()
             float normalizedDistance = (dist - minDistance) / (maxDistance - minDistance); // 归一化距离到0-1之间
             int r = static_cast<int>(255 * normalizedDistance);
             int b = 255 - r;
-            point.x = cloud2->at(i).x;
-            point.y = cloud2->at(i).y;
-            point.z = cloud2->at(i).z;
+            point.x = searchPoint.x;
+            point.y = searchPoint.y;
+            point.z = searchPoint.z;
             point.r = r;
             point.g = 0;  // 中间色为0，只显示红蓝变化
             point.b = b;
@@ -1918,8 +1954,13 @@ void VtkWidget::onCompare()
         PathList.append( path_right);
     }
 
+    // 添加下采样日志信息
+    if (!downSampleLog.isEmpty()) {
+        logInfo += downSampleLog;
+    }
+
     // 添加日志输出
-    logInfo += "对比完成";
+    logInfo += " 对比完成";
     m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
 }
 
