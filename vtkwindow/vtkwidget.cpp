@@ -1179,13 +1179,13 @@ void VtkWidget::ExportPointCloudToFBX(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cl
 
     // 1. 保存带法线的PLY
     if(!savePointCloudToPLY(cloud, inputPly)) {
-        qWarning() << "Failed to save PLY with normals";
+        qDebug() << "Failed to save PLY with normals";
         return ;
     }
 
     // 2. 执行泊松重建
     if(!runPoissonReconstruction(inputPly, outputPly)) {
-        qWarning() << "Poisson reconstruction failed";
+        qDebug() << "Poisson reconstruction failed";
         return ;
     }
 
@@ -1226,7 +1226,7 @@ bool VtkWidget::savePointCloudToPLY(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& clou
     QFileInfo info(plyPath);
     if(!info.dir().exists()) {
         if(!info.dir().mkpath(".")) {
-            qWarning() << "Cannot create directory:" << info.dir().path();
+            qDebug() << "Cannot create directory:" << info.dir().path();
             return false;
         }
     }
@@ -1246,7 +1246,7 @@ bool VtkWidget::savePointCloudToPLY(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& clou
 
     pcl::PLYWriter writer;
     if (writer.write(plyPath.toStdString(), cloud_with_normals, false, true) != 0) {
-        qWarning() << "Failed to write PLY file";
+        qDebug() << "Failed to write PLY file";
         return false;
     }
 
@@ -1263,7 +1263,7 @@ bool VtkWidget::runPoissonReconstruction(const QString &inputPlyPath, const QStr
     QString poissonExe = "C:/qcon/AdaptiveSolvers.x64/PoissonRecon.exe"; // 根据实际路径调整
 
     if (!QFileInfo::exists(poissonExe)) {
-        qWarning() << "Poisson reconstruction executable not found at" << poissonExe;
+        qDebug() << "Poisson reconstruction executable not found at" << poissonExe;
         return false;
     }
 
@@ -1283,27 +1283,27 @@ bool VtkWidget::runPoissonReconstruction(const QString &inputPlyPath, const QStr
     poissonProcess.start(poissonExe, arguments);
 
     if (!poissonProcess.waitForStarted()) {
-        qWarning() << "Failed to start Poisson reconstruction process";
+        qDebug() << "Failed to start Poisson reconstruction process";
         return false;
     }
 
     // 等待完成（设置超时时间，单位毫秒）
     if (!poissonProcess.waitForFinished(300000)) { // 5分钟超时
-        qWarning() << "Poisson reconstruction timed out";
+        qDebug() << "Poisson reconstruction timed out";
         poissonProcess.kill();
         return false;
     }
 
     // 检查退出状态
     if (poissonProcess.exitStatus() != QProcess::NormalExit || poissonProcess.exitCode() != 0) {
-        qWarning() << "Poisson reconstruction failed with exit code" << poissonProcess.exitCode();
-        qWarning() << "Error output:" << poissonProcess.readAllStandardError();
+        qDebug() << "Poisson reconstruction failed with exit code" << poissonProcess.exitCode();
+        qDebug() << "Error output:" << poissonProcess.readAllStandardError();
         return false;
     }
 
     // 检查输出文件是否存在
     if (!QFileInfo::exists(outputPlyPath)) {
-        qWarning() << "Output PLY file not created";
+        qDebug() << "Output PLY file not created";
         return false;
     }
 
@@ -1505,33 +1505,47 @@ double *VtkWidget::getViewAngles()
     return angles;
 }
 
-double *VtkWidget::getBoundboxData(CEntity* entity)
+QVector<double> VtkWidget::getBoundboxData(CEntity* entity)
 {
     // 得到对应的actor
     auto& actorMap = m_pMainWin->getactorToEntityMap();
     auto actor = actorMap.key(entity);
-    double* boxData = new double();
+    if (actor == nullptr) {
+        qDebug() << "未找到与实体对应的actor，无法获取外包盒数据";
+        return QVector<double>(3,0);
+    }
 
-    // 获取 actor 的边界框
-    double bounds[6];
-    actor->GetBounds(bounds);
-    boxData[0] = bounds[1] - bounds[0];
-    boxData[1] = bounds[3] - bounds[2];
-    boxData[2] = bounds[5] - bounds[4];
-
-    return boxData;
+    return getBoundboxData(actor);
 }
 
-double *VtkWidget::getBoundboxData(vtkActor *actor)
+QVector<double> VtkWidget::getBoundboxData(vtkActor *actor)
 {
-    double* boxData = new double();
+    if (actor == nullptr) {
+        qDebug() << "actor为空，无法获取外包盒数据";
+        return QVector<double>(3,0);
+    }
+
+    QVector<double> boxData(3); // 初始化一个大小为3的QVector
 
     // 获取 actor 的边界框
     double bounds[6];
     actor->GetBounds(bounds);
+    if (bounds[1] <= bounds[0] || bounds[3] <= bounds[2] || bounds[5] <= bounds[4]) {
+        qDebug() << "actor的边界框无效";
+        return QVector<double>(3,0);
+    }
+
     boxData[0] = bounds[1] - bounds[0];
     boxData[1] = bounds[3] - bounds[2];
     boxData[2] = bounds[5] - bounds[4];
+
+    // 在打印之前检查QVector是否为空
+    if (boxData.size() < 3) {
+        qDebug() << "外包盒数据不完整";
+        return QVector<double>();
+    }
+
+    qDebug() << "外包盒数据:" << boxData[0] << boxData[1] << boxData[2];
 
     return boxData;
 }
@@ -1575,8 +1589,10 @@ void VtkWidget::FocusOnActor(CEntity* entity)
     auto actor = actorMap.key(entity);
     if(actor == nullptr) return;
 
+    qDebug() << "聚焦actor时获取外包盒信息";
     auto center = getBoundboxCenter(actor); // 获取外包盒中心
     auto actorSize = getBoundboxData(actor);
+    qDebug() << "获取成功";
 
     // 计算相机与actor中心的距离
     double maxSize = std::max({actorSize[0], actorSize[1], actorSize[2]});

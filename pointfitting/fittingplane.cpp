@@ -125,12 +125,18 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr FittingPlane::RANSAC(pcl::PointXYZRGB sea
         return planeCloud;
 
     } else {
-        QMessageBox *messagebox=new QMessageBox();
-        messagebox->setText("输入的邻域或距离阈值太小，\n请重新输入！");
-        messagebox->setIcon(QMessageBox::Warning);
-        messagebox->show();
-        messagebox->exec();
-        PCL_ERROR("Couldn't find more points within radius\n");
+        qDebug() << "输入的邻域或距离阈值太小!";
+        normal.x()=0;
+        normal.y()=0;
+        normal.z()=0;
+        center.x()=0;
+        center.y()=0;
+        center.z()=0;
+        length=0;
+        width=0;
+        length_direction.x()=0;
+        length_direction.y()=0;
+        length_direction.z()=0;
         return nullptr;
     }
 }

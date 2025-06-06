@@ -1003,14 +1003,17 @@ qDebug()<<"提取照片"<<entity->m_strAutoName;
             //名字 是否可见 法向量 颜色
             data_PointCloud<<point_cloud->m_strAutoName<<"是"<<"无"<<"无";
             //盒维数
-
-            double* boxData=m_pMainWin->getPWinVtkWidget()->getBoundboxData(entity);
-            double boxData_tmp[3]={0,0,0};
-            if(boxData==nullptr){
-                boxData=boxData_tmp;
+            qDebug()<<"读取外包盒";
+            auto boxData=m_pMainWin->getPWinVtkWidget()->getBoundboxData(entity);
+            qDebug()<<"外包盒读取成功";
+            if(boxData.isEmpty()){
+                boxData = QVector<double>(3,0);
+                qDebug() << "外包盒信息读取错误";
             }
+
             //double boxData[3]={0,0,0};
             CPosition boxCenter= m_pMainWin->getPWinVtkWidget()->getBoundboxCenter(entity);
+            qDebug()<<"外包盒中心读取成功";
 
             //CPosition boxCenter;
             data_PointCloud<<("X:"+QString::number(boxData[0])
@@ -1029,7 +1032,7 @@ qDebug()<<"提取照片"<<entity->m_strAutoName;
             //点云大小
             data_PointCloud<<QString::number(m_pMainWin->ActorPointSize);
             qDebug()<<"保存图片"<<entity->m_strAutoName;
-            //SaveImage(entity);
+            SaveImage(entity);
             qDebug()<<"保存图片"<<entity->m_strAutoName<<"成功";
             data_PointCloud<<QDir::toNativeSeparators(m_checkpoint_imagePath[entity]);
         }
@@ -1109,10 +1112,11 @@ void   ToolWidget::ExtractData(QVector<CEntity *>& entitylist,QList<Size_Measure
                 }
             }
 
-            double* boxData=m_pMainWin->getPWinVtkWidget()->getBoundboxData(entity);
-            double boxData_tmp[3]={0,0,0};
-            if(boxData==nullptr){
-                boxData=boxData_tmp;
+            auto boxData=m_pMainWin->getPWinVtkWidget()->getBoundboxData(entity);
+            qDebug()<<"外包盒读取成功";
+            if(boxData.isEmpty()){
+                boxData = QVector<double>(3,0);
+                qDebug() << "外包盒信息读取错误";
             }
 
             CPosition boxCenter= m_pMainWin->getPWinVtkWidget()->getBoundboxCenter(entity);
@@ -2638,7 +2642,7 @@ void ToolWidget::onSavePointCloud(){
 
 static void WrongWidget(QString message,QString moreMessage="空");
 void   ToolWidget::onSaveImage(){
-    /*
+
     //得到路径名称
     QString filter = "PNG (*.png);;JPEG (*.jpg *.jpeg);;TIFF (*.tif *.tiff);;BMP (*.bmp)";
     QString fileName;
@@ -2700,7 +2704,7 @@ void   ToolWidget::onSaveImage(){
     lastCreatedImageFileFront=fileNameFront;
     lastCreatedImageFileTop=fileNameTop;
     lastCreatedImageFileRight=fileNameRight;
-*/
+
 }
 
 void ToolWidget::setauto(bool Auto)
@@ -4000,6 +4004,7 @@ void ToolWidget::SaveImage(CEntity* entity,Size_MeasurementData* pointCloudData)
     qDebug() << "【步骤10】检查点云数据";
     if(pointCloudData == nullptr && entity && !entity->m_strAutoName.contains("实测")){
         if (elementListWidget) {
+        qDebug() << "准备显示文本";
             elementListWidget->showInfotext();
             qDebug() << "显示信息文本框（点云数据为空且非实测元素）";
         } else {

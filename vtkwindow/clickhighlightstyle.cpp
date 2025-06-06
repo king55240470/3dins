@@ -222,6 +222,7 @@ void MouseInteractorHighlightActor::HighlightActor(vtkActor* actor)
         // 让actor高亮，并放在窗口最上层
         actor->GetProperty()->SetColor(MainWindow::HighLightColor[0], MainWindow::HighLightColor[1],
                                        MainWindow::HighLightColor[2]);
+        actor->GetProperty()->SetOpacity(0.5);
         if(entity->GetUniqueType() != enPointCloud){
             actor->GetProperty()->SetPointSize(MainWindow::ActorPointSize + 3);
         }
