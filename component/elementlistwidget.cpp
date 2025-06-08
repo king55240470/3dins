@@ -211,19 +211,11 @@ void ElementListWidget::onDeleteEllipse()
             {
                 pointCouldlists.removeOne(cloud->m_pointCloud.makeShared());
             }
-            //pointCouldlists.removeOne(cloud->m_pointCloud.makeShared());
         }
-
-        // // 特殊处理：坐标系对象（临时/工件坐标系）
-        // QString objName = objectList[index]->GetObjectCName();
-        // if (objName.startsWith("临时坐标系") || objName.startsWith("工件坐标系")) {
-        //     objectList.removeAt(index);
-        //     continue;
-        // }
 
         // 从构造列表中移除
         for (int j = 0; j < constructList.size(); ++j) {
-            if (constructList[j] == entity) {
+            if (constructList[j]->GetObjectAutoName() == entity->GetObjectAutoName()) {
                 QString key = entity->GetObjectCName() + "  " + entity->GetObjectAutoName();
                 contentMap.remove(key);
                 constructList.removeAt(j);
@@ -233,7 +225,7 @@ void ElementListWidget::onDeleteEllipse()
 
         // 从识别列表中移除
         for (int j = 0; j < identifyList.size(); ++j) {
-            if (identifyList[j] == entity) {
+            if (identifyList[j]->GetObjectAutoName() == entity->GetObjectAutoName()) {
                 QString key = entity->GetObjectCName() + "  " + entity->GetObjectAutoName();
                 identifyMap.remove(key);
                 identifyList.removeAt(j);
@@ -244,7 +236,6 @@ void ElementListWidget::onDeleteEllipse()
         // 从主列表中统一删除
         objectList.removeAt(index);
         entityList.removeAt(index);
-        //eleobjlist.removeAt(index);
     }
 
     // 4. 更新UI和数据
@@ -295,63 +286,41 @@ void ElementListWidget::upadteelementlist()
 
 void ElementListWidget::onItemClicked()
 {
-    // 获取当前选中的树控件项
-    QList<QTreeWidgetItem*> selectedItems = treeWidgetNames->selectedItems();
+    QList<QTreeWidgetItem*> selectedItems = getSelectedItems();
+    // 用于判断是否隐藏构建的元素
+    QMap<QString, bool> contentMap = m_pMainWin->getpWinFileMgr()->getContentItemMap();
+    QMap<QString, bool> identifyItemmap = m_pMainWin->getpWinFileMgr()->getIdentifyItemMap();
 
-    // 取消所有高亮
     m_pMainWin->getPWinVtkWidget()->getInteractorStyle()->CancelHighlightActors();
-
-    // 获取对象和实体管理器
-    auto objectMgr = m_pMainWin->getObjectListMgr();
-    auto entityMgr = m_pMainWin->getEntityListMgr();
-    auto& objectList = objectMgr->getObjectList();
-    auto& entityList = entityMgr->getEntityList();
-
-    // 当只选中一个项时的特殊处理
-    if (selectedItems.size() == 1) {
-        // 取消所有对象的选中状态
-        for (CObject* obj : objectList) {
-            obj->SetSelected(false);
-        }
-
-        // 处理当前选中的项
-        QTreeWidgetItem* item = selectedItems.first();
-        CObject* obj = item->data(0, Qt::UserRole).value<CObject*>();
-
-        // 查找对象在列表中的索引
-        int index = objectList.indexOf(obj);
-        if (index != -1) {
-            // 设置选中状态并高亮
-            qDebug()<<"当前选中元素index："<<index;
-            obj->SetSelected(true);
-            m_pMainWin->getPWinVtkWidget()->onHighLightActor(entityList[index]);
-
-            // 更新数据显示
-            m_pMainWin->getPWinDataWidget()->getobjindex(index);
-            m_pMainWin->getPWinDataWidget()->updateinfo();
-
-            // 显示父对象
-            ShowParent(obj);
+    if(selectedItems.size()==1){
+        for(int i=0;i<m_pMainWin->getObjectListMgr()->getObjectList().size();i++){
+            m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(false);
         }
     }
-    else {
-        // 处理多选情况
-        for (QTreeWidgetItem* item : selectedItems) {
-            CObject* obj = item->data(0, Qt::UserRole).value<CObject*>();
-            int index = objectList.indexOf(obj);
-            if (index != -1) {
-                obj->SetSelected(true);
-                m_pMainWin->getPWinVtkWidget()->onHighLightActor(entityList[index]);
+    for(QTreeWidgetItem*item:selectedItems){
+        CObject *obj = item->data(0, Qt::UserRole).value<CObject*>();
+        int index=-1;
+        //int entityindex=-1;
+        for(int i=0;i<m_pMainWin->getObjectListMgr()->getObjectList().size();i++){
+            if(m_pMainWin->getObjectListMgr()->getObjectList()[i]->GetObjectAutoName()==obj->GetObjectAutoName()){
+                index=i;
             }
         }
-
-        // 更新数据显示（多选时不显示具体属性）
-        m_pMainWin->getPWinDataWidget()->getobjindex(-1);
+        //m_pMainWin->getObjectListMgr()->getObjectList()[index]->SetSelected(true);
+        m_pMainWin->getEntityListMgr()->getEntityList()[index]->SetSelected(true); // 改为etitylist将元素属性设置选中
+        m_pMainWin->getPWinVtkWidget()->onHighLightActor(m_pMainWin->getEntityListMgr()->getEntityList()[index]); // 高亮列表选中的元素对应的actor
+        m_pMainWin->getPWinDataWidget()->getobjindex(index);
         m_pMainWin->getPWinDataWidget()->updateinfo();
     }
-
-    // 更新工具窗口
     m_pMainWin->getPWinToolWidget()->updateele();
+    if(selectedItems.size()==1){
+        for(QTreeWidgetItem*item:selectedItems){
+            CObject *obj1 = item->data(0, Qt::UserRole).value<CObject*>();
+            //CEntity* ent = static_cast<CEntity*>(obj1);
+            //m_pMainWin->getPWinVtkWidget()->setCentity(ent);
+            ShowParent(obj1);
+        }
+    }
 }
 
 void ElementListWidget::setTolerance()
@@ -408,24 +377,25 @@ void ElementListWidget::BtnClicked()
         CObject *obj = item->data(0, Qt::UserRole).value<CObject*>();
         int index=-1;
         for(int i=0;i<m_pMainWin->getObjectListMgr()->getObjectList().size();i++){
-            if(m_pMainWin->getObjectListMgr()->getObjectList()[i]==obj){
+            if(m_pMainWin->getObjectListMgr()->getObjectList()[i]->GetObjectAutoName()==obj->GetObjectAutoName()){
                 index=i;
             }
         }
         CAngle*angle;
         CDistance* dis;
         if(obj->GetUniqueType()==enAngle){
-            angle = (CAngle*)m_pMainWin->getEntityListMgr()->getEntityList()[index];
+            angle = (CAngle*)m_pMainWin->getObjectListMgr()->getObjectList()[index];
             angle->setUptolerance(uper);
             angle->setUndertolerance(downer);
             angle->judge();
         }else{
-            dis = dynamic_cast<CDistance*>(m_pMainWin->getEntityListMgr()->getEntityList()[index]);
+            dis = dynamic_cast<CDistance*>(m_pMainWin->getObjectListMgr()->getObjectList()[index]);
             dis->setUptolerance(uper);
             dis->setUndertolerance(downer);
             dis->judge();
         }
     }
+    m_pMainWin->NotifySubscribe();
     onItemClicked();
     QMessageBox::information(this,"ok","公差设置成功");
     QMessageBox* infoBox = qobject_cast<QMessageBox*>(sender()); // 尝试获取发送者作为信息框（可选，用于直接关闭它，但通常不需要）

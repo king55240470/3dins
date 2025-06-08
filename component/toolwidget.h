@@ -207,7 +207,9 @@ public slots:
     QString loadAddress();
 private:
     QString m_charBeforeDot="";
+    QString m_modelname="";
     QString m_savePath="z:/result";//默认保存路径
+    QString m_NULLimagePath=":/component/save/NULL2.png";
 
     QMap<CEntity*,QString>m_checkpoint_imagePath;
     //对比点云保存路径
@@ -271,6 +273,7 @@ private:
     QVector<QString> imagePaths_part;
 
     //最新文件路径
+    QString lastCreatedExcelFile_size;
     QString lastCreatedExcelFile;
     QString lastCreatedWordFile;
     QString lastCreatedTxtFile;

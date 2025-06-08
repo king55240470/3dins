@@ -177,8 +177,8 @@ public:
     void onFrontView(); // 正视
     void onIsometricView(); // 旋转立体
     double* getViewAngles();
-    double* getBoundboxData(CEntity* entity); // 返回长宽高
-    double* getBoundboxData(vtkActor* actor);
+    QVector<double> getBoundboxData(CEntity* entity); // 返回长宽高
+    QVector<double> getBoundboxData(vtkActor* actor);
     CPosition getBoundboxCenter(CEntity* entity); // 返回外包盒中心
     CPosition getBoundboxCenter(vtkActor* actor);
     void FocusOnActor(CEntity* entity); // 设置相机以聚焦指定的actor
@@ -197,7 +197,7 @@ public:
     Eigen::Matrix4f runSAC(pcl::PointCloud<pcl::PointXYZRGB>::Ptr template_down, pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_down,
     pcl::PointCloud<pcl::FPFHSignature33>::Ptr template_fpfh, pcl::PointCloud<pcl::FPFHSignature33>::Ptr scene_fpfh,
     float voxel_size, int iterations);
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr onICP(pcl::PointCloud<pcl::PointXYZRGB>::Ptr scenCloud,
+    Eigen::Matrix4f onICP(pcl::PointCloud<pcl::PointXYZRGB>::Ptr scenCloud,
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr tagCloud); // ICP配准
 
     void poissonReconstruction(); // 泊松重建
