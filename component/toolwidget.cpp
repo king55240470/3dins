@@ -3939,23 +3939,8 @@ void ToolWidget::SaveImage(CEntity* entity,Size_MeasurementData* pointCloudData)
 
     QMap<vtkSmartPointer<vtkActor>, CEntity*>& actorToEntity = *actorToEntityMap;
 
-    qDebug() << "【步骤6】遍历视图道具";
-    vtkCollectionSimpleIterator it;
-    propCollection->InitTraversal(it);
-    vtkProp* prop;
-    int propCount = 0;
-    while ((prop = propCollection->GetNextProp(it)) != nullptr) {
-        propCount++;
-        qDebug() << "处理第" << propCount << "个道具，类型：" << prop->GetClassName();
-        vtkActor* actor = vtkActor::SafeDownCast(prop);
-        if (actor) {
-            actors.push_back(actor);
-            qDebug() << "成功转换为 vtkActor，添加到列表";
-        } else {
-            qDebug() << "跳过非 vtkActor 道具";
-        }
-    }
-    qDebug() << "共处理" << propCount << "个道具，有效 actor 数量：" << actors.size();
+
+
 
     qDebug() << "【步骤7】处理树状部件选中项";
     QList<QTreeWidgetItem*> selectedItems = treeWidget->selectedItems();
@@ -4040,17 +4025,17 @@ void ToolWidget::SaveImage(CEntity* entity,Size_MeasurementData* pointCloudData)
 
         if(entity->GetUniqueType() != enPointCloud && currentEntity->GetUniqueType() == enPointCloud){
             auto* pointCloud = dynamic_cast<CPointCloud*>(currentEntity);
-            if (pointCloud && (pointCloud->isMeasureCloud || pointCloud->m_strAutoName.contains("实测"))) {
+            if (pointCloud && (pointCloud->isModelCloud )) {
                 Head = false;
-                qDebug() << "点云为实测数据，标记为不隐藏";
+                qDebug() << "点云为标准点云，标记为不隐藏";
             }
         }
 
         if(entity->GetUniqueType() == enPointCloud && currentEntity->GetUniqueType() == enPointCloud){
             auto* pointCloud = dynamic_cast<CPointCloud*>(currentEntity);
-            if (pointCloud && (pointCloud->isMeasureCloud || pointCloud->m_strAutoName.contains("实测"))) {
+            if (pointCloud!=entity) {
                 Head = true;
-                qDebug() << "点云为实测数据，标记为隐藏";
+                qDebug() << "隐藏其他点云，标记为隐藏";
             }
         }
 
@@ -4077,7 +4062,7 @@ void ToolWidget::SaveImage(CEntity* entity,Size_MeasurementData* pointCloudData)
                 currentEntity->SetSelected(false);
             }
             if(actor){
-                actor->SetVisibility(1);
+                actor->SetVisibility(true);
                 qDebug() << "显示元素：" << currentEntity->m_strAutoName;
             }
         }
@@ -4085,7 +4070,7 @@ void ToolWidget::SaveImage(CEntity* entity,Size_MeasurementData* pointCloudData)
 
     qDebug() << "【步骤12】高亮当前元素";
     if (entity) {
-        entity->SetSelected(true);
+
         qDebug() << "设置元素选中状态：" << entity->m_strAutoName;
 
         if (vtkWidget) {
@@ -4094,10 +4079,11 @@ void ToolWidget::SaveImage(CEntity* entity,Size_MeasurementData* pointCloudData)
         } else {
             qDebug() << "警告：vtkWidget 为空，无法高亮元素";
         }
+        entity->SetSelected(false);
 
         auto actor = actorToEntity.key(entity, nullptr);
         if(actor){
-            actor->SetVisibility(1);
+            actor->SetVisibility(true);
             qDebug() << "显示 actor：" << entity->m_strAutoName;
         } else {
             qDebug() << "警告：actor 为空，无法显示元素";
@@ -4107,19 +4093,20 @@ void ToolWidget::SaveImage(CEntity* entity,Size_MeasurementData* pointCloudData)
     }
 
     qDebug() << "【步骤13】生成图片路径";
-    QString path = getOutputPath("image");
+    QString path = getOutputPath("image_word");
+    if(entity->m_strAutoName.contains("对比"))
+    {
+    path = getOutputPath("image");
+    }
+
+
     qDebug() << "输出路径：" << path;
     QString name = entity ? entity->m_strAutoName + getTimeString() : "default_entity" + getTimeString();
     QString fileName = path + "/" + name + ".png";
     qDebug() << "生成文件名：" << fileName;
 
     qDebug() << "【步骤14】记录路径";
-    if (entity) {
-        m_checkpoint_imagePath[entity] = fileName;
-        qDebug() << "记录路径成功：" << fileName;
-    } else {
-        qDebug() << "警告：元素为空，无法记录路径";
-    }
+
 
     qDebug() << "【步骤15】显示颜色条";
     if(pointCloudData){
@@ -4132,7 +4119,29 @@ void ToolWidget::SaveImage(CEntity* entity,Size_MeasurementData* pointCloudData)
     }
 
     qDebug() << "【步骤16】保存图片";
+
+    if(entity->m_strAutoName.contains("对比"))
+    {
+
+     QString fileName = path + "/" + name;
+      vtkSmartPointer<vtkRenderWindow> renderWindow=m_pMainWin->getPWinVtkWidget()->getRenderWindow();
+      m_pMainWin->onRightViewClicked();
+      renderWindow->Render();
+     SaveImage(fileName+"_Right"+".png","png");
+      m_pMainWin->onTopViewClicked();
+      renderWindow->Render();
+     SaveImage(fileName+"_Top"+".png","png");
+      m_pMainWin->onFrontViewClicked();
+      renderWindow->Render();
+     SaveImage(fileName+"_Front"+".png","png");
+     fileName=fileName+"_Front"+".png";
+      m_checkpoint_imagePath[entity] = fileName;
+
+    }else{
     SaveImage(fileName, "png");
+     m_checkpoint_imagePath[entity] = fileName;
+    }
+
     qDebug() << "图片保存完成：" << fileName;
 
     // 恢复被隐藏的元素（原注释代码）
@@ -4189,6 +4198,7 @@ void ToolWidget:: createFolder(){
     createFolder(getOutputPath("excell1"));
     createFolder(getOutputPath("excell"+charBeforeDot));
     createFolder(getOutputPath("image"));
+    createFolder(getOutputPath("image_word"));
     createFolder(getOutputPath("叶片检测报告"));
 
 }
