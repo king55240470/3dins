@@ -323,7 +323,8 @@ void ElementListWidget::onItemClicked()
                 index=i;
             }
         }
-        m_pMainWin->getObjectListMgr()->getObjectList()[index]->SetSelected(true);
+        //m_pMainWin->getObjectListMgr()->getObjectList()[index]->SetSelected(true);
+        m_pMainWin->getEntityListMgr()->getEntityList()[index]->SetSelected(true); // 改为etitylist将元素属性设置选中
         m_pMainWin->getPWinVtkWidget()->onHighLightActor(m_pMainWin->getEntityListMgr()->getEntityList()[index]); // 高亮列表选中的元素对应的actor
         m_pMainWin->getPWinDataWidget()->getobjindex(index);
         m_pMainWin->getPWinDataWidget()->updateinfo();
