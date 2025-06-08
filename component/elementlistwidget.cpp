@@ -222,7 +222,7 @@ void ElementListWidget::onDeleteEllipse()
 
         // 从构造列表中移除
         for (int j = 0; j < constructList.size(); ++j) {
-            if (constructList[j] == entity) {
+            if (constructList[j]->GetObjectAutoName() == entity->GetObjectAutoName()) {
                 QString key = entity->GetObjectCName() + "  " + entity->GetObjectAutoName();
                 contentMap.remove(key);
                 constructList.removeAt(j);
@@ -232,7 +232,7 @@ void ElementListWidget::onDeleteEllipse()
 
         // 从识别列表中移除
         for (int j = 0; j < identifyList.size(); ++j) {
-            if (identifyList[j] == entity) {
+            if (identifyList[j]->GetObjectAutoName() == entity->GetObjectAutoName()) {
                 QString key = entity->GetObjectCName() + "  " + entity->GetObjectAutoName();
                 identifyMap.remove(key);
                 identifyList.removeAt(j);
@@ -319,7 +319,7 @@ void ElementListWidget::onItemClicked()
         int index=-1;
         //int entityindex=-1;
         for(int i=0;i<m_pMainWin->getObjectListMgr()->getObjectList().size();i++){
-            if(m_pMainWin->getObjectListMgr()->getObjectList()[i]==obj){
+            if(m_pMainWin->getObjectListMgr()->getObjectList()[i]->GetObjectAutoName()==obj->GetObjectAutoName()){
                 index=i;
             }
         }
@@ -394,24 +394,25 @@ void ElementListWidget::BtnClicked()
         CObject *obj = item->data(0, Qt::UserRole).value<CObject*>();
         int index=-1;
         for(int i=0;i<m_pMainWin->getObjectListMgr()->getObjectList().size();i++){
-            if(m_pMainWin->getObjectListMgr()->getObjectList()[i]==obj){
+            if(m_pMainWin->getObjectListMgr()->getObjectList()[i]->GetObjectAutoName()==obj->GetObjectAutoName()){
                 index=i;
             }
         }
         CAngle*angle;
         CDistance* dis;
         if(obj->GetUniqueType()==enAngle){
-            angle = (CAngle*)m_pMainWin->getEntityListMgr()->getEntityList()[index];
+            angle = (CAngle*)m_pMainWin->getObjectListMgr()->getObjectList()[index];
             angle->setUptolerance(uper);
             angle->setUndertolerance(downer);
             angle->judge();
         }else{
-            dis = dynamic_cast<CDistance*>(m_pMainWin->getEntityListMgr()->getEntityList()[index]);
+            dis = dynamic_cast<CDistance*>(m_pMainWin->getObjectListMgr()->getObjectList()[index]);
             dis->setUptolerance(uper);
             dis->setUndertolerance(downer);
             dis->judge();
         }
     }
+    m_pMainWin->NotifySubscribe();
     onItemClicked();
     QMessageBox::information(this,"ok","公差设置成功");
     QMessageBox* infoBox = qobject_cast<QMessageBox*>(sender()); // 尝试获取发送者作为信息框（可选，用于直接关闭它，但通常不需要）
