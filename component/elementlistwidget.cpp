@@ -295,6 +295,7 @@ void ElementListWidget::onItemClicked()
     if(selectedItems.size()==1){
         for(int i=0;i<m_pMainWin->getObjectListMgr()->getObjectList().size();i++){
             m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(false);
+            m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
         }
     }
     for(QTreeWidgetItem*item:selectedItems){
@@ -304,9 +305,13 @@ void ElementListWidget::onItemClicked()
         for(int i=0;i<m_pMainWin->getObjectListMgr()->getObjectList().size();i++){
             if(m_pMainWin->getObjectListMgr()->getObjectList()[i]->GetObjectAutoName()==obj->GetObjectAutoName()){
                 index=i;
+                break;
             }
         }
-        //m_pMainWin->getObjectListMgr()->getObjectList()[index]->SetSelected(true);
+        qDebug()<<index;
+        qDebug()<<m_pMainWin->getObjectListMgr()->getObjectList().size();
+        qDebug()<<m_pMainWin->getEntityListMgr()->getEntityList().size();
+        m_pMainWin->getObjectListMgr()->getObjectList()[index]->SetSelected(true);
         m_pMainWin->getEntityListMgr()->getEntityList()[index]->SetSelected(true); // 改为etitylist将元素属性设置选中
         m_pMainWin->getPWinVtkWidget()->onHighLightActor(m_pMainWin->getEntityListMgr()->getEntityList()[index]); // 高亮列表选中的元素对应的actor
         m_pMainWin->getPWinDataWidget()->getobjindex(index);
@@ -770,11 +775,24 @@ void ElementListWidget::updateDistance()
         m_pMainWin->getPWinToolWidget()->onSaveExcel();
         m_pMainWin->getPWinToolWidget()->onSavePdf();
         m_pMainWin->getPWinToolWidget()->setauto(false);
+        // for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
+        //     m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
+        // }
+        // for(int i=modelIndex;i<modelIndex+qinsSize;i++){
+        //     m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
+        // }
+        //除了未测量的实测点云，其余全部删除
         for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
-            m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
-        }
-        for(int i=modelIndex;i<modelIndex+qinsSize;i++){
-            m_pMainWin->getEntityListMgr()->getEntityList()[modelIndex]->SetSelected(true);
+            if(m_pMainWin->getEntityListMgr()->getEntityList()[i]->GetUniqueType()==enPointCloud){
+                CPointCloud*cloud = (CPointCloud*)m_pMainWin->getEntityListMgr()->getEntityList()[i];
+                if(cloud->isOver == false){
+                    m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
+                    m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(false);
+                    continue;
+                }
+                m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
+                m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(true);
+            }
         }
         onDeleteEllipse();
         if(pointCouldlists.size()>0)
