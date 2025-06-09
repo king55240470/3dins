@@ -775,25 +775,27 @@ void ElementListWidget::updateDistance()
         m_pMainWin->getPWinToolWidget()->onSaveExcel();
         m_pMainWin->getPWinToolWidget()->onSavePdf();
         m_pMainWin->getPWinToolWidget()->setauto(false);
-        // for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
-        //     m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
-        // }
-        // for(int i=modelIndex;i<modelIndex+qinsSize;i++){
-        //     m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
-        // }
+
         //除了未测量的实测点云，其余全部删除
+        int t=0;
         for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
             if(m_pMainWin->getEntityListMgr()->getEntityList()[i]->GetUniqueType()==enPointCloud){
                 CPointCloud*cloud = (CPointCloud*)m_pMainWin->getEntityListMgr()->getEntityList()[i];
                 if(cloud->isOver == false){
                     m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
                     m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(false);
-                    continue;
                 }
-                m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
-                m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(true);
+                else{
+                    m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
+                    m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(true);
+                }
+                continue;
             }
+            m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
+            m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(true);
+            t++;
         }
+        qDebug()<<"删除数量:"<<t;
         onDeleteEllipse();
         if(pointCouldlists.size()>0)
         {

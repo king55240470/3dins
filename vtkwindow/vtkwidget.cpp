@@ -1979,9 +1979,6 @@ void AlignWorker::doAlign() {
 
         auto& template_cloud = m_isCloud1Model ? m_clouds[0] : m_clouds[1];
         auto& scene_cloud = m_isCloud1Model ? m_clouds[1] : m_clouds[0];
-        if (template_cloud->size() > scene_cloud->size()) {
-            throw std::runtime_error("模型文件选择错误!");
-        }
 
         // 自适应计算体素大小
         pcl::PointXYZRGB minpt, maxpt;
@@ -2174,6 +2171,8 @@ void VtkWidget::onAlign()
         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
         return;
     }
+    logInfo = "选中两个点云，开始对齐";
+    m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
 
     auto& template_cloud = isCloud1Model ? clouds[0] : clouds[1];
     auto& scene_cloud = isCloud1Model ? clouds[1] : clouds[0];
@@ -2198,6 +2197,11 @@ void VtkWidget::onAlign()
     voxel.filter(*template_down);
     voxel.setInputCloud(scene_cloud);
     voxel.filter(*scene_down);
+    if(template_cloud == nullptr || scene_cloud == nullptr){
+        QString logInfo = "采样后点云为空！";
+        m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
+        return;
+    }
 
     // 法线估计
     pcl::PointCloud<pcl::Normal>::Ptr template_normals(new pcl::PointCloud<pcl::Normal>());
@@ -2209,15 +2213,18 @@ void VtkWidget::onAlign()
     ne.compute(*template_normals);
     ne.setInputCloud(scene_down);
     ne.compute(*scene_normals);
+    if(template_normals == nullptr || scene_normals == nullptr){
+        QString logInfo = "法线估计失败！";
+        m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
+        return;
+    }
 
     // 计算FPFH特征
     pcl::PointCloud<pcl::FPFHSignature33>::Ptr template_fpfh(new pcl::PointCloud<pcl::FPFHSignature33>());
     pcl::PointCloud<pcl::FPFHSignature33>::Ptr scene_fpfh(new pcl::PointCloud<pcl::FPFHSignature33>());
-
     pcl::FPFHEstimation<pcl::PointXYZRGB, pcl::Normal, pcl::FPFHSignature33> fpfh;
     fpfh.setRadiusSearch(voxel_size * 5.0);
     fpfh.setSearchMethod(pcl::search::KdTree<pcl::PointXYZRGB>::Ptr(new pcl::search::KdTree<pcl::PointXYZRGB>()));
-
     fpfh.setInputCloud(template_down);
     fpfh.setInputNormals(template_normals);
     fpfh.setSearchSurface(template_down);
@@ -2244,6 +2251,8 @@ void VtkWidget::onAlign()
         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
         return;
     }
+    logInfo = "粗配准完成";
+    m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
 
     // 使用sac变换后的模板裁剪场景点云
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr transformed_template(new pcl::PointCloud<pcl::PointXYZRGB>());
@@ -2262,7 +2271,7 @@ void VtkWidget::onAlign()
     pcl::transformPointCloud(*cropped_scene, *transformed_scene, transformation.inverse());
 
     // 二次采样
-    auto downSampleCloud = [](pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, int target = 500000) -> pcl::PointCloud<pcl::PointXYZRGB>::Ptr {
+    auto downSample= [](pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, int target = 500000) -> pcl::PointCloud<pcl::PointXYZRGB>::Ptr {
         if (cloud->size() <= target) return cloud;
 
         // 计算下采样步长
@@ -2277,7 +2286,7 @@ void VtkWidget::onAlign()
         downsampled->height = 1;
         return downsampled;
     };
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr denoised_scene = downSampleCloud(transformed_scene, template_cloud->size()*0.05);
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr denoised_scene = downSample(transformed_scene, template_cloud->size()*0.05);
     if(denoised_scene == nullptr){
         QString logInfo = "二次采样后点云为空！";
         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
@@ -2293,6 +2302,8 @@ void VtkWidget::onAlign()
         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
         icpFinalCloud = denoised_scene;
     }
+    logInfo = "精配准成功，加入列表";
+    m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
 
     // 加入元素列表
     auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateAlignCloud(icpFinalCloud);
