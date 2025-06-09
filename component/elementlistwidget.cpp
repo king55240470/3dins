@@ -616,9 +616,6 @@ void ElementListWidget::startprocess()
         m_pMainWin->getPWinVtkPresetWidget()->setWidget("实测点云为空无法进行测量");
     }else{
         loadModelFile();
-        // QTimer::singleShot(2000, []() {
-        //     qDebug() << "2秒后执行的操作";
-        // });
         CompareCloud();
         updateDistance();
         m_pMainWin->NotifySubscribe();
@@ -775,12 +772,6 @@ void ElementListWidget::updateDistance()
         m_pMainWin->getPWinToolWidget()->onSaveExcel();
         m_pMainWin->getPWinToolWidget()->onSavePdf();
         m_pMainWin->getPWinToolWidget()->setauto(false);
-        // for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
-        //     m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
-        // }
-        // for(int i=modelIndex;i<modelIndex+qinsSize;i++){
-        //     m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
-        // }
         //除了未测量的实测点云，其余全部删除
         for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
             if(m_pMainWin->getEntityListMgr()->getEntityList()[i]->GetUniqueType()==enPointCloud){
@@ -788,11 +779,14 @@ void ElementListWidget::updateDistance()
                 if(cloud->isOver == false){
                     m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
                     m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(false);
-                    continue;
+                }else{
+                    m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
+                    m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(true);
                 }
-                m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
-                m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(true);
+                continue;
             }
+            m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
+            m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(true);
         }
         onDeleteEllipse();
         if(pointCouldlists.size()>0)
@@ -885,25 +879,26 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
         }
         //删除自动化打开的模型文件
         for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
-            m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
+            if(m_pMainWin->getEntityListMgr()->getEntityList()[i]->GetUniqueType()==enPointCloud){
+                CPointCloud*cloud = (CPointCloud*)m_pMainWin->getEntityListMgr()->getEntityList()[i];
+                if(cloud->isOver == false){
+                    m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
+                    m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(false);
+                }else{
+                    m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
+                    m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(true);
+                }
+                continue;
+            }
+            m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
+            m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(true);
         }
-        for(int i=modelIndex;i<modelIndex+qinsSize;i++){
-            m_pMainWin->getEntityListMgr()->getEntityList()[modelIndex]->SetSelected(true);
-        }
-        qDebug()<<"modelIndex"<<modelIndex;
-        qDebug()<<"qinsSize"<<qinsSize;
         onDeleteEllipse();
         if(!pointCouldlists.empty()){
             loadModelFile();
-
             QTimer::singleShot(2000, []() {
                 qDebug() << "2秒后执行的操作";
             });
-            // QScopedPointer<QProcess> process(new QProcess);  // 自动释放
-            // process->start("./compare_cloud_proc");
-            // if (!process->waitForFinished(10000)) {
-            //     qDebug() << "子进程崩溃或超时";
-            // }
             CompareCloud();
             updateDistance();
         }else{
