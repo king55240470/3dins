@@ -195,7 +195,8 @@ void ElementListWidget::onDeleteEllipse()
     auto& identifyList = m_pMainWin->getPWinToolWidget()->getIdentifyEntityList();
     auto& contentMap = m_pMainWin->getpWinFileMgr()->getContentItemMap();
     auto& identifyMap = m_pMainWin->getpWinFileMgr()->getIdentifyItemMap();
-
+    auto& measuredMap = m_pMainWin->getpWinFileMgr()->getMeasuredFileMap();
+    auto& modelMap = m_pMainWin->getpWinFileMgr()->getModelFileMap();
 
     // 3. 逆序删除（避免索引错乱）
     for (int i = selectedEntities.size() - 1; i >= 0; --i) {
@@ -233,6 +234,17 @@ void ElementListWidget::onDeleteEllipse()
             }
         }
 
+        for(auto item = measuredMap.begin();item != measuredMap.end();item++){
+            if(item.key().contains(entity->GetObjectAutoName())){
+                measuredMap.erase(item);
+            }
+        }
+
+        for(auto item = modelMap.begin();item != modelMap.end();item++){
+            if(item.key().contains(entity->GetObjectAutoName())){
+                modelMap.erase(item);
+            }
+        }
         // 从主列表中统一删除
         objectList.removeAt(index);
         entityList.removeAt(index);
@@ -616,9 +628,6 @@ void ElementListWidget::startprocess()
         m_pMainWin->getPWinVtkPresetWidget()->setWidget("实测点云为空无法进行测量");
     }else{
         loadModelFile();
-        // QTimer::singleShot(2000, []() {
-        //     qDebug() << "2秒后执行的操作";
-        // });
         CompareCloud();
         updateDistance();
         m_pMainWin->NotifySubscribe();
@@ -781,11 +790,10 @@ void ElementListWidget::updateDistance()
         for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
             if(m_pMainWin->getEntityListMgr()->getEntityList()[i]->GetUniqueType()==enPointCloud){
                 CPointCloud*cloud = (CPointCloud*)m_pMainWin->getEntityListMgr()->getEntityList()[i];
-                if(cloud->isOver == false){
+                if(cloud->isOver == false&&cloud->isMeasureCloud){
                     m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
                     m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(false);
-                }
-                else{
+                }else{
                     m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
                     m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(true);
                 }
@@ -887,25 +895,26 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
         }
         //删除自动化打开的模型文件
         for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
-            m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
+            if(m_pMainWin->getEntityListMgr()->getEntityList()[i]->GetUniqueType()==enPointCloud){
+                CPointCloud*cloud = (CPointCloud*)m_pMainWin->getEntityListMgr()->getEntityList()[i];
+                if(cloud->isOver == false&&cloud->isMeasureCloud){
+                    m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
+                    m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(false);
+                }else{
+                    m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
+                    m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(true);
+                }
+                continue;
+            }
+            m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
+            m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(true);
         }
-        for(int i=modelIndex;i<modelIndex+qinsSize;i++){
-            m_pMainWin->getEntityListMgr()->getEntityList()[modelIndex]->SetSelected(true);
-        }
-        qDebug()<<"modelIndex"<<modelIndex;
-        qDebug()<<"qinsSize"<<qinsSize;
         onDeleteEllipse();
         if(!pointCouldlists.empty()){
             loadModelFile();
-
             QTimer::singleShot(2000, []() {
                 qDebug() << "2秒后执行的操作";
             });
-            // QScopedPointer<QProcess> process(new QProcess);  // 自动释放
-            // process->start("./compare_cloud_proc");
-            // if (!process->waitForFinished(10000)) {
-            //     qDebug() << "子进程崩溃或超时";
-            // }
             CompareCloud();
             updateDistance();
         }else{

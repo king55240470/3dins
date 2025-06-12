@@ -2171,8 +2171,6 @@ void VtkWidget::onAlign()
         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
         return;
     }
-    logInfo = "选中两个点云，开始对齐";
-    m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
 
     auto& template_cloud = isCloud1Model ? clouds[0] : clouds[1];
     auto& scene_cloud = isCloud1Model ? clouds[1] : clouds[0];
@@ -2251,8 +2249,6 @@ void VtkWidget::onAlign()
         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
         return;
     }
-    logInfo = "粗配准完成";
-    m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
 
     // 使用sac变换后的模板裁剪场景点云
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr transformed_template(new pcl::PointCloud<pcl::PointXYZRGB>());
@@ -2302,8 +2298,6 @@ void VtkWidget::onAlign()
         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
         icpFinalCloud = denoised_scene;
     }
-    logInfo = "精配准成功，加入列表";
-    m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
 
     // 加入元素列表
     auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateAlignCloud(icpFinalCloud);

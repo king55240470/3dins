@@ -224,14 +224,16 @@ void MouseInteractorHighlightActor::HighlightActor(vtkActor* actor)
                                        MainWindow::HighLightColor[2]);
         if(entity->GetUniqueType() != enPointCloud){
             actor->GetProperty()->SetPointSize(MainWindow::ActorPointSize + 3);
-            actor->GetProperty()->SetOpacity(0.5);
         }
         actor->GetProperty()->SetLineWidth(MainWindow::ActorLineWidth + 3);
         if(renderer != nullptr){
             renderer->RemoveActor(actor);
             renderer->AddActor(actor);
         }
-        if(entity->GetUniqueType() == enPointCloud) ShowBoundBox(actor);
+        if(entity->GetUniqueType() == enPointCloud){
+            ShowBoundBox(actor);
+            actor->GetProperty()->SetOpacity(0.5);
+        }
     }
 }
 
