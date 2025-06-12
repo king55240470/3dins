@@ -996,7 +996,7 @@ qDebug()<<"提取照片"<<entity->m_strAutoName;
         else if(entity->GetUniqueType()==enPointCloud){
 
             CPointCloud* point_cloud=(CPointCloud*)entity;
-            if(point_cloud->isMeasureCloud){//实测点云
+            if(point_cloud->isAlignCloud){//实测点云
             }else{
                 continue;
             }

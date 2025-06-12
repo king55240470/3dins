@@ -245,6 +245,7 @@ public:
 private:
     QVTKOpenGLNativeWidget* vtkWidget; // vtk窗口
     MainWindow *m_pMainWin = nullptr; // mainwindow指针
+    QVBoxLayout *mainlayout;
     QMenu* vtkMenu;
     QMap<CEntity*,QVector<double>>m_distanceValue;//映射器 对比点云->距离值 【0】最大 【1】最小 【2】平均
 

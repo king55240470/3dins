@@ -5,6 +5,7 @@
 #include <QOpenGLContext>
 #include <qopenglfunctions.h>
 #include <QMessageBox>
+#include <QProgressBar>
 #include <vtkInteractorStyle.h>
 #include <vtkEventQtSlotConnect.h>
 #include <vtkTimerLog.h>
@@ -28,9 +29,6 @@
 #include <pcl/correspondence.h>
 #include <pcl/recognition/cg/hough_3d.h>
 #include <pcl/filters/extract_indices.h>
-#include <thread>
-#include <chrono>
-#include <mutex>
 
 
 VtkWidget::VtkWidget(QWidget *parent)
@@ -44,7 +42,7 @@ VtkWidget::VtkWidget(QWidget *parent)
     vtkObject::GlobalWarningDisplayOff();// 禁用 VTK 的错误处理弹窗
     m_pMainWin = (MainWindow*) parent;
 
-    QVBoxLayout *mainlayout = new QVBoxLayout(this);
+    mainlayout = new QVBoxLayout(this);
     mainlayout->setContentsMargins(0, 0, 0, 0); // 去除布局的边距
     mainlayout->setSpacing(0); // 去除布局内部的间距
     setUpVtk(mainlayout); // 配置vtk窗口XX
@@ -2146,18 +2144,39 @@ void VtkWidget::handleError(const QString& error) {
 
 void VtkWidget::onAlign()
 {
+    // 创建一个进度条并显示
+    QProgressBar* progressBar = new QProgressBar(this);
+    progressBar->setRange(0, 100);
+    progressBar->setValue(0);
+    progressBar->show();
+
+    // 创建一个定时器来定期更新进度条
+    QTimer* timer = new QTimer(this);
+    int progress = 0;
+    connect(timer, &QTimer::timeout, [&]() {
+        if (progress < 100) {
+            progress += 10;
+            progressBar->setValue(progress);
+        } else {
+            timer->stop();
+            delete progressBar;
+            delete timer;
+        }
+    });
+    timer->start(1000); // 每100毫秒更新一次进度条
+
+    // 收集两个选中的点云
     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
     QVector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> clouds;
     QString logInfo;
     bool isCloud1Model = false;
 
-    // 收集两个选中的点云
     for (int i = 0; i < entityList.size(); i++) {
         CEntity* entity = entityList[i];
         if (!entity->IsSelected()) continue;
         if (entity->GetUniqueType() == enPointCloud) {
             auto pcEntity = static_cast<CPointCloud*>(entity);
-            if(pcEntity->isModelCloud && clouds.isEmpty()){
+            if (pcEntity->isModelCloud && clouds.isEmpty()) {
                 isCloud1Model = true;
                 qDebug() << "当前模型点云：" << pcEntity->m_strAutoName;
             }
@@ -2169,6 +2188,9 @@ void VtkWidget::onAlign()
     if (clouds.size() != 2) {
         logInfo += "对齐需要两个点云!";
         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
+        timer->stop();
+        delete progressBar;
+        delete timer;
         return;
     }
 
@@ -2178,7 +2200,6 @@ void VtkWidget::onAlign()
     // 自适应计算体素大小
     pcl::PointXYZRGB minpt, maxpt;
     pcl::getMinMax3D(*template_cloud, minpt, maxpt); // 计算点云的最小/大坐标
-    // 计算外包盒的对角线长度
     float diag = std::sqrt(
         std::pow(maxpt.x - minpt.x, 2) +
         std::pow(maxpt.y - minpt.y, 2) +
@@ -2195,9 +2216,12 @@ void VtkWidget::onAlign()
     voxel.filter(*template_down);
     voxel.setInputCloud(scene_cloud);
     voxel.filter(*scene_down);
-    if(template_cloud == nullptr || scene_cloud == nullptr){
+    if (template_cloud == nullptr || scene_cloud == nullptr) {
         QString logInfo = "采样后点云为空！";
         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
+        timer->stop();
+        delete progressBar;
+        delete timer;
         return;
     }
 
@@ -2211,9 +2235,12 @@ void VtkWidget::onAlign()
     ne.compute(*template_normals);
     ne.setInputCloud(scene_down);
     ne.compute(*scene_normals);
-    if(template_normals == nullptr || scene_normals == nullptr){
+    if (template_normals == nullptr || scene_normals == nullptr) {
         QString logInfo = "法线估计失败！";
         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
+        timer->stop();
+        delete progressBar;
+        delete timer;
         return;
     }
 
@@ -2247,6 +2274,9 @@ void VtkWidget::onAlign()
     if (transformation.isApprox(Eigen::Matrix4f::Zero())) {
         QString logInfo = "粗配准失败";
         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
+        timer->stop();
+        delete progressBar;
+        delete timer;
         return;
     }
 
@@ -2267,10 +2297,9 @@ void VtkWidget::onAlign()
     pcl::transformPointCloud(*cropped_scene, *transformed_scene, transformation.inverse());
 
     // 二次采样
-    auto downSample= [](pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, int target = 500000) -> pcl::PointCloud<pcl::PointXYZRGB>::Ptr {
+    auto downSample = [](pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, int target = 500000) -> pcl::PointCloud<pcl::PointXYZRGB>::Ptr {
         if (cloud->size() <= target) return cloud;
 
-        // 计算下采样步长
         int k = static_cast<int>(std::ceil(static_cast<double>(cloud->size()) / target));
         pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampled(new pcl::PointCloud<pcl::PointXYZRGB>);
         downsampled->reserve(cloud->size() / k + 1);
@@ -2282,10 +2311,14 @@ void VtkWidget::onAlign()
         downsampled->height = 1;
         return downsampled;
     };
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr denoised_scene = downSample(transformed_scene, template_cloud->size()*0.05);
-    if(denoised_scene == nullptr){
+
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr denoised_scene = downSample(transformed_scene, template_cloud->size() * 0.05);
+    if (denoised_scene == nullptr) {
         QString logInfo = "二次采样后点云为空！";
         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
+        timer->stop();
+        delete progressBar;
+        delete timer;
         return;
     }
 
@@ -2293,7 +2326,7 @@ void VtkWidget::onAlign()
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr icpFinalCloud(new pcl::PointCloud<pcl::PointXYZRGB>());
     Eigen::Matrix4f tranf = onICP(denoised_scene, template_cloud); // 得到变换矩阵
     pcl::transformPointCloud(*transformed_scene, *icpFinalCloud, tranf);
-    if(tranf.isZero()){
+    if (tranf.isZero()) {
         QString logInfo = "ICP失败，采用粗配准结果";
         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
         icpFinalCloud = denoised_scene;
@@ -2303,8 +2336,12 @@ void VtkWidget::onAlign()
     auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateAlignCloud(icpFinalCloud);
     m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
     m_pMainWin->NotifySubscribe();
-}
 
+    // 配准完成，停止计时器并删除进度条
+    timer->stop();
+    delete progressBar;
+    delete timer;
+}
 
 // 区域覆盖判断
 void VtkWidget::CompletePointCloud()
