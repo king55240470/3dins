@@ -169,12 +169,17 @@ void FileManagerWidget::openMeasuredFile(/*QString fileName,QString filePath*/){
         measuredFile->removeRow(i); // 删除子项
     }
 
-    //添加子项
-    //获取所有键值
+    // 获取所有键值，并去重
     QList<QString> keys = m_pMainWin->getpWinFileMgr()->getMeasuredFileMap().keys();
-    // 遍历所有的键
+    QList<QString> uniqueKeys;
     for (const QString &key : keys) {
+        if (!uniqueKeys.contains(key)) {
+            uniqueKeys.append(key);
+        }
+    }
 
+    // 遍历所有的键，添加子项
+    for (const QString &key : uniqueKeys) {
         QString filePath=key;
         QFileInfo fileInfo(filePath);
         QString fileName = fileInfo.fileName();
@@ -578,9 +583,13 @@ void FileManagerWidget::UpdateInfo(){
     //         qDebug()<<"打开";
     //     }
     // }
+    qDebug() << "打开模型文件";
     openModelFile();
+    qDebug() << "打开实测文件";
     openMeasuredFile();
+    qDebug() << "更新构造的元素";
     createContentItem();
+    qDebug() << "更新识别的元素";
     createIdentifyItem();
 }
 

@@ -2028,7 +2028,7 @@ void AlignWorker::doAlign() {
         emit progressUpdated(20, "特征提取完成"); //done!!!!!!!
 
         // 步骤 5: RANSAC配准 (30%)
-        int items = 5;
+        int items = 3;
         Eigen::Matrix4f transformation = runSAC(
             template_down,
             scene_down,
