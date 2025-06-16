@@ -226,14 +226,14 @@ void MouseInteractorHighlightActor::HighlightActor(vtkActor* actor)
             actor->GetProperty()->SetPointSize(MainWindow::ActorPointSize + 3);
         }
         actor->GetProperty()->SetLineWidth(MainWindow::ActorLineWidth + 3);
-        actor->GetProperty()->SetOpacity(0.8);
         if(renderer != nullptr){
             renderer->RemoveActor(actor);
             renderer->AddActor(actor);
         }
         if(entity->GetUniqueType() == enPointCloud){
+            auto cloudEntity = (CPointCloud*)entity;
             ShowBoundBox(actor);
-            actor->GetProperty()->SetOpacity(0.5); // 将点云设置为半透明
+            if(!cloudEntity->isComparsionCloud) actor->GetProperty()->SetOpacity(0.6); // 将点云设置为半透明
         }
     }
 }

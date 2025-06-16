@@ -1936,9 +1936,6 @@ void VtkWidget::onCompare()
     qDebug()<<"计算平均距离结束";
     qDebug()<<"温度计";
     ShowColorBar(minDistance, maxDistance);
-    qDebug()<<"温度计结束";
-    qDebug()<<"保存图片";
-    m_pMainWin->getPWinToolWidget()->onSaveImage();
     qDebug()<<"保存图片结束";
     QString path_front=m_pMainWin->getPWinToolWidget()->getlastCreatedImageFileFront();
     QString path_top=m_pMainWin->getPWinToolWidget()->getlastCreatedImageFileTop();

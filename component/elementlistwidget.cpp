@@ -642,9 +642,6 @@ void ElementListWidget::onAddElement(pcl::PointCloud<pcl::PointXYZRGB>::Ptr coul
         if(isProcessing==false){
             isProcessing=true;
             loadModelFile();
-            QTimer::singleShot(2000, []() {
-                qDebug() << "2秒后执行的操作";
-            });
             CompareCloud();
             updateDistance();
             m_pMainWin->NotifySubscribe();
@@ -843,7 +840,7 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
             delete timer;
             timer=nullptr;
 
-            // 清理旧线程
+            // //清理旧线程
             // if (workerThread) {
             //     workerThread->quit();
             //     workerThread->wait();
@@ -865,7 +862,7 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
             // worker = new Worker();
             // connect(worker, &Worker::requestSaveOperation, this, [this](int type) {
             //     switch(type) {
-            //     case 0: m_pMainWin->getPWinToolWidget()->setauto(true);m_pMainWin->getPWinToolWidget()->onSaveTxt(); break;
+            //     case 0: m_pMainWin->getPWinToolWidget()->setauto(true);break;//m_pMainWin->getPWinToolWidget()->onSaveTxt();
             //     case 1: m_pMainWin->getPWinToolWidget()->onSaveWord(); break;
             //     case 2: m_pMainWin->getPWinToolWidget()->onSaveExcel(); break;
             //     case 3: m_pMainWin->getPWinToolWidget()->onSavePdf();m_pMainWin->getPWinToolWidget()->setauto(false); break;
@@ -909,6 +906,7 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
             m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
             m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(true);
         }
+        qDebug() << "准备清空列表";
         onDeleteEllipse();
         if(!pointCouldlists.empty()){
             loadModelFile();
@@ -975,14 +973,7 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
             }
         }else if(obj->GetUniqueType()==enPlane){//面的情况分三种
             qDebug()<<obj->parent.size();
-            QVector<CObject*>planelist;
-            for(CObject*obj1:m_pMainWin->getObjectListMgr()->getObjectList()){
-                for(CObject* obj2:obj->parent){
-                    if(obj2->GetObjectCName()==obj1->GetObjectCName()){
-                        planelist.append(obj1);
-                    }
-                }
-            }
+            QVector<CObject*>planelist = obj->parent;
             qDebug()<<planelist.size();
             CPlane*plane=static_cast<CPlane*>(obj);
             if(planelist.size()==3){//面由三个点构造
