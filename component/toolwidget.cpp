@@ -1029,7 +1029,7 @@ qDebug()<<"提取照片"<<entity->m_strAutoName;
             //点云大小
             data_PointCloud<<QString::number(m_pMainWin->ActorPointSize);
             qDebug()<<"保存图片"<<entity->m_strAutoName;
-            //SaveImage(entity);
+            SaveImage(entity);
             qDebug()<<"保存图片"<<entity->m_strAutoName<<"成功";
             data_PointCloud<<QDir::toNativeSeparators(m_checkpoint_imagePath[entity]);
         }
@@ -3920,38 +3920,10 @@ void ToolWidget::SaveImage(CEntity* entity,Size_MeasurementData* pointCloudData)
         return;
     }
     qDebug() << "成功获取 vtkWidget，获取渲染器";
-    auto renderer = vtkWidget->getRenderer();
-    if (renderer == nullptr) {
-        qDebug() << "错误：渲染器（renderer）为空，终止操作";
-        return;
-    }
-    qDebug() << "成功获取渲染器，获取视图道具集合";
-    vtkPropCollection* propCollection = renderer->GetViewProps();
-    if (propCollection == nullptr) {
-        qDebug() << "错误：视图道具集合（propCollection）为空，终止操作";
-        return;
-    }
-    qDebug() << "成功获取视图道具集合";
+
 
     QMap<vtkSmartPointer<vtkActor>, CEntity*>& actorToEntity = *actorToEntityMap;
 
-    qDebug() << "【步骤6】遍历视图道具";
-    vtkCollectionSimpleIterator it;
-    propCollection->InitTraversal(it);
-    vtkProp* prop;
-    int propCount = 0;
-    while ((prop = propCollection->GetNextProp(it)) != nullptr) {
-        propCount++;
-        qDebug() << "处理第" << propCount << "个道具，类型：" << prop->GetClassName();
-        vtkActor* actor = vtkActor::SafeDownCast(prop);
-        if (actor) {
-            actors.push_back(actor);
-            qDebug() << "成功转换为 vtkActor，添加到列表";
-        } else {
-            qDebug() << "跳过非 vtkActor 道具";
-        }
-    }
-    qDebug() << "共处理" << propCount << "个道具，有效 actor 数量：" << actors.size();
 
     qDebug() << "【步骤7】处理树状部件选中项";
     QList<QTreeWidgetItem*> selectedItems = treeWidget->selectedItems();
@@ -4130,14 +4102,7 @@ void ToolWidget::SaveImage(CEntity* entity,Size_MeasurementData* pointCloudData)
     SaveImage(fileName, "png");
     qDebug() << "图片保存完成：" << fileName;
 
-    // 恢复被隐藏的元素（原注释代码）
-    // qDebug() << "【步骤17】恢复所有元素";
-    // if (auto* fileManagerWidget = m_pMainWin->getPWinFileManagerWidget()) {
-    //     fileManagerWidget->allRecover();
-    //     qDebug() << "元素恢复成功";
-    // } else {
-    //     qDebug() << "警告：文件管理器部件为空，无法恢复元素";
-    // }
+
 
     qDebug() << "【步骤18】关闭文本框";
     if (elementListWidget) {
