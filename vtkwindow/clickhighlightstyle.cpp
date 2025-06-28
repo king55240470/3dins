@@ -230,7 +230,11 @@ void MouseInteractorHighlightActor::HighlightActor(vtkActor* actor)
             renderer->RemoveActor(actor);
             renderer->AddActor(actor);
         }
-        if(entity->GetUniqueType() == enPointCloud) ShowBoundBox(actor);
+        if(entity->GetUniqueType() == enPointCloud){
+            auto cloudEntity = (CPointCloud*)entity;
+            ShowBoundBox(actor);
+            if(!cloudEntity->isComparsionCloud) actor->GetProperty()->SetOpacity(0.6); // 将点云设置为半透明
+        }
     }
 }
 

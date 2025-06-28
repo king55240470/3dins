@@ -205,11 +205,13 @@ public slots:
     void createFolder();
 
     QString loadAddress();
+    void deleteImageFile(const QString &filePath);
 private:
     QString m_charBeforeDot="";
     QString m_modelname="";
     QString m_savePath="z:/result";//默认保存路径
     QString m_NULLimagePath=":/component/save/NULL2.png";
+    bool m_saveFirstDistance=false;
 
     QMap<CEntity*,QString>m_checkpoint_imagePath;
     //对比点云保存路径

@@ -992,9 +992,12 @@ CEntity* MainWindow::CreateEntity(int nType){
 
 void MainWindow::NotifySubscribe()
 {
+    qDebug() << "更新元素列表";
     pWinElementListWidget->upadteelementlist();
+    qDebug() << "更新文件管理器";
     pWinFileManagerWidget->UpdateInfo();
-    pWinVtkWidget->UpdateInfo(); // 更新vtkwidget信息
+    qDebug() << "更新vtkwidget";
+    pWinVtkWidget->UpdateInfo();
 
 }
 

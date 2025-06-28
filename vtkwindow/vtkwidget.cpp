@@ -5,6 +5,7 @@
 #include <QOpenGLContext>
 #include <qopenglfunctions.h>
 #include <QMessageBox>
+#include <QProgressBar>
 #include <vtkInteractorStyle.h>
 #include <vtkEventQtSlotConnect.h>
 #include <vtkTimerLog.h>
@@ -28,9 +29,6 @@
 #include <pcl/correspondence.h>
 #include <pcl/recognition/cg/hough_3d.h>
 #include <pcl/filters/extract_indices.h>
-#include <thread>
-#include <chrono>
-#include <mutex>
 
 
 VtkWidget::VtkWidget(QWidget *parent)
@@ -44,7 +42,7 @@ VtkWidget::VtkWidget(QWidget *parent)
     vtkObject::GlobalWarningDisplayOff();// 禁用 VTK 的错误处理弹窗
     m_pMainWin = (MainWindow*) parent;
 
-    QVBoxLayout *mainlayout = new QVBoxLayout(this);
+    mainlayout = new QVBoxLayout(this);
     mainlayout->setContentsMargins(0, 0, 0, 0); // 去除布局的边距
     mainlayout->setSpacing(0); // 去除布局内部的间距
     setUpVtk(mainlayout); // 配置vtk窗口XX
@@ -1179,13 +1177,13 @@ void VtkWidget::ExportPointCloudToFBX(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cl
 
     // 1. 保存带法线的PLY
     if(!savePointCloudToPLY(cloud, inputPly)) {
-        qWarning() << "Failed to save PLY with normals";
+        qDebug() << "Failed to save PLY with normals";
         return ;
     }
 
     // 2. 执行泊松重建
     if(!runPoissonReconstruction(inputPly, outputPly)) {
-        qWarning() << "Poisson reconstruction failed";
+        qDebug() << "Poisson reconstruction failed";
         return ;
     }
 
@@ -1226,7 +1224,7 @@ bool VtkWidget::savePointCloudToPLY(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& clou
     QFileInfo info(plyPath);
     if(!info.dir().exists()) {
         if(!info.dir().mkpath(".")) {
-            qWarning() << "Cannot create directory:" << info.dir().path();
+            qDebug() << "Cannot create directory:" << info.dir().path();
             return false;
         }
     }
@@ -1246,7 +1244,7 @@ bool VtkWidget::savePointCloudToPLY(pcl::PointCloud<pcl::PointXYZRGB>::Ptr& clou
 
     pcl::PLYWriter writer;
     if (writer.write(plyPath.toStdString(), cloud_with_normals, false, true) != 0) {
-        qWarning() << "Failed to write PLY file";
+        qDebug() << "Failed to write PLY file";
         return false;
     }
 
@@ -1263,7 +1261,7 @@ bool VtkWidget::runPoissonReconstruction(const QString &inputPlyPath, const QStr
     QString poissonExe = "C:/qcon/AdaptiveSolvers.x64/PoissonRecon.exe"; // 根据实际路径调整
 
     if (!QFileInfo::exists(poissonExe)) {
-        qWarning() << "Poisson reconstruction executable not found at" << poissonExe;
+        qDebug() << "Poisson reconstruction executable not found at" << poissonExe;
         return false;
     }
 
@@ -1283,27 +1281,27 @@ bool VtkWidget::runPoissonReconstruction(const QString &inputPlyPath, const QStr
     poissonProcess.start(poissonExe, arguments);
 
     if (!poissonProcess.waitForStarted()) {
-        qWarning() << "Failed to start Poisson reconstruction process";
+        qDebug() << "Failed to start Poisson reconstruction process";
         return false;
     }
 
     // 等待完成（设置超时时间，单位毫秒）
     if (!poissonProcess.waitForFinished(300000)) { // 5分钟超时
-        qWarning() << "Poisson reconstruction timed out";
+        qDebug() << "Poisson reconstruction timed out";
         poissonProcess.kill();
         return false;
     }
 
     // 检查退出状态
     if (poissonProcess.exitStatus() != QProcess::NormalExit || poissonProcess.exitCode() != 0) {
-        qWarning() << "Poisson reconstruction failed with exit code" << poissonProcess.exitCode();
-        qWarning() << "Error output:" << poissonProcess.readAllStandardError();
+        qDebug() << "Poisson reconstruction failed with exit code" << poissonProcess.exitCode();
+        qDebug() << "Error output:" << poissonProcess.readAllStandardError();
         return false;
     }
 
     // 检查输出文件是否存在
     if (!QFileInfo::exists(outputPlyPath)) {
-        qWarning() << "Output PLY file not created";
+        qDebug() << "Output PLY file not created";
         return false;
     }
 
@@ -1505,33 +1503,47 @@ double *VtkWidget::getViewAngles()
     return angles;
 }
 
-double *VtkWidget::getBoundboxData(CEntity* entity)
+QVector<double> VtkWidget::getBoundboxData(CEntity* entity)
 {
     // 得到对应的actor
     auto& actorMap = m_pMainWin->getactorToEntityMap();
     auto actor = actorMap.key(entity);
-    double* boxData = new double();
+    if (actor == nullptr) {
+        qDebug() << "未找到与实体对应的actor，无法获取外包盒数据";
+        return QVector<double>(3,0);
+    }
 
-    // 获取 actor 的边界框
-    double bounds[6];
-    actor->GetBounds(bounds);
-    boxData[0] = bounds[1] - bounds[0];
-    boxData[1] = bounds[3] - bounds[2];
-    boxData[2] = bounds[5] - bounds[4];
-
-    return boxData;
+    return getBoundboxData(actor);
 }
 
-double *VtkWidget::getBoundboxData(vtkActor *actor)
+QVector<double> VtkWidget::getBoundboxData(vtkActor *actor)
 {
-    double* boxData = new double();
+    if (actor == nullptr) {
+        qDebug() << "actor为空，无法获取外包盒数据";
+        return QVector<double>(3,0);
+    }
+
+    QVector<double> boxData(3); // 初始化一个大小为3的QVector
 
     // 获取 actor 的边界框
     double bounds[6];
     actor->GetBounds(bounds);
+    if (bounds[1] <= bounds[0] || bounds[3] <= bounds[2] || bounds[5] <= bounds[4]) {
+        qDebug() << "actor的边界框无效";
+        return QVector<double>(3,0);
+    }
+
     boxData[0] = bounds[1] - bounds[0];
     boxData[1] = bounds[3] - bounds[2];
     boxData[2] = bounds[5] - bounds[4];
+
+    // 在打印之前检查QVector是否为空
+    if (boxData.size() < 3) {
+        qDebug() << "外包盒数据不完整";
+        return QVector<double>();
+    }
+
+    qDebug() << "外包盒数据:" << boxData[0] << boxData[1] << boxData[2];
 
     return boxData;
 }
@@ -1575,8 +1587,10 @@ void VtkWidget::FocusOnActor(CEntity* entity)
     auto actor = actorMap.key(entity);
     if(actor == nullptr) return;
 
+    qDebug() << "聚焦actor时获取外包盒信息";
     auto center = getBoundboxCenter(actor); // 获取外包盒中心
     auto actorSize = getBoundboxData(actor);
+    qDebug() << "获取成功";
 
     // 计算相机与actor中心的距离
     double maxSize = std::max({actorSize[0], actorSize[1], actorSize[2]});
@@ -1922,9 +1936,6 @@ void VtkWidget::onCompare()
     qDebug()<<"计算平均距离结束";
     qDebug()<<"温度计";
     ShowColorBar(minDistance, maxDistance);
-    qDebug()<<"温度计结束";
-    qDebug()<<"保存图片";
-    m_pMainWin->getPWinToolWidget()->onSaveImage();
     qDebug()<<"保存图片结束";
     QString path_front=m_pMainWin->getPWinToolWidget()->getlastCreatedImageFileFront();
     QString path_top=m_pMainWin->getPWinToolWidget()->getlastCreatedImageFileTop();
@@ -1963,9 +1974,6 @@ void AlignWorker::doAlign() {
 
         auto& template_cloud = m_isCloud1Model ? m_clouds[0] : m_clouds[1];
         auto& scene_cloud = m_isCloud1Model ? m_clouds[1] : m_clouds[0];
-        if (template_cloud->size() > scene_cloud->size()) {
-            throw std::runtime_error("模型文件选择错误!");
-        }
 
         // 自适应计算体素大小
         pcl::PointXYZRGB minpt, maxpt;
@@ -2020,7 +2028,7 @@ void AlignWorker::doAlign() {
         emit progressUpdated(20, "特征提取完成"); //done!!!!!!!
 
         // 步骤 5: RANSAC配准 (30%)
-        int items = 5;
+        int items = 3;
         Eigen::Matrix4f transformation = runSAC(
             template_down,
             scene_down,
@@ -2133,18 +2141,39 @@ void VtkWidget::handleError(const QString& error) {
 
 void VtkWidget::onAlign()
 {
+    // 创建一个进度条并显示
+    QProgressBar* progressBar = new QProgressBar(this);
+    progressBar->setRange(0, 100);
+    progressBar->setValue(0);
+    progressBar->show();
+
+    // 创建一个定时器来定期更新进度条
+    QTimer* timer = new QTimer(this);
+    int progress = 0;
+    connect(timer, &QTimer::timeout, [&]() {
+        if (progress < 100) {
+            progress += 10;
+            progressBar->setValue(progress);
+        } else {
+            timer->stop();
+            delete progressBar;
+            delete timer;
+        }
+    });
+    timer->start(1000); // 每100毫秒更新一次进度条
+
+    // 收集两个选中的点云
     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
     QVector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> clouds;
     QString logInfo;
     bool isCloud1Model = false;
 
-    // 收集两个选中的点云
     for (int i = 0; i < entityList.size(); i++) {
         CEntity* entity = entityList[i];
         if (!entity->IsSelected()) continue;
         if (entity->GetUniqueType() == enPointCloud) {
             auto pcEntity = static_cast<CPointCloud*>(entity);
-            if(pcEntity->isModelCloud && clouds.isEmpty()){
+            if (pcEntity->isModelCloud && clouds.isEmpty()) {
                 isCloud1Model = true;
                 qDebug() << "当前模型点云：" << pcEntity->m_strAutoName;
             }
@@ -2156,6 +2185,9 @@ void VtkWidget::onAlign()
     if (clouds.size() != 2) {
         logInfo += "对齐需要两个点云!";
         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
+        timer->stop();
+        delete progressBar;
+        delete timer;
         return;
     }
 
@@ -2165,7 +2197,6 @@ void VtkWidget::onAlign()
     // 自适应计算体素大小
     pcl::PointXYZRGB minpt, maxpt;
     pcl::getMinMax3D(*template_cloud, minpt, maxpt); // 计算点云的最小/大坐标
-    // 计算外包盒的对角线长度
     float diag = std::sqrt(
         std::pow(maxpt.x - minpt.x, 2) +
         std::pow(maxpt.y - minpt.y, 2) +
@@ -2182,6 +2213,14 @@ void VtkWidget::onAlign()
     voxel.filter(*template_down);
     voxel.setInputCloud(scene_cloud);
     voxel.filter(*scene_down);
+    if (template_cloud == nullptr || scene_cloud == nullptr) {
+        QString logInfo = "采样后点云为空！";
+        m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
+        timer->stop();
+        delete progressBar;
+        delete timer;
+        return;
+    }
 
     // 法线估计
     pcl::PointCloud<pcl::Normal>::Ptr template_normals(new pcl::PointCloud<pcl::Normal>());
@@ -2193,15 +2232,21 @@ void VtkWidget::onAlign()
     ne.compute(*template_normals);
     ne.setInputCloud(scene_down);
     ne.compute(*scene_normals);
+    if (template_normals == nullptr || scene_normals == nullptr) {
+        QString logInfo = "法线估计失败！";
+        m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
+        timer->stop();
+        delete progressBar;
+        delete timer;
+        return;
+    }
 
     // 计算FPFH特征
     pcl::PointCloud<pcl::FPFHSignature33>::Ptr template_fpfh(new pcl::PointCloud<pcl::FPFHSignature33>());
     pcl::PointCloud<pcl::FPFHSignature33>::Ptr scene_fpfh(new pcl::PointCloud<pcl::FPFHSignature33>());
-
     pcl::FPFHEstimation<pcl::PointXYZRGB, pcl::Normal, pcl::FPFHSignature33> fpfh;
     fpfh.setRadiusSearch(voxel_size * 5.0);
     fpfh.setSearchMethod(pcl::search::KdTree<pcl::PointXYZRGB>::Ptr(new pcl::search::KdTree<pcl::PointXYZRGB>()));
-
     fpfh.setInputCloud(template_down);
     fpfh.setInputNormals(template_normals);
     fpfh.setSearchSurface(template_down);
@@ -2226,6 +2271,9 @@ void VtkWidget::onAlign()
     if (transformation.isApprox(Eigen::Matrix4f::Zero())) {
         QString logInfo = "粗配准失败";
         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
+        timer->stop();
+        delete progressBar;
+        delete timer;
         return;
     }
 
@@ -2246,10 +2294,9 @@ void VtkWidget::onAlign()
     pcl::transformPointCloud(*cropped_scene, *transformed_scene, transformation.inverse());
 
     // 二次采样
-    auto downSampleCloud = [](pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, int target = 500000) -> pcl::PointCloud<pcl::PointXYZRGB>::Ptr {
+    auto downSample = [](pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, int target = 500000) -> pcl::PointCloud<pcl::PointXYZRGB>::Ptr {
         if (cloud->size() <= target) return cloud;
 
-        // 计算下采样步长
         int k = static_cast<int>(std::ceil(static_cast<double>(cloud->size()) / target));
         pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampled(new pcl::PointCloud<pcl::PointXYZRGB>);
         downsampled->reserve(cloud->size() / k + 1);
@@ -2261,10 +2308,14 @@ void VtkWidget::onAlign()
         downsampled->height = 1;
         return downsampled;
     };
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr denoised_scene = downSampleCloud(transformed_scene, template_cloud->size()*0.05);
-    if(denoised_scene == nullptr){
+
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr denoised_scene = downSample(transformed_scene, template_cloud->size() * 0.05);
+    if (denoised_scene == nullptr) {
         QString logInfo = "二次采样后点云为空！";
         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
+        timer->stop();
+        delete progressBar;
+        delete timer;
         return;
     }
 
@@ -2272,7 +2323,7 @@ void VtkWidget::onAlign()
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr icpFinalCloud(new pcl::PointCloud<pcl::PointXYZRGB>());
     Eigen::Matrix4f tranf = onICP(denoised_scene, template_cloud); // 得到变换矩阵
     pcl::transformPointCloud(*transformed_scene, *icpFinalCloud, tranf);
-    if(tranf.isZero()){
+    if (tranf.isZero()) {
         QString logInfo = "ICP失败，采用粗配准结果";
         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
         icpFinalCloud = denoised_scene;
@@ -2282,8 +2333,12 @@ void VtkWidget::onAlign()
     auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateAlignCloud(icpFinalCloud);
     m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
     m_pMainWin->NotifySubscribe();
-}
 
+    // 配准完成，停止计时器并删除进度条
+    timer->stop();
+    delete progressBar;
+    delete timer;
+}
 
 // 区域覆盖判断
 void VtkWidget::CompletePointCloud()

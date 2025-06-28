@@ -177,52 +177,46 @@ void ElementListWidget::onDeleteEllipse()
 {
     // 1. 获取实体列表并筛选选中项
     auto& entityList = m_pMainWin->getEntityListMgr()->getEntityList();
+    qDebug()<<entityList.size();
     QVector<CEntity*> selectedEntities;
     for (CEntity* entity : entityList) {
         if (entity->getSelected()) {
             selectedEntities.append(entity);
         }
     }
-
+    qDebug()<<selectedEntities.size();
     if (selectedEntities.isEmpty()) {
         return; // 无选中项则直接返回
     }
-
+    qDebug()<<"删除元素数量"<<selectedEntities.size();
     // 2. 获取需要操作的关联列表
     auto& objectList = m_pMainWin->m_ObjectListMgr->getObjectList();
     auto& constructList = m_pMainWin->getPWinToolWidget()->getConstructEntityList();
     auto& identifyList = m_pMainWin->getPWinToolWidget()->getIdentifyEntityList();
     auto& contentMap = m_pMainWin->getpWinFileMgr()->getContentItemMap();
     auto& identifyMap = m_pMainWin->getpWinFileMgr()->getIdentifyItemMap();
+    auto& measuredMap = m_pMainWin->getpWinFileMgr()->getMeasuredFileMap();
+    auto& modelMap = m_pMainWin->getpWinFileMgr()->getModelFileMap();
 
     // 3. 逆序删除（避免索引错乱）
     for (int i = selectedEntities.size() - 1; i >= 0; --i) {
         CEntity* entity = selectedEntities[i];
         int index = entityList.indexOf(entity);
+        qDebug()<<"当前删除元素index："<<index;
         if (index == -1) continue;
 
-        CObject* obj = eleobjlist[index];
-
         // 特殊处理：点云类型
-        if (obj->GetUniqueType() == enPointCloud) {
-            CPointCloud* cloud = static_cast<CPointCloud*>(obj);
+        if (entity->GetUniqueType() == enPointCloud) {
+            CPointCloud* cloud = static_cast<CPointCloud*>(entity);
             if(pointCouldlists.contains(cloud->m_pointCloud.makeShared()))
             {
                 pointCouldlists.removeOne(cloud->m_pointCloud.makeShared());
             }
-            //pointCouldlists.removeOne(cloud->m_pointCloud.makeShared());
-        }
-
-        // 特殊处理：坐标系对象（临时/工件坐标系）
-        QString objName = objectList[index]->GetObjectCName();
-        if (objName.startsWith("临时坐标系") || objName.startsWith("工件坐标系")) {
-            objectList.removeAt(index);
-            continue;
         }
 
         // 从构造列表中移除
         for (int j = 0; j < constructList.size(); ++j) {
-            if (constructList[j] == entity) {
+            if (constructList[j]->GetObjectAutoName() == entity->GetObjectAutoName()) {
                 QString key = entity->GetObjectCName() + "  " + entity->GetObjectAutoName();
                 contentMap.remove(key);
                 constructList.removeAt(j);
@@ -232,7 +226,7 @@ void ElementListWidget::onDeleteEllipse()
 
         // 从识别列表中移除
         for (int j = 0; j < identifyList.size(); ++j) {
-            if (identifyList[j] == entity) {
+            if (identifyList[j]->GetObjectAutoName() == entity->GetObjectAutoName()) {
                 QString key = entity->GetObjectCName() + "  " + entity->GetObjectAutoName();
                 identifyMap.remove(key);
                 identifyList.removeAt(j);
@@ -240,10 +234,20 @@ void ElementListWidget::onDeleteEllipse()
             }
         }
 
+        for(auto item = measuredMap.begin();item != measuredMap.end();item++){
+            if(item.key().contains(entity->GetObjectAutoName())){
+                measuredMap.erase(item);
+            }
+        }
+
+        for(auto item = modelMap.begin();item != modelMap.end();item++){
+            if(item.key().contains(entity->GetObjectAutoName())){
+                modelMap.erase(item);
+            }
+        }
         // 从主列表中统一删除
         objectList.removeAt(index);
         entityList.removeAt(index);
-        eleobjlist.removeAt(index);
     }
 
     // 4. 更新UI和数据
@@ -276,15 +280,6 @@ void ElementListWidget::onCustomContextMenuRequested(const QPoint &pos)
     menu.exec(mapToGlobal(pos));
 }
 
-void ElementListWidget::deal_actionNew_triggered()
-{
-
-}
-
-void ElementListWidget::updateInsertIndicatorPosition()
-{
-
-}
 
 void ElementListWidget::upadteelementlist()
 {
@@ -294,10 +289,10 @@ void ElementListWidget::upadteelementlist()
     for(const auto& obj :m_pMainWin->m_ObjectListMgr->getObjectList()){
         CreateEllipse(obj);
         //obj->SetSelected(false);
-        QString name=obj->GetObjectCName();
-        if(name.left(5)!="临时坐标系"&&name.left(5)!="工件坐标系"){
-            eleobjlist.push_back(obj);
-        }
+        // QString name=obj->GetObjectCName();
+        // if(name.left(5)!="临时坐标系"&&name.left(5)!="工件坐标系"){
+        //     eleobjlist.push_back(obj);
+        // }
     }
 }
 
@@ -312,6 +307,7 @@ void ElementListWidget::onItemClicked()
     if(selectedItems.size()==1){
         for(int i=0;i<m_pMainWin->getObjectListMgr()->getObjectList().size();i++){
             m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(false);
+            m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
         }
     }
     for(QTreeWidgetItem*item:selectedItems){
@@ -319,11 +315,16 @@ void ElementListWidget::onItemClicked()
         int index=-1;
         //int entityindex=-1;
         for(int i=0;i<m_pMainWin->getObjectListMgr()->getObjectList().size();i++){
-            if(m_pMainWin->getObjectListMgr()->getObjectList()[i]==obj){
+            if(m_pMainWin->getObjectListMgr()->getObjectList()[i]->GetObjectAutoName()==obj->GetObjectAutoName()){
                 index=i;
+                break;
             }
         }
+        qDebug()<<index;
+        qDebug()<<m_pMainWin->getObjectListMgr()->getObjectList().size();
+        qDebug()<<m_pMainWin->getEntityListMgr()->getEntityList().size();
         m_pMainWin->getObjectListMgr()->getObjectList()[index]->SetSelected(true);
+        m_pMainWin->getEntityListMgr()->getEntityList()[index]->SetSelected(true); // 改为etitylist将元素属性设置选中
         m_pMainWin->getPWinVtkWidget()->onHighLightActor(m_pMainWin->getEntityListMgr()->getEntityList()[index]); // 高亮列表选中的元素对应的actor
         m_pMainWin->getPWinDataWidget()->getobjindex(index);
         m_pMainWin->getPWinDataWidget()->updateinfo();
@@ -393,24 +394,25 @@ void ElementListWidget::BtnClicked()
         CObject *obj = item->data(0, Qt::UserRole).value<CObject*>();
         int index=-1;
         for(int i=0;i<m_pMainWin->getObjectListMgr()->getObjectList().size();i++){
-            if(m_pMainWin->getObjectListMgr()->getObjectList()[i]==obj){
+            if(m_pMainWin->getObjectListMgr()->getObjectList()[i]->GetObjectAutoName()==obj->GetObjectAutoName()){
                 index=i;
             }
         }
         CAngle*angle;
         CDistance* dis;
         if(obj->GetUniqueType()==enAngle){
-            angle = (CAngle*)m_pMainWin->getEntityListMgr()->getEntityList()[index];
+            angle = (CAngle*)m_pMainWin->getObjectListMgr()->getObjectList()[index];
             angle->setUptolerance(uper);
             angle->setUndertolerance(downer);
             angle->judge();
         }else{
-            dis = dynamic_cast<CDistance*>(m_pMainWin->getEntityListMgr()->getEntityList()[index]);
+            dis = dynamic_cast<CDistance*>(m_pMainWin->getObjectListMgr()->getObjectList()[index]);
             dis->setUptolerance(uper);
             dis->setUndertolerance(downer);
             dis->judge();
         }
     }
+    m_pMainWin->NotifySubscribe();
     onItemClicked();
     QMessageBox::information(this,"ok","公差设置成功");
     QMessageBox* infoBox = qobject_cast<QMessageBox*>(sender()); // 尝试获取发送者作为信息框（可选，用于直接关闭它，但通常不需要）
@@ -626,9 +628,6 @@ void ElementListWidget::startprocess()
         m_pMainWin->getPWinVtkPresetWidget()->setWidget("实测点云为空无法进行测量");
     }else{
         loadModelFile();
-        // QTimer::singleShot(2000, []() {
-        //     qDebug() << "2秒后执行的操作";
-        // });
         CompareCloud();
         updateDistance();
         m_pMainWin->NotifySubscribe();
@@ -643,9 +642,6 @@ void ElementListWidget::onAddElement(pcl::PointCloud<pcl::PointXYZRGB>::Ptr coul
         if(isProcessing==false){
             isProcessing=true;
             loadModelFile();
-            QTimer::singleShot(2000, []() {
-                qDebug() << "2秒后执行的操作";
-            });
             CompareCloud();
             updateDistance();
             m_pMainWin->NotifySubscribe();
@@ -785,12 +781,26 @@ void ElementListWidget::updateDistance()
         m_pMainWin->getPWinToolWidget()->onSaveExcel();
         m_pMainWin->getPWinToolWidget()->onSavePdf();
         m_pMainWin->getPWinToolWidget()->setauto(false);
+
+        //除了未测量的实测点云，其余全部删除
+        int t=0;
         for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
-            m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
+            if(m_pMainWin->getEntityListMgr()->getEntityList()[i]->GetUniqueType()==enPointCloud){
+                CPointCloud*cloud = (CPointCloud*)m_pMainWin->getEntityListMgr()->getEntityList()[i];
+                if(cloud->isOver == false&&cloud->isMeasureCloud){
+                    m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
+                    m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(false);
+                }else{
+                    m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
+                    m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(true);
+                }
+                continue;
+            }
+            m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
+            m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(true);
+            t++;
         }
-        for(int i=modelIndex;i<modelIndex+qinsSize;i++){
-            m_pMainWin->getEntityListMgr()->getEntityList()[modelIndex]->SetSelected(true);
-        }
+        qDebug()<<"删除数量:"<<t;
         onDeleteEllipse();
         if(pointCouldlists.size()>0)
         {
@@ -830,7 +840,7 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
             delete timer;
             timer=nullptr;
 
-            // 清理旧线程
+            // //清理旧线程
             // if (workerThread) {
             //     workerThread->quit();
             //     workerThread->wait();
@@ -852,7 +862,7 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
             // worker = new Worker();
             // connect(worker, &Worker::requestSaveOperation, this, [this](int type) {
             //     switch(type) {
-            //     case 0: m_pMainWin->getPWinToolWidget()->setauto(true);m_pMainWin->getPWinToolWidget()->onSaveTxt(); break;
+            //     case 0: m_pMainWin->getPWinToolWidget()->setauto(true);break;//m_pMainWin->getPWinToolWidget()->onSaveTxt();
             //     case 1: m_pMainWin->getPWinToolWidget()->onSaveWord(); break;
             //     case 2: m_pMainWin->getPWinToolWidget()->onSaveExcel(); break;
             //     case 3: m_pMainWin->getPWinToolWidget()->onSavePdf();m_pMainWin->getPWinToolWidget()->setauto(false); break;
@@ -882,25 +892,27 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
         }
         //删除自动化打开的模型文件
         for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
-            m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
+            if(m_pMainWin->getEntityListMgr()->getEntityList()[i]->GetUniqueType()==enPointCloud){
+                CPointCloud*cloud = (CPointCloud*)m_pMainWin->getEntityListMgr()->getEntityList()[i];
+                if(cloud->isOver == false&&cloud->isMeasureCloud){
+                    m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
+                    m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(false);
+                }else{
+                    m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
+                    m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(true);
+                }
+                continue;
+            }
+            m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
+            m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(true);
         }
-        for(int i=modelIndex;i<modelIndex+qinsSize;i++){
-            m_pMainWin->getEntityListMgr()->getEntityList()[modelIndex]->SetSelected(true);
-        }
-        qDebug()<<"modelIndex"<<modelIndex;
-        qDebug()<<"qinsSize"<<qinsSize;
+        qDebug() << "准备清空列表";
         onDeleteEllipse();
         if(!pointCouldlists.empty()){
             loadModelFile();
-
             QTimer::singleShot(2000, []() {
                 qDebug() << "2秒后执行的操作";
             });
-            // QScopedPointer<QProcess> process(new QProcess);  // 自动释放
-            // process->start("./compare_cloud_proc");
-            // if (!process->waitForFinished(10000)) {
-            //     qDebug() << "子进程崩溃或超时";
-            // }
             CompareCloud();
             updateDistance();
         }else{
@@ -961,14 +973,7 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
             }
         }else if(obj->GetUniqueType()==enPlane){//面的情况分三种
             qDebug()<<obj->parent.size();
-            QVector<CObject*>planelist;
-            for(CObject*obj1:m_pMainWin->getObjectListMgr()->getObjectList()){
-                for(CObject* obj2:obj->parent){
-                    if(obj2->GetObjectCName()==obj1->GetObjectCName()){
-                        planelist.append(obj1);
-                    }
-                }
-            }
+            QVector<CObject*>planelist = obj->parent;
             qDebug()<<planelist.size();
             CPlane*plane=static_cast<CPlane*>(obj);
             if(planelist.size()==3){//面由三个点构造

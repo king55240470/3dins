@@ -53,10 +53,7 @@ public:
     void onDeleteEllipse();
     int getNextId();
     void onCustomContextMenuRequested(const QPoint &pos);
-    void deal_actionNew_triggered();
-    void judgetype(CEntity*);
     void removeall();
-    void updateInsertIndicatorPosition();
     void upadteelementlist();
     QList<QTreeWidgetItem*> getSelectedItems();
     QVector<CObject*> getEleobjlist();
