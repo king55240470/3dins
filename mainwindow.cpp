@@ -719,16 +719,6 @@ void MainWindow::openFile(){
             file.close();
         }
     }
-
-    // if (filePath.endsWith("stp")) {
-    //     QFileInfo fileInfo(filePath);
-    //     QString fileName = fileInfo.fileName();
-    //     pWinFileManagerWidget->openModelFile(fileName,filePath);
-    // }else if(filePath.endsWith("stl")||filePath.endsWith("pcd")||filePath.endsWith("ply")){
-    //     QFileInfo fileInfo(filePath);
-    //     QString fileName = fileInfo.fileName();
-    //     pWinFileManagerWidget->openMeasuredFile(fileName,filePath);
-    //     }
 }
 
 //若读取文件，点云存储在“D:\cloud”

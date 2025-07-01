@@ -1255,7 +1255,7 @@ void ElementListWidget::loadModelFile()
     m_pMainWin->peopleOpenfile = false;
     QString s = filetypelists.dequeue();
     qDebug()<<s;
-    //m_pMainWin->filePathChange = m_pMainWin->modelPath+"/model"+s+"/"+s+"stand.ply";
+    //m_pMainWin->filePathChange = m_pMainWin->modelPath+"/model"+s+"/"+s+"stand.ply";、
     m_pMainWin->filePathChange = m_pMainWin->modelPath+"/model"+s+"/"+s+"stand.qins";
     m_pMainWin->openFile();
     m_pMainWin->peopleOpenfile = true;
