@@ -472,7 +472,7 @@ void MainWindow::EnterInterface()
     });
 
     server.route("/process", QHttpServerRequest::Method::Get, [this](
-                                                                const QHttpServerRequest &request) {
+                                                                  const QHttpServerRequest &request) {
 
         // 触发核心功能
         QString s = getIsProcess();
@@ -485,7 +485,7 @@ void MainWindow::EnterInterface()
     });
 
     server.route("/open", QHttpServerRequest::Method::Get, [this](
-                                                                  const QHttpServerRequest &request) {
+                                                               const QHttpServerRequest &request) {
 
         // 触发核心功能
         openbuild();
@@ -498,7 +498,7 @@ void MainWindow::EnterInterface()
     });
 
     server.route("/comparsion", QHttpServerRequest::Method::Get, [this](
-                                                                const QHttpServerRequest &request) {
+                                                                     const QHttpServerRequest &request) {
 
         // 触发核心功能
         getisComparsionCloud();
@@ -1537,33 +1537,36 @@ void MainWindow::filechange()
 void MainWindow::onFileChanged(const QString &path)
 {
     qDebug() << "文件发生变化：" << path;
+
     // 获取目录中的所有文件
     QDir dir(path);
     QStringList currentFiles = dir.entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot);
     qDebug()<<currentFiles;
     qDebug()<<currentFiles.size();
+
     // 检查新增的文件
-    foreach (const QString &file, currentFiles) {
-        if (!existingFiles.contains(file)) {
+    for (const QString &file : currentFiles) {
+        // 跳过已处理或正在处理的文件
+        if (!existingFiles.contains(file) /*!pendingFiles.contains(file)*/) {
             //正则表达式，格式如2025-05-20#A#001#001
             if(file.contains("single")){
-                return;
+                continue;
             }
             QString fileCould = path + "/" + file;
-            QTimer::singleShot(500, this, [this, fileCould, file]() {
-                QFileInfo fi(fileCould);
-                if(fi.size() > 0) {  // 确保文件有内容
-                    peopleOpenfile = false;
-                    filetype = QRegularExpression("^\\d{8}#([A-Z])#\\d{3}#\\d{3}(?:_fused)?\\.ply$").match(file).captured(1);
-                    qDebug()<<"文件类型为："<<filetype;
-                    filePathChange = fileCould;
-                    openFile();
-                    existingFiles.append(file);
-                    peopleOpenfile = true;
-                }
-            });
+
+            QFileInfo fi(fileCould);
+            if(fi.size() > 0) {  // 确保文件有内容
+                peopleOpenfile = false;
+                filetype = QRegularExpression("^\\d{8}#([A-Z])#\\d{3}#\\d{3}(?:_fused)?\\.ply$").match(file).captured(1);
+                qDebug()<<"文件类型为："<<filetype;
+                filePathChange = fileCould;
+                openFile();
+                existingFiles.append(file);
+                peopleOpenfile = true;
+            }
         }
     }
+
 }
 
 void MainWindow::processNextFile()
