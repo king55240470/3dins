@@ -653,6 +653,7 @@ void MainWindow::openFile(){
             //在measuredFileMap中添加新文件，并分配新的cloud
             getpWinFileMgr()->getMeasuredFileMap().insert(filePath, true);
             auto cloud = getPointCloudListMgr()->CreateCloudFromFile(filePath);
+            qDebug()<<"点云的点数"<<cloud->getPointCloudSize();
             cloud->isMeasureCloud=true;
             cloud->m_strAutoName += "(实测)";
             getPWinToolWidget()->addToList(cloud);

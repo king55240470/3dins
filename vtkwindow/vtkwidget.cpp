@@ -221,6 +221,7 @@ vtkSmartPointer<vtkTextActor> &VtkWidget::getInfoText()
 
 void VtkWidget::createText(CEntity* entity)
 {
+
     QString qstr = entity->getCEntityInfo();
     QString firstLine = qstr.section('\n', 0, 0); // 提取第一行
     QString remainingText = qstr.section('\n', 1); // 去掉第一行后的文本
@@ -255,6 +256,7 @@ void VtkWidget::createText(CEntity* entity)
     double width = titleWidth > textWidth ? titleWidth:textWidth + 30;
     double height = textHeight + titleHeight + 20;
 
+
     // 计算文本框的位置
     double x = renWin->GetSize()[0] - width - increaseDis[0];
     double y = renWin->GetSize()[1] - height - increaseDis[1];
@@ -279,32 +281,25 @@ void VtkWidget::createText(CEntity* entity)
             y -= (height + 10);
         }
     }
-
     titleTextActor->SetPosition(x, y + textHeight); // 设置标题文本的位置
-
     // 创建文本框
     vtkSmartPointer<vtkActor2D> textBox = createTextBox(infoTextActor, x, y);
-
     // 创建指向线段
     vtkSmartPointer<vtkActor2D> line = createLine(entity, infoTextActor);
-
     // 创建叉号
     vtkSmartPointer<vtkActor2D> closeIcon = createCloseIcon(infoTextActor, x, y);
-
     // 存储信息
     entityToTextActors[entity] = infoTextActor;
     entityToTextBoxs[entity] = textBox;
     entityToLines[entity] = line;
     entityToTitleTextActors[entity] = titleTextActor;
     entityToIcons[entity] = iconActor;
-
     // 添加到渲染器
     renderer->AddActor(infoTextActor);
     renderer->AddActor(textBox);
     renderer->AddActor(line);
     renderer->AddActor(titleTextActor);
     renderer->AddActor(closeIcon);
-
     // 绑定鼠标事件
     renWin->GetInteractor()->AddObserver(vtkCommand::LeftButtonPressEvent, this, &VtkWidget::OnLeftButtonPress);
     renWin->GetInteractor()->AddObserver(vtkCommand::MouseMoveEvent, this, &VtkWidget::OnMouseMove);
@@ -422,13 +417,17 @@ vtkSmartPointer<vtkActor2D> VtkWidget::createLine(CEntity* entity, vtkSmartPoint
     }
     else if(entity->GetUniqueType() == enPointCloud){
         CPointCloud* cloud = static_cast<CPointCloud*>(entity);
+        if(cloud->m_pointCloud.points.size()){//空检测
         auto point = cloud->m_pointCloud.points[0];
         b = CPosition(point.x, point.y, point.z);
+        }
     }
     else if(entity->GetUniqueType() == enSurfaces){
         CSurfaces* surface = static_cast<CSurfaces*>(entity);
+        if(surface->m_pointCloud.points.size()){//空检测
         auto point = surface->m_pointCloud.points[0];
         b = CPosition(point.x, point.y, point.z);
+        }
     }
     entityToEndPoints[entity] = b;
 

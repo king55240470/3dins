@@ -298,21 +298,27 @@ void ElementListWidget::upadteelementlist()
 
 void ElementListWidget::onItemClicked()
 {
+
     QList<QTreeWidgetItem*> selectedItems = getSelectedItems();
     // 用于判断是否隐藏构建的元素
     QMap<QString, bool> contentMap = m_pMainWin->getpWinFileMgr()->getContentItemMap();
     QMap<QString, bool> identifyItemmap = m_pMainWin->getpWinFileMgr()->getIdentifyItemMap();
 
     m_pMainWin->getPWinVtkWidget()->getInteractorStyle()->CancelHighlightActors();
+
     if(selectedItems.size()==1){
         for(int i=0;i<m_pMainWin->getObjectListMgr()->getObjectList().size();i++){
             m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(false);
+        }
+        for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
             m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
         }
     }
+
     for(QTreeWidgetItem*item:selectedItems){
         CObject *obj = item->data(0, Qt::UserRole).value<CObject*>();
-        int index=-1;
+        int index=-1;//_object
+        int index_ent=-1;//_entity
         //int entityindex=-1;
         for(int i=0;i<m_pMainWin->getObjectListMgr()->getObjectList().size();i++){
             if(m_pMainWin->getObjectListMgr()->getObjectList()[i]->GetObjectAutoName()==obj->GetObjectAutoName()){
@@ -320,15 +326,25 @@ void ElementListWidget::onItemClicked()
                 break;
             }
         }
+        for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
+            if(m_pMainWin->getEntityListMgr()->getEntityList()[i]->GetObjectAutoName()==obj->GetObjectAutoName()){
+                index_ent=i;
+                break;
+            }
+        }
         qDebug()<<index;
         qDebug()<<m_pMainWin->getObjectListMgr()->getObjectList().size();
         qDebug()<<m_pMainWin->getEntityListMgr()->getEntityList().size();
         m_pMainWin->getObjectListMgr()->getObjectList()[index]->SetSelected(true);
-        m_pMainWin->getEntityListMgr()->getEntityList()[index]->SetSelected(true); // 改为etitylist将元素属性设置选中
-        m_pMainWin->getPWinVtkWidget()->onHighLightActor(m_pMainWin->getEntityListMgr()->getEntityList()[index]); // 高亮列表选中的元素对应的actor
+        if(index_ent>=0&&index_ent<m_pMainWin->getEntityListMgr()->getEntityList().size()){
+
+            m_pMainWin->getEntityListMgr()->getEntityList()[index_ent]->SetSelected(true); // 改为etitylist将元素属性设置选中
+            m_pMainWin->getPWinVtkWidget()->onHighLightActor(m_pMainWin->getEntityListMgr()->getEntityList()[index_ent]); // 高亮列表选中的元素对应的actor
+        }
         m_pMainWin->getPWinDataWidget()->getobjindex(index);
         m_pMainWin->getPWinDataWidget()->updateinfo();
     }
+
     m_pMainWin->getPWinToolWidget()->updateele();
     if(selectedItems.size()==1){
         for(QTreeWidgetItem*item:selectedItems){
@@ -338,6 +354,7 @@ void ElementListWidget::onItemClicked()
             ShowParent(obj1);
         }
     }
+
 }
 
 void ElementListWidget::setTolerance()
@@ -523,12 +540,17 @@ void ElementListWidget::showInfotext()
     if(selectedItems.size()==1){
         for(QTreeWidgetItem*item:selectedItems){
             CObject *obj1 = item->data(0, Qt::UserRole).value<CObject*>();
+            if(obj1->GetObjectAutoName().contains("坐标系"))continue;
+
             CEntity* ent = static_cast<CEntity*>(obj1);
+
             /*if(obj1->GetUniqueType()==enDistance){
                 CEntity* ent = static_cast<CEntity*>(obj1);
                 list.push_back(ent);
             }*/
+
             m_pMainWin->getPWinVtkWidget()->setCentity(ent);
+
         }
 
     }
@@ -1370,6 +1392,9 @@ void ElementListWidget::selectall()
         QTreeWidgetItem *item = treeWidgetNames->topLevelItem(i);
         item->setSelected(true);
         m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(true);
+
+    }
+    for(int i=0;i< m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
         m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
     }
 }

@@ -1,5 +1,5 @@
 #include "pointcloudlistmgr.h"
-
+#include<QDir>
 PointCloudListMgr::PointCloudListMgr() {}
 
 QMap<QString, CPointCloud*> &PointCloudListMgr::getFileCloudMap()
@@ -12,10 +12,13 @@ CPointCloud* PointCloudListMgr::CreateCloudFromFile(QString str)
     QString fileName = str.section('/', -1, -1);
     // 创建并加载RGB点云
     if(suffix == "pcd")
-        pcl::io::loadPCDFile(str.toStdString(), tempCloud);
+        pcl::io::loadPCDFile(QDir::toNativeSeparators(str).toStdString(), tempCloud);
     else if(suffix == "ply")
-        pcl::io::loadPLYFile(str.toStdString(), tempCloud);
-
+        pcl::io::loadPLYFile(QDir::toNativeSeparators(str).toStdString(), tempCloud);
+    qDebug()<<"路径"<<str;
+    qDebug()<<"后缀"<<suffix;
+    qDebug()<<"文件名"<<fileName;
+    qDebug()<<"临时点云点数"<<tempCloud.size();
     // 创建新的点云实体
     CPointCloud* CloudEntity=new CPointCloud();
     CloudEntity->isFileCloud = true;
