@@ -676,15 +676,16 @@ void MainWindow::openFile(){
                 return;
             }
 
-            //deserialize
-            QDataStream in(&file);
-            in.setVersion(QDataStream::Qt_6_0);
-
             // 清除文件列表
             pWinFileMgr->getMeasuredFileMap().clear();
             pWinFileMgr->getModelFileMap().clear();
             pWinFileMgr->getContentItemMap().clear();
             pWinFileMgr->getIdentifyItemMap().clear();
+            NotifySubscribe();
+
+            //deserialize
+            QDataStream in(&file);
+            in.setVersion(QDataStream::Qt_6_0);
 
             in>>*m_EntityListMgr;
             in>>*m_ObjectListMgr;
