@@ -85,6 +85,7 @@ private:
     QTimer fileProcessorTimer; // 用于依次处理文件的定时器
     bool isProcessing = false; // 标记是否正在处理文件
     QStringList existingFiles; // 用于记录已存在的文件
+    QSet<QString> pendingFiles;     // 记录正在等待处理的文件
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
