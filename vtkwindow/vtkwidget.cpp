@@ -2328,8 +2328,13 @@ void VtkWidget::onAlign()
         icpFinalCloud = denoised_scene;
     }
 
+    //过滤掉出错的点
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZRGB>);
+    std::vector<int> indices_nan;
+    pcl::removeNaNFromPointCloud(*icpFinalCloud, *cloud_filtered, indices_nan);
+
     // 加入元素列表
-    auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateAlignCloud(icpFinalCloud);
+    auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateAlignCloud(cloud_filtered);
     m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
     m_pMainWin->NotifySubscribe();
 

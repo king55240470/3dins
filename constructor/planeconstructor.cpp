@@ -87,7 +87,6 @@ CEntity* PlaneConstructor::create(QVector<CEntity*>& entitylist){
     if(points.size()==3){
         CPlane*plane=createPlane(*points[0],*points[1],*points[2]);
         if(plane==nullptr){
-
             return nullptr;
         }
         plane->Form="构造";

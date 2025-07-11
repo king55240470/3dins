@@ -768,7 +768,15 @@ void ElementListWidget::CompareCloud()
     m_pMainWin->NotifySubscribe();
     return;
 }
-
+CObject* ElementListWidget::FindObject(QString strAutoName){
+    for(auto& obj:m_pMainWin->getObjectListMgr()->getObjectList()){
+        if(obj->m_strAutoName==strAutoName){
+            return obj;
+        }
+    }
+    qDebug()<<"没有找到元素:"<<strAutoName;
+    return nullptr;
+}
 void ElementListWidget::updateDistance()
 {
     qDebug()<<"进入updateDistance";
@@ -784,8 +792,19 @@ void ElementListWidget::updateDistance()
     qDebug()<<"队列的大小"<<AlignCouldlists.size();
     if(AlignCouldlists.size()!=1){
         return;
+
     }
+    //过滤点云输入中的无效点
+    /*
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZRGB>);
+    std::vector<int> indices_nan;
+    pcl::removeNaNFromPointCloud(*AlignCouldlists.dequeue(), *cloud_filtered, indices_nan);
+
+    kdtree.setInputCloud(cloud_filtered);
+    */
+
     kdtree.setInputCloud(AlignCouldlists.dequeue());
+
     pointCouldlists.dequeue();
     disAndanglelist.clear();
     for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
@@ -909,7 +928,7 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
             //m_pMainWin->getPWinToolWidget()->onSaveTxt();
             m_pMainWin->getPWinToolWidget()->onSaveWord();
             m_pMainWin->getPWinToolWidget()->onSaveExcel();
-            m_pMainWin->getPWinToolWidget()->onSavePdf();
+           // m_pMainWin->getPWinToolWidget()->onSavePdf();
             m_pMainWin->getPWinToolWidget()->setauto(false);
         }
         //删除自动化打开的模型文件
@@ -970,6 +989,7 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
         std::vector<int> pointIdxNKNSearch(1);
         std::vector<float> pointNKNSquaredDistance(1);
         pcl::PointXYZRGB searchPoint;
+        qDebug()<<"更新"<<obj->m_strAutoName;
         if(obj->GetUniqueType()==enPoint){//点的情况一种
             CPoint*point=static_cast<CPoint*>(obj);
             searchPoint.x=point->GetPt().x;
@@ -994,6 +1014,7 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
                 qDebug()<<"更新距离断点2";
             }
         }else if(obj->GetUniqueType()==enPlane){//面的情况分三种
+
             qDebug()<<obj->parent.size();
             QVector<CObject*>planelist = obj->parent;
             qDebug()<<planelist.size();
@@ -1001,11 +1022,30 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
             if(planelist.size()==3){//面由三个点构造
                 QVector<CPosition>positionlist;
                 for(CObject*planePt:planelist){
-                    CPoint*point=static_cast<CPoint*>(planePt);
+                    qDebug()<<"点"<<planePt->m_strAutoName;
+                    if(planePt->GetUniqueType()!=enPoint)
+                        qDebug()<<"不是点类型";
+                    //这里的点是有问题的
+                    CPoint*point=static_cast<CPoint*>(FindObject(planePt->m_strAutoName));
+
                     searchPoint.x=point->GetPt().x;
                     searchPoint.y=point->GetPt().y;
                     searchPoint.z=point->GetPt().z;
+
+                    qDebug()<<point->GetPt().x;
+                    qDebug()<<point->GetPt().y;
+                    qDebug()<<point->GetPt().z;
+                    qDebug()<<"之前";
+                    //qDebug()kdtree.
+
+                    if (!pcl::isFinite(searchPoint)) {
+                        // 处理无效查询点，例如忽略该查询或者进行修正
+                        qDebug()<<("查询点坐标无效，跳过此次查询\n");
+                        positionlist.push_back(point->GetPt());
+                        continue;
+                    }
                     if (kdtree.nearestKSearch(searchPoint, 1, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
+                        qDebug()<<"中间";
                         int nearestIdx = pointIdxNKNSearch[0];
                         pcl::PointXYZRGB nearestPoint = m_pMainWin->getpWinFileMgr()->cloudptr->points[nearestIdx];
                         CPosition pt;
@@ -1015,6 +1055,7 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
                         point->SetPosition(pt);
                         positionlist.push_back(pt);
                     }
+                    qDebug()<<"之后";
                 }
                 PlaneConstructor constructor;
                 CPlane*plane1=constructor.createPlane(positionlist[0],positionlist[1],positionlist[2]);
@@ -1028,7 +1069,7 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
                 for(CObject*planePlane:planelist){
                     QVector<CPosition>positionlist;
                     for(CObject*planePt:planePlane->parent){
-                        CPoint*point=static_cast<CPoint*>(planePt);
+                        CPoint*point=static_cast<CPoint*>(FindObject(planePt->m_strAutoName));
                         searchPoint.x=point->GetPt().x;
                         searchPoint.y=point->GetPt().y;
                         searchPoint.z=point->GetPt().z;

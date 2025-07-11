@@ -810,7 +810,7 @@ void ToolWidget::connectActionWithF(){
     connect(save_actions_[save_action_name_list_.indexOf("pointcloud")],&QAction::triggered,this,&  ToolWidget::onSavePointCloud);
     //打开
     connect(save_actions_[save_action_name_list_.indexOf("excel")], &QAction::triggered, this, &ToolWidget::onOpenExcel);
-    connect(save_actions_[save_action_name_list_.indexOf("word")], &QAction::triggered, this, &ToolWidget::onSaveWord);
+    connect(save_actions_[save_action_name_list_.indexOf("word")], &QAction::triggered, this, &ToolWidget::onOpenWord);
     connect(save_actions_[save_action_name_list_.indexOf("txt")], &QAction::triggered, this, &ToolWidget::onOpenTxt);
     connect(save_actions_[save_action_name_list_.indexOf("pdf")], &QAction::triggered, this, &ToolWidget::onOpenPdf);
     connect(save_actions_[save_action_name_list_.indexOf("image")], &QAction::triggered, this, &ToolWidget::onOpenImage);
@@ -1839,7 +1839,7 @@ void   ToolWidget::onSavePdf(){
 void   ToolWidget::onSaveExcel(){
     createFolder();
     QString logInfo1="Excel开始保存";
-    m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo1);
+    //m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo1);
 
     QString path= getOutputPath("excell"+m_charBeforeDot);
     QString name="检测点信息_"+getTimeString();
@@ -1911,7 +1911,7 @@ void   ToolWidget::onSaveExcel(){
     workBook->dynamicCall("SaveAs(const QString&)", QDir::toNativeSeparators(filePath));
     workBook->dynamicCall("Close()");	//关闭工作簿
     excel.dynamicCall("Quit()");		//关闭excel
-    QString logInfo="Excel保存成功";
+    QString logInfo="保存成功";
     m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
     lastCreatedExcelFile=filePath;
     m_saveExcel=true;

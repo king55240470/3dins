@@ -48,6 +48,7 @@ class ElementListWidget : public QWidget
 {
     Q_OBJECT
 public:
+    CObject* FindObject(QString strAutoName);
     explicit ElementListWidget(QWidget *parent = nullptr);
     void CreateEllipse(CObject*);
     void onDeleteEllipse();
