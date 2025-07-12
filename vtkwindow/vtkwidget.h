@@ -286,6 +286,7 @@ private:
     vtkSmartPointer<vtkPolyData> crossPolyData;
     vtkSmartPointer<vtkPolyDataMapper2D> crossMapper;
 
+    QMap<vtkSmartPointer<vtkTextActor>,CEntity*> textActorsToEntity;
     QMap<CEntity*, vtkSmartPointer<vtkTextActor>> entityToTextActors; // 每个图形对应的文本演员
     QMap<CEntity*, vtkSmartPointer<vtkTextActor>> entityToTitleTextActors; // 每个图形对应的文本标题
     QMap<CEntity*, vtkSmartPointer<vtkActor2D>> entityToTextBoxs; // 每个图形对应的文本框

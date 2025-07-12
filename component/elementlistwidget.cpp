@@ -537,7 +537,8 @@ void ElementListWidget::showInfotext()
 {
     QList<QTreeWidgetItem*> selectedItems = getSelectedItems();
     QVector<CEntity*>list;
-    if(selectedItems.size()==1){
+
+    if(selectedItems.size()){
         for(QTreeWidgetItem*item:selectedItems){
             CObject *obj1 = item->data(0, Qt::UserRole).value<CObject*>();
             if(obj1->GetObjectAutoName().contains("坐标系"))continue;

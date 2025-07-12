@@ -291,11 +291,13 @@ void VtkWidget::createText(CEntity* entity)
     // 创建叉号
     vtkSmartPointer<vtkActor2D> closeIcon = createCloseIcon(infoTextActor, x, y);
     // 存储信息
+    textActorsToEntity[infoTextActor]=entity;
     entityToTextActors[entity] = infoTextActor;
     entityToTextBoxs[entity] = textBox;
     entityToLines[entity] = line;
     entityToTitleTextActors[entity] = titleTextActor;
     entityToIcons[entity] = iconActor;
+
     // 添加到渲染器
     renderer->AddActor(infoTextActor);
     renderer->AddActor(textBox);
@@ -518,26 +520,68 @@ void VtkWidget::Linechange()
     // }
 
     // 获取当前拖动的文本框位置
-    double* textPosition = infoTextActor->GetPosition();
+    for (auto it = entityToTextActors.begin(); it != entityToTextActors.end(); ++it){
+        double* textPosition = it.value()->GetPosition();
 
-    // 获取指向线段的终点位置（从实体到终点映射中获取）
-    endPoint = entityToEndPoints[getEntityFromTextActor(infoTextActor)];
+        // 获取指向线段的终点位置（从实体到终点映射中获取）
+        endPoint = entityToEndPoints[getEntityFromTextActor(it.value())];
+        CEntity* entity=textActorsToEntity[it.value()];
 
-    // 将终点从世界坐标转换为视口坐标
-    coordinate = vtkSmartPointer<vtkCoordinate>::New();
-    coordinate->SetValue(endPoint.x, endPoint.y, endPoint.z);
-    coordinate->SetCoordinateSystemToWorld();
-    int* viewportMidPoint = coordinate->GetComputedViewportValue(renderer);
+        // 将终点从世界坐标转换为视口坐标
+        coordinate = vtkSmartPointer<vtkCoordinate>::New();
+        coordinate->SetValue(endPoint.x, endPoint.y, endPoint.z);
+        coordinate->SetCoordinateSystemToWorld();
+        int* viewportMidPoint = coordinate->GetComputedViewportValue(renderer);
 
-    // 更新指向线段的起点和终点
-    points = vtkSmartPointer<vtkPoints>::New();
-    points->InsertNextPoint(textPosition[0], textPosition[1], 0.0); // 起点为文本框位置
-    points->InsertNextPoint(viewportMidPoint[0], viewportMidPoint[1], viewportMidPoint[2]); // 终点为视口坐标
+        // 更新指向线段的起点和终点
+        points = vtkSmartPointer<vtkPoints>::New();
+        points->InsertNextPoint(textPosition[0], textPosition[1], 0.0); // 起点为文本框位置
+        points->InsertNextPoint(viewportMidPoint[0], viewportMidPoint[1], viewportMidPoint[2]); // 终点为视口坐标
 
-    // 更新线段的映射数据
-    linePolyData->SetPoints(points);
-    lineMapper->SetInputData(linePolyData);
-    lineActor->SetMapper(lineMapper);
+        // 更新线段的映射数据
+
+        lines = vtkSmartPointer<vtkCellArray>::New();
+        lines->InsertNextCell(2);
+        lines->InsertCellPoint(0);
+        lines->InsertCellPoint(1);
+
+
+        linePolyData=vtkSmartPointer<vtkPolyData>::New();
+        linePolyData->SetPoints(points);
+        linePolyData->SetLines(lines);
+
+        lineMapper = vtkSmartPointer<vtkPolyDataMapper2D>::New();
+        lineMapper->SetInputData(linePolyData);
+
+        lineActor=entityToLines[it.key()];
+        lineActor->SetMapper(lineMapper);
+
+        auto line=entityToLines[entity];
+
+        renderer->AddActor(line);
+
+    }
+    // double* textPosition = infoTextActor->GetPosition();
+
+    // // 获取指向线段的终点位置（从实体到终点映射中获取）
+    // endPoint = entityToEndPoints[getEntityFromTextActor(infoTextActor)];
+
+    // // 将终点从世界坐标转换为视口坐标
+    // coordinate = vtkSmartPointer<vtkCoordinate>::New();
+    // coordinate->SetValue(endPoint.x, endPoint.y, endPoint.z);
+    // coordinate->SetCoordinateSystemToWorld();
+    // int* viewportMidPoint = coordinate->GetComputedViewportValue(renderer);
+
+    // // 更新指向线段的起点和终点
+    // points = vtkSmartPointer<vtkPoints>::New();
+    // points->InsertNextPoint(textPosition[0], textPosition[1], 0.0); // 起点为文本框位置
+    // points->InsertNextPoint(viewportMidPoint[0], viewportMidPoint[1], viewportMidPoint[2]); // 终点为视口坐标
+
+    // // 更新线段的映射数据
+    // linePolyData->SetPoints(points);
+    // lineMapper->SetInputData(linePolyData);
+    // lineActor->SetMapper(lineMapper);
+
 }
 
 void VtkWidget::updateEndPoint(CEntity *entity)
