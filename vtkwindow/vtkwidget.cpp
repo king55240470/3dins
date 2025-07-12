@@ -29,6 +29,7 @@
 #include <pcl/correspondence.h>
 #include <pcl/recognition/cg/hough_3d.h>
 #include <pcl/filters/extract_indices.h>
+#include <QElapsedTimer>//计时
 
 
 VtkWidget::VtkWidget(QWidget *parent)
@@ -99,9 +100,9 @@ void VtkWidget::setUpVtk(QVBoxLayout *layout){
 
 void VtkWidget::OnMouseMove()
 {
-    if (!isDragging && !isMiddleDragging) {
-        return; // 如果没有拖动且没有按住鼠标中键，则直接返回
-    }
+    // if (!isDragging && !isMiddleDragging) {
+    //     return; // 如果没有拖动且没有按住鼠标中键，则直接返回
+    // }
 
     int clickPos[2];
     renWin->GetInteractor()->GetEventPosition(clickPos);
@@ -131,6 +132,7 @@ void VtkWidget::OnMouseMove()
     static double lastRenderTime = vtkTimerLog::GetUniversalTime();
     double currentTime = vtkTimerLog::GetUniversalTime();
     if (currentTime - lastRenderTime > 0.02) {
+        Linechange();
         getRenderWindow()->Render();
         lastRenderTime = currentTime;
     }
@@ -508,9 +510,12 @@ vtkSmartPointer<vtkActor2D> VtkWidget::createCloseIcon(vtkSmartPointer<vtkTextAc
 
 void VtkWidget::Linechange()
 {
-    if (!isDragging || !infoTextActor || !lineActor) {
+    if ( !infoTextActor || !lineActor) {
         return; // 如果没有拖动或相关对象为空，则直接返回
     }
+    // if (!isDragging || !infoTextActor || !lineActor) {
+    //     return; // 如果没有拖动或相关对象为空，则直接返回
+    // }
 
     // 获取当前拖动的文本框位置
     double* textPosition = infoTextActor->GetPosition();
