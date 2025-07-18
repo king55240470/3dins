@@ -144,7 +144,10 @@ public:
     QAction * getAction_Checked(); //通过QAction->getObjectName得到名字
     //识别点是否选中
     bool IsFindPoint_Checked();
-
+    //判断是否为图片
+    bool isImageFile(const QString &fileName);
+   //重命名某一路径下的所有图片
+    void  renameAllImages(const QString& path);
 
 public slots:
               //构造

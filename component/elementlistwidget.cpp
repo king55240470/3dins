@@ -336,6 +336,7 @@ void ElementListWidget::onItemClicked()
         qDebug()<<m_pMainWin->getObjectListMgr()->getObjectList().size();
         qDebug()<<m_pMainWin->getEntityListMgr()->getEntityList().size();
         m_pMainWin->getObjectListMgr()->getObjectList()[index]->SetSelected(true);
+        m_pMainWin->getEntityListMgr()->getEntityList()[index_ent]->SetSelected(true);
         if(index_ent>=0&&index_ent<m_pMainWin->getEntityListMgr()->getEntityList().size()){
 
             m_pMainWin->getEntityListMgr()->getEntityList()[index_ent]->SetSelected(true); // 改为etitylist将元素属性设置选中
@@ -583,6 +584,12 @@ void ElementListWidget::setupStateMachine()
     pausedState = new QState();
     continueState = new QState();
 
+    stoppedState->setObjectName("停止");
+    runningState->setObjectName("运行");
+    pausedState->setObjectName("暂时停止");
+    continueState->setObjectName("下一步");
+
+
     // 配置状态间的切换
     stoppedState->addTransition(startButton, &QPushButton::clicked, runningState);
     runningState->addTransition(pauseButton, &QPushButton::clicked, pausedState);
@@ -650,6 +657,8 @@ void ElementListWidget::startprocess()
     if(pointCouldlists.empty()){
         m_pMainWin->getPWinVtkPresetWidget()->setWidget("实测点云为空无法进行测量");
     }else{
+        //手动打开的实测模型，无法打开其标准模型
+        //关键在于打开的文件没有给他赋予type值 ???
         loadModelFile();
         CompareCloud();
         updateDistance();
@@ -659,15 +668,27 @@ void ElementListWidget::startprocess()
 
 void ElementListWidget::onAddElement(pcl::PointCloud<pcl::PointXYZRGB>::Ptr could,QString type)
 {
+
+    QString currentStateName;
+    foreach (QAbstractState *state, stateMachine->configuration()) {
+        currentStateName = state->objectName();
+        qDebug() << "当前状态名称:" << currentStateName;
+    }
+
+    qDebug()<<"当前点云的数量:"<<pointCouldlists.size();
+
     if (stateMachine->configuration().contains(runningState)) {
         pointCouldlists.enqueue(could);
         filetypelists.enqueue(type);
+        qDebug()<<"isProcessing值为:"<<isProcessing;
         if(isProcessing==false){
             isProcessing=true;
+            qDebug()<<"运行到loadModelFile之前";
             loadModelFile();
             CompareCloud();
             updateDistance();
             m_pMainWin->NotifySubscribe();
+
         }
     }else{
         pointCouldlists.enqueue(could);
@@ -692,6 +713,7 @@ void ElementListWidget::CompareCloud()
         }
     }
     if(foundmodel==false){
+        qDebug()<<"没有标准点云，对比失败";
         return;
     }
     bool isHaveShape=false;
@@ -1315,12 +1337,15 @@ void ElementListWidget::loadModelFile()
 {
     int size = m_pMainWin->getEntityListMgr()->getEntityList().size();
     setModelIndex(size);
+    qDebug()<<"更改isProcessing";
     isProcessing=true;
     m_pMainWin->peopleOpenfile = false;
     QString s = filetypelists.dequeue();
     qDebug()<<s;
-    //m_pMainWin->filePathChange = m_pMainWin->modelPath+"/model"+s+"/"+s+"stand.ply";、
+    //m_pMainWin->filePathChange = m_pMainWin->modelPath+"/model"+s+"/"+s+"stand.ply";
+
     m_pMainWin->filePathChange = m_pMainWin->modelPath+"/model"+s+"/"+s+"stand.qins";
+    qDebug()<<"要打开的模型文件路径"<<m_pMainWin->filePathChange;
     m_pMainWin->openFile();
     m_pMainWin->peopleOpenfile = true;
     qinsSize = m_pMainWin->getEntityListMgr()->getEntityList().size()-size;
