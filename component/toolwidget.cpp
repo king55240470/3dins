@@ -801,13 +801,7 @@ void ToolWidget::connectActionWithF(){
     connect(construct_actions_[construct_action_name_list_.indexOf("构造点云")],&QAction::triggered,this,&  ToolWidget::onConstructPointCloud);
     connect(construct_actions_[construct_action_name_list_.indexOf("构造角度")],&QAction::triggered,this,&  ToolWidget::onConstructAngle);
 
-    // //保存
-    //connect(save_actions_[save_action_name_list_.indexOf("excel")],&QAction::triggered,this,&  ToolWidget::onSaveExcel);
-    //connect(save_actions_[save_action_name_list_.indexOf("word")],&QAction::triggered,this,&  ToolWidget::onSaveWord);
-    // connect(save_actions_[save_action_name_list_.indexOf("txt")],&QAction::triggered,this,&  ToolWidget::onSaveTxt);
-    // connect(save_actions_[save_action_name_list_.indexOf("pdf")],&QAction::triggered,this,&  ToolWidget::);
-    // connect(save_actions_[save_action_name_list_.indexOf("image")],&QAction::triggered,this,&  ToolWidget::onSaveImage);
-    connect(save_actions_[save_action_name_list_.indexOf("pointcloud")],&QAction::triggered,this,&  ToolWidget::onSavePointCloud);
+      connect(save_actions_[save_action_name_list_.indexOf("pointcloud")],&QAction::triggered,this,&  ToolWidget::onSavePointCloud);
     //打开
     connect(save_actions_[save_action_name_list_.indexOf("excel")], &QAction::triggered, this, &ToolWidget::onOpenExcel);
     connect(save_actions_[save_action_name_list_.indexOf("word")], &QAction::triggered, this, &ToolWidget::onOpenWord);
@@ -1842,7 +1836,7 @@ void   ToolWidget::onSaveExcel(){
     //m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo1);
 
     QString path= getOutputPath("excell"+m_charBeforeDot);
-    QString name="检测点信息_"+getTimeString();
+    QString name="excell"+m_charBeforeDot;
 
     QString filePath=path+"/"+name+".xlsx";
     // QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "", QString("Excel(*.xlsx *.xls)"));
@@ -2468,8 +2462,8 @@ void ToolWidget::createDistanceMeasurementReport()
         QString path= getOutputPath("叶片检测报告");
         QString name=getTimeString();
 
-        QString filePath=path+"/"+name+".docx";
-        QString defaultName = "分析报告_" + getTimeString() + ".docx";
+
+        QString defaultName = "检测报告.docx";
         QString fileName =path+"/" +defaultName;
 
         if (!fileName.isEmpty()) {
@@ -2500,7 +2494,7 @@ void ToolWidget::createDistanceMeasurementReport()
 
     {
         QString path= getOutputPath("excell1");
-        QString name="误差信息_"+getTimeString();
+        QString name="excell1";
 
         QString filePath=path+"/"+name+".xlsx";
         // QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save As"), "", QString("Excel(*.xlsx *.xls)"));
@@ -2597,35 +2591,43 @@ void ToolWidget::createDistanceMeasurementReport()
         excel.dynamicCall("Quit()");		//关闭excel
     }
 
-
+    renameAllImages( getOutputPath("image"));
     // 清理资源
     if (document) delete document;
     if (word) delete word;
 }
 
 void ToolWidget::onSavePointCloud(){
-    /*
+
     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
 
     QVector<CPointCloud*> compare_clouds;
     for(int i=0;i<entityList.size();i++){
         CEntity* entity=entityList[i];
-        if(entity->getEntityType()==enPointCloud){
-            CPointCloud* point_cloud=(CPointCloud*)entity;
-
-            if(point_cloud->m_strAutoName.contains("对比")||
-                point_cloud->m_strCName.contains("对比")){
-                compare_clouds.push_back(point_cloud);
-            }
-        }
+        qDebug()<<"检索"<<entity->m_strAutoName;
+        //输出选中的点云
+       // if(!entity->IsSelected())continue;
+        // if(entity->m_strAutoName.contains("对齐")){
+        //     CPointCloud* point_cloud=(CPointCloud*)entity;
+        //     compare_clouds.push_back(point_cloud);
+        // }
+        // if(entity->getEntityType()==enPointCloud){
+        //     qDebug()<<"发现了点云"<<entity->m_strAutoName;
+        //     CPointCloud* point_cloud=(CPointCloud*)entity;
+        //     if(point_cloud->isAlignCloud)
+        //      compare_clouds.push_back(point_cloud);
+        // }
     }
 
-
+    createFolder(getOutputPath("ply"));
+    createFolder(getOutputPath("pcd"));
     for(int i=0;i<compare_clouds.size();i++){
         pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud=compare_clouds[i]->m_pointCloud.makeShared();
         //+"("+QString::number(i+1)+")"
         //+"("+QString::number(i+1)+")"
         QString name=getTimeString();
+
+
         QString filePathPly=getOutputPath("ply")+"/"+compare_clouds[i]->m_strAutoName+".ply";
 
         QString filePathPcd=getOutputPath("pcd")+"/"+compare_clouds[i]->m_strAutoName+".pcd";
@@ -2637,7 +2639,7 @@ void ToolWidget::onSavePointCloud(){
     }
     QString logInfo="对比点云保存成功";
     m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
-*/
+
 }
 
 static void WrongWidget(QString message,QString moreMessage="空");
@@ -3869,68 +3871,67 @@ QStringList* ToolWidget::getViewAngleIconPath(){
 }
 
 void ToolWidget::SaveImage(CEntity* entity,Size_MeasurementData* pointCloudData){
-    qDebug() << "【步骤1】获取实体列表管理器";
+
     auto* entityListMgr = m_pMainWin->getEntityListMgr();
     if (entityListMgr == nullptr) {
         qDebug() << "错误：实体列表管理器（EntityListMgr）为空，终止操作";
         return;
     }
-    qDebug() << "成功获取实体列表管理器，获取实体列表";
+
     auto& entitylist = entityListMgr->getEntityList();
     if(entitylist.size() == 0) {
         qDebug() << "警告：实体列表（entitylist）为空，终止操作";
         return;
     }
-    qDebug() << "实体列表大小：" << entitylist.size();
 
-    qDebug() << "【步骤2】获取对象列表管理器";
+
+
     auto* objectListMgr = m_pMainWin->getObjectListMgr();
     if (objectListMgr == nullptr) {
         qDebug() << "错误：对象列表管理器（ObjectListMgr）为空，终止操作";
         return;
     }
-    qDebug() << "成功获取对象列表管理器，获取对象列表";
+
     QVector<CObject*>& objlist = objectListMgr->getObjectList();
     if(objlist.size() == 0) {
         qDebug() << "警告：对象列表（objlist）为空，终止操作";
         return;
     }
-    qDebug() << "对象列表大小：" << objlist.size();
 
-    qDebug() << "【步骤3】获取 actorToEntityMap";
+
     auto* actorToEntityMap = &m_pMainWin->getactorToEntityMap();
     if (actorToEntityMap == nullptr) {
         qDebug() << "错误：actorToEntityMap 为空，终止操作";
         return;
     }
-    qDebug() << "成功获取 actorToEntityMap";
+
     auto& actorMap = *actorToEntityMap;
 
-    qDebug() << "【步骤4】获取树状部件";
+
     auto* elementListWidget = m_pMainWin->getPWinElementListWidget();
     auto* treeWidget = elementListWidget ? elementListWidget->getTreeWidgetNames() : nullptr;
     if (treeWidget == nullptr) {
         qDebug() << "错误：树状部件（treeWidget）为空，终止操作";
         return;
     }
-    qDebug() << "成功获取树状部件";
+
 
     std::vector<vtkActor*> actors;
 
-    qDebug() << "【步骤5】获取渲染器组件";
+
     auto* vtkWidget = m_pMainWin->getPWinVtkWidget();
     if (vtkWidget == nullptr) {
         qDebug() << "错误：vtkWidget 为空，终止操作";
         return;
     }
-    qDebug() << "成功获取 vtkWidget，获取渲染器";
+
 
 
     QMap<vtkSmartPointer<vtkActor>, CEntity*>& actorToEntity = *actorToEntityMap;
 
 
 
-    qDebug() << "【步骤7】处理树状部件选中项";
+
     QList<QTreeWidgetItem*> selectedItems = treeWidget->selectedItems();
     qDebug() << "选中项数量：" << selectedItems.size();
     for (QTreeWidgetItem* item : selectedItems) {
@@ -3942,7 +3943,7 @@ void ToolWidget::SaveImage(CEntity* entity,Size_MeasurementData* pointCloudData)
         }
     }
 
-    qDebug() << "【步骤8】对准元素（entity）";
+
     if (entity) { // 假设 entity 是外部传入或类成员
         vtkWidget->FocusOnActor(entity);
         qDebug() << "成功对准元素：" << entity->m_strAutoName;
@@ -3950,7 +3951,7 @@ void ToolWidget::SaveImage(CEntity* entity,Size_MeasurementData* pointCloudData)
         qDebug() << "错误：元素（entity）为空，无法对准";
     }
 
-    qDebug() << "【步骤9】显示文本框";
+
     for(int i = 0; i < objlist.size(); i++){
         auto* obj = objlist[i];
         if (!obj || !entity) {
@@ -3978,7 +3979,7 @@ void ToolWidget::SaveImage(CEntity* entity,Size_MeasurementData* pointCloudData)
         }
     }
 
-    qDebug() << "【步骤11】隐藏/显示元素";
+
     for(int i = 0; i < entitylist.size(); i++){
         auto currentEntity = entitylist[i];
         if (!currentEntity || !entity) {
@@ -3989,22 +3990,7 @@ void ToolWidget::SaveImage(CEntity* entity,Size_MeasurementData* pointCloudData)
         }
 
         bool Head = true;
-        //处理父元素
 
-        // for(auto* parent : entity->parent){ // 需确保 parent 容器不为空
-        //     if (!parent) {
-        //         continue;
-        //     }
-        //     bool parentMatch = (currentEntity->m_strAutoName == parent->m_strAutoName ||
-        //                         currentEntity->m_strCName == parent->m_strAutoName ||
-        //                         parent->m_strAutoName.contains(currentEntity->m_strAutoName) ||
-        //                         parent->m_strAutoName.contains(currentEntity->m_strCName));
-        //     if (parentMatch) {
-        //         Head = false;
-        //         break;
-        //     }
-        // }
-        //处理点云
 
         if(currentEntity->GetUniqueType() == enPointCloud){
             auto pointCloud = dynamic_cast<CPointCloud*>(currentEntity);
@@ -4017,7 +4003,6 @@ void ToolWidget::SaveImage(CEntity* entity,Size_MeasurementData* pointCloudData)
             }
 
         }
-
 
         if(Head){
             auto actor = actorToEntity.key(currentEntity, nullptr);
@@ -4041,7 +4026,7 @@ void ToolWidget::SaveImage(CEntity* entity,Size_MeasurementData* pointCloudData)
         }
     }
 
-    qDebug() << "【步骤12】高亮当前元素";
+
     if (entity) {
 
         if (vtkWidget) {
@@ -4055,7 +4040,7 @@ void ToolWidget::SaveImage(CEntity* entity,Size_MeasurementData* pointCloudData)
         }
     }
 
-    qDebug() << "【步骤13】生成图片路径";
+
     QString path = getOutputPath("image");
     if(entity->m_strAutoName.contains("对比"))
     {
@@ -4063,7 +4048,7 @@ void ToolWidget::SaveImage(CEntity* entity,Size_MeasurementData* pointCloudData)
     }
 
 
-    qDebug() << "输出路径：" << path;
+
     QString name = entity ? entity->m_strAutoName + getTimeString() : "default_entity" + getTimeString();
     QString fileName = path + "/" + name + ".png";
     qDebug() << "生成文件名：" << fileName;
@@ -4085,13 +4070,13 @@ void ToolWidget::SaveImage(CEntity* entity,Size_MeasurementData* pointCloudData)
         QString fileName = path + "/" + name;
         vtkSmartPointer<vtkRenderWindow> renderWindow=m_pMainWin->getPWinVtkWidget()->getRenderWindow();
         m_pMainWin->onRightViewClicked();
-        //renderWindow->Render();
+
         SaveImage(fileName+"_Right"+".png","png");
         m_pMainWin->onTopViewClicked();
-        //renderWindow->Render();
+
         SaveImage(fileName+"_Top"+".png","png");
         m_pMainWin->onFrontViewClicked();
-        //renderWindow->Render();
+
         SaveImage(fileName+"_Front"+".png","png");
         fileName=fileName+"_Front"+".png";
         m_checkpoint_imagePath[entity] = fileName;
@@ -4250,4 +4235,66 @@ void ToolWidget::deleteImageFile(const QString &filePath)
     } else {
         qDebug() << "文件不存在:" << filePath;
     }
+}
+
+bool ToolWidget::isImageFile(const QString &fileName) {
+    QString ext = fileName.toLower();
+    return ext.endsWith(".jpg") || ext.endsWith(".jpeg") || ext.endsWith(".png") ||
+           ext.endsWith(".bmp") || ext.endsWith(".gif") || ext.endsWith(".webp");
+}
+
+void  ToolWidget::renameAllImages(const QString& path) {
+
+    // 指定要处理的目录路径
+    QString directoryPath = path; // 默认当前目录
+
+
+    QDir directory(directoryPath);
+    if (!directory.exists()) {
+        qDebug() << "错误：目录不存在:" << directoryPath;
+        return ;
+    }
+
+    // 获取目录下的所有文件和文件夹
+    QStringList nameFilters;
+    nameFilters << "*.*";
+    QFileInfoList fileInfoList = directory.entryInfoList(
+        nameFilters,
+        QDir::Files | QDir::NoDotAndDotDot,
+        QDir::Name // 按名称排序，保证顺序
+        );
+
+    // 筛选出图片文件
+    QList<QFileInfo> imageFiles;
+    for (const auto &fileInfo : fileInfoList) {
+        if (isImageFile(fileInfo.fileName())) {
+            imageFiles.append(fileInfo);
+        }
+    }
+
+    if (imageFiles.isEmpty()) {
+        qDebug() << "未在目录中找到图片文件:" << directoryPath;
+        return ;
+    }
+
+    qDebug() << "找到" << imageFiles.size() << "个图片文件";
+
+    // 按原始顺序重命名图片
+    int counter = 1;
+    for (const auto &imageFile : imageFiles) {
+        QString originalFilePath = imageFile.absoluteFilePath();
+        QString fileExtension = imageFile.suffix();
+        QString newFileName = QString("%1.%2").arg(counter++).arg(fileExtension);
+        QString newFilePath = directory.absoluteFilePath(newFileName);
+
+        // 执行重命名
+        if (QFile::rename(originalFilePath, newFilePath)) {
+            qDebug() << "已重命名:" << originalFilePath << "→" << newFilePath;
+        } else {
+            qDebug() << "重命名失败:" << originalFilePath;
+        }
+    }
+
+    qDebug() << "图片重命名完成!";
+    return ;
 }

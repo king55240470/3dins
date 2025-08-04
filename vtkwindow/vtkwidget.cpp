@@ -2391,6 +2391,18 @@ void VtkWidget::onAlign()
     timer->stop();
     delete progressBar;
     delete timer;
+
+    // 保存点云到PLY文件
+    std::string filePath = "Z:/alignCloud.ply";
+    if (pcl::io::savePLYFileASCII(filePath, *cloud_filtered) == 0)
+    {
+        std::cout << "点云已成功保存到: " << filePath << std::endl;
+    }
+    else
+    {
+        std::cerr << "保存点云时出错！" << std::endl;
+        return;
+    }
 }
 
 // 区域覆盖判断

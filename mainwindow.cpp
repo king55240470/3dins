@@ -657,6 +657,24 @@ void MainWindow::openFile(){
             cloud->isMeasureCloud=true;
             cloud->m_strAutoName += "(实测)";
             getPWinToolWidget()->addToList(cloud);
+            QString filetype_peopleOpen;
+            //得到filetype
+
+            CPointCloud * pointCloud=cloud;
+            if(peopleOpenfile){
+                QString str=pointCloud->m_strAutoName;
+                filetype_peopleOpen="A";
+                int markerPos = str.indexOf("#");
+                if (markerPos != -1 && markerPos < str.length() - 1) {
+                    QChar firstChar = str.at(markerPos + 1);
+                    qDebug() << "# 后的第一个字符是:" << firstChar;
+                    filetype_peopleOpen=firstChar;
+
+                } else {
+                    qDebug() << "字符串中不存在# 或者# 后没有字符";
+                }
+                filetype=filetype_peopleOpen;
+            }
 
             // 给拟合的临时点云指针赋值
             auto newcloud = new pcl::PointCloud<pcl::PointXYZRGB>(cloud->m_pointCloud);
