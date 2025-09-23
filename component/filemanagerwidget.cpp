@@ -374,7 +374,7 @@ void FileManagerWidget::showContextMenu(const QPoint &pos){
         connect(deleteAction,&QAction::triggered,this,&FileManagerWidget::deleteFile);
         connect(createAction,&QAction::triggered,this,&FileManagerWidget::redrawCloudEntity);
         contextMenu->addAction(deleteAction);
-        contextMenu->addAction(createAction);
+        // contextMenu->addAction(createAction);
         contextMenu->exec(filetree->mapToGlobal(pos));  // 显示右键菜单
     }
 }
