@@ -16,7 +16,7 @@
 #include <QFile>
 #include <QFileDialog>
 
-// 加载office驱动，导入导出excel
+// 加载office驱动，导入导出   excel
 
 #include <ActiveQt/QAxObject>
 
@@ -1831,6 +1831,7 @@ void   ToolWidget::onSavePdf(){
 
 
 void   ToolWidget::onSaveExcel(){
+
     createFolder();
     QString logInfo1="Excel开始保存";
     //m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo1);
@@ -2023,7 +2024,8 @@ void   ToolWidget::onSaveWord(){
 
 void ToolWidget::createDistanceMeasurementReport()
 {
-
+    //记录excel表格编号
+    static int id=1;
     //记录检测编号
     static int count=1;
     //提取点云、监测点信息
@@ -2508,12 +2510,13 @@ void ToolWidget::createDistanceMeasurementReport()
         QList<QList<QString>> dataAll;
         auto& entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
         //dataAll.append(headers);
-
+        int temp_id=1;
+        QString ID=QString::number(temp_id++);
 
         QList<QString>inList;
         if(data_pointCloud_size.name!=""){
 
-            inList<<data_pointCloud_size.name<<data_pointCloud_size.max_error<<data_pointCloud_size.min_error<<data_pointCloud_size.average_error;
+            inList<<ID<<data_pointCloud_size.max_error<<data_pointCloud_size.min_error<<data_pointCloud_size.average_error;
 
             if(data_pointCloud_size.max_error.toDouble()<0.001){
                 inList<<"合格";
@@ -2526,8 +2529,8 @@ void ToolWidget::createDistanceMeasurementReport()
         for(const Size_MeasurementData& data : dataAll_size){
             if(data.name!=""){
                 QList<QString>inList;
-
-                inList<<data.name<<data.max_error<<data.min_error<<data.average_error;
+                QString ID=QString::number(temp_id++);
+                inList<<ID<<data.max_error<<data.min_error<<data.average_error;
                 if(data.max_error.toDouble()<0.001){
                     inList<<"合格";
                 }else{
