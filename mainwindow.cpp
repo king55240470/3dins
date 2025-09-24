@@ -1780,6 +1780,7 @@ void MainWindow::SetUpTheme()
     MainWindow::HighLightColor[2] = 0;
 
     pWinVtkWidget->getRenderer()->SetBackground(0.1, 0.2, 0.4);
+    pWinVtkWidget->getRenderer()->SetGradientBackground(true);
     NotifySubscribe();
 }
 
