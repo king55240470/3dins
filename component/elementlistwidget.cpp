@@ -661,6 +661,7 @@ void ElementListWidget::startprocess()
         //关键在于打开的文件没有给他赋予type值 ???
         loadModelFile();
         CompareCloud();
+        qDebug()<<"startprocess的updateDistance";
         updateDistance();
         m_pMainWin->NotifySubscribe();
     }
@@ -686,6 +687,7 @@ void ElementListWidget::onAddElement(pcl::PointCloud<pcl::PointXYZRGB>::Ptr coul
             qDebug()<<"运行到loadModelFile之前";
             loadModelFile();
             CompareCloud();
+            qDebug()<<"onAddElement的updateDistance";
             updateDistance();
             m_pMainWin->NotifySubscribe();
 
@@ -803,20 +805,12 @@ CObject* ElementListWidget::FindObject(QString strAutoName){
 void ElementListWidget::updateDistance()
 {
     qDebug()<<"进入updateDistance";
-    // if(!foundmodel){
-    //     return;
-    // }
     if(timer){
         timer->stop();
         delete timer;
-        timer=nullptr;
     }
-    qDebug()<<"判断时间是否存在后";
+    qDebug()<<"判断定时器是否存在后";
     qDebug()<<"队列的大小"<<AlignCouldlists.size();
-    if(AlignCouldlists.size()!=1){
-        return;
-
-    }
     //过滤点云输入中的无效点
     /*
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZRGB>);
@@ -826,12 +820,13 @@ void ElementListWidget::updateDistance()
     kdtree.setInputCloud(cloud_filtered);
     */
 
+    // 从对齐后的点云队列中取出第一个 更新检测点
     kdtree.setInputCloud(AlignCouldlists.dequeue());
 
     pointCouldlists.dequeue();
     disAndanglelist.clear();
     for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
-        if(m_pMainWin->getEntityListMgr()->getEntityList()[i]->GetObjectCName().left(2)=="距离"){
+        if(m_pMainWin->getEntityListMgr()->getEntityList()[i]->GetUniqueType()==enDistance){
             disAndanglelist.push_back(m_pMainWin->getEntityListMgr()->getEntityList()[i]);
         }else if(m_pMainWin->getEntityListMgr()->getEntityList()[i]->GetUniqueType()==enAngle){
             disAndanglelist.push_back(m_pMainWin->getEntityListMgr()->getEntityList()[i]);
@@ -840,10 +835,8 @@ void ElementListWidget::updateDistance()
     if(disAndanglelist.size()==0){
         //进行图片保存，不用进度条
         m_pMainWin->getPWinToolWidget()->setauto(true);
-        //m_pMainWin->getPWinToolWidget()->onSaveTxt();
         m_pMainWin->getPWinToolWidget()->onSaveWord();
         m_pMainWin->getPWinToolWidget()->onSaveExcel();
-        m_pMainWin->getPWinToolWidget()->onSavePdf();
         m_pMainWin->getPWinToolWidget()->setauto(false);
 
         //除了未测量的实测点云，其余全部删除
@@ -881,18 +874,31 @@ void ElementListWidget::updateDistance()
         }
     }
     qDebug()<<"进入时间开启之前";
-    timer = new QTimer(this);
     list.clear();
     currentIndex=0;
     distancelistIndex=0;
+    timer = new QTimer(this);
     connect(timer, &QTimer::timeout, [this](){
         startupdateData(kdtree,disAndanglelist);
     });
-    timer->start(1000);
+    timer->start(2000);
+    // scheduleNextUpdate();
     qDebug()<<"时间开始后";
 }
 
-void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree,QVector<CEntity*>distancelist)
+void ElementListWidget::scheduleNextUpdate()
+{
+    QTimer::singleShot(1000, this, [this]() {
+        if(m_updating) return;
+        m_updating = true;
+        startupdateData(kdtree, disAndanglelist); // 你的耗时处理
+        m_updating = false;
+
+        scheduleNextUpdate();             // 递归排下一次
+    });
+}
+
+void ElementListWidget::startupdateData(const pcl::KdTreeFLANN<pcl::PointXYZRGB>& kdtree,QVector<CEntity*>distancelist)
 {
     qDebug()<<"时间进行1秒";
     QVector<CObject*>objlist=m_pMainWin->getObjectListMgr()->getObjectList();
@@ -904,56 +910,19 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
             delete timer;
             timer=nullptr;
 
-            // //清理旧线程
-            // if (workerThread) {
-            //     workerThread->quit();
-            //     workerThread->wait();
-            //     delete workerThread;
-            //     workerThread = nullptr;
-            // }
-
-            // progressBar = new QProgressBar();
-            // Qt::WindowFlags flags=Qt::Dialog|Qt::WindowCloseButtonHint;
-            // progressBar->setWindowFlags(flags);//设置窗口标志
-            // QFont font=QFont(tr("宋体"),10);
-            // progressBar->setFont(font);//设置进度条的字体
-            // progressBar->setWindowTitle(tr("Please Wait Progress Bar"));//设置进度条的窗口标题
-            // progressBar->setRange(0,100);//设置进度条的数值范围，0~mTotalNum
-            // progressBar->setValue(0);//设置进度条的初始值
-            // progressBar->show();//显示进度条
-
-            // workerThread = new QThread(this);
-            // worker = new Worker();
-            // connect(worker, &Worker::requestSaveOperation, this, [this](int type) {
-            //     switch(type) {
-            //     case 0: m_pMainWin->getPWinToolWidget()->setauto(true);break;//m_pMainWin->getPWinToolWidget()->onSaveTxt();
-            //     case 1: m_pMainWin->getPWinToolWidget()->onSaveWord(); break;
-            //     case 2: m_pMainWin->getPWinToolWidget()->onSaveExcel(); break;
-            //     case 3: m_pMainWin->getPWinToolWidget()->onSavePdf();m_pMainWin->getPWinToolWidget()->setauto(false); break;
-            //     }
-            // },Qt::QueuedConnection);
-            // worker->moveToThread(workerThread);
-
-
-            // // 信号连接
-            // // 使用队列连接确保跨线程安全
-            // connect(workerThread, &QThread::started, worker, &Worker::doWork);
-            // connect(worker, &Worker::progress, this,
-            //         &ElementListWidget::updateProgress, Qt::QueuedConnection);
-            // connect(worker, &Worker::finished, workerThread, &QThread::quit);
-            // connect(worker, &Worker::finished, worker, &Worker::deleteLater);
-            // connect(workerThread, &QThread::finished, workerThread,
-            //         &QThread::deleteLater);
-
-            // workerThread->start();
-
             m_pMainWin->getPWinToolWidget()->setauto(true);
-            //m_pMainWin->getPWinToolWidget()->onSaveTxt();
             m_pMainWin->getPWinToolWidget()->onSaveWord();
             m_pMainWin->getPWinToolWidget()->onSaveExcel();
-           // m_pMainWin->getPWinToolWidget()->onSavePdf();
             m_pMainWin->getPWinToolWidget()->setauto(false);
         }
+        // 用 lambda + 单次定时器 代替原来的 timer
+        // QTimer::singleShot(0, this, [this]{
+        //     m_pMainWin->getPWinToolWidget()->setauto(true);
+        //     m_pMainWin->getPWinToolWidget()->onSaveWord();
+        //     m_pMainWin->getPWinToolWidget()->onSaveExcel();
+        //     m_pMainWin->getPWinToolWidget()->setauto(false);
+        // });
+
         //删除自动化打开的模型文件
         for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
             if(m_pMainWin->getEntityListMgr()->getEntityList()[i]->GetUniqueType()==enPointCloud){
@@ -974,10 +943,11 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
         onDeleteEllipse();
         if(!pointCouldlists.empty()){
             loadModelFile();
-            QTimer::singleShot(2000, []() {
-                qDebug() << "2秒后执行的操作";
-            });
+            // QTimer::singleShot(2000, []() {
+            //     qDebug() << "2秒后执行的操作";
+            // });
             CompareCloud();
+            qDebug()<<"startUpdateData的updateDistance";
             updateDistance();
         }else{
             isProcessing=false;
@@ -1021,6 +991,11 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
             if (kdtree.nearestKSearch(searchPoint, 1, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
                 int nearestIdx = pointIdxNKNSearch[0];
                 pcl::PointXYZRGB nearestPoint=m_pMainWin->getpWinFileMgr()->cloudptr->points[nearestIdx];
+                if (!pcl::isFinite(nearestPoint)) {
+                    qDebug()<<"无效点";
+                    return;
+                    // 是无效点（NaN 或 Inf）
+                }
                 for(int i=0;i<objlist.size();i++){
                     if(m_pMainWin->getObjectListMgr()->getObjectList()[i]->GetObjectCName()==obj->GetObjectCName()){
                         CPoint*point1=static_cast<CPoint*>(objlist[i]);
@@ -1070,11 +1045,26 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
                     if (kdtree.nearestKSearch(searchPoint, 1, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
                         qDebug()<<"中间";
                         int nearestIdx = pointIdxNKNSearch[0];
+                        qDebug()<<"nearestIdx" <<nearestIdx;
+                        if (!m_pMainWin->getpWinFileMgr()->cloudptr){
+                            qDebug()<<"clodptr为空";
+                        }
                         pcl::PointXYZRGB nearestPoint = m_pMainWin->getpWinFileMgr()->cloudptr->points[nearestIdx];
                         CPosition pt;
-                        pt.x=nearestPoint.x;
-                        pt.y=nearestPoint.y;
-                        pt.z=nearestPoint.z;
+                        if (!pcl::isFinite(nearestPoint)) {
+                            qDebug()<<"无效点";
+                            // 是无效点（NaN 或 Inf）
+                        }
+                        if(m_pMainWin->getpWinFileMgr()->cloudptr->points.size()<=nearestIdx){
+                            qDebug()<<"索引超出"; // 索引越界则用原来的点构造
+                            pt.x = searchPoint.x;
+                            pt.y = searchPoint.y;
+                            pt.z = searchPoint.z;
+                        }else{
+                            pt.x=nearestPoint.x;
+                            pt.y=nearestPoint.y;
+                            pt.z=nearestPoint.z;
+                        }
                         point->SetPosition(pt);
                         positionlist.push_back(pt);
                     }
@@ -1185,6 +1175,11 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
                     int nearestIdx = pointIdxNKNSearch[0];
                     pcl::PointXYZRGB nearestPoint = m_pMainWin->getpWinFileMgr()->cloudptr->points[nearestIdx];
                     CPosition pt;
+                    if (!pcl::isFinite(nearestPoint)) {
+                        qDebug()<<"无效点";
+                        continue;
+                        // 是无效点（NaN 或 Inf）
+                    }
                     pt.x=nearestPoint.x;
                     pt.y=nearestPoint.y;
                     pt.z=nearestPoint.z;

@@ -78,7 +78,8 @@ public:
     void onAddElement(pcl::PointCloud<pcl::PointXYZRGB>::Ptr could,QString type);
     void CompareCloud();
     void updateDistance();//开启更新
-    void startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree, QVector<CEntity*>distancelist);//timer关联函数
+    void scheduleNextUpdate(); // 调度下一次startupdateData
+    void startupdateData(const pcl::KdTreeFLANN<pcl::PointXYZRGB>& kdtree, QVector<CEntity*>distancelist);//timer关联函数
     void UpdateDisNowFun(QVector<CEntity*>distancelist);//更新距离元素
     void isAdd();
     void createrule();
@@ -126,6 +127,7 @@ private:
     QState *runningState;
     QState *pausedState;
     QState *continueState;
+    bool m_updating = false;   // 正在处理标志
 
     int Treelistsize=0;
     int currentIndex;//被测量主元素parent索引

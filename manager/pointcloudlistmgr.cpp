@@ -143,6 +143,7 @@ CPointCloud *PointCloudListMgr::CreateAlignCloud(const pcl::PointCloud<pcl::Poin
     CloudEntity->isAlignCloud = true;
     CloudEntity->setPointCloud(cloud);  // 直接存储 shared_ptr，避免拷贝
     CloudEntity->m_strAutoName += "(对齐)";
+    CloudEntity->m_EntityType=enPointCloud;
     return CloudEntity;
 }
 
