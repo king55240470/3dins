@@ -2224,6 +2224,8 @@ void VtkWidget::onAlign()
             if (pcEntity->isModelCloud && clouds.isEmpty()) {
                 isCloud1Model = true;
                 qDebug() << "当前模型点云：" << pcEntity->m_strAutoName;
+            }else if(pcEntity->isMeasureCloud && (clouds.isEmpty()||clouds.size()==1)){
+                m_pMainWin->setCloud_measured_now(pcEntity);
             }
             clouds.append(pcl::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>(pcEntity->m_pointCloud));
             logInfo += pcEntity->m_strCName + " ";
@@ -2241,6 +2243,8 @@ void VtkWidget::onAlign()
 
     auto& template_cloud = isCloud1Model ? clouds[0] : clouds[1];
     auto& scene_cloud = isCloud1Model ? clouds[1] : clouds[0];
+
+
 
     // 自适应计算体素大小
     pcl::PointXYZRGB minpt, maxpt;

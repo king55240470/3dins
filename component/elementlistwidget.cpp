@@ -202,7 +202,7 @@ void ElementListWidget::onDeleteEllipse()
     for (int i = selectedEntities.size() - 1; i >= 0; --i) {
         CEntity* entity = selectedEntities[i];
         int index = entityList.indexOf(entity);
-        qDebug()<<"当前删除元素index："<<index;
+        qDebug()<<"当前删除元素index："<<index<<entity->m_strAutoName;
         if (index == -1) continue;
 
         // 特殊处理：点云类型
@@ -825,8 +825,42 @@ void ElementListWidget::updateDistance()
 
     kdtree.setInputCloud(cloud_filtered);
     */
+    qDebug()<<"点用了kdtree的更新";
+    qDebug()<<"队列点云";
+    for (auto a:AlignCouldlists){
+        qDebug() << "点云总点数：" << a->points.size() ;
+        qDebug() << "点云宽度/高度：" << a->width << " / " << a->height ;
+        qDebug() << "点云是否密集（无NaN）：" << (a->is_dense ? "是" : "否") ;
+    }
+    qDebug()<<"更新前";
+    qDebug() << "===================== KdTree 关联的点云数据 =====================" ;
+    // 3.1 先获取Kd树关联的点云（通过getInputCloud()接口）
+    pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr kdtree_cloud = kdtree.getInputCloud();
+    if (kdtree_cloud)
+    {
+        // 3.2 输出点云的基本信息（点数、密度等）
+        qDebug() << "点云总点数：" << kdtree_cloud->points.size() ;
+        qDebug() << "点云宽度/高度：" << kdtree_cloud->width << " / " << kdtree_cloud->height ;
+        qDebug() << "点云是否密集（无NaN）：" << (kdtree_cloud->is_dense ? "是" : "否") ;
+
+    }
+
 
     kdtree.setInputCloud(AlignCouldlists.dequeue());
+    qDebug()<<"更新后";
+    qDebug() << "===================== KdTree 关联的点云数据 =====================" ;
+    // 3.1 先获取Kd树关联的点云（通过getInputCloud()接口）
+    kdtree_cloud = kdtree.getInputCloud();
+    if (kdtree_cloud)
+    {
+        // 3.2 输出点云的基本信息（点数、密度等）
+        qDebug() << "点云总点数：" << kdtree_cloud->points.size() ;
+        qDebug() << "点云宽度/高度：" << kdtree_cloud->width << " / " << kdtree_cloud->height ;
+        qDebug() << "点云是否密集（无NaN）：" << (kdtree_cloud->is_dense ? "是" : "否") ;
+
+    }
+
+
 
     pointCouldlists.dequeue();
     disAndanglelist.clear();
@@ -946,15 +980,17 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
             //         &QThread::deleteLater);
 
             // workerThread->start();
-
+             qDebug()<<"保存文件";
             m_pMainWin->getPWinToolWidget()->setauto(true);
             //m_pMainWin->getPWinToolWidget()->onSaveTxt();
             m_pMainWin->getPWinToolWidget()->onSaveWord();
             m_pMainWin->getPWinToolWidget()->onSaveExcel();
            // m_pMainWin->getPWinToolWidget()->onSavePdf();
             m_pMainWin->getPWinToolWidget()->setauto(false);
+            qDebug()<<"保存文件成功";
         }
         //删除自动化打开的模型文件
+        qDebug()<<"删除模型文件";
         for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
             if(m_pMainWin->getEntityListMgr()->getEntityList()[i]->GetUniqueType()==enPointCloud){
                 CPointCloud*cloud = (CPointCloud*)m_pMainWin->getEntityListMgr()->getEntityList()[i];
@@ -970,6 +1006,7 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
             m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
             m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(true);
         }
+        qDebug()<<"删除模型文件成功";
         qDebug() << "准备清空列表";
         onDeleteEllipse();
         if(!pointCouldlists.empty()){
@@ -1070,6 +1107,10 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
                     if (kdtree.nearestKSearch(searchPoint, 1, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
                         qDebug()<<"中间";
                         int nearestIdx = pointIdxNKNSearch[0];
+                        if(nearestIdx>=m_pMainWin->getpWinFileMgr()->cloudptr->points.size()){
+                            qDebug()<<"数组越界,当前索引:"<<nearestIdx<<"当前数组大小:"<<m_pMainWin->getpWinFileMgr()->cloudptr->points.size();
+                            continue;
+                        }
                         pcl::PointXYZRGB nearestPoint = m_pMainWin->getpWinFileMgr()->cloudptr->points[nearestIdx];
                         CPosition pt;
                         pt.x=nearestPoint.x;
@@ -1081,12 +1122,16 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
                     qDebug()<<"之后";
                 }
                 PlaneConstructor constructor;
-                CPlane*plane1=constructor.createPlane(positionlist[0],positionlist[1],positionlist[2]);
-                plane=plane1;
-                qDebug()<<"plane"<<plane1->getCenter().x;
-                QString str=obj->GetObjectCName()+"测量完成";
-                m_pMainWin->getPWinVtkPresetWidget()->setWidget(str);
-                list.push_back(plane);
+                if(positionlist.size()==3){
+
+                    CPlane*plane1=constructor.createPlane(positionlist[0],positionlist[1],positionlist[2]);
+                    plane=plane1;
+                    QString str=obj->GetObjectCName()+"测量完成";
+                    m_pMainWin->getPWinVtkPresetWidget()->setWidget(str);
+                    list.push_back(plane);
+                }else{
+                    qDebug()<<"点数不足三个，无法构成平面";
+                }
             }else if(planelist.size()==2){//面由面与面构造
                 QVector<CPlane*>planeparentlist;
                 for(CObject*planePlane:planelist){
@@ -1108,17 +1153,24 @@ void ElementListWidget::startupdateData(pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtre
                         }
                     }
                     PlaneConstructor constructor;
+                    if(positionlist.size()==3){
                     CPlane*plane1=constructor.createPlane(positionlist[0],positionlist[1],positionlist[2]);
                     planePlane=plane1;
                     planeparentlist.push_back(plane1);
+                    }
                 }
                 PlaneConstructor constructor;
-                CPlane*plane1=constructor.createPlane(planeparentlist[0],planeparentlist[1]);
-                plane=plane1;
-                qDebug()<<"plane"<<plane1->getCenter().x;
-                QString str=obj->GetObjectCName()+"测量完成";
-                m_pMainWin->getPWinVtkPresetWidget()->setWidget(str);
-                list.push_back(plane);
+                if(planeparentlist.size()==2){
+                    CPlane*plane1=constructor.createPlane(planeparentlist[0],planeparentlist[1]);
+                    plane=plane1;
+                    qDebug()<<"plane"<<plane1->getCenter().x;
+                    QString str=obj->GetObjectCName()+"测量完成";
+                    m_pMainWin->getPWinVtkPresetWidget()->setWidget(str);
+                    list.push_back(plane);
+                }
+
+
+
             }else if(planelist.size()==0){//面是拟合而来
                 CObject*FindPoint = obj->parent[0];
                 CPoint*point=static_cast<CPoint*>(FindPoint);
