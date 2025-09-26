@@ -2189,27 +2189,6 @@ void VtkWidget::handleError(const QString& error) {
 
 void VtkWidget::onAlign()
 {
-    // 创建一个进度条并显示
-    QProgressBar* progressBar = new QProgressBar(this);
-    progressBar->setRange(0, 100);
-    progressBar->setValue(0);
-    progressBar->show();
-
-    // 创建一个定时器来定期更新进度条
-    QTimer* timer = new QTimer(this);
-    int progress = 0;
-    connect(timer, &QTimer::timeout, [&]() {
-        if (progress < 100) {
-            progress += 10;
-            progressBar->setValue(progress);
-        } else {
-            timer->stop();
-            delete progressBar;
-            delete timer;
-        }
-    });
-    timer->start(1000); // 每100毫秒更新一次进度条
-
     // 收集两个选中的点云
     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
     QVector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> clouds;
@@ -2224,6 +2203,8 @@ void VtkWidget::onAlign()
             if (pcEntity->isModelCloud && clouds.isEmpty()) {
                 isCloud1Model = true;
                 qDebug() << "当前模型点云：" << pcEntity->m_strAutoName;
+            }else if(pcEntity->isMeasureCloud && (clouds.isEmpty()||clouds.size()==1)){
+                m_pMainWin->setCloud_measured_now(pcEntity);
             }
             clouds.append(pcl::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>(pcEntity->m_pointCloud));
             logInfo += pcEntity->m_strCName + " ";
@@ -2233,14 +2214,13 @@ void VtkWidget::onAlign()
     if (clouds.size() != 2) {
         logInfo += "对齐需要两个点云!";
         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
-        timer->stop();
-        delete progressBar;
-        delete timer;
         return;
     }
 
     auto& template_cloud = isCloud1Model ? clouds[0] : clouds[1];
     auto& scene_cloud = isCloud1Model ? clouds[1] : clouds[0];
+
+
 
     // 自适应计算体素大小
     pcl::PointXYZRGB minpt, maxpt;
@@ -2264,9 +2244,6 @@ void VtkWidget::onAlign()
     if (template_cloud == nullptr || scene_cloud == nullptr) {
         QString logInfo = "采样后点云为空！";
         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
-        timer->stop();
-        delete progressBar;
-        delete timer;
         return;
     }
 
@@ -2283,9 +2260,6 @@ void VtkWidget::onAlign()
     if (template_normals == nullptr || scene_normals == nullptr) {
         QString logInfo = "法线估计失败！";
         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
-        timer->stop();
-        delete progressBar;
-        delete timer;
         return;
     }
 
@@ -2319,9 +2293,6 @@ void VtkWidget::onAlign()
     if (transformation.isApprox(Eigen::Matrix4f::Zero())) {
         QString logInfo = "粗配准失败";
         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
-        timer->stop();
-        delete progressBar;
-        delete timer;
         return;
     }
 
@@ -2361,9 +2332,6 @@ void VtkWidget::onAlign()
     if (denoised_scene == nullptr) {
         QString logInfo = "二次采样后点云为空！";
         m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
-        timer->stop();
-        delete progressBar;
-        delete timer;
         return;
     }
 
@@ -2386,11 +2354,6 @@ void VtkWidget::onAlign()
     auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateAlignCloud(cloud_filtered);
     m_pMainWin->getPWinToolWidget()->addToList(cloudEntity);
     m_pMainWin->NotifySubscribe();
-
-    // 配准完成，停止计时器并删除进度条
-    timer->stop();
-    delete progressBar;
-    delete timer;
 }
 
 // 区域覆盖判断

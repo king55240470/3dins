@@ -3781,6 +3781,7 @@ void ToolWidget::createFolder(QString path){
 QString ToolWidget::getOutputPath(QString kind){
     QDateTime currentDateTime = QDateTime::currentDateTime();
 
+
     // 获取年、月、日、小时、分钟和秒
     int year = currentDateTime.date().year();
     int month = currentDateTime.date().month();
@@ -3794,24 +3795,43 @@ QString ToolWidget::getOutputPath(QString kind){
                                  .arg(day, 2, 10, QChar('0'));
     QString Path=m_savePath +"/"+dateTimeString;
     auto& entitylist=m_pMainWin->getEntityListMgr()->getEntityList();
-
-    if(entitylist.size()!=0){
-        for(auto & it :entitylist){
-            if(it->m_strAutoName.contains("实测")){
-                QString str=it->m_strAutoName;
-                QString name="";
-                int markerPos = str.indexOf(".");
-                if (markerPos != -1 && markerPos < str.length() - 1) {
-                    for(int i=0;i<markerPos;i++){
-                        name+=str[i];
-                    }
-                    qDebug() << "实测点云名称为" << name;
-                    return  Path+"/"+name+"/" +kind;
-                }
-            }
-        }
+    auto entity=m_pMainWin->getCloud_measured_now();
+    QString name="";
+    if(entity){
+        name=entity->m_strAutoName;
     }
-    return Path+"/"+ kind;
+    QString str=name;
+    QString tmp="";
+    int markerPos = str.indexOf(".");
+    if (markerPos != -1 && markerPos < str.length() - 1) {
+        for(int i=0;i<markerPos;i++){
+            tmp+=str[i];
+        }
+        name=tmp;
+    }
+    qDebug() << "实测点云名称为" << name;
+
+    //             }
+    // if(entitylist.size()!=0){
+
+    //     for(auto & it :entitylist){
+    //         if(it->m_strAutoName.contains("实测")){
+    //             QString str=it->m_strAutoName;
+    //             name="";
+    //             int markerPos = str.indexOf(".");
+    //             if (markerPos != -1 && markerPos < str.length() - 1) {
+    //                 for(int i=0;i<markerPos;i++){
+    //                     name+=str[i];
+    //                 }
+    //                 qDebug() << "实测点云名称为" << name;
+
+    //             }
+    //         }
+    //     }
+
+    // }
+
+     return  Path+"/"+name+"/" +kind;
 
 }
 QDataStream& ToolWidget::serializeEntityList(QDataStream& out, const QVector<CEntity*>& entityList){
@@ -4135,24 +4155,51 @@ void ToolWidget:: createFolder(){
 
 
     QString charBeforeDot="A";
-    for(auto entity: entitylist ){
-        if(entity->GetUniqueType()==enPointCloud){
-            CPointCloud* pointCloud=( CPointCloud*)entity;
-            if(pointCloud->isMeasureCloud||pointCloud->m_strAutoName.contains("实测")){
-                QString str=pointCloud->m_strAutoName;
-                charBeforeDot="A";
-                int markerPos = str.indexOf("#");
-                if (markerPos != -1 && markerPos < str.length() - 1) {
-                    QChar firstChar = str.at(markerPos + 1);
-                    qDebug() << "# 后的第一个字符是:" << firstChar;
-                    charBeforeDot=firstChar;
-
-                } else {
-                    qDebug() << "字符串中不存在# 或者# 后没有字符";
-                }
-            }
-        }
+    auto entity=m_pMainWin->getCloud_measured_now();
+    QString name="";
+    if(entity){
+        name=entity->m_strAutoName;
     }
+    QString str=name;
+    QString tmp="";
+    int markerPos = str.indexOf(".");
+    if (markerPos != -1 && markerPos < str.length() - 1) {
+        for(int i=0;i<markerPos;i++){
+            tmp+=str[i];
+        }
+        name=tmp;
+    }
+
+    str=name;
+    charBeforeDot="A";
+    markerPos = str.indexOf("#");
+    if (markerPos != -1 && markerPos < str.length() - 1) {
+        QChar firstChar = str.at(markerPos + 1);
+        qDebug() << "# 后的第一个字符是:" << firstChar;
+        charBeforeDot=firstChar;
+
+    } else {
+        qDebug() << "字符串中不存在# 或者# 后没有字符";
+    }
+
+    // for(auto entity: entitylist ){
+    //     if(entity->GetUniqueType()==enPointCloud){
+    //         CPointCloud* pointCloud=( CPointCloud*)entity;
+    //         if(pointCloud->isMeasureCloud||pointCloud->m_strAutoName.contains("实测")){
+    //             QString str=pointCloud->m_strAutoName;
+    //             charBeforeDot="A";
+    //             int markerPos = str.indexOf("#");
+    //             if (markerPos != -1 && markerPos < str.length() - 1) {
+    //                 QChar firstChar = str.at(markerPos + 1);
+    //                 qDebug() << "# 后的第一个字符是:" << firstChar;
+    //                 charBeforeDot=firstChar;
+
+    //             } else {
+    //                 qDebug() << "字符串中不存在# 或者# 后没有字符";
+    //             }
+    //         }
+    //     }
+    // }
     m_charBeforeDot=charBeforeDot;
     createFolder(m_savePath);
     createFolder(getOutputPath("excell1"));

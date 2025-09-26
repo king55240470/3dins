@@ -86,6 +86,7 @@ private:
     bool isProcessing = false; // 标记是否正在处理文件
     QStringList existingFiles; // 用于记录已存在的文件
     QSet<QString> pendingFiles;     // 记录正在等待处理的文件
+    CPointCloud* cloud_measured_now=nullptr;//记录当前处理的点云
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
@@ -106,6 +107,13 @@ public:
     CEntityMgr* m_EntityListMgr;
     ChosenCEntityMgr* m_ChosenListMgr;
     PointCloudListMgr *m_CloudListMgr;
+
+    CPointCloud* getCloud_measured_now(){
+        return cloud_measured_now;
+    }
+    void setCloud_measured_now(CPointCloud* cloud){
+        cloud_measured_now=cloud;
+    }
 
     //预置
     void OnPresetPoint(CPosition pt);

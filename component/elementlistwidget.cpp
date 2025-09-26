@@ -202,7 +202,7 @@ void ElementListWidget::onDeleteEllipse()
     for (int i = selectedEntities.size() - 1; i >= 0; --i) {
         CEntity* entity = selectedEntities[i];
         int index = entityList.indexOf(entity);
-        qDebug()<<"当前删除元素index："<<index;
+        qDebug()<<"当前删除元素index："<<index<<entity->m_strAutoName;
         if (index == -1) continue;
 
         // 特殊处理：点云类型
@@ -657,13 +657,15 @@ void ElementListWidget::startprocess()
     if(pointCouldlists.empty()){
         m_pMainWin->getPWinVtkPresetWidget()->setWidget("实测点云为空无法进行测量");
     }else{
-        //手动打开的实测模型，无法打开其标准模型
-        //关键在于打开的文件没有给他赋予type值 ???
-        loadModelFile();
-        CompareCloud();
-        qDebug()<<"startprocess的updateDistance";
-        updateDistance();
-        m_pMainWin->NotifySubscribe();
+        isProcessing=true;
+        while(!pointCouldlists.empty()){
+            loadModelFile();
+            CompareCloud();
+            qDebug()<<"startprocess的updateDistance";
+            updateDistance();
+            m_pMainWin->NotifySubscribe();
+        }
+        isProcessing=false;
     }
 }
 
@@ -677,24 +679,21 @@ void ElementListWidget::onAddElement(pcl::PointCloud<pcl::PointXYZRGB>::Ptr coul
     }
 
     qDebug()<<"当前点云的数量:"<<pointCouldlists.size();
-
+    pointCouldlists.enqueue(could);
+    filetypelists.enqueue(type);
     if (stateMachine->configuration().contains(runningState)) {
-        pointCouldlists.enqueue(could);
-        filetypelists.enqueue(type);
         qDebug()<<"isProcessing值为:"<<isProcessing;
         if(isProcessing==false){
             isProcessing=true;
-            qDebug()<<"运行到loadModelFile之前";
-            loadModelFile();
-            CompareCloud();
-            qDebug()<<"onAddElement的updateDistance";
-            updateDistance();
-            m_pMainWin->NotifySubscribe();
-
+            while(!pointCouldlists.empty()){
+                loadModelFile();
+                CompareCloud();
+                qDebug()<<"startprocess的updateDistance";
+                updateDistance();
+                m_pMainWin->NotifySubscribe();
+            }
+            isProcessing=false;
         }
-    }else{
-        pointCouldlists.enqueue(could);
-        filetypelists.enqueue(type);
     }
 }
 
@@ -805,23 +804,41 @@ CObject* ElementListWidget::FindObject(QString strAutoName){
 void ElementListWidget::updateDistance()
 {
     qDebug()<<"进入updateDistance";
-    if(timer){
-        timer->stop();
-        delete timer;
-    }
-    qDebug()<<"判断定时器是否存在后";
     qDebug()<<"队列的大小"<<AlignCouldlists.size();
-    //过滤点云输入中的无效点
-    /*
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZRGB>);
-    std::vector<int> indices_nan;
-    pcl::removeNaNFromPointCloud(*AlignCouldlists.dequeue(), *cloud_filtered, indices_nan);
+    for (auto a:AlignCouldlists){
+        qDebug() << "点云总点数：" << a->points.size() ;
+        qDebug() << "点云宽度/高度：" << a->width << " / " << a->height ;
+        qDebug() << "点云是否密集（无NaN）：" << (a->is_dense ? "是" : "否") ;
+    }
+    qDebug()<<"更新前";
+    qDebug() << "===================== KdTree 关联的点云数据 =====================" ;
+    // 3.1 先获取Kd树关联的点云（通过getInputCloud()接口）
+    pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr kdtree_cloud = kdtree.getInputCloud();
+    if (kdtree_cloud)
+    {
+        // 3.2 输出点云的基本信息（点数、密度等）
+        qDebug() << "点云总点数：" << kdtree_cloud->points.size() ;
+        qDebug() << "点云宽度/高度：" << kdtree_cloud->width << " / " << kdtree_cloud->height ;
+        qDebug() << "点云是否密集（无NaN）：" << (kdtree_cloud->is_dense ? "是" : "否") ;
 
-    kdtree.setInputCloud(cloud_filtered);
-    */
+    }
+
 
     // 从对齐后的点云队列中取出第一个 更新检测点
     kdtree.setInputCloud(AlignCouldlists.dequeue());
+    qDebug()<<"更新后";
+    qDebug() << "===================== KdTree 关联的点云数据 =====================" ;
+    // 3.1 先获取Kd树关联的点云（通过getInputCloud()接口）
+    kdtree_cloud = kdtree.getInputCloud();
+    if (kdtree_cloud)
+    {
+        // 3.2 输出点云的基本信息（点数、密度等）
+        qDebug() << "点云总点数：" << kdtree_cloud->points.size() ;
+        qDebug() << "点云宽度/高度：" << kdtree_cloud->width << " / " << kdtree_cloud->height ;
+        qDebug() << "点云是否密集（无NaN）：" << (kdtree_cloud->is_dense ? "是" : "否") ;
+
+    }
+
 
     pointCouldlists.dequeue();
     disAndanglelist.clear();
@@ -832,70 +849,42 @@ void ElementListWidget::updateDistance()
             disAndanglelist.push_back(m_pMainWin->getEntityListMgr()->getEntityList()[i]);
         }
     }
-    if(disAndanglelist.size()==0){
-        //进行图片保存，不用进度条
-        m_pMainWin->getPWinToolWidget()->setauto(true);
-        m_pMainWin->getPWinToolWidget()->onSaveWord();
-        m_pMainWin->getPWinToolWidget()->onSaveExcel();
-        m_pMainWin->getPWinToolWidget()->setauto(false);
-
-        //除了未测量的实测点云，其余全部删除
-        int t=0;
-        for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
-            if(m_pMainWin->getEntityListMgr()->getEntityList()[i]->GetUniqueType()==enPointCloud){
-                CPointCloud*cloud = (CPointCloud*)m_pMainWin->getEntityListMgr()->getEntityList()[i];
-                if(cloud->isOver == false&&cloud->isMeasureCloud){
-                    m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
-                    m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(false);
-                }else{
-                    m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
-                    m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(true);
-                }
-                continue;
-            }
-            m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
-            m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(true);
-            t++;
-        }
-        qDebug()<<"删除数量:"<<t;
-        onDeleteEllipse();
-        if(pointCouldlists.size()>0)
-        {
-            loadModelFile();
-            QTimer::singleShot(2000, []() {
-                qDebug() << "2秒后执行的操作";
-            });
-            CompareCloud();
-            updateDistance();
-            return;
-        }else{
-            isProcessing = false;
-            return;
-        }
-    }
     qDebug()<<"进入时间开启之前";
     list.clear();
-    currentIndex=0;
     distancelistIndex=0;
-    timer = new QTimer(this);
-    connect(timer, &QTimer::timeout, [this](){
-        startupdateData(kdtree,disAndanglelist);
-    });
-    timer->start(2000);
-    // scheduleNextUpdate();
-    qDebug()<<"时间开始后";
-}
+    for(int i=0;i<disAndanglelist.size();i++){
+        currentIndex=0;
+        for(int j=0;j<disAndanglelist[i]->parent.size()+1;j++){
+            startupdateData(kdtree,disAndanglelist);
+        }
+    }
 
-void ElementListWidget::scheduleNextUpdate()
-{
-    QTimer::singleShot(1000, this, [this]() {
-        if(m_updating) return;
-        m_updating = true;
-        startupdateData(kdtree, disAndanglelist); // 你的耗时处理
-        m_updating = false;
+    m_pMainWin->getPWinToolWidget()->setauto(true);
+    m_pMainWin->getPWinToolWidget()->onSaveWord();
+    m_pMainWin->getPWinToolWidget()->onSaveExcel();
+    m_pMainWin->getPWinToolWidget()->setauto(false);
 
-        scheduleNextUpdate();             // 递归排下一次
-    });
+    //除了未测量的实测点云，其余全部删除
+    int t=0;
+    for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
+        if(m_pMainWin->getEntityListMgr()->getEntityList()[i]->GetUniqueType()==enPointCloud){
+            CPointCloud*cloud = (CPointCloud*)m_pMainWin->getEntityListMgr()->getEntityList()[i];
+            if(cloud->isOver == false&&cloud->isMeasureCloud){
+                m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
+                m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(false);
+            }else{
+                m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
+                m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(true);
+            }
+            continue;
+        }
+        m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
+        m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(true);
+        t++;
+    }
+    qDebug()<<"删除数量:"<<t;
+    onDeleteEllipse();
+    return;
 }
 
 void ElementListWidget::startupdateData(const pcl::KdTreeFLANN<pcl::PointXYZRGB>& kdtree,QVector<CEntity*>distancelist)
@@ -904,73 +893,23 @@ void ElementListWidget::startupdateData(const pcl::KdTreeFLANN<pcl::PointXYZRGB>
     QVector<CObject*>objlist=m_pMainWin->getObjectListMgr()->getObjectList();
     qDebug()<<"distancelistIndex："<<distancelistIndex;
     qDebug()<<"distancelist:"<<distancelist.size();
-    if(distancelistIndex>distancelist.size()-1){
-        if(timer){
-            timer->stop();
-            delete timer;
-            timer=nullptr;
 
-            m_pMainWin->getPWinToolWidget()->setauto(true);
-            m_pMainWin->getPWinToolWidget()->onSaveWord();
-            m_pMainWin->getPWinToolWidget()->onSaveExcel();
-            m_pMainWin->getPWinToolWidget()->setauto(false);
-        }
-        // 用 lambda + 单次定时器 代替原来的 timer
-        // QTimer::singleShot(0, this, [this]{
-        //     m_pMainWin->getPWinToolWidget()->setauto(true);
-        //     m_pMainWin->getPWinToolWidget()->onSaveWord();
-        //     m_pMainWin->getPWinToolWidget()->onSaveExcel();
-        //     m_pMainWin->getPWinToolWidget()->setauto(false);
-        // });
-
-        //删除自动化打开的模型文件
-        for(int i=0;i<m_pMainWin->getEntityListMgr()->getEntityList().size();i++){
-            if(m_pMainWin->getEntityListMgr()->getEntityList()[i]->GetUniqueType()==enPointCloud){
-                CPointCloud*cloud = (CPointCloud*)m_pMainWin->getEntityListMgr()->getEntityList()[i];
-                if(cloud->isOver == false&&cloud->isMeasureCloud){
-                    m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(false);
-                    m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(false);
-                }else{
-                    m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
-                    m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(true);
-                }
-                continue;
-            }
-            m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
-            m_pMainWin->getObjectListMgr()->getObjectList()[i]->SetSelected(true);
-        }
-        qDebug() << "准备清空列表";
-        onDeleteEllipse();
-        if(!pointCouldlists.empty()){
-            loadModelFile();
-            // QTimer::singleShot(2000, []() {
-            //     qDebug() << "2秒后执行的操作";
-            // });
-            CompareCloud();
-            qDebug()<<"startUpdateData的updateDistance";
-            updateDistance();
-        }else{
-            isProcessing=false;
-            return;
-        }
-    }
-    if(currentIndex>distancelist[distancelistIndex]->parent.size()-1){
+    // 父元素更新完毕，更新检测点
+    if(currentIndex > distancelist[distancelistIndex]->parent.size()-1){
+        qDebug() << "准备更新检测点";
         UpdateDisNowFun(distancelist);
         return;
     }else if(stateMachine->configuration().contains(stoppedState)){
-        timer->stop();
-        delete timer;
-        timer=nullptr;
         qDebug()<<"结束时间";
         return;
     }else if(stateMachine->configuration().contains(pausedState)){
-        timer->stop();
-        qDebug()<<"暂停时间";
         return;
     }else if(stateMachine->configuration().contains(continueState)){
         qDebug()<<"执行一次";
     }
-    if(stateMachine->configuration().contains(runningState)||stateMachine->configuration().contains(continueState)){
+    // 更新检测点的父元素
+    if(stateMachine->configuration().contains(runningState)||
+        stateMachine->configuration().contains(continueState)){
         CObject* obj=nullptr;
         for( CObject* ob: m_pMainWin->getObjectListMgr()->getObjectList()){
             if(distancelist[distancelistIndex]->parent[currentIndex]->GetObjectCName()==ob->GetObjectCName()){
@@ -978,6 +917,7 @@ void ElementListWidget::startupdateData(const pcl::KdTreeFLANN<pcl::PointXYZRGB>
                 break;
             }
         }
+        qDebug() << "获取当前检测点的父元素，索引：" << currentIndex;
         currentIndex++;
         std::vector<int> pointIdxNKNSearch(1);
         std::vector<float> pointNKNSquaredDistance(1);
@@ -1012,7 +952,6 @@ void ElementListWidget::startupdateData(const pcl::KdTreeFLANN<pcl::PointXYZRGB>
                 qDebug()<<"更新距离断点2";
             }
         }else if(obj->GetUniqueType()==enPlane){//面的情况分三种
-
             qDebug()<<obj->parent.size();
             QVector<CObject*>planelist = obj->parent;
             qDebug()<<planelist.size();
@@ -1034,7 +973,6 @@ void ElementListWidget::startupdateData(const pcl::KdTreeFLANN<pcl::PointXYZRGB>
                     qDebug()<<point->GetPt().y;
                     qDebug()<<point->GetPt().z;
                     qDebug()<<"之前";
-                    //qDebug()kdtree.
 
                     if (!pcl::isFinite(searchPoint)) {
                         // 处理无效查询点，例如忽略该查询或者进行修正
@@ -1045,38 +983,44 @@ void ElementListWidget::startupdateData(const pcl::KdTreeFLANN<pcl::PointXYZRGB>
                     if (kdtree.nearestKSearch(searchPoint, 1, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
                         qDebug()<<"中间";
                         int nearestIdx = pointIdxNKNSearch[0];
-                        qDebug()<<"nearestIdx" <<nearestIdx;
-                        if (!m_pMainWin->getpWinFileMgr()->cloudptr){
-                            qDebug()<<"clodptr为空";
-                        }
-                        pcl::PointXYZRGB nearestPoint = m_pMainWin->getpWinFileMgr()->cloudptr->points[nearestIdx];
                         CPosition pt;
-                        if (!pcl::isFinite(nearestPoint)) {
-                            qDebug()<<"无效点";
-                            // 是无效点（NaN 或 Inf）
+                        if(!m_pMainWin->getpWinFileMgr()->getCloudPtr() || m_pMainWin->getpWinFileMgr()->cloudptr->empty()){
+                            qDebug() << "cloudptr无效";
+                            positionlist.push_back(point->GetPt());
+                            continue;
                         }
                         if(m_pMainWin->getpWinFileMgr()->cloudptr->points.size()<=nearestIdx){
-                            qDebug()<<"索引超出"; // 索引越界则用原来的点构造
-                            pt.x = searchPoint.x;
-                            pt.y = searchPoint.y;
-                            pt.z = searchPoint.z;
-                        }else{
-                            pt.x=nearestPoint.x;
-                            pt.y=nearestPoint.y;
-                            pt.z=nearestPoint.z;
+                            qDebug()<<"索引越界,当前索引:"<<nearestIdx; // 索引越界则用原来的点构造
+                            positionlist.push_back(point->GetPt());
+                            continue;
                         }
+                        pcl::PointXYZRGB nearestPoint = m_pMainWin->getpWinFileMgr()->cloudptr->points[nearestIdx];
+                        qDebug() << "拿到近邻点"<<nearestPoint.x<<nearestPoint.y<<nearestPoint.z;
+                        if(!pcl::isFinite(nearestPoint)) {
+                            qDebug()<<"无效点";
+                            positionlist.push_back(point->GetPt());
+                            continue;
+                        }
+                        pt.x=nearestPoint.x;
+                        pt.y=nearestPoint.y;
+                        pt.z=nearestPoint.z;
+                        qDebug() << "近邻更新后的点:"<<pt.x<<pt.y<<pt.z;
                         point->SetPosition(pt);
                         positionlist.push_back(pt);
                     }
                     qDebug()<<"之后";
                 }
                 PlaneConstructor constructor;
-                CPlane*plane1=constructor.createPlane(positionlist[0],positionlist[1],positionlist[2]);
-                plane=plane1;
-                qDebug()<<"plane"<<plane1->getCenter().x;
-                QString str=obj->GetObjectCName()+"测量完成";
-                m_pMainWin->getPWinVtkPresetWidget()->setWidget(str);
-                list.push_back(plane);
+                if(positionlist.size()==3){
+
+                    CPlane*plane1=constructor.createPlane(positionlist[0],positionlist[1],positionlist[2]);
+                    plane=plane1;
+                    QString str=obj->GetObjectCName()+"测量完成";
+                    m_pMainWin->getPWinVtkPresetWidget()->setWidget(str);
+                    list.push_back(plane);
+                }else{
+                    qDebug()<<"点数不足三个，无法构成平面";
+                }
             }else if(planelist.size()==2){//面由面与面构造
                 QVector<CPlane*>planeparentlist;
                 for(CObject*planePlane:planelist){
@@ -1098,17 +1042,24 @@ void ElementListWidget::startupdateData(const pcl::KdTreeFLANN<pcl::PointXYZRGB>
                         }
                     }
                     PlaneConstructor constructor;
-                    CPlane*plane1=constructor.createPlane(positionlist[0],positionlist[1],positionlist[2]);
-                    planePlane=plane1;
-                    planeparentlist.push_back(plane1);
+                    if(positionlist.size()==3){
+                        CPlane*plane1=constructor.createPlane(positionlist[0],positionlist[1],positionlist[2]);
+                        planePlane=plane1;
+                        planeparentlist.push_back(plane1);
+                    }
                 }
                 PlaneConstructor constructor;
-                CPlane*plane1=constructor.createPlane(planeparentlist[0],planeparentlist[1]);
-                plane=plane1;
-                qDebug()<<"plane"<<plane1->getCenter().x;
-                QString str=obj->GetObjectCName()+"测量完成";
-                m_pMainWin->getPWinVtkPresetWidget()->setWidget(str);
-                list.push_back(plane);
+                if(planeparentlist.size()==2){
+                    CPlane*plane1=constructor.createPlane(planeparentlist[0],planeparentlist[1]);
+                    plane=plane1;
+                    qDebug()<<"plane"<<plane1->getCenter().x;
+                    QString str=obj->GetObjectCName()+"测量完成";
+                    m_pMainWin->getPWinVtkPresetWidget()->setWidget(str);
+                    list.push_back(plane);
+                }
+
+
+
             }else if(planelist.size()==0){//面是拟合而来
                 CObject*FindPoint = obj->parent[0];
                 CPoint*point=static_cast<CPoint*>(FindPoint);

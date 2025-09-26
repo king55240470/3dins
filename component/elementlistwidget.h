@@ -74,12 +74,13 @@ public:
     void setupStateMachine();
     void continueUpdate();
     void beginStartButton();
+
     void startprocess();
     void onAddElement(pcl::PointCloud<pcl::PointXYZRGB>::Ptr could,QString type);
     void CompareCloud();
     void updateDistance();//开启更新
-    void scheduleNextUpdate(); // 调度下一次startupdateData
     void startupdateData(const pcl::KdTreeFLANN<pcl::PointXYZRGB>& kdtree, QVector<CEntity*>distancelist);//timer关联函数
+
     void UpdateDisNowFun(QVector<CEntity*>distancelist);//更新距离元素
     void isAdd();
     void createrule();

@@ -1580,7 +1580,7 @@ void MainWindow::onFileChanged(const QString &path)
                 filetype = QRegularExpression("^\\d{8}#([A-Z])#\\d{3}#\\d{3}(?:_fused)?\\.ply$").match(file).captured(1);
                 qDebug()<<"文件类型为："<<filetype;
                 filePathChange = fileCould;
-                openFile();
+                openFile(); // 加载点云文件，生成点云对象进入元素列表
                 existingFiles.append(file);
                 peopleOpenfile = true;
             }
