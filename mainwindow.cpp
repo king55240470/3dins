@@ -1014,7 +1014,6 @@ void MainWindow::NotifySubscribe()
     pWinFileManagerWidget->UpdateInfo();
     qDebug() << "更新vtkwidget";
     pWinVtkWidget->UpdateInfo();
-
 }
 
 void MainWindow::OnPresetPoint(CPosition pt){

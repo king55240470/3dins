@@ -613,10 +613,6 @@ void ElementListWidget::setupStateMachine()
         pauseButton->setEnabled(true);
         continueButton->setEnabled(false);
         terminateButton->setEnabled(true);
-        // if(timer){
-        //     timer->start();
-        // }
-        // Treelistsize=m_pMainWin->getEntityListMgr()->getEntityList().size();
     });
 
     connect(pausedState, &QState::entered, [this]() {
@@ -660,6 +656,9 @@ void ElementListWidget::startprocess()
         isProcessing=true;
         while(!pointCouldlists.empty()){
             loadModelFile();
+            if(!isProcessing){ // 加载模型文件异常则跳过本次
+                continue;
+            }
             CompareCloud();
             qDebug()<<"startprocess的updateDistance";
             updateDistance();
@@ -804,7 +803,7 @@ CObject* ElementListWidget::FindObject(QString strAutoName){
 void ElementListWidget::updateDistance()
 {
     qDebug()<<"进入updateDistance";
-    qDebug()<<"队列的大小"<<AlignCouldlists.size();
+    qDebug()<<"对齐点云队列的大小"<<AlignCouldlists.size();
     for (auto a:AlignCouldlists){
         qDebug() << "点云总点数：" << a->points.size() ;
         qDebug() << "点云宽度/高度：" << a->width << " / " << a->height ;
@@ -836,7 +835,6 @@ void ElementListWidget::updateDistance()
         qDebug() << "点云总点数：" << kdtree_cloud->points.size() ;
         qDebug() << "点云宽度/高度：" << kdtree_cloud->width << " / " << kdtree_cloud->height ;
         qDebug() << "点云是否密集（无NaN）：" << (kdtree_cloud->is_dense ? "是" : "否") ;
-
     }
 
 
@@ -889,7 +887,6 @@ void ElementListWidget::updateDistance()
 
 void ElementListWidget::startupdateData(const pcl::KdTreeFLANN<pcl::PointXYZRGB>& kdtree,QVector<CEntity*>distancelist)
 {
-    qDebug()<<"时间进行1秒";
     QVector<CObject*>objlist=m_pMainWin->getObjectListMgr()->getObjectList();
     qDebug()<<"distancelistIndex："<<distancelistIndex;
     qDebug()<<"distancelist:"<<distancelist.size();
@@ -899,287 +896,284 @@ void ElementListWidget::startupdateData(const pcl::KdTreeFLANN<pcl::PointXYZRGB>
         qDebug() << "准备更新检测点";
         UpdateDisNowFun(distancelist);
         return;
-    }else if(stateMachine->configuration().contains(stoppedState)){
+    }/*else if(stateMachine->configuration().contains(stoppedState)){
         qDebug()<<"结束时间";
         return;
     }else if(stateMachine->configuration().contains(pausedState)){
         return;
     }else if(stateMachine->configuration().contains(continueState)){
         qDebug()<<"执行一次";
-    }
+    }*/
     // 更新检测点的父元素
-    if(stateMachine->configuration().contains(runningState)||
-        stateMachine->configuration().contains(continueState)){
-        CObject* obj=nullptr;
-        for( CObject* ob: m_pMainWin->getObjectListMgr()->getObjectList()){
-            if(distancelist[distancelistIndex]->parent[currentIndex]->GetObjectCName()==ob->GetObjectCName()){
-                obj=ob;
-                break;
-            }
+    // if(stateMachine->configuration().contains(runningState)||
+    //     stateMachine->configuration().contains(continueState)){
+    CObject* obj=nullptr;
+    for( CObject* ob: m_pMainWin->getObjectListMgr()->getObjectList()){
+        if(distancelist[distancelistIndex]->parent[currentIndex]->GetObjectCName()==ob->GetObjectCName()){
+            obj=ob;
+            break;
         }
-        qDebug() << "获取当前检测点的父元素，索引：" << currentIndex;
-        currentIndex++;
-        std::vector<int> pointIdxNKNSearch(1);
-        std::vector<float> pointNKNSquaredDistance(1);
-        pcl::PointXYZRGB searchPoint;
-        qDebug()<<"更新"<<obj->m_strAutoName;
-        if(obj->GetUniqueType()==enPoint){//点的情况一种
-            CPoint*point=static_cast<CPoint*>(obj);
+    }
+    qDebug() << "获取当前检测点的父元素，索引：" << currentIndex;
+    currentIndex++;
+    std::vector<int> pointIdxNKNSearch(1);
+    std::vector<float> pointNKNSquaredDistance(1);
+    pcl::PointXYZRGB searchPoint;
+    qDebug()<<"更新"<<obj->m_strAutoName;
+    if(obj->GetUniqueType()==enPoint){//点的情况一种
+        CPoint*point=static_cast<CPoint*>(obj);
+        searchPoint.x=point->GetPt().x;
+        searchPoint.y=point->GetPt().y;
+        searchPoint.z=point->GetPt().z;
+        if (kdtree.nearestKSearch(searchPoint, 1, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
+            int nearestIdx = pointIdxNKNSearch[0];
+            pcl::PointXYZRGB nearestPoint=m_pMainWin->getpWinFileMgr()->cloudptr->points[nearestIdx];
+            if (!pcl::isFinite(nearestPoint)) {
+                qDebug()<<"无效点";
+                return;
+                // 是无效点（NaN 或 Inf）
+            }
+            for(int i=0;i<objlist.size();i++){
+                if(m_pMainWin->getObjectListMgr()->getObjectList()[i]->GetObjectCName()==obj->GetObjectCName()){
+                    CPoint*point1=static_cast<CPoint*>(objlist[i]);
+                    CPosition pt;
+                    pt.x=nearestPoint.x;pt.y=nearestPoint.y;pt.z=nearestPoint.z;
+                    point1->SetPosition(pt);
+                    list.push_back(point1);
+                    qDebug()<<"更新距离断点1";
+                    QString str=obj->GetObjectCName()+"测量完成";
+                    m_pMainWin->getPWinVtkPresetWidget()->setWidget(str);
+                    break;
+                }
+            }
+            qDebug()<<"更新距离断点2";
+        }
+    }else if(obj->GetUniqueType()==enPlane){//面的情况分三种
+        qDebug()<<obj->parent.size();
+        QVector<CObject*>planelist = obj->parent;
+        qDebug()<<planelist.size();
+        CPlane*plane=static_cast<CPlane*>(obj);
+        if(planelist.size()==3){//面由三个点构造
+            QVector<CPosition>positionlist;
+            for(CObject*planePt:planelist){
+                qDebug()<<"点"<<planePt->m_strAutoName;
+                if(planePt->GetUniqueType()!=enPoint)
+                    qDebug()<<"不是点类型";
+                //这里的点是有问题的
+                CPoint*point=static_cast<CPoint*>(FindObject(planePt->m_strAutoName));
+
+                searchPoint.x=point->GetPt().x;
+                searchPoint.y=point->GetPt().y;
+                searchPoint.z=point->GetPt().z;
+
+                qDebug()<<point->GetPt().x;
+                qDebug()<<point->GetPt().y;
+                qDebug()<<point->GetPt().z;
+                qDebug()<<"之前";
+
+                if (!pcl::isFinite(searchPoint)) {
+                    // 处理无效查询点，例如忽略该查询或者进行修正
+                    qDebug()<<("查询点坐标无效，跳过此次查询\n");
+                    positionlist.push_back(point->GetPt());
+                    continue;
+                }
+                if (kdtree.nearestKSearch(searchPoint, 1, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
+                    qDebug()<<"中间";
+                    int nearestIdx = pointIdxNKNSearch[0];
+                    CPosition pt;
+                    if(!m_pMainWin->getpWinFileMgr()->getCloudPtr() || m_pMainWin->getpWinFileMgr()->cloudptr->empty()){
+                        qDebug() << "cloudptr无效";
+                        positionlist.push_back(point->GetPt());
+                        continue;
+                    }
+                    if(m_pMainWin->getpWinFileMgr()->cloudptr->points.size()<=nearestIdx){
+                        qDebug()<<"索引越界,当前索引:"<<nearestIdx; // 索引越界则用原来的点构造
+                        positionlist.push_back(point->GetPt());
+                        continue;
+                    }
+                    pcl::PointXYZRGB nearestPoint = m_pMainWin->getpWinFileMgr()->cloudptr->points[nearestIdx];
+                    qDebug() << "拿到近邻点"<<nearestPoint.x<<nearestPoint.y<<nearestPoint.z;
+                    if(!pcl::isFinite(nearestPoint)) {
+                        qDebug()<<"无效点";
+                        positionlist.push_back(point->GetPt());
+                        continue;
+                    }
+                    pt.x=nearestPoint.x;
+                    pt.y=nearestPoint.y;
+                    pt.z=nearestPoint.z;
+                    qDebug() << "近邻更新后的点:"<<pt.x<<pt.y<<pt.z;
+                    point->SetPosition(pt);
+                    positionlist.push_back(pt);
+                }
+                qDebug()<<"之后";
+            }
+            PlaneConstructor constructor;
+            if(positionlist.size()==3){
+
+                CPlane*plane1=constructor.createPlane(positionlist[0],positionlist[1],positionlist[2]);
+                plane=plane1;
+                QString str=obj->GetObjectCName()+"测量完成";
+                m_pMainWin->getPWinVtkPresetWidget()->setWidget(str);
+                list.push_back(plane);
+            }else{
+                qDebug()<<"点数不足三个，无法构成平面";
+            }
+        }else if(planelist.size()==2){//面由面与面构造
+            QVector<CPlane*>planeparentlist;
+            for(CObject*planePlane:planelist){
+                QVector<CPosition>positionlist;
+                for(CObject*planePt:planePlane->parent){
+                    CPoint*point=static_cast<CPoint*>(FindObject(planePt->m_strAutoName));
+                    searchPoint.x=point->GetPt().x;
+                    searchPoint.y=point->GetPt().y;
+                    searchPoint.z=point->GetPt().z;
+                    if (kdtree.nearestKSearch(searchPoint, 1, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
+                        int nearestIdx = pointIdxNKNSearch[0];
+                        pcl::PointXYZRGB nearestPoint = m_pMainWin->getpWinFileMgr()->cloudptr->points[nearestIdx];
+                        CPosition pt;
+                        pt.x=nearestPoint.x;
+                        pt.y=nearestPoint.y;
+                        pt.z=nearestPoint.z;
+                        point->SetPosition(pt);
+                        positionlist.push_back(pt);
+                    }
+                }
+                PlaneConstructor constructor;
+                if(positionlist.size()==3){
+                    CPlane*plane1=constructor.createPlane(positionlist[0],positionlist[1],positionlist[2]);
+                    planePlane=plane1;
+                    planeparentlist.push_back(plane1);
+                }
+            }
+            PlaneConstructor constructor;
+            if(planeparentlist.size()==2){
+                CPlane*plane1=constructor.createPlane(planeparentlist[0],planeparentlist[1]);
+                plane=plane1;
+                qDebug()<<"plane"<<plane1->getCenter().x;
+                QString str=obj->GetObjectCName()+"测量完成";
+                m_pMainWin->getPWinVtkPresetWidget()->setWidget(str);
+                list.push_back(plane);
+            }
+        }else if(planelist.size()==0){//面是拟合而来
+            CObject*FindPoint = obj->parent[0];
+            CPoint*point=static_cast<CPoint*>(FindPoint);
             searchPoint.x=point->GetPt().x;
             searchPoint.y=point->GetPt().y;
             searchPoint.z=point->GetPt().z;
             if (kdtree.nearestKSearch(searchPoint, 1, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
                 int nearestIdx = pointIdxNKNSearch[0];
-                pcl::PointXYZRGB nearestPoint=m_pMainWin->getpWinFileMgr()->cloudptr->points[nearestIdx];
-                if (!pcl::isFinite(nearestPoint)) {
-                    qDebug()<<"无效点";
-                    return;
-                    // 是无效点（NaN 或 Inf）
-                }
-                for(int i=0;i<objlist.size();i++){
-                    if(m_pMainWin->getObjectListMgr()->getObjectList()[i]->GetObjectCName()==obj->GetObjectCName()){
-                        CPoint*point1=static_cast<CPoint*>(objlist[i]);
-                        CPosition pt;
-                        pt.x=nearestPoint.x;pt.y=nearestPoint.y;pt.z=nearestPoint.z;
-                        point1->SetPosition(pt);
-                        list.push_back(point1);
-                        qDebug()<<"更新距离断点1";
-                        QString str=obj->GetObjectCName()+"测量完成";
-                        m_pMainWin->getPWinVtkPresetWidget()->setWidget(str);
-                        break;
-                    }
-                }
-                qDebug()<<"更新距离断点2";
+                pcl::PointXYZRGB nearestPoint = m_pMainWin->getpWinFileMgr()->cloudptr->points[nearestIdx];
+                CPosition pt;
+                pt.x=nearestPoint.x;
+                pt.y=nearestPoint.y;
+                pt.z=nearestPoint.z;
+                point->SetPosition(pt);
             }
-        }else if(obj->GetUniqueType()==enPlane){//面的情况分三种
-            qDebug()<<obj->parent.size();
-            QVector<CObject*>planelist = obj->parent;
-            qDebug()<<planelist.size();
-            CPlane*plane=static_cast<CPlane*>(obj);
-            if(planelist.size()==3){//面由三个点构造
-                QVector<CPosition>positionlist;
-                for(CObject*planePt:planelist){
-                    qDebug()<<"点"<<planePt->m_strAutoName;
-                    if(planePt->GetUniqueType()!=enPoint)
-                        qDebug()<<"不是点类型";
-                    //这里的点是有问题的
-                    CPoint*point=static_cast<CPoint*>(FindObject(planePt->m_strAutoName));
-
-                    searchPoint.x=point->GetPt().x;
-                    searchPoint.y=point->GetPt().y;
-                    searchPoint.z=point->GetPt().z;
-
-                    qDebug()<<point->GetPt().x;
-                    qDebug()<<point->GetPt().y;
-                    qDebug()<<point->GetPt().z;
-                    qDebug()<<"之前";
-
-                    if (!pcl::isFinite(searchPoint)) {
-                        // 处理无效查询点，例如忽略该查询或者进行修正
-                        qDebug()<<("查询点坐标无效，跳过此次查询\n");
-                        positionlist.push_back(point->GetPt());
-                        continue;
-                    }
-                    if (kdtree.nearestKSearch(searchPoint, 1, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
-                        qDebug()<<"中间";
-                        int nearestIdx = pointIdxNKNSearch[0];
-                        CPosition pt;
-                        if(!m_pMainWin->getpWinFileMgr()->getCloudPtr() || m_pMainWin->getpWinFileMgr()->cloudptr->empty()){
-                            qDebug() << "cloudptr无效";
-                            positionlist.push_back(point->GetPt());
-                            continue;
-                        }
-                        if(m_pMainWin->getpWinFileMgr()->cloudptr->points.size()<=nearestIdx){
-                            qDebug()<<"索引越界,当前索引:"<<nearestIdx; // 索引越界则用原来的点构造
-                            positionlist.push_back(point->GetPt());
-                            continue;
-                        }
-                        pcl::PointXYZRGB nearestPoint = m_pMainWin->getpWinFileMgr()->cloudptr->points[nearestIdx];
-                        qDebug() << "拿到近邻点"<<nearestPoint.x<<nearestPoint.y<<nearestPoint.z;
-                        if(!pcl::isFinite(nearestPoint)) {
-                            qDebug()<<"无效点";
-                            positionlist.push_back(point->GetPt());
-                            continue;
-                        }
-                        pt.x=nearestPoint.x;
-                        pt.y=nearestPoint.y;
-                        pt.z=nearestPoint.z;
-                        qDebug() << "近邻更新后的点:"<<pt.x<<pt.y<<pt.z;
-                        point->SetPosition(pt);
-                        positionlist.push_back(pt);
-                    }
-                    qDebug()<<"之后";
-                }
-                PlaneConstructor constructor;
-                if(positionlist.size()==3){
-
-                    CPlane*plane1=constructor.createPlane(positionlist[0],positionlist[1],positionlist[2]);
-                    plane=plane1;
-                    QString str=obj->GetObjectCName()+"测量完成";
-                    m_pMainWin->getPWinVtkPresetWidget()->setWidget(str);
-                    list.push_back(plane);
-                }else{
-                    qDebug()<<"点数不足三个，无法构成平面";
-                }
-            }else if(planelist.size()==2){//面由面与面构造
-                QVector<CPlane*>planeparentlist;
-                for(CObject*planePlane:planelist){
-                    QVector<CPosition>positionlist;
-                    for(CObject*planePt:planePlane->parent){
-                        CPoint*point=static_cast<CPoint*>(FindObject(planePt->m_strAutoName));
-                        searchPoint.x=point->GetPt().x;
-                        searchPoint.y=point->GetPt().y;
-                        searchPoint.z=point->GetPt().z;
-                        if (kdtree.nearestKSearch(searchPoint, 1, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
-                            int nearestIdx = pointIdxNKNSearch[0];
-                            pcl::PointXYZRGB nearestPoint = m_pMainWin->getpWinFileMgr()->cloudptr->points[nearestIdx];
-                            CPosition pt;
-                            pt.x=nearestPoint.x;
-                            pt.y=nearestPoint.y;
-                            pt.z=nearestPoint.z;
-                            point->SetPosition(pt);
-                            positionlist.push_back(pt);
-                        }
-                    }
-                    PlaneConstructor constructor;
-                    if(positionlist.size()==3){
-                        CPlane*plane1=constructor.createPlane(positionlist[0],positionlist[1],positionlist[2]);
-                        planePlane=plane1;
-                        planeparentlist.push_back(plane1);
-                    }
-                }
-                PlaneConstructor constructor;
-                if(planeparentlist.size()==2){
-                    CPlane*plane1=constructor.createPlane(planeparentlist[0],planeparentlist[1]);
-                    plane=plane1;
-                    qDebug()<<"plane"<<plane1->getCenter().x;
-                    QString str=obj->GetObjectCName()+"测量完成";
-                    m_pMainWin->getPWinVtkPresetWidget()->setWidget(str);
-                    list.push_back(plane);
-                }
-
-
-
-            }else if(planelist.size()==0){//面是拟合而来
-                CObject*FindPoint = obj->parent[0];
-                CPoint*point=static_cast<CPoint*>(FindPoint);
-                searchPoint.x=point->GetPt().x;
-                searchPoint.y=point->GetPt().y;
-                searchPoint.z=point->GetPt().z;
-                if (kdtree.nearestKSearch(searchPoint, 1, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
-                    int nearestIdx = pointIdxNKNSearch[0];
-                    pcl::PointXYZRGB nearestPoint = m_pMainWin->getpWinFileMgr()->cloudptr->points[nearestIdx];
-                    CPosition pt;
-                    pt.x=nearestPoint.x;
-                    pt.y=nearestPoint.y;
-                    pt.z=nearestPoint.z;
-                    point->SetPosition(pt);
-                }
-                pcl::PointXYZRGB  Findpoint;
-                Findpoint.x=point->GetPt().x;
-                Findpoint.y=point->GetPt().y;
-                Findpoint.z=point->GetPt().z;
-                // 获取拟合用的点云指针
-                auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
-                auto Fplane=m_pMainWin->getPWinSetDataWidget()->getPlane();
-                Fplane->setRadius(plane->rad);
-                Fplane->setDistance(plane->dis);
-                auto could = m_pMainWin->getPWinSetDataWidget()->getPlane()->RANSAC(Findpoint,cloudptr);
-                PlaneConstructor constructor;
-                CPlane* newPlane;
-                CPosition center;
-                center.x=Fplane->getCenter()[0];
-                center.y=Fplane->getCenter()[1];
-                center.z=Fplane->getCenter()[2];
-                QVector4D normal(Fplane->getNormal().x(),Fplane->getNormal().y(),Fplane->getNormal().z(),0);
-                QVector4D direction(Fplane->getLength_Direction().x(),Fplane->getLength_Direction().y(),Fplane->getLength_Direction().z(),0);
-                newPlane=constructor.createPlane(center,normal,direction,Fplane->getLength(),Fplane->getWidth());
-                --(newPlane->plainCount);
-                newPlane->parent.push_back(point);
-                newPlane->isFind=true;
-                if(newPlane==nullptr){
-                    qDebug()<<"拟合平面生成错误";
-                    return ;
-                }
-                plane = newPlane;
-                QString str=obj->GetObjectCName()+"测量完成";
-                m_pMainWin->getPWinVtkPresetWidget()->setWidget(str);
-                list.push_back(plane);
+            pcl::PointXYZRGB  Findpoint;
+            Findpoint.x=point->GetPt().x;
+            Findpoint.y=point->GetPt().y;
+            Findpoint.z=point->GetPt().z;
+            // 获取拟合用的点云指针
+            auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
+            auto Fplane=m_pMainWin->getPWinSetDataWidget()->getPlane();
+            Fplane->setRadius(plane->rad);
+            Fplane->setDistance(plane->dis);
+            auto could = m_pMainWin->getPWinSetDataWidget()->getPlane()->RANSAC(Findpoint,cloudptr);
+            PlaneConstructor constructor;
+            CPlane* newPlane;
+            CPosition center;
+            center.x=Fplane->getCenter()[0];
+            center.y=Fplane->getCenter()[1];
+            center.z=Fplane->getCenter()[2];
+            QVector4D normal(Fplane->getNormal().x(),Fplane->getNormal().y(),Fplane->getNormal().z(),0);
+            QVector4D direction(Fplane->getLength_Direction().x(),Fplane->getLength_Direction().y(),Fplane->getLength_Direction().z(),0);
+            newPlane=constructor.createPlane(center,normal,direction,Fplane->getLength(),Fplane->getWidth());
+            --(newPlane->plainCount);
+            newPlane->parent.push_back(point);
+            newPlane->isFind=true;
+            if(newPlane==nullptr){
+                qDebug()<<"拟合平面生成错误";
+                return ;
             }
-        }else if(obj->GetUniqueType()==enLine){//线的情况两种
-            QVector<CPosition>positionlists;
-            QVector<CPosition>positionlist;
-            CLine*line=(CLine*)obj;
-            if(line->parent.size()==1){//线是拟合而来
-                CPoint*pointline=(CPoint*)line->parent[0];
-                CPosition point = pointline->GetPt();
-                positionlists.push_back(point);
-            }else{//线由两个点构造
-                positionlists.push_back(line->getPosition1());
-                positionlists.push_back(line->getPosition2());
-            }
-            for(CPosition pt:positionlists){
-                searchPoint.x=pt.x;
-                searchPoint.y=pt.y;
-                searchPoint.z=pt.z;
-                if (kdtree.nearestKSearch(searchPoint, 1, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
-                    int nearestIdx = pointIdxNKNSearch[0];
-                    pcl::PointXYZRGB nearestPoint = m_pMainWin->getpWinFileMgr()->cloudptr->points[nearestIdx];
-                    CPosition pt;
-                    if (!pcl::isFinite(nearestPoint)) {
-                        qDebug()<<"无效点";
-                        continue;
-                        // 是无效点（NaN 或 Inf）
-                    }
-                    pt.x=nearestPoint.x;
-                    pt.y=nearestPoint.y;
-                    pt.z=nearestPoint.z;
-                    positionlist.push_back(pt);
-                }
-            }
-            if(line->parent.size()==1){//线是拟合而来故仅有一个点来源
-                pcl::PointXYZRGB  Findpoint;
-                Findpoint.x=positionlist[0].x;
-                Findpoint.y=positionlist[0].y;
-                Findpoint.z=positionlist[0].z;
-                CPoint*pointline=(CPoint*)line->parent[0];
-                pointline->SetPosition(positionlist[0]);
-                // 获取拟合用的点云指针
-                auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
-                auto Fline=m_pMainWin->getPWinSetDataWidget()->getLine();
-                Fline->setDistance(line->dis);
-                auto could = m_pMainWin->getPWinSetDataWidget()->getLine()->RANSAC(Findpoint,cloudptr);
-                LineConstructor constructor;
-                CLine* newLine;
-                CPosition begin,end;
-                begin.x=Fline->getBegin().x();
-                begin.y=Fline->getBegin().y();
-                begin.z=Fline->getBegin().z();
-                end.x=Fline->getEnd().x();
-                end.y=Fline->getEnd().y();
-                end.z=Fline->getEnd().z();
-                newLine=constructor.createLine(begin,end);
-                newLine->parent.push_back(pointline);
-                line=newLine;
-            }else{
-                line->SetPosition(positionlist[0],positionlist[1]);
-            }
+            plane = newPlane;
             QString str=obj->GetObjectCName()+"测量完成";
             m_pMainWin->getPWinVtkPresetWidget()->setWidget(str);
-            list.push_back(line);
+            list.push_back(plane);
         }
-        //显示左侧元素被选中效果
-        for(int i=0;i<objlist.size();i++){
-            if(obj->GetObjectCName()==objlist[i]->GetObjectCName()){
-                m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
-                m_pMainWin->getPWinVtkWidget()->onHighLightActor(m_pMainWin->getEntityListMgr()->getEntityList()[i]);
-                QTreeWidgetItem *item = treeWidgetNames->topLevelItem(i);
-                qDebug()<<"更新距离断点3";
-                treeWidgetNames->setCurrentItem(item);
-                break;
+    }else if(obj->GetUniqueType()==enLine){//线的情况两种
+        QVector<CPosition>positionlists;
+        QVector<CPosition>positionlist;
+        CLine*line=(CLine*)obj;
+        if(line->parent.size()==1){//线是拟合而来
+            CPoint*pointline=(CPoint*)line->parent[0];
+            CPosition point = pointline->GetPt();
+            positionlists.push_back(point);
+        }else{//线由两个点构造
+            positionlists.push_back(line->getPosition1());
+            positionlists.push_back(line->getPosition2());
+        }
+        for(CPosition pt:positionlists){
+            searchPoint.x=pt.x;
+            searchPoint.y=pt.y;
+            searchPoint.z=pt.z;
+            if (kdtree.nearestKSearch(searchPoint, 1, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
+                int nearestIdx = pointIdxNKNSearch[0];
+                pcl::PointXYZRGB nearestPoint = m_pMainWin->getpWinFileMgr()->cloudptr->points[nearestIdx];
+                CPosition pt;
+                if (!pcl::isFinite(nearestPoint)) {
+                    qDebug()<<"无效点";
+                    continue;
+                    // 是无效点（NaN 或 Inf）
+                }
+                pt.x=nearestPoint.x;
+                pt.y=nearestPoint.y;
+                pt.z=nearestPoint.z;
+                positionlist.push_back(pt);
             }
         }
+        if(line->parent.size()==1){//线是拟合而来故仅有一个点来源
+            pcl::PointXYZRGB  Findpoint;
+            Findpoint.x=positionlist[0].x;
+            Findpoint.y=positionlist[0].y;
+            Findpoint.z=positionlist[0].z;
+            CPoint*pointline=(CPoint*)line->parent[0];
+            pointline->SetPosition(positionlist[0]);
+            // 获取拟合用的点云指针
+            auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
+            auto Fline=m_pMainWin->getPWinSetDataWidget()->getLine();
+            Fline->setDistance(line->dis);
+            auto could = m_pMainWin->getPWinSetDataWidget()->getLine()->RANSAC(Findpoint,cloudptr);
+            LineConstructor constructor;
+            CLine* newLine;
+            CPosition begin,end;
+            begin.x=Fline->getBegin().x();
+            begin.y=Fline->getBegin().y();
+            begin.z=Fline->getBegin().z();
+            end.x=Fline->getEnd().x();
+            end.y=Fline->getEnd().y();
+            end.z=Fline->getEnd().z();
+            newLine=constructor.createLine(begin,end);
+            newLine->parent.push_back(pointline);
+            line=newLine;
+        }else{
+            line->SetPosition(positionlist[0],positionlist[1]);
+        }
+        QString str=obj->GetObjectCName()+"测量完成";
+        m_pMainWin->getPWinVtkPresetWidget()->setWidget(str);
+        list.push_back(line);
     }
+    //显示左侧元素被选中效果
+    for(int i=0;i<objlist.size();i++){
+        if(obj->GetObjectCName()==objlist[i]->GetObjectCName()){
+            m_pMainWin->getEntityListMgr()->getEntityList()[i]->SetSelected(true);
+            m_pMainWin->getPWinVtkWidget()->onHighLightActor(m_pMainWin->getEntityListMgr()->getEntityList()[i]);
+            QTreeWidgetItem *item = treeWidgetNames->topLevelItem(i);
+            qDebug()<<"更新距离断点3";
+            treeWidgetNames->setCurrentItem(item);
+            break;
+        }
+    }
+    // }
 }
 
 
@@ -1288,10 +1282,16 @@ void ElementListWidget::loadModelFile()
     m_pMainWin->peopleOpenfile = false;
     QString s = filetypelists.dequeue();
     qDebug()<<s;
-    //m_pMainWin->filePathChange = m_pMainWin->modelPath+"/model"+s+"/"+s+"stand.ply";
+        // 组装完整路径
+    const QString filePath = QString("%1/model%2/%2stand.qins")
+                                 .arg(m_pMainWin->modelPath, s);
+    qDebug() << "要打开的模型文件路径" << filePath;
+    if(!QFile::exists(filePath)){
+        isProcessing = false;
+        return;
+    }
 
-    m_pMainWin->filePathChange = m_pMainWin->modelPath+"/model"+s+"/"+s+"stand.qins";
-    qDebug()<<"要打开的模型文件路径"<<m_pMainWin->filePathChange;
+    m_pMainWin->filePathChange = filePath;
     m_pMainWin->openFile();
     m_pMainWin->peopleOpenfile = true;
     qinsSize = m_pMainWin->getEntityListMgr()->getEntityList().size()-size;
