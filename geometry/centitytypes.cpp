@@ -1369,6 +1369,7 @@ bool CDistance::judge()
     if(distance<=uptolerance&&distance>=undertolerance){
         qualified=true;
     }
+    else qualified = false;
     return qualified;
 }
 
@@ -1438,6 +1439,7 @@ bool CAngle::judge()
     if(angleValue<=uptolerance&&angleValue>=undertolerance){
         qualified=true;
     }
+    else qualified = false;
     return qualified;
 }
 

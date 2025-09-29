@@ -802,40 +802,37 @@ CObject* ElementListWidget::FindObject(QString strAutoName){
 }
 void ElementListWidget::updateDistance()
 {
-    qDebug()<<"进入updateDistance";
     qDebug()<<"对齐点云队列的大小"<<AlignCouldlists.size();
-    for (auto a:AlignCouldlists){
-        qDebug() << "点云总点数：" << a->points.size() ;
-        qDebug() << "点云宽度/高度：" << a->width << " / " << a->height ;
-        qDebug() << "点云是否密集（无NaN）：" << (a->is_dense ? "是" : "否") ;
-    }
-    qDebug()<<"更新前";
-    qDebug() << "===================== KdTree 关联的点云数据 =====================" ;
-    // 3.1 先获取Kd树关联的点云（通过getInputCloud()接口）
-    pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr kdtree_cloud = kdtree.getInputCloud();
-    if (kdtree_cloud)
-    {
-        // 3.2 输出点云的基本信息（点数、密度等）
-        qDebug() << "点云总点数：" << kdtree_cloud->points.size() ;
-        qDebug() << "点云宽度/高度：" << kdtree_cloud->width << " / " << kdtree_cloud->height ;
-        qDebug() << "点云是否密集（无NaN）：" << (kdtree_cloud->is_dense ? "是" : "否") ;
-
-    }
-
+    // for (auto a:AlignCouldlists){
+    //     qDebug() << "点云总点数：" << a->points.size() ;
+    //     qDebug() << "点云宽度/高度：" << a->width << " / " << a->height ;
+    //     qDebug() << "点云是否密集（无NaN）：" << (a->is_dense ? "是" : "否") ;
+    // }
+    // qDebug()<<"更新前";
+    // qDebug() << "===================== KdTree 关联的点云数据 =====================" ;
+    // // 3.1 先获取Kd树关联的点云（通过getInputCloud()接口）
+    // pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr kdtree_cloud = kdtree.getInputCloud();
+    // if (kdtree_cloud)
+    // {
+    //     // 3.2 输出点云的基本信息（点数、密度等）
+    //     qDebug() << "点云总点数：" << kdtree_cloud->points.size() ;
+    //     qDebug() << "点云宽度/高度：" << kdtree_cloud->width << " / " << kdtree_cloud->height ;
+    //     qDebug() << "点云是否密集（无NaN）：" << (kdtree_cloud->is_dense ? "是" : "否") ;
+    // }
 
     // 从对齐后的点云队列中取出第一个 更新检测点
     kdtree.setInputCloud(AlignCouldlists.dequeue());
-    qDebug()<<"更新后";
-    qDebug() << "===================== KdTree 关联的点云数据 =====================" ;
-    // 3.1 先获取Kd树关联的点云（通过getInputCloud()接口）
-    kdtree_cloud = kdtree.getInputCloud();
-    if (kdtree_cloud)
-    {
-        // 3.2 输出点云的基本信息（点数、密度等）
-        qDebug() << "点云总点数：" << kdtree_cloud->points.size() ;
-        qDebug() << "点云宽度/高度：" << kdtree_cloud->width << " / " << kdtree_cloud->height ;
-        qDebug() << "点云是否密集（无NaN）：" << (kdtree_cloud->is_dense ? "是" : "否") ;
-    }
+    // qDebug()<<"更新后";
+    // qDebug() << "===================== KdTree 关联的点云数据 =====================" ;
+    // // 3.1 先获取Kd树关联的点云（通过getInputCloud()接口）
+    // kdtree_cloud = kdtree.getInputCloud();
+    // if (kdtree_cloud)
+    // {
+    //     // 3.2 输出点云的基本信息（点数、密度等）
+    //     qDebug() << "点云总点数：" << kdtree_cloud->points.size() ;
+    //     qDebug() << "点云宽度/高度：" << kdtree_cloud->width << " / " << kdtree_cloud->height ;
+    //     qDebug() << "点云是否密集（无NaN）：" << (kdtree_cloud->is_dense ? "是" : "否") ;
+    // }
 
 
     pointCouldlists.dequeue();
@@ -853,7 +850,7 @@ void ElementListWidget::updateDistance()
     for(int i=0;i<disAndanglelist.size();i++){
         currentIndex=0;
         for(int j=0;j<disAndanglelist[i]->parent.size()+1;j++){
-            startupdateData(kdtree,disAndanglelist);
+            startupdateData(kdtree,disAndanglelist); // 更新检测点及其父元素
         }
     }
 
@@ -904,6 +901,7 @@ void ElementListWidget::startupdateData(const pcl::KdTreeFLANN<pcl::PointXYZRGB>
     }else if(stateMachine->configuration().contains(continueState)){
         qDebug()<<"执行一次";
     }*/
+
     // 更新检测点的父元素
     // if(stateMachine->configuration().contains(runningState)||
     //     stateMachine->configuration().contains(continueState)){
@@ -925,8 +923,12 @@ void ElementListWidget::startupdateData(const pcl::KdTreeFLANN<pcl::PointXYZRGB>
         searchPoint.x=point->GetPt().x;
         searchPoint.y=point->GetPt().y;
         searchPoint.z=point->GetPt().z;
-        if (kdtree.nearestKSearch(searchPoint, 1, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
+        if (kdtree.nearestKSearch(searchPoint, 10, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
             int nearestIdx = pointIdxNKNSearch[0];
+            if(m_pMainWin->getpWinFileMgr()->cloudptr->points.size()<=nearestIdx){
+                qDebug()<<"索引越界,当前索引:"<<nearestIdx; // 索引越界则用原来的点构造
+                list.push_back(point);
+            }
             pcl::PointXYZRGB nearestPoint=m_pMainWin->getpWinFileMgr()->cloudptr->points[nearestIdx];
             if (!pcl::isFinite(nearestPoint)) {
                 qDebug()<<"无效点";
@@ -937,16 +939,17 @@ void ElementListWidget::startupdateData(const pcl::KdTreeFLANN<pcl::PointXYZRGB>
                 if(m_pMainWin->getObjectListMgr()->getObjectList()[i]->GetObjectCName()==obj->GetObjectCName()){
                     CPoint*point1=static_cast<CPoint*>(objlist[i]);
                     CPosition pt;
-                    pt.x=nearestPoint.x;pt.y=nearestPoint.y;pt.z=nearestPoint.z;
+                    pt.x=nearestPoint.x;
+                    pt.y=nearestPoint.y;
+                    pt.z=nearestPoint.z;
                     point1->SetPosition(pt);
                     list.push_back(point1);
-                    qDebug()<<"更新距离断点1";
                     QString str=obj->GetObjectCName()+"测量完成";
                     m_pMainWin->getPWinVtkPresetWidget()->setWidget(str);
                     break;
                 }
             }
-            qDebug()<<"更新距离断点2";
+            qDebug()<<"点更新完毕";
         }
     }else if(obj->GetUniqueType()==enPlane){//面的情况分三种
         qDebug()<<obj->parent.size();
@@ -977,7 +980,7 @@ void ElementListWidget::startupdateData(const pcl::KdTreeFLANN<pcl::PointXYZRGB>
                     positionlist.push_back(point->GetPt());
                     continue;
                 }
-                if (kdtree.nearestKSearch(searchPoint, 1, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
+                if (kdtree.nearestKSearch(searchPoint, 10, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
                     qDebug()<<"中间";
                     int nearestIdx = pointIdxNKNSearch[0];
                     CPosition pt;
@@ -1060,7 +1063,7 @@ void ElementListWidget::startupdateData(const pcl::KdTreeFLANN<pcl::PointXYZRGB>
             searchPoint.x=point->GetPt().x;
             searchPoint.y=point->GetPt().y;
             searchPoint.z=point->GetPt().z;
-            if (kdtree.nearestKSearch(searchPoint, 1, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
+            if (kdtree.nearestKSearch(searchPoint, 10, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
                 int nearestIdx = pointIdxNKNSearch[0];
                 pcl::PointXYZRGB nearestPoint = m_pMainWin->getpWinFileMgr()->cloudptr->points[nearestIdx];
                 CPosition pt;
@@ -1116,7 +1119,7 @@ void ElementListWidget::startupdateData(const pcl::KdTreeFLANN<pcl::PointXYZRGB>
             searchPoint.x=pt.x;
             searchPoint.y=pt.y;
             searchPoint.z=pt.z;
-            if (kdtree.nearestKSearch(searchPoint, 1, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
+            if (kdtree.nearestKSearch(searchPoint, 10, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
                 int nearestIdx = pointIdxNKNSearch[0];
                 pcl::PointXYZRGB nearestPoint = m_pMainWin->getpWinFileMgr()->cloudptr->points[nearestIdx];
                 CPosition pt;
@@ -1212,11 +1215,11 @@ void ElementListWidget::UpdateDisNowFun(QVector<CEntity*>distancelist)
                 if(objlist[i]->GetUniqueType()==enAngle){
                     AngleConstructor Constructor;
                     CAngle*angles=Constructor.createAngle(plane[0],plane[1]);
-                    angle=angles;
+                    *angle=*angles;
                 }else{
                     DistanceConstructor Constructor;
                     CDistance *diss=Constructor.createDistance(plane[0],plane[1]);
-                    dis=diss;
+                    *dis=*diss;
                     //dis->setplane(*plane[0]);
                     //dis->setplane(*plane[1]);
                 }
@@ -1228,7 +1231,7 @@ void ElementListWidget::UpdateDisNowFun(QVector<CEntity*>distancelist)
             }else if(line.size()==1&&plane.size()==1){
                 AngleConstructor Constructor;
                 CAngle*angles=Constructor.createAngle(line[0],plane[0]);
-                angle=angles;
+                *angle=*angles;
             }
             //qDebug()<<"距离"<<dis->getdistancepoint();
             QTreeWidgetItem *item = treeWidgetNames->topLevelItem(i);
