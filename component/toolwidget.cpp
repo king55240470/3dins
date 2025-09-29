@@ -946,13 +946,64 @@ void  ToolWidget:: ExtractData(QVector<CEntity *>& entitylist,QList<QList<QStrin
 }
 
 void   ToolWidget::ExtractData(QVector<CEntity *>& entitylist,QList<QList<QString>>& dataAll,QList<QString>& data_PointCloud){
+
+
     m_saveFirstDistance=false;
+    auto objlist=m_pMainWin->getObjectListMgr()->getObjectList();
+    for(auto& entity:entitylist){
+
+        if(entity->GetUniqueType()==enLine){
+            for(int i = 0; i < objlist.size(); i++){
+                auto* obj = objlist[i];
+                if (!obj || !entity) {
+                    continue;
+                }
+                bool match = (obj->m_strAutoName == entity->m_strAutoName ||
+                              obj->m_strCName == entity->m_strAutoName ||
+                              entity->m_strAutoName.contains(obj->m_strAutoName) ||
+                              entity->m_strAutoName.contains(obj->m_strCName));
+                if(match){
+                   CLine* line=(CLine*)obj;
+                    qDebug()<<"Objlist中线的数据为:";
+                    qDebug()<<line->getBegin().x<<line->getBegin().y<<line->getBegin().z;
+                    qDebug()<<line->getEnd().x<<line->getEnd().y<<line->getEnd().z;
+                    break;
+                }
+
+            }
+            CLine* line=(CLine*)entity;
+           qDebug()<<"线的数据为:";
+           qDebug()<<line->getBegin().x<<line->getBegin().y<<line->getBegin().z;
+           qDebug()<<line->getEnd().x<<line->getEnd().y<<line->getEnd().z;
+        }
+        ;
+    }
     for (int i = 0; i < entitylist.size(); i++) {
         QList<QString> inList;
         CEntity* entity=entitylist[i];
+        CEntity* obj_entity=nullptr;
+        for(int i = 0; i < objlist.size(); i++){
+            auto* obj = objlist[i];
+            if (!obj || !entity) {
+                continue;
+            }
+            bool match = (obj->m_strAutoName == entity->m_strAutoName ||
+                          obj->m_strCName == entity->m_strAutoName ||
+                          entity->m_strAutoName.contains(obj->m_strAutoName) ||
+                          entity->m_strAutoName.contains(obj->m_strCName));
+            if(match){
+                obj_entity=(CEntity*)obj;
+                break;
+            }
+        }
         qDebug()<<"提取"<<entity->m_strAutoName<<"数据";
         if(entity->GetUniqueType()==enDistance){
-            CDistance* Distance=(CDistance*) entity;
+            CDistance* Distance=(CDistance*) obj_entity;
+            CDistance* ent_Distance=(CDistance*) entity;
+            qDebug()<<"objilist距离的值为:";
+            qDebug()<<Distance->getdistance();
+            qDebug()<<"entitylist距离的值为:";
+            qDebug()<<ent_Distance->getdistance();
             inList<<"距离";
             inList<<Distance->m_strAutoName;
             inList<<QString::number(abs(Distance->getdistance()),'f',6);
@@ -971,9 +1022,14 @@ void   ToolWidget::ExtractData(QVector<CEntity *>& entitylist,QList<QList<QStrin
 
         }
         else if (entity->GetUniqueType()==enAngle){
-            CAngle* Angle=(CAngle*)entity;
+            CAngle* Angle=(CAngle*)obj_entity;
+            CAngle* ent_Angle=(CAngle*)entity;
             inList<<"角度";
             inList<<Angle->m_strAutoName;
+            qDebug()<<"objilist角度的值为:";
+            qDebug()<<Angle->getAngleValue();
+            qDebug()<<"entitylist角度与的值为:";
+            qDebug()<<ent_Angle->getAngleValue();
             inList<<QString::number(abs(Angle->getAngleValue()),'f',6);
             inList<<QString::number(Angle->getUptolerance(),'f',6);
             inList<<QString::number(Angle->getUndertolerance(),'f',6);
@@ -1080,11 +1136,25 @@ void  ToolWidget:: ExtractData(QVector<CEntity *>& entitylist,QList<QList<QStrin
 }
 
 void   ToolWidget::ExtractData(QVector<CEntity *>& entitylist,QList<Size_MeasurementData>&dataAll_size,Size_MeasurementData& data_pointCloud_size){
-
+    auto objlist=m_pMainWin->getObjectListMgr()->getObjectList();
     int  pointCloudindex=0;
     for (int i = 0; i < entitylist.size(); i++) {
         Size_MeasurementData tmp;
         CEntity* entity=entitylist[i];
+        for(int i = 0; i < objlist.size(); i++){
+            auto* obj = objlist[i];
+            if (!obj || !entity) {
+                continue;
+            }
+            bool match = (obj->m_strAutoName == entity->m_strAutoName ||
+                          obj->m_strCName == entity->m_strAutoName ||
+                          entity->m_strAutoName.contains(obj->m_strAutoName) ||
+                          entity->m_strAutoName.contains(obj->m_strCName));
+            if(match){
+                entity=(CEntity*)obj;
+                break;
+            }
+        }
         if(entity->GetUniqueType()==enPointCloud){
 
             CPointCloud* point_cloud=(CPointCloud*)entity;
@@ -1190,265 +1260,265 @@ void insertImageIntoPdf(const QString &imagePath, const QString &pdfPath) {
 
 void ToolWidget::createDistanceMeasurementReport_Pdf()
 {
-    createFolder();
-    // 记录检测编号
-    static int count = 1;
-    // 提取点云、监测点信息
-    qDebug()<<"pdf";
-    auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
-    // QVector<CEntity*> check_points;//存储监测点
-    QVector<CPointCloud*> compare_clouds;//存储点云
-    QList<QList<QString>> dataAll;//存储监测点测量
+    // createFolder();
+    // // 记录检测编号
+    // static int count = 1;
+    // // 提取点云、监测点信息
+    // qDebug()<<"pdf";
+    // auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
+    // // QVector<CEntity*> check_points;//存储监测点
+    // QVector<CPointCloud*> compare_clouds;//存储点云
+    // QList<QList<QString>> dataAll;//存储监测点测量
 
-    QList<Size_MeasurementData> dataAll_size;//存储尺寸测量
+    // QList<Size_MeasurementData> dataAll_size;//存储尺寸测量
 
-    QList<QString>  data_pointCloud;//存储检测点中点云数据
+    // QList<QString>  data_pointCloud;//存储检测点中点云数据
 
-    Size_MeasurementData  data_pointCloud_size;//存储尺寸测量的点云数据
-    ExtractData(entityList, dataAll, data_pointCloud);
-    ExtractData(entityList, dataAll_size, data_pointCloud_size);
+    // Size_MeasurementData  data_pointCloud_size;//存储尺寸测量的点云数据
+    // ExtractData(entityList, dataAll, data_pointCloud);
+    // ExtractData(entityList, dataAll_size, data_pointCloud_size);
 
-    // 创建PDFWriter对象
+    // // 创建PDFWriter对象
 
-    qDebug()<<"pdf1";
-    QString path = getOutputPath("pdf");
-    QString name = getTimeString();
-    QString fileName = path + "/" + name + ".pdf";
+    // qDebug()<<"pdf1";
+    // QString path = getOutputPath("pdf");
+    // QString name = getTimeString();
+    // QString fileName = path + "/" + name + ".pdf";
 
-    QPdfWriter pdfWriter(fileName);
-    pdfWriter.setPageSize(QPageSize(QPageSize::A4));
-    //pdfWriter.setFileName(fileName);
+    // QPdfWriter pdfWriter(fileName);
+    // pdfWriter.setPageSize(QPageSize(QPageSize::A4));
+    // //pdfWriter.setFileName(fileName);
 
-    // 创建QPainter对象
-    QPainter painter;
-    if (!painter.begin(&pdfWriter)) {
-        qDebug() << "无法开始绘制PDF";
-        return;
-    }
+    // // 创建QPainter对象
+    // QPainter painter;
+    // if (!painter.begin(&pdfWriter)) {
+    //     qDebug() << "无法开始绘制PDF";
+    //     return;
+    // }
 
-    // 设置字体
-    QFont font("Times New Roman", 10.5);
-    painter.setFont(font);
+    // // 设置字体
+    // QFont font("Times New Roman", 10.5);
+    // painter.setFont(font);
 
-    const int leftMargin = 50;
-    const int rightMargin = 50;
-    const int topMargin = 50;
-    const int bottomMargin = 50;
+    // const int leftMargin = 50;
+    // const int rightMargin = 50;
+    // const int topMargin = 50;
+    // const int bottomMargin = 50;
 
 
 
-    // 获取页面尺寸（单位：点）并转换为像素
-    int resolution = pdfWriter.resolution(); // 分辨率：每英寸点数（DPI）
-    QPageSize pageSize =QPageSize(QPageSize::A4); // 页面大小
-    QSizeF pageSizeMM = pageSize.size(QPageSize::Millimeter); // 页面尺寸（毫米）
+    // // 获取页面尺寸（单位：点）并转换为像素
+    // int resolution = pdfWriter.resolution(); // 分辨率：每英寸点数（DPI）
+    // QPageSize pageSize =QPageSize(QPageSize::A4); // 页面大小
+    // QSizeF pageSizeMM = pageSize.size(QPageSize::Millimeter); // 页面尺寸（毫米）
 
-    // 将页面尺寸从毫米转换为像素
-    double widthPixels = (pageSizeMM.width() / 25.4) * resolution;  // 1英寸 = 25.4毫米
-    double heightPixels = (pageSizeMM.height() / 25.4) * resolution;
+    // // 将页面尺寸从毫米转换为像素
+    // double widthPixels = (pageSizeMM.width() / 25.4) * resolution;  // 1英寸 = 25.4毫米
+    // double heightPixels = (pageSizeMM.height() / 25.4) * resolution;
 
-    // 计算内容区域（单位：像素）
-    QRectF pageRect(leftMargin, topMargin,
-                    widthPixels - leftMargin - rightMargin,
-                    heightPixels - topMargin - bottomMargin);
+    // // 计算内容区域（单位：像素）
+    // QRectF pageRect(leftMargin, topMargin,
+    //                 widthPixels - leftMargin - rightMargin,
+    //                 heightPixels - topMargin - bottomMargin);
 
-    // 添加报告标题
-    font.setPointSize(18);
-    font.setBold(true);
-    painter.setFont(font);
-    painter.drawText(pageRect, Qt::AlignCenter, "Distance Measurement Report");
-    painter.drawText(pageRect.adjusted(0, 20, 0, 0), Qt::AlignLeft, "检测物件: " + data_pointCloud[0]);
-    painter.drawText(pageRect.adjusted(0, 40, 0, 0), Qt::AlignLeft, "检测日期: " + QDate::currentDate().toString("yyyy/M/d"));
-    painter.drawText(pageRect.adjusted(0, 60, 0, 0), Qt::AlignLeft, "检测编号: " + QString("%1").arg(count++, 3, 10, QLatin1Char('0')));
+    // // 添加报告标题
+    // font.setPointSize(18);
+    // font.setBold(true);
+    // painter.setFont(font);
+    // painter.drawText(pageRect, Qt::AlignCenter, "Distance Measurement Report");
+    // painter.drawText(pageRect.adjusted(0, 20, 0, 0), Qt::AlignLeft, "检测物件: " + data_pointCloud[0]);
+    // painter.drawText(pageRect.adjusted(0, 40, 0, 0), Qt::AlignLeft, "检测日期: " + QDate::currentDate().toString("yyyy/M/d"));
+    // painter.drawText(pageRect.adjusted(0, 60, 0, 0), Qt::AlignLeft, "检测编号: " + QString("%1").arg(count++, 3, 10, QLatin1Char('0')));
 
-    // 创建属性表格
-    QStringList propertyHeaders = {"名称", "是否可见", "法向量", "颜色",
-                                   "盒维数", "盒中心", "点云数量", "Golbal Shift",
-                                   "Global Scale", "点云大小"};
-    QStringList propertyValues = data_pointCloud;
+    // // 创建属性表格
+    // QStringList propertyHeaders = {"名称", "是否可见", "法向量", "颜色",
+    //                                "盒维数", "盒中心", "点云数量", "Golbal Shift",
+    //                                "Global Scale", "点云大小"};
+    // QStringList propertyValues = data_pointCloud;
 
-    int tableY = 100;
-    int rowHeight = 23;
-    int colWidth = pageRect.width() / propertyHeaders.size();
+    // int tableY = 100;
+    // int rowHeight = 23;
+    // int colWidth = pageRect.width() / propertyHeaders.size();
 
-    // 绘制表格标题行
-    font.setBold(true);
-    painter.setFont(font);
-    qDebug()<<"pdf3";
-    for (int col = 0; col < propertyHeaders.size(); ++col) {
-        qDebug()<<col;
-        QRectF cellRect(pageRect.left() + col * colWidth, tableY, colWidth, rowHeight);
-        painter.drawRect(cellRect);
-        painter.drawText(cellRect, Qt::AlignCenter, propertyHeaders[col]);
-    }
-    qDebug()<<"pdf4";
-    // 绘制表格数据行
-    font.setBold(false);
-    painter.setFont(font);
-    for (int row = 1; row < propertyValues.size(); ++row) {
-        for (int col = 0; col < 2; ++col) {
-            QRectF cellRect(pageRect.left() + col * colWidth, tableY + (row + 1) * rowHeight, colWidth, rowHeight);
-            painter.drawRect(cellRect);
-            if (col == 0) {
-                painter.drawText(cellRect, Qt::AlignCenter, propertyHeaders[row-1]);
-            } else {
-                painter.drawText(cellRect, Qt::AlignCenter, propertyValues[row]);
-            }
-        }
-    }
-    qDebug()<<"pdf5";
-    // 添加检测点数据
-    QVector<MeasurementData> measurements;
-    for (auto &dataList : dataAll) {
-        MeasurementData data;
-        data.type = dataList[0];
-        data.pointNumber = QString::number(extractFirstNumber(dataList[1]));//检测点序号
-        data.measuredValue = dataList[2];
-        data.maxValue = dataList[3];
-        data.minValue = dataList[4];
-        data.isQualified = dataList[5];
-        data.imagePath = QDir::toNativeSeparators(dataList[6]);
-        measurements.push_back(data);
-    }
-    qDebug()<<"pdf6";
-    for (const MeasurementData& data : measurements) {
-        // 添加检测点标题
-        font.setPointSize(14);
-        font.setBold(true);
-        painter.setFont(font);
-        painter.drawText(pageRect.adjusted(0, tableY + (propertyValues.size() + 2) * rowHeight, 0, 0), Qt::AlignLeft, "检测点" + data.pointNumber);
+    // // 绘制表格标题行
+    // font.setBold(true);
+    // painter.setFont(font);
+    // qDebug()<<"pdf3";
+    // for (int col = 0; col < propertyHeaders.size(); ++col) {
+    //     qDebug()<<col;
+    //     QRectF cellRect(pageRect.left() + col * colWidth, tableY, colWidth, rowHeight);
+    //     painter.drawRect(cellRect);
+    //     painter.drawText(cellRect, Qt::AlignCenter, propertyHeaders[col]);
+    // }
+    // qDebug()<<"pdf4";
+    // // 绘制表格数据行
+    // font.setBold(false);
+    // painter.setFont(font);
+    // for (int row = 1; row < propertyValues.size(); ++row) {
+    //     for (int col = 0; col < 2; ++col) {
+    //         QRectF cellRect(pageRect.left() + col * colWidth, tableY + (row + 1) * rowHeight, colWidth, rowHeight);
+    //         painter.drawRect(cellRect);
+    //         if (col == 0) {
+    //             painter.drawText(cellRect, Qt::AlignCenter, propertyHeaders[row-1]);
+    //         } else {
+    //             painter.drawText(cellRect, Qt::AlignCenter, propertyValues[row]);
+    //         }
+    //     }
+    // }
+    // qDebug()<<"pdf5";
+    // // 添加检测点数据
+    // QVector<MeasurementData> measurements;
+    // for (auto &dataList : dataAll) {
+    //     MeasurementData data;
+    //     data.type = dataList[0];
+    //     data.pointNumber = QString::number(extractFirstNumber(dataList[1]));//检测点序号
+    //     data.measuredValue = dataList[2];
+    //     data.maxValue = dataList[3];
+    //     data.minValue = dataList[4];
+    //     data.isQualified = dataList[5];
+    //     data.imagePath = QDir::toNativeSeparators(dataList[6]);
+    //     measurements.push_back(data);
+    // }
+    // qDebug()<<"pdf6";
+    // for (const MeasurementData& data : measurements) {
+    //     // 添加检测点标题
+    //     font.setPointSize(14);
+    //     font.setBold(true);
+    //     painter.setFont(font);
+    //     painter.drawText(pageRect.adjusted(0, tableY + (propertyValues.size() + 2) * rowHeight, 0, 0), Qt::AlignLeft, "检测点" + data.pointNumber);
 
-        // 生成输出数据
-        QStringList measureHeaders = {"检测点序号","类型", "测量值", "最大值", "最小值", "是否合格"};
-        QStringList measureValues = {data.pointNumber,data.type, data.measuredValue, data.maxValue, data.minValue, data.isQualified};
+    //     // 生成输出数据
+    //     QStringList measureHeaders = {"检测点序号","类型", "测量值", "最大值", "最小值", "是否合格"};
+    //     QStringList measureValues = {data.pointNumber,data.type, data.measuredValue, data.maxValue, data.minValue, data.isQualified};
 
-        // 创建检测点表格
-        int measureTableY = tableY + (propertyValues.size() + 3) * rowHeight;
-        for (int col = 0; col < measureHeaders.size(); ++col) {
-            QRectF cellRect(pageRect.left() + col * colWidth, measureTableY, colWidth, rowHeight);
-            painter.drawRect(cellRect);
-            painter.drawText(cellRect, Qt::AlignCenter, measureHeaders[col]);
-        }
+    //     // 创建检测点表格
+    //     int measureTableY = tableY + (propertyValues.size() + 3) * rowHeight;
+    //     for (int col = 0; col < measureHeaders.size(); ++col) {
+    //         QRectF cellRect(pageRect.left() + col * colWidth, measureTableY, colWidth, rowHeight);
+    //         painter.drawRect(cellRect);
+    //         painter.drawText(cellRect, Qt::AlignCenter, measureHeaders[col]);
+    //     }
 
-        // 绘制检测点表格数据行
-        for (int row = 0; row < measureValues.size(); ++row) {
-            for (int col = 0; col < 2; ++col) {
-                QRectF cellRect(pageRect.left() + col * colWidth, measureTableY + (row + 1) * rowHeight, colWidth, rowHeight);
-                painter.drawRect(cellRect);
-                if (col == 0) {
-                    painter.drawText(cellRect, Qt::AlignCenter, measureHeaders[row]);
-                } else {
-                    painter.drawText(cellRect, Qt::AlignCenter, measureValues[row]);
-                }
-            }
-        }
+    //     // 绘制检测点表格数据行
+    //     for (int row = 0; row < measureValues.size(); ++row) {
+    //         for (int col = 0; col < 2; ++col) {
+    //             QRectF cellRect(pageRect.left() + col * colWidth, measureTableY + (row + 1) * rowHeight, colWidth, rowHeight);
+    //             painter.drawRect(cellRect);
+    //             if (col == 0) {
+    //                 painter.drawText(cellRect, Qt::AlignCenter, measureHeaders[row]);
+    //             } else {
+    //                 painter.drawText(cellRect, Qt::AlignCenter, measureValues[row]);
+    //             }
+    //         }
+    //     }
 
-        // 添加图片
-        // 此处需要处理图片的加载和绘制，暂时省略
+    //     // 添加图片
+    //     // 此处需要处理图片的加载和绘制，暂时省略
 
-        tableY = measureTableY + (measureValues.size() + 2) * rowHeight;
-    }
+    //     tableY = measureTableY + (measureValues.size() + 2) * rowHeight;
+    // }
 
-    // 添加整体检测部分
-    font.setPointSize(14);
-    font.setBold(true);
-    painter.setFont(font);
-    painter.drawText(pageRect.adjusted(0, tableY, 0, 0), Qt::AlignLeft, "整体检测");
+    // // 添加整体检测部分
+    // font.setPointSize(14);
+    // font.setBold(true);
+    // painter.setFont(font);
+    // painter.drawText(pageRect.adjusted(0, tableY, 0, 0), Qt::AlignLeft, "整体检测");
 
-    // 生成输出数据
-    QStringList propertyHeaders_size = {"类型", "名称", "是否可视化", "是否有法向量",
-                                        "是否有颜色", "外包盒三维", "外包盒中心点", "点的数目",
-                                        "最大误差", "最小误差","平均误差"};
-    QStringList propertyValues_size;
-    propertyValues_size << data_pointCloud_size.type << data_pointCloud_size.name
-                        << data_pointCloud_size.isVisible << data_pointCloud_size.isNormal << data_pointCloud_size.isColorful
-                        << data_pointCloud_size.three_dimensional << data_pointCloud_size.center_point
-                        << data_pointCloud_size.pointNumber << data_pointCloud_size.max_error << data_pointCloud_size.min_error
-                        << data_pointCloud_size.average_error;
+    // // 生成输出数据
+    // QStringList propertyHeaders_size = {"类型", "名称", "是否可视化", "是否有法向量",
+    //                                     "是否有颜色", "外包盒三维", "外包盒中心点", "点的数目",
+    //                                     "最大误差", "最小误差","平均误差"};
+    // QStringList propertyValues_size;
+    // propertyValues_size << data_pointCloud_size.type << data_pointCloud_size.name
+    //                     << data_pointCloud_size.isVisible << data_pointCloud_size.isNormal << data_pointCloud_size.isColorful
+    //                     << data_pointCloud_size.three_dimensional << data_pointCloud_size.center_point
+    //                     << data_pointCloud_size.pointNumber << data_pointCloud_size.max_error << data_pointCloud_size.min_error
+    //                     << data_pointCloud_size.average_error;
 
-    qDebug()<<"pdf7";   // 创建全局检测属性表格
-    int sizeTableY = tableY + 20;
-    for (int col = 0; col < propertyHeaders_size.size(); ++col) {
-        QRectF cellRect(pageRect.left() + col * colWidth, sizeTableY, colWidth, rowHeight);
-        painter.drawRect(cellRect);
-        painter.drawText(cellRect, Qt::AlignCenter, propertyHeaders_size[col]);
-    }
-    qDebug()<<"pdf8";
-    // 绘制表格数据行
-    for (int row = 0; row < propertyValues_size.size(); ++row) {
-        for (int col = 0; col < 2; ++col) {
-            QRectF cellRect(pageRect.left() + col * colWidth, sizeTableY + (row + 1) * rowHeight, colWidth, rowHeight);
-            painter.drawRect(cellRect);
-            if (col == 0) {
-                painter.drawText(cellRect, Qt::AlignCenter, propertyHeaders_size[row]);
-            } else {
-                painter.drawText(cellRect, Qt::AlignCenter, propertyValues_size[row]);
-            }
-        }
-    }
+    // qDebug()<<"pdf7";   // 创建全局检测属性表格
+    // int sizeTableY = tableY + 20;
+    // for (int col = 0; col < propertyHeaders_size.size(); ++col) {
+    //     QRectF cellRect(pageRect.left() + col * colWidth, sizeTableY, colWidth, rowHeight);
+    //     painter.drawRect(cellRect);
+    //     painter.drawText(cellRect, Qt::AlignCenter, propertyHeaders_size[col]);
+    // }
+    // qDebug()<<"pdf8";
+    // // 绘制表格数据行
+    // for (int row = 0; row < propertyValues_size.size(); ++row) {
+    //     for (int col = 0; col < 2; ++col) {
+    //         QRectF cellRect(pageRect.left() + col * colWidth, sizeTableY + (row + 1) * rowHeight, colWidth, rowHeight);
+    //         painter.drawRect(cellRect);
+    //         if (col == 0) {
+    //             painter.drawText(cellRect, Qt::AlignCenter, propertyHeaders_size[row]);
+    //         } else {
+    //             painter.drawText(cellRect, Qt::AlignCenter, propertyValues_size[row]);
+    //         }
+    //     }
+    // }
 
-    // 绘制局部检测部分
-    int num_size = 1;
-    for (const Size_MeasurementData& data : dataAll_size) {
-        // 添加局部检测标题
-        font.setPointSize(14);
-        font.setBold(true);
-        painter.setFont(font);
-        painter.drawText(pageRect.adjusted(0, sizeTableY + (propertyHeaders_size.size() + 2) * rowHeight, 0, 0), Qt::AlignLeft, "局部检测" + QString::number(num_size++));
+    // // 绘制局部检测部分
+    // int num_size = 1;
+    // for (const Size_MeasurementData& data : dataAll_size) {
+    //     // 添加局部检测标题
+    //     font.setPointSize(14);
+    //     font.setBold(true);
+    //     painter.setFont(font);
+    //     painter.drawText(pageRect.adjusted(0, sizeTableY + (propertyHeaders_size.size() + 2) * rowHeight, 0, 0), Qt::AlignLeft, "局部检测" + QString::number(num_size++));
 
-        // 生成输出数据
-        QStringList measureHeaders = {"类型","名称", "是否有颜色", "是否有法向量", "三角网格量", "外包盒三维","外包盒中点",
-                                      "最大误差","最小误差","平均误差"};
-        QStringList measureValues ;
+    //     // 生成输出数据
+    //     QStringList measureHeaders = {"类型","名称", "是否有颜色", "是否有法向量", "三角网格量", "外包盒三维","外包盒中点",
+    //                                   "最大误差","最小误差","平均误差"};
+    //     QStringList measureValues ;
 
-        measureValues << data.type << data.name
-                      << data.isColorful << data.isNormal << data.num_triangularmesh
-                      << data.three_dimensional << data.center_point
-                      << data.max_error << data.min_error
-                      << data.average_error;
+    //     measureValues << data.type << data.name
+    //                   << data.isColorful << data.isNormal << data.num_triangularmesh
+    //                   << data.three_dimensional << data.center_point
+    //                   << data.max_error << data.min_error
+    //                   << data.average_error;
 
-        // 创建局部检测表格
-        int measureTableY = sizeTableY + (propertyHeaders_size.size() + 3) * rowHeight;
-        for (int col = 0; col < measureHeaders.size(); ++col) {
-            QRectF cellRect(pageRect.left() + col * colWidth, measureTableY, colWidth, rowHeight);
-            painter.drawRect(cellRect);
-            painter.drawText(cellRect, Qt::AlignCenter, measureHeaders[col]);
-        }
+    //     // 创建局部检测表格
+    //     int measureTableY = sizeTableY + (propertyHeaders_size.size() + 3) * rowHeight;
+    //     for (int col = 0; col < measureHeaders.size(); ++col) {
+    //         QRectF cellRect(pageRect.left() + col * colWidth, measureTableY, colWidth, rowHeight);
+    //         painter.drawRect(cellRect);
+    //         painter.drawText(cellRect, Qt::AlignCenter, measureHeaders[col]);
+    //     }
 
-        // 绘制局部检测表格数据行
-        for (int row = 0; row < measureValues.size(); ++row) {
-            for (int col = 0; col < 2; ++col) {
-                QRectF cellRect(pageRect.left() + col * colWidth, measureTableY + (row + 1) * rowHeight, colWidth, rowHeight);
-                painter.drawRect(cellRect);
-                if (col == 0) {
-                    painter.drawText(cellRect, Qt::AlignCenter, measureHeaders[row]);
-                } else {
-                    painter.drawText(cellRect, Qt::AlignCenter, measureValues[row]);
-                }
-            }
-        }
+    //     // 绘制局部检测表格数据行
+    //     for (int row = 0; row < measureValues.size(); ++row) {
+    //         for (int col = 0; col < 2; ++col) {
+    //             QRectF cellRect(pageRect.left() + col * colWidth, measureTableY + (row + 1) * rowHeight, colWidth, rowHeight);
+    //             painter.drawRect(cellRect);
+    //             if (col == 0) {
+    //                 painter.drawText(cellRect, Qt::AlignCenter, measureHeaders[row]);
+    //             } else {
+    //                 painter.drawText(cellRect, Qt::AlignCenter, measureValues[row]);
+    //             }
+    //         }
+    //     }
 
-        sizeTableY = measureTableY + (measureValues.size() + 2) * rowHeight;
+    //     sizeTableY = measureTableY + (measureValues.size() + 2) * rowHeight;
 
-        // 添加图片
-        // 此处需要处理图片的加载和绘制，暂时省略
+    //     // 添加图片
+    //     // 此处需要处理图片的加载和绘制，暂时省略
 
-        // 分页处理
-        if (&data != &dataAll_size.last()) {
-            painter.end();
-            pdfWriter.newPage();
-            painter.begin(&pdfWriter);
-            font.setPointSize(10.5);
-            painter.setFont(font);
-        }
-    }
+    //     // 分页处理
+    //     if (&data != &dataAll_size.last()) {
+    //         painter.end();
+    //         pdfWriter.newPage();
+    //         painter.begin(&pdfWriter);
+    //         font.setPointSize(10.5);
+    //         painter.setFont(font);
+    //     }
+    // }
 
-    // 结束绘制
-    painter.end();
+    // // 结束绘制
+    // painter.end();
 
-    QString logInfo="Pdf保存成功";
-    m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
-    lastCreatedPdfFile=fileName;
-    m_savePdf=true;
+    // QString logInfo="Pdf保存成功";
+    // m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo);
+    // lastCreatedPdfFile=fileName;
+    // m_savePdf=true;
 }
 
 
@@ -3998,7 +4068,6 @@ void ToolWidget::SaveImage(CEntity* entity,Size_MeasurementData* pointCloudData)
         if (elementListWidget) {
             elementListWidget->showInfotext();
         } else {
-
         }
     }
 
