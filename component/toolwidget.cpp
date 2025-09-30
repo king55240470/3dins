@@ -946,31 +946,9 @@ void  ToolWidget:: ExtractData(QVector<CEntity *>& entitylist,QList<QList<QStrin
 }
 
 void   ToolWidget::ExtractData(QVector<CEntity *>& entitylist,QList<QList<QString>>& dataAll,QList<QString>& data_PointCloud){
-
-
     m_saveFirstDistance=false;
-    auto objlist=m_pMainWin->getObjectListMgr()->getObjectList();
     for(auto& entity:entitylist){
-
         if(entity->GetUniqueType()==enLine){
-            for(int i = 0; i < objlist.size(); i++){
-                auto* obj = objlist[i];
-                if (!obj || !entity) {
-                    continue;
-                }
-                bool match = (obj->m_strAutoName == entity->m_strAutoName ||
-                              obj->m_strCName == entity->m_strAutoName ||
-                              entity->m_strAutoName.contains(obj->m_strAutoName) ||
-                              entity->m_strAutoName.contains(obj->m_strCName));
-                if(match){
-                   CLine* line=(CLine*)obj;
-                    qDebug()<<"Objlist中线的数据为:";
-                    qDebug()<<line->getBegin().x<<line->getBegin().y<<line->getBegin().z;
-                    qDebug()<<line->getEnd().x<<line->getEnd().y<<line->getEnd().z;
-                    break;
-                }
-
-            }
             CLine* line=(CLine*)entity;
            qDebug()<<"线的数据为:";
            qDebug()<<line->getBegin().x<<line->getBegin().y<<line->getBegin().z;
@@ -981,29 +959,11 @@ void   ToolWidget::ExtractData(QVector<CEntity *>& entitylist,QList<QList<QStrin
     for (int i = 0; i < entitylist.size(); i++) {
         QList<QString> inList;
         CEntity* entity=entitylist[i];
-        CEntity* obj_entity=nullptr;
-        for(int i = 0; i < objlist.size(); i++){
-            auto* obj = objlist[i];
-            if (!obj || !entity) {
-                continue;
-            }
-            bool match = (obj->m_strAutoName == entity->m_strAutoName ||
-                          obj->m_strCName == entity->m_strAutoName ||
-                          entity->m_strAutoName.contains(obj->m_strAutoName) ||
-                          entity->m_strAutoName.contains(obj->m_strCName));
-            if(match){
-                obj_entity=(CEntity*)obj;
-                break;
-            }
-        }
         qDebug()<<"提取"<<entity->m_strAutoName<<"数据";
         if(entity->GetUniqueType()==enDistance){
-            CDistance* Distance=(CDistance*) obj_entity;
-            CDistance* ent_Distance=(CDistance*) entity;
-            qDebug()<<"objilist距离的值为:";
-            qDebug()<<Distance->getdistance();
+            CDistance* Distance=(CDistance*) entity;
             qDebug()<<"entitylist距离的值为:";
-            qDebug()<<ent_Distance->getdistance();
+            qDebug()<<Distance->getdistance();
             inList<<"距离";
             inList<<Distance->m_strAutoName;
             inList<<QString::number(abs(Distance->getdistance()),'f',6);
@@ -1022,14 +982,9 @@ void   ToolWidget::ExtractData(QVector<CEntity *>& entitylist,QList<QList<QStrin
 
         }
         else if (entity->GetUniqueType()==enAngle){
-            CAngle* Angle=(CAngle*)obj_entity;
-            CAngle* ent_Angle=(CAngle*)entity;
+            CAngle* Angle=(CAngle*)entity;
             inList<<"角度";
             inList<<Angle->m_strAutoName;
-            qDebug()<<"objilist角度的值为:";
-            qDebug()<<Angle->getAngleValue();
-            qDebug()<<"entitylist角度与的值为:";
-            qDebug()<<ent_Angle->getAngleValue();
             inList<<QString::number(abs(Angle->getAngleValue()),'f',6);
             inList<<QString::number(Angle->getUptolerance(),'f',6);
             inList<<QString::number(Angle->getUndertolerance(),'f',6);

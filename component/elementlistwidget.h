@@ -79,7 +79,7 @@ public:
     void onAddElement(pcl::PointCloud<pcl::PointXYZRGB>::Ptr could,QString type);
     void CompareCloud();
     void updateDistance();//开启更新
-    void startupdateData(const pcl::KdTreeFLANN<pcl::PointXYZRGB>& kdtree, QVector<CEntity*>distancelist);//timer关联函数
+    void startupdateData(const pcl::KdTreeFLANN<pcl::PointXYZRGB>& kdtree, QVector<CEntity*>distancelist);
 
     void UpdateDisNowFun(QVector<CEntity*>distancelist);//更新距离元素
     void isAdd();

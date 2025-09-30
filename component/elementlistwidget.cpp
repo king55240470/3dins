@@ -4,6 +4,7 @@
 #include "vtkwindow/vtkpresetwidget.h"
 #include <QDebug>
 #include <functional>
+
 int ElementListWidget::pcscount = 0;
 ElementListWidget::ElementListWidget(QWidget *parent)
     : QWidget{parent}
@@ -822,18 +823,6 @@ void ElementListWidget::updateDistance()
 
     // 从对齐后的点云队列中取出第一个 更新检测点
     kdtree.setInputCloud(AlignCouldlists.dequeue());
-    // qDebug()<<"更新后";
-    // qDebug() << "===================== KdTree 关联的点云数据 =====================" ;
-    // // 3.1 先获取Kd树关联的点云（通过getInputCloud()接口）
-    // kdtree_cloud = kdtree.getInputCloud();
-    // if (kdtree_cloud)
-    // {
-    //     // 3.2 输出点云的基本信息（点数、密度等）
-    //     qDebug() << "点云总点数：" << kdtree_cloud->points.size() ;
-    //     qDebug() << "点云宽度/高度：" << kdtree_cloud->width << " / " << kdtree_cloud->height ;
-    //     qDebug() << "点云是否密集（无NaN）：" << (kdtree_cloud->is_dense ? "是" : "否") ;
-    // }
-
 
     pointCouldlists.dequeue();
     disAndanglelist.clear();
@@ -893,18 +882,7 @@ void ElementListWidget::startupdateData(const pcl::KdTreeFLANN<pcl::PointXYZRGB>
         qDebug() << "准备更新检测点";
         UpdateDisNowFun(distancelist);
         return;
-    }/*else if(stateMachine->configuration().contains(stoppedState)){
-        qDebug()<<"结束时间";
-        return;
-    }else if(stateMachine->configuration().contains(pausedState)){
-        return;
-    }else if(stateMachine->configuration().contains(continueState)){
-        qDebug()<<"执行一次";
-    }*/
-
-    // 更新检测点的父元素
-    // if(stateMachine->configuration().contains(runningState)||
-    //     stateMachine->configuration().contains(continueState)){
+    }
     CObject* obj=nullptr;
     for( CObject* ob: m_pMainWin->getObjectListMgr()->getObjectList()){
         if(distancelist[distancelistIndex]->parent[currentIndex]->GetObjectCName()==ob->GetObjectCName()){
@@ -925,11 +903,11 @@ void ElementListWidget::startupdateData(const pcl::KdTreeFLANN<pcl::PointXYZRGB>
         searchPoint.z=point->GetPt().z;
         if (kdtree.nearestKSearch(searchPoint, 10, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
             int nearestIdx = pointIdxNKNSearch[0];
-            if(m_pMainWin->getpWinFileMgr()->cloudptr->points.size()<=nearestIdx){
+            if(kdtree.getInputCloud()->points.size()<=nearestIdx){
                 qDebug()<<"索引越界,当前索引:"<<nearestIdx; // 索引越界则用原来的点构造
                 list.push_back(point);
             }
-            pcl::PointXYZRGB nearestPoint=m_pMainWin->getpWinFileMgr()->cloudptr->points[nearestIdx];
+            pcl::PointXYZRGB nearestPoint=kdtree.getInputCloud()->points[nearestIdx];
             if (!pcl::isFinite(nearestPoint)) {
                 qDebug()<<"无效点";
                 return;
@@ -973,7 +951,6 @@ void ElementListWidget::startupdateData(const pcl::KdTreeFLANN<pcl::PointXYZRGB>
                 qDebug()<<point->GetPt().y;
                 qDebug()<<point->GetPt().z;
                 qDebug()<<"之前";
-
                 if (!pcl::isFinite(searchPoint)) {
                     // 处理无效查询点，例如忽略该查询或者进行修正
                     qDebug()<<("查询点坐标无效，跳过此次查询\n");
@@ -984,17 +961,12 @@ void ElementListWidget::startupdateData(const pcl::KdTreeFLANN<pcl::PointXYZRGB>
                     qDebug()<<"中间";
                     int nearestIdx = pointIdxNKNSearch[0];
                     CPosition pt;
-                    if(!m_pMainWin->getpWinFileMgr()->getCloudPtr() || m_pMainWin->getpWinFileMgr()->cloudptr->empty()){
-                        qDebug() << "cloudptr无效";
-                        positionlist.push_back(point->GetPt());
-                        continue;
-                    }
-                    if(m_pMainWin->getpWinFileMgr()->cloudptr->points.size()<=nearestIdx){
+                    if(kdtree.getInputCloud()->points.size()<=nearestIdx){
                         qDebug()<<"索引越界,当前索引:"<<nearestIdx; // 索引越界则用原来的点构造
                         positionlist.push_back(point->GetPt());
                         continue;
                     }
-                    pcl::PointXYZRGB nearestPoint = m_pMainWin->getpWinFileMgr()->cloudptr->points[nearestIdx];
+                    pcl::PointXYZRGB nearestPoint = kdtree.getInputCloud()->points[nearestIdx];
                     qDebug() << "拿到近邻点"<<nearestPoint.x<<nearestPoint.y<<nearestPoint.z;
                     if(!pcl::isFinite(nearestPoint)) {
                         qDebug()<<"无效点";
@@ -1032,7 +1004,7 @@ void ElementListWidget::startupdateData(const pcl::KdTreeFLANN<pcl::PointXYZRGB>
                     searchPoint.z=point->GetPt().z;
                     if (kdtree.nearestKSearch(searchPoint, 1, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
                         int nearestIdx = pointIdxNKNSearch[0];
-                        pcl::PointXYZRGB nearestPoint = m_pMainWin->getpWinFileMgr()->cloudptr->points[nearestIdx];
+                        pcl::PointXYZRGB nearestPoint = kdtree.getInputCloud()->points[nearestIdx];
                         CPosition pt;
                         pt.x=nearestPoint.x;
                         pt.y=nearestPoint.y;
@@ -1065,7 +1037,7 @@ void ElementListWidget::startupdateData(const pcl::KdTreeFLANN<pcl::PointXYZRGB>
             searchPoint.z=point->GetPt().z;
             if (kdtree.nearestKSearch(searchPoint, 10, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
                 int nearestIdx = pointIdxNKNSearch[0];
-                pcl::PointXYZRGB nearestPoint = m_pMainWin->getpWinFileMgr()->cloudptr->points[nearestIdx];
+                pcl::PointXYZRGB nearestPoint = kdtree.getInputCloud()->points[nearestIdx];
                 CPosition pt;
                 pt.x=nearestPoint.x;
                 pt.y=nearestPoint.y;
@@ -1077,11 +1049,11 @@ void ElementListWidget::startupdateData(const pcl::KdTreeFLANN<pcl::PointXYZRGB>
             Findpoint.y=point->GetPt().y;
             Findpoint.z=point->GetPt().z;
             // 获取拟合用的点云指针
-            auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
+            auto cloudptr= kdtree.getInputCloud();
             auto Fplane=m_pMainWin->getPWinSetDataWidget()->getPlane();
             Fplane->setRadius(plane->rad);
             Fplane->setDistance(plane->dis);
-            auto could = m_pMainWin->getPWinSetDataWidget()->getPlane()->RANSAC(Findpoint,cloudptr);
+            auto could = m_pMainWin->getPWinSetDataWidget()->getPlane()->RANSAC(Findpoint,kdtree.getInputCloud()->makeShared());
             PlaneConstructor constructor;
             CPlane* newPlane;
             CPosition center;
@@ -1121,7 +1093,7 @@ void ElementListWidget::startupdateData(const pcl::KdTreeFLANN<pcl::PointXYZRGB>
             searchPoint.z=pt.z;
             if (kdtree.nearestKSearch(searchPoint, 10, pointIdxNKNSearch, pointNKNSquaredDistance) > 0) {
                 int nearestIdx = pointIdxNKNSearch[0];
-                pcl::PointXYZRGB nearestPoint = m_pMainWin->getpWinFileMgr()->cloudptr->points[nearestIdx];
+                pcl::PointXYZRGB nearestPoint = kdtree.getInputCloud()->points[nearestIdx];
                 CPosition pt;
                 if (!pcl::isFinite(nearestPoint)) {
                     qDebug()<<"无效点";
@@ -1142,10 +1114,10 @@ void ElementListWidget::startupdateData(const pcl::KdTreeFLANN<pcl::PointXYZRGB>
             CPoint*pointline=(CPoint*)line->parent[0];
             pointline->SetPosition(positionlist[0]);
             // 获取拟合用的点云指针
-            auto cloudptr= m_pMainWin->getpWinFileMgr()->cloudptr;
+            auto cloudptr= kdtree.getInputCloud();
             auto Fline=m_pMainWin->getPWinSetDataWidget()->getLine();
             Fline->setDistance(line->dis);
-            auto could = m_pMainWin->getPWinSetDataWidget()->getLine()->RANSAC(Findpoint,cloudptr);
+            auto could = m_pMainWin->getPWinSetDataWidget()->getLine()->RANSAC(Findpoint,kdtree.getInputCloud()->makeShared());
             LineConstructor constructor;
             CLine* newLine;
             CPosition begin,end;
@@ -1176,7 +1148,6 @@ void ElementListWidget::startupdateData(const pcl::KdTreeFLANN<pcl::PointXYZRGB>
             break;
         }
     }
-    // }
 }
 
 
@@ -1193,6 +1164,62 @@ void ElementListWidget::UpdateDisNowFun(QVector<CEntity*>distancelist)
             plane.push_back((CPlane*)list[i]);
         }else if(list[i]->GetUniqueType()==enLine){
             line.push_back((CLine*)list[i]);
+        }
+    }
+
+    // 更新entitylist
+    auto& entitylist = m_pMainWin->getEntityListMgr()->getEntityList();
+    for(int i = 0;i < entitylist.size();i++){
+        if(entitylist[i]->GetObjectCName()==distancelist[distancelistIndex]->GetObjectCName()){
+            CAngle*angle;
+            CDistance*dis;
+            if(entitylist[i]->GetUniqueType()==enAngle){
+                angle=dynamic_cast<CAngle*>(entitylist[i]);
+            }else{
+                dis=dynamic_cast<CDistance*>(entitylist[i]);
+            }
+            if(position.size()==2){
+                dis->setbegin(position[0]->GetPt());
+                dis->setend(position[1]->GetPt());
+            }else if(plane.size()==1){
+                dis->setbegin(position[0]->GetPt());
+                dis->setplane(*plane[0]);
+            }else if(plane.size()==2){
+                if(entitylist[i]->GetUniqueType()==enAngle){
+                    AngleConstructor Constructor;
+                    CAngle*angles=Constructor.createAngle(plane[0],plane[1]);
+                    *angle=*angles;
+                }else{
+                    DistanceConstructor Constructor;
+                    CDistance *diss=Constructor.createDistance(plane[0],plane[1]);
+                    auto uptol = dis->getUptolerance();
+                    auto undertol = dis->getUndertolerance();
+                    *dis=*diss;
+                    dis->setUndertolerance(undertol);
+                    dis->setUptolerance(uptol);
+                    //dis->setplane(*plane[0]);
+                    //dis->setplane(*plane[1]);
+                }
+            }else if(line.size()==2){
+                CLine line1=*line[0];
+                CLine line2=*line[1];
+                angle->setLine1(line1);
+                angle->setLine2(line2);
+            }else if(line.size()==1&&plane.size()==1){
+                AngleConstructor Constructor;
+                CAngle*angles=Constructor.createAngle(line[0],plane[0]);
+                auto uptol = dis->getUptolerance();
+                auto undertol = dis->getUndertolerance();
+                *angle=*angles;
+                angle->setUndertolerance(undertol);
+                angle->setUptolerance(uptol);
+            }
+            QTreeWidgetItem *item = treeWidgetNames->topLevelItem(i);
+            entitylist[i]->SetSelected(true);
+
+            m_pMainWin->getPWinVtkWidget()->onHighLightActor(entitylist[i]);
+            treeWidgetNames->setCurrentItem(item);
+            break;
         }
     }
     QVector<CObject*> objlist=m_pMainWin->getObjectListMgr()->getObjectList();
