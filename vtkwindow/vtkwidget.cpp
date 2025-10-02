@@ -422,15 +422,15 @@ vtkSmartPointer<vtkActor2D> VtkWidget::createLine(CEntity* entity, vtkSmartPoint
     else if(entity->GetUniqueType() == enPointCloud){
         CPointCloud* cloud = static_cast<CPointCloud*>(entity);
         if(cloud->m_pointCloud.points.size()){//空检测
-        auto point = cloud->m_pointCloud.points[0];
-        b = CPosition(point.x, point.y, point.z);
+            auto point = cloud->m_pointCloud.points[0];
+            b = CPosition(point.x, point.y, point.z);
         }
     }
     else if(entity->GetUniqueType() == enSurfaces){
         CSurfaces* surface = static_cast<CSurfaces*>(entity);
         if(surface->m_pointCloud.points.size()){//空检测
-        auto point = surface->m_pointCloud.points[0];
-        b = CPosition(point.x, point.y, point.z);
+            auto point = surface->m_pointCloud.points[0];
+            b = CPosition(point.x, point.y, point.z);
         }
     }
     entityToEndPoints[entity] = b;
@@ -2742,65 +2742,71 @@ void VtkWidget::poissonReconstruction()
     }
 
     // ===== 预处理优化 =====
-    // 1. 统计去噪（移除离群点）
-    pcl::StatisticalOutlierRemoval<pcl::PointXYZRGB> sor;
-    sor.setInputCloud(cloud);
-    sor.setMeanK(50);
-    sor.setStddevMulThresh(1.0);
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZRGB>);
-    sor.filter(*cloud_filtered);
+    // 降采样（保持形状同时减少点数）
+    // 降采样（保持形状同时减少点数）
+    pcl::PointXYZRGB minpt, maxpt;
+    pcl::getMinMax3D(*cloud, minpt, maxpt); // 计算点云的最小/大坐标
+    float diag = std::sqrt(
+        std::pow(maxpt.x - minpt.x, 2) +
+        std::pow(maxpt.y - minpt.y, 2) +
+        std::pow(maxpt.z - minpt.z, 2)
+        );
+    float voxel_size = std::max(diag / 100.0f, 1e-6f);
 
-    // 2. 降采样（保持形状同时减少点数）
     pcl::VoxelGrid<pcl::PointXYZRGB> vg;
-    vg.setInputCloud(cloud_filtered);
-    vg.setLeafSize(0.003f, 0.003f, 0.003f);
+    vg.setInputCloud(cloud);
+    vg.setLeafSize(voxel_size, voxel_size, voxel_size);
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_downsampled(new pcl::PointCloud<pcl::PointXYZRGB>);
     vg.filter(*cloud_downsampled);
+    qDebug() << "采样后大小:" <<cloud_downsampled->size();
+    if (cloud_downsampled->size() < cloud->size() * 0.01) {
+        m_pMainWin->getPWinVtkPresetWidget()->setWidget("降采样后点数过少!");
+        return;
+    }
 
     // ===== 法向量计算优化 =====
     pcl::PointCloud<pcl::Normal>::Ptr normals(new pcl::PointCloud<pcl::Normal>);
     pcl::NormalEstimation<pcl::PointXYZRGB, pcl::Normal> normalEstimation;
-    normalEstimation.setViewPoint(0.0f, 0.0f, 0.0f); // 设置一致视点
     normalEstimation.setInputCloud(cloud_downsampled);
 
     pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZRGB>);
     normalEstimation.setSearchMethod(tree);
+    // normalEstimation.setRadiusSearch(voxel_size * 2);
 
     // 使用K近邻搜索替代半径搜索，更稳定
-    normalEstimation.setKSearch(30);  // 调整K值控制局部区域大小
+    normalEstimation.setKSearch(20);
     normalEstimation.compute(*normals);
 
     // ===== 点云法向量对齐 =====
     pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloudWithNormals(new pcl::PointCloud<pcl::PointXYZRGBNormal>);
     pcl::concatenateFields(*cloud_downsampled, *normals, *cloudWithNormals);
 
-    // 法向量方向一致性调整
-    pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud_oriented(new pcl::PointCloud<pcl::PointXYZRGBNormal>);
-    pcl::copyPointCloud(*cloudWithNormals, *cloud_oriented);
+    // 先算中心
+    Eigen::Vector4f centroid;
+    pcl::compute3DCentroid(*cloud_downsampled, centroid);
+    Eigen::Vector3f view_point(centroid.head<3>());
 
-    for (auto& point : *cloud_oriented) {
-        // 强制法向量指向视点方向（假设视点位于点云中心）
-        Eigen::Vector3f view_point(0, 0, 0); // 根据实际视点调整
-        Eigen::Vector3f point_pos(point.x, point.y, point.z);
-        Eigen::Vector3f normal_dir(point.normal_x, point.normal_y, point.normal_z);
-
-        if ((point_pos - view_point).dot(normal_dir) < 0) {
-            normal_dir *= -1;
-            point.normal_x = normal_dir[0];
-            point.normal_y = normal_dir[1];
-            point.normal_z = normal_dir[2];
-        }
+    // 再统一朝向“视点”
+    for (auto& p : *cloudWithNormals)
+    {
+        Eigen::Vector3f pos(p.x, p.y, p.z);
+        Eigen::Vector3f n(p.normal_x, p.normal_y, p.normal_z);
+        if (n.dot(view_point - pos) < 0)      // 朝向视点
+            n = -n;
+        p.normal_x = n.x();
+        p.normal_y = n.y();
+        p.normal_z = n.z();
     }
 
     // ===== 泊松重建参数优化 =====
     pcl::Poisson<pcl::PointXYZRGBNormal> poisson;
-    poisson.setDepth(8);          // 增加深度防止过拟合
-    poisson.setSolverDivide(8);   // 保持求解精度
+    poisson.setDepth(10);          // 增加深度防止过拟合
+    poisson.setSolverDivide(7);   // 保持求解精度
     poisson.setIsoDivide(8);      // 保持等值面划分密度
-    poisson.setSamplesPerNode(5); // 保持采样密度
-    poisson.setScale(0.9f);        // 移除人工缩放
+    poisson.setSamplesPerNode(2); // 保持采样密度
+    poisson.setScale(1.0f);        // 移除人工缩放
     //    poisson.setLinearFit(true);   // 启用线性拟合增强局部一致性
-    poisson.setInputCloud(cloud_oriented);
+    poisson.setInputCloud(cloudWithNormals);
 
     pcl::PolygonMesh mesh;
     poisson.reconstruct(mesh);
@@ -2810,7 +2816,7 @@ void VtkWidget::poissonReconstruction()
     pcl::MeshSmoothingLaplacianVTK meshSmoothing;
     pcl::PolygonMeshConstPtr mesh_ptr = pcl::make_shared<const pcl::PolygonMesh>(mesh);
     meshSmoothing.setInputMesh(mesh_ptr);
-    meshSmoothing.setNumIter(5);  // 减少迭代次数保持细节
+    meshSmoothing.setNumIter(2);  // 减少迭代次数保持细节
     pcl::PolygonMesh smoothedMesh;
     meshSmoothing.process(smoothedMesh);
 
