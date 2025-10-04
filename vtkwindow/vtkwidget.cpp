@@ -2743,7 +2743,6 @@ void VtkWidget::poissonReconstruction()
 
     // ===== 预处理优化 =====
     // 降采样（保持形状同时减少点数）
-    // 降采样（保持形状同时减少点数）
     pcl::PointXYZRGB minpt, maxpt;
     pcl::getMinMax3D(*cloud, minpt, maxpt); // 计算点云的最小/大坐标
     float diag = std::sqrt(
@@ -2764,6 +2763,31 @@ void VtkWidget::poissonReconstruction()
         return;
     }
 
+    // 复制一份原始点云 → 向外扩 1*leaf 做一层“壳”
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr shell(new pcl::PointCloud<pcl::PointXYZRGB>);
+    // 1. 预计算每个边界点的“边距”
+    float half_size = diag/2;
+    auto getEdgeDist = [&](const Eigen::Vector3f& p){
+        float dx = half_size - std::abs(p.x());
+        float dy = half_size - std::abs(p.y());
+        float dz = half_size - std::abs(p.z());
+        return std::min({dx, dy, dz});   // 到最近边的距离
+    };
+
+    // 2. 仅对面心补壳
+    for (auto &p: *shell){
+        Eigen::Vector3f pos = p.getVector3fMap();
+        if (getEdgeDist(pos) > 2.0f*voxel_size){   // 面心区域
+            Eigen::Vector3f n;
+            // 同原来：按最大分量给面法向
+            if      (std::abs(pos.x()) > 0.9f*half_size) n = Eigen::Vector3f(std::copysign(1.f,pos.x()), 0,0);
+            else if (std::abs(pos.y()) > 0.9f*half_size) n = Eigen::Vector3f(0, std::copysign(1.f,pos.y()), 0);
+            else                                         n = Eigen::Vector3f(0,0, std::copysign(1.f,pos.z()));
+            p.getVector3fMap() += n * voxel_size;      // 只外推 1×leaf
+        }
+        // 否则：棱/角不推，保持原坐标
+    }
+
     // ===== 法向量计算优化 =====
     pcl::PointCloud<pcl::Normal>::Ptr normals(new pcl::PointCloud<pcl::Normal>);
     pcl::NormalEstimation<pcl::PointXYZRGB, pcl::Normal> normalEstimation;
@@ -2774,7 +2798,7 @@ void VtkWidget::poissonReconstruction()
     // normalEstimation.setRadiusSearch(voxel_size * 2);
 
     // 使用K近邻搜索替代半径搜索，更稳定
-    normalEstimation.setKSearch(20);
+    normalEstimation.setKSearch(30);
     normalEstimation.compute(*normals);
 
     // ===== 点云法向量对齐 =====
@@ -2787,15 +2811,15 @@ void VtkWidget::poissonReconstruction()
     Eigen::Vector3f view_point(centroid.head<3>());
 
     // 再统一朝向“视点”
-    for (auto& p : *cloudWithNormals)
-    {
-        Eigen::Vector3f pos(p.x, p.y, p.z);
-        Eigen::Vector3f n(p.normal_x, p.normal_y, p.normal_z);
-        if (n.dot(view_point - pos) < 0)      // 朝向视点
-            n = -n;
-        p.normal_x = n.x();
-        p.normal_y = n.y();
-        p.normal_z = n.z();
+    // 对“正方体”场景：强行把 normal 对齐到 ±X/±Y/±Z
+    for (size_t i = 0; i < cloud_downsampled->size(); ++i){
+        Eigen::Vector3f pos = cloud_downsampled->points[i].getVector3fMap();
+        Eigen::Vector3f n = normals->points[i].getNormalVector3fMap();
+        // 六个面
+        if (std::abs(pos.x()) > 0.9f*(maxpt.x - minpt.x)/2) n = Eigen::Vector3f(std::copysign(1.f,pos.x()), 0,0);
+        else if (std::abs(pos.y()) > 0.9f*(maxpt.x - minpt.x)/2) n = Eigen::Vector3f(0, std::copysign(1.f,pos.y()), 0);
+        else if (std::abs(pos.z()) > 0.9f*(maxpt.x - minpt.x)/2) n = Eigen::Vector3f(0,0, std::copysign(1.f,pos.z()));
+        n.normalize();
     }
 
     // ===== 泊松重建参数优化 =====
@@ -2803,8 +2827,8 @@ void VtkWidget::poissonReconstruction()
     poisson.setDepth(10);          // 增加深度防止过拟合
     poisson.setSolverDivide(7);   // 保持求解精度
     poisson.setIsoDivide(8);      // 保持等值面划分密度
-    poisson.setSamplesPerNode(2); // 保持采样密度
-    poisson.setScale(1.0f);        // 移除人工缩放
+    poisson.setSamplesPerNode(1); // 保持采样密度
+    poisson.setScale(1.25f);        // 移除人工缩放
     //    poisson.setLinearFit(true);   // 启用线性拟合增强局部一致性
     poisson.setInputCloud(cloudWithNormals);
 
@@ -2816,10 +2840,9 @@ void VtkWidget::poissonReconstruction()
     pcl::MeshSmoothingLaplacianVTK meshSmoothing;
     pcl::PolygonMeshConstPtr mesh_ptr = pcl::make_shared<const pcl::PolygonMesh>(mesh);
     meshSmoothing.setInputMesh(mesh_ptr);
-    meshSmoothing.setNumIter(2);  // 减少迭代次数保持细节
+    meshSmoothing.setNumIter(1);  // 减少迭代次数保持细节
     pcl::PolygonMesh smoothedMesh;
     meshSmoothing.process(smoothedMesh);
-
     if (smoothedMesh.polygons.empty()) {
         QMessageBox::warning(this, "警告", "泊松重建失败");
         return;
