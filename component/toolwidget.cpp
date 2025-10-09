@@ -801,7 +801,7 @@ void ToolWidget::connectActionWithF(){
     connect(construct_actions_[construct_action_name_list_.indexOf("构造点云")],&QAction::triggered,this,&  ToolWidget::onConstructPointCloud);
     connect(construct_actions_[construct_action_name_list_.indexOf("构造角度")],&QAction::triggered,this,&  ToolWidget::onConstructAngle);
 
-      connect(save_actions_[save_action_name_list_.indexOf("pointcloud")],&QAction::triggered,this,&  ToolWidget::onSavePointCloud);
+    connect(save_actions_[save_action_name_list_.indexOf("pointcloud")],&QAction::triggered,this,&  ToolWidget::onSavePointCloud);
     //打开
     connect(save_actions_[save_action_name_list_.indexOf("excel")], &QAction::triggered, this, &ToolWidget::onOpenExcel);
     connect(save_actions_[save_action_name_list_.indexOf("word")], &QAction::triggered, this, &ToolWidget::onOpenWord);
@@ -912,14 +912,14 @@ void ToolWidget::onOpenImage() {
 
 
 void  ToolWidget:: ExtractData(QVector<CEntity *>& entitylist,QList<QList<QString>>& dataAll){
+    int count=0;
     for (int i = 0; i < entitylist.size(); i++) {
         QList<QString> inList;
         CEntity* entity=entitylist[i];
         if(entity->GetUniqueType()==enDistance){
             CDistance* Distance=(CDistance*) entity;
-            inList<<"距离";
 
-            inList<<Distance->m_strAutoName;
+            inList<<QString::number(++count);
             inList<<QString::number(abs(Distance->getdistance()),'f',6);
             inList<<QString::number(Distance->getUptolerance(),'f',6);
             inList<<QString::number(Distance->getUndertolerance(),'f',6);
@@ -930,8 +930,7 @@ void  ToolWidget:: ExtractData(QVector<CEntity *>& entitylist,QList<QList<QStrin
         }
         else if (entity->GetUniqueType()==enAngle){
             CAngle* Angle=(CAngle*)entity;
-            inList<<"角度";
-            inList<<Angle->m_strAutoName;
+            inList<<QString::number(++count);
             inList<<QString::number(abs(Angle->getAngleValue()),'f',6);
             inList<<QString::number(Angle->getUptolerance(),'f',6);
             inList<<QString::number(Angle->getUndertolerance(),'f',6);
@@ -947,15 +946,7 @@ void  ToolWidget:: ExtractData(QVector<CEntity *>& entitylist,QList<QList<QStrin
 
 void   ToolWidget::ExtractData(QVector<CEntity *>& entitylist,QList<QList<QString>>& dataAll,QList<QString>& data_PointCloud){
     m_saveFirstDistance=false;
-    for(auto& entity:entitylist){
-        if(entity->GetUniqueType()==enLine){
-            CLine* line=(CLine*)entity;
-           qDebug()<<"线的数据为:";
-           qDebug()<<line->getBegin().x<<line->getBegin().y<<line->getBegin().z;
-           qDebug()<<line->getEnd().x<<line->getEnd().y<<line->getEnd().z;
-        }
-        ;
-    }
+    int count=0;
     for (int i = 0; i < entitylist.size(); i++) {
         QList<QString> inList;
         CEntity* entity=entitylist[i];
@@ -965,7 +956,7 @@ void   ToolWidget::ExtractData(QVector<CEntity *>& entitylist,QList<QList<QStrin
             qDebug()<<"entitylist距离的值为:";
             qDebug()<<Distance->getdistance();
             inList<<"距离";
-            inList<<Distance->m_strAutoName;
+            inList<<QString::number(++count);
             inList<<QString::number(abs(Distance->getdistance()),'f',6);
             inList<<QString::number(Distance->getUptolerance(),'f',6);
             inList<<QString::number(Distance->getUndertolerance(),'f',6);
@@ -984,7 +975,7 @@ void   ToolWidget::ExtractData(QVector<CEntity *>& entitylist,QList<QList<QStrin
         else if (entity->GetUniqueType()==enAngle){
             CAngle* Angle=(CAngle*)entity;
             inList<<"角度";
-            inList<<Angle->m_strAutoName;
+            inList<<QString::number(++count);
             inList<<QString::number(abs(Angle->getAngleValue()),'f',6);
             inList<<QString::number(Angle->getUptolerance(),'f',6);
             inList<<QString::number(Angle->getUndertolerance(),'f',6);
@@ -1096,24 +1087,26 @@ void   ToolWidget::ExtractData(QVector<CEntity *>& entitylist,QList<Size_Measure
     for (int i = 0; i < entitylist.size(); i++) {
         Size_MeasurementData tmp;
         CEntity* entity=entitylist[i];
-        for(int i = 0; i < objlist.size(); i++){
-            auto* obj = objlist[i];
-            if (!obj || !entity) {
-                continue;
-            }
-            bool match = (obj->m_strAutoName == entity->m_strAutoName ||
-                          obj->m_strCName == entity->m_strAutoName ||
-                          entity->m_strAutoName.contains(obj->m_strAutoName) ||
-                          entity->m_strAutoName.contains(obj->m_strCName));
-            if(match){
-                entity=(CEntity*)obj;
-                break;
-            }
-        }
+        // for(int i = 0; i < objlist.size(); i++){
+        //     auto* obj = objlist[i];
+        //     if (!obj || !entity) {
+        //         continue;
+        //     }
+        //     bool match = (obj->m_strAutoName == entity->m_strAutoName ||
+        //                   obj->m_strCName == entity->m_strAutoName ||
+        //                   entity->m_strAutoName.contains(obj->m_strAutoName) ||
+        //                   entity->m_strAutoName.contains(obj->m_strCName));
+        //     if(match){
+        //         entity=(CEntity*)obj;
+        //         break;
+        //     }
+        // }
         if(entity->GetUniqueType()==enPointCloud){
+            qDebug()<<"提取数据检测到点云:"<<entity->m_strAutoName;
 
             CPointCloud* point_cloud=(CPointCloud*)entity;
             if(point_cloud->isComparsionCloud){//对比点云
+                qDebug()<<"是对比点云";
             }else{
                 continue;
             }
@@ -1168,7 +1161,7 @@ void   ToolWidget::ExtractData(QVector<CEntity *>& entitylist,QList<Size_Measure
                                 +" Y:"+QString::number(boxCenter.y)
                                 +" Z:"+QString::number(boxCenter.z));
 
-
+            qDebug()<<"保存对比点云图像";
             SaveImage(entity,&tmp);
             tmp.imagePath=QDir::toNativeSeparators(QDir::toNativeSeparators(m_checkpoint_imagePath[entity]));//图片路径
 
@@ -1184,6 +1177,7 @@ void   ToolWidget::ExtractData(QVector<CEntity *>& entitylist,QList<Size_Measure
                 dataAll_size.push_back(tmp);
 
             }
+
 
 
         }
@@ -1856,7 +1850,7 @@ void   ToolWidget::onSavePdf(){
 
 
 void   ToolWidget::onSaveExcel(){
-
+    qDebug()<<"保存excelD";
     createFolder();
     QString logInfo1="Excel开始保存";
     //m_pMainWin->getPWinVtkPresetWidget()->setWidget(logInfo1);
@@ -1871,13 +1865,14 @@ void   ToolWidget::onSaveExcel(){
     // }
 
     QStringList headers;
-    headers << "检测点序号" <<"检测数值"<< "Max" << "Min"<<"是否合格";
+    headers << "工件名称" <<"检测数值"<< "Max" << "Min"<<"是否合格";
     int col = headers.size();
     QList<QList<QString>> dataAll;
     auto& entitylist = m_pMainWin->m_EntityListMgr->getEntityList();
     //dataAll.append(headers);
-    ExtractData(entitylist,dataAll);                              //将数据传入dataAll中
-
+    qDebug()<<"保存excelD数据";
+    ExtractData(entitylist,dataAll);                            //将数据传入dataAll中
+    qDebug()<<dataAll;
     QAxObject excel("Excel.Application");						  //加载Excel驱动
     excel.dynamicCall("SetVisible (bool Visible)", "false");	  //不显示窗体
     excel.setProperty("DisplayAlerts", false);					  //不显示任何警告信息。如果为true那么在关闭是会出现类似“文件已修改，是否保存”的提示
@@ -1908,7 +1903,7 @@ void   ToolWidget::onSaveExcel(){
     foreach(QList<QString> inLst, dataAll) {
         for (int j = 0; j < headers.size(); j++) {
             QAxObject *cell = workSheet->querySubObject("Cells(int, int)", curRow, j + 1);
-            cell->dynamicCall("SetValue(const QString&)", inLst[j+1]);
+            cell->dynamicCall("SetValue(const QString&)", inLst[j]);
         }
         curRow++;
     }
@@ -2050,9 +2045,9 @@ void   ToolWidget::onSaveWord(){
 void ToolWidget::createDistanceMeasurementReport()
 {
     //记录excel表格编号
-    static int id=1;
+    int id=1;
     //记录检测编号
-    static int count=1;
+    int count=1;
     //提取点云、监测点信息
 
     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
@@ -2070,8 +2065,10 @@ void ToolWidget::createDistanceMeasurementReport()
     QList<QString>  data_pointCloud;//存储检测点中点云数据
 
     Size_MeasurementData  data_pointCloud_size;//存储尺寸测量的点云数据
-
+    qDebug()<<"保存word的输出数据";
     ExtractData(entityList, dataAll,data_pointCloud);
+    qDebug()<<dataAll;
+
 
     ExtractData(entityList,dataAll_size,data_pointCloud_size);
 
@@ -2265,7 +2262,7 @@ void ToolWidget::createDistanceMeasurementReport()
             QAxObject* inlineShapes = document->querySubObject("InlineShapes");
             inlineShapes->dynamicCall("AddPicture(const QString&)",data_pointCloud[data_pointCloud.size()-1] );
             qDebug()<<"这2";
-            deleteImageFile(data_pointCloud[data_pointCloud.size()-1]);
+
 
             //结束表格填写
             selection->dynamicCall("EndKey(QVariant)", 6);
@@ -2518,7 +2515,7 @@ void ToolWidget::createDistanceMeasurementReport()
             word->dynamicCall("Quit()");
         }
     }
-
+    qDebug()<<"保存excell1";
     {
         QString path= getOutputPath("excell1");
         QString name="excell1";
@@ -2634,7 +2631,7 @@ void ToolWidget::onSavePointCloud(){
         CEntity* entity=entityList[i];
         qDebug()<<"检索"<<entity->m_strAutoName;
         //输出选中的点云
-       // if(!entity->IsSelected())continue;
+        // if(!entity->IsSelected())continue;
         // if(entity->m_strAutoName.contains("对齐")){
         //     CPointCloud* point_cloud=(CPointCloud*)entity;
         //     compare_clouds.push_back(point_cloud);
@@ -3839,16 +3836,16 @@ QString ToolWidget::getOutputPath(QString kind){
     //             }
     // if(entitylist.size()!=0){
 
-    //     for(auto & it :entitylist){
-    //         if(it->m_strAutoName.contains("实测")){
-    //             QString str=it->m_strAutoName;
-    //             name="";
-    //             int markerPos = str.indexOf(".");
-    //             if (markerPos != -1 && markerPos < str.length() - 1) {
-    //                 for(int i=0;i<markerPos;i++){
-    //                     name+=str[i];
-    //                 }
-    //                 qDebug() << "实测点云名称为" << name;
+        //     for(auto & it :entitylist){
+        //         if(it->m_strAutoName.contains("实测")){
+        //             QString str=it->m_strAutoName;
+        //             name="";
+        //             int markerPos = str.indexOf(".");
+        //             if (markerPos != -1 && markerPos < str.length() - 1) {
+        //                 for(int i=0;i<markerPos;i++){
+        //                     name+=str[i];
+        //                 }
+        //                 qDebug() << "实测点云名称为" << name;
 
     //             }
     //         }
@@ -3856,7 +3853,7 @@ QString ToolWidget::getOutputPath(QString kind){
 
     // }
 
-     return  Path+"/"+name+"/" +kind;
+    return  Path+"/"+name+"/" +kind;
 
 }
 QDataStream& ToolWidget::serializeEntityList(QDataStream& out, const QVector<CEntity*>& entityList){
@@ -4113,7 +4110,7 @@ void ToolWidget::SaveImage(CEntity* entity,Size_MeasurementData* pointCloudData)
 
     if(entity->m_strAutoName.contains("对比"))
     {
-
+        qDebug()<<"保存对比图片三视图:"<<entity->m_strAutoName;
         QString fileName = path + "/" + name;
         vtkSmartPointer<vtkRenderWindow> renderWindow=m_pMainWin->getPWinVtkWidget()->getRenderWindow();
         m_pMainWin->onRightViewClicked();
@@ -4132,11 +4129,8 @@ void ToolWidget::SaveImage(CEntity* entity,Size_MeasurementData* pointCloudData)
         lastCreatedImageFileTop=fileName+"_Top"+".png";
         lastCreatedImageFileRight=fileName+"_Right"+".png";
 
-    }else if(m_saveFirstDistance){
-        SaveImage(fileName, "png");
-        m_checkpoint_imagePath[entity] = fileName;
-
-    }else{
+    }
+    else{
         m_saveFirstDistance=true;
         QString fileName = path + "/" + name;
         vtkSmartPointer<vtkRenderWindow> renderWindow=m_pMainWin->getPWinVtkWidget()->getRenderWindow();
@@ -4356,7 +4350,12 @@ void  ToolWidget::renameAllImages(const QString& path) {
     // 按原始顺序重命名图片
     int counter = 1;
     for (const auto &imageFile : imageFiles) {
+
         QString originalFilePath = imageFile.absoluteFilePath();
+        if(originalFilePath.contains("对齐")){
+            deleteImageFile(originalFilePath);
+            continue;
+        }
         QString fileExtension = imageFile.suffix();
         QString newFileName = QString("%1.%2").arg(counter++).arg(fileExtension);
         QString newFilePath = directory.absoluteFilePath(newFileName);

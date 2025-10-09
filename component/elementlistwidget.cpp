@@ -657,11 +657,7 @@ void ElementListWidget::startprocess()
         isProcessing=true;
         while(!pointCouldlists.empty()){
             loadModelFile();
-            if(!isProcessing){ // 加载模型文件异常则跳过本次
-                continue;
-            }
             CompareCloud();
-            qDebug()<<"startprocess的updateDistance";
             updateDistance();
             m_pMainWin->NotifySubscribe();
         }
@@ -804,6 +800,7 @@ CObject* ElementListWidget::FindObject(QString strAutoName){
 void ElementListWidget::updateDistance()
 {
     qDebug()<<"对齐点云队列的大小"<<AlignCouldlists.size();
+    if(AlignCouldlists.empty()) return;
     // for (auto a:AlignCouldlists){
     //     qDebug() << "点云总点数：" << a->points.size() ;
     //     qDebug() << "点云宽度/高度：" << a->width << " / " << a->height ;
@@ -1317,9 +1314,10 @@ void ElementListWidget::loadModelFile()
                                  .arg(m_pMainWin->modelPath, s);
     qDebug() << "要打开的模型文件路径" << filePath;
     if(!QFile::exists(filePath)){
-        isProcessing = false;
+        foundmodel = false;
         return;
     }
+    foundmodel = true;
 
     m_pMainWin->filePathChange = filePath;
     m_pMainWin->openFile();

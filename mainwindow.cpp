@@ -1568,7 +1568,10 @@ void MainWindow::onFileChanged(const QString &path)
         // 跳过已处理或正在处理的文件
         if (!existingFiles.contains(file) /*!pendingFiles.contains(file)*/) {
             //正则表达式，格式如2025-05-20#A#001#001
-            if(file.contains("single")){
+            if(file.contains("single") ||
+                file.contains(QRegularExpression("[\\x{4E00}-\\x{9FFF}]")) || // 中文字符
+                file.contains(QRegularExpression("[H-Z]"))) // A-G 以外的大写字母)
+            {
                 continue;
             }
             QString fileCould = path + "/" + file;
