@@ -1207,15 +1207,11 @@ void ElementListWidget::UpdateDisNowFun(QVector<CEntity*>distancelist)
                 if(entitylist[i]->GetUniqueType()==enAngle){
                     AngleConstructor Constructor;
                     CAngle*angles=Constructor.createAngle(plane[0],plane[1]);
-                    angles->setUptolerance(angle->getUptolerance());
-                    angles->setUndertolerance(angle->getUndertolerance());
-                    *angle = *angles;
+                    angle->setAngleValue(angles->getAngleValue());
                 }else if(entitylist[i]->GetUniqueType()==enDistance){
                     DistanceConstructor Constructor;
                     CDistance *diss=Constructor.createDistance(plane[0],plane[1]);
-                    diss->setUptolerance(dis->getUptolerance());
-                    diss->setUndertolerance(dis->getUndertolerance());
-                    *dis = *diss;
+                    dis->setdistance(diss->getdistance());
                 }
             }else if(line.size()==2){
                 CLine line1=*line[0];
@@ -1225,11 +1221,7 @@ void ElementListWidget::UpdateDisNowFun(QVector<CEntity*>distancelist)
             }else if(line.size()==1&&plane.size()==1){
                 AngleConstructor Constructor;
                 CAngle*angles=Constructor.createAngle(line[0],plane[0]);
-                auto uptol = dis->getUptolerance();
-                auto undertol = dis->getUndertolerance();
-                *angle=*angles;
-                angle->setUndertolerance(undertol);
-                angle->setUptolerance(uptol);
+                angle->setAngleValue(angles->getAngleValue());
             }
             QTreeWidgetItem *item = treeWidgetNames->topLevelItem(i);
             entitylist[i]->SetSelected(true);
@@ -1260,11 +1252,11 @@ void ElementListWidget::UpdateDisNowFun(QVector<CEntity*>distancelist)
                 if(objlist[i]->GetUniqueType()==enAngle){
                     AngleConstructor Constructor;
                     CAngle*angles=Constructor.createAngle(plane[0],plane[1]);
-                    *angle=*angles;
+                    angle->setAngleValue(angles->getAngleValue());
                 }else{
                     DistanceConstructor Constructor;
                     CDistance *diss=Constructor.createDistance(plane[0],plane[1]);
-                    *dis=*diss;
+                    dis->setdistance(diss->getdistance());
                     //dis->setplane(*plane[0]);
                     //dis->setplane(*plane[1]);
                 }

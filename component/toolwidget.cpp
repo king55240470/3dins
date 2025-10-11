@@ -927,6 +927,7 @@ void  ToolWidget:: ExtractData(QVector<CEntity *>& entitylist,QList<QList<QStrin
                 inList<<"合格";
             else
                 inList<<"不合格";
+            qDebug() << "Excel插入的上下公差:" << Distance->getUptolerance()<<Distance->getUndertolerance();
         }
         else if (entity->GetUniqueType()==enAngle){
             CAngle* Angle=(CAngle*)entity;
@@ -2540,7 +2541,7 @@ void ToolWidget::createDistanceMeasurementReport()
 
             inList<<ID<<data_pointCloud_size.max_error<<data_pointCloud_size.min_error<<data_pointCloud_size.average_error;
 
-            if(data_pointCloud_size.max_error.toDouble()<0.001){
+            if(data_pointCloud_size.max_error.toDouble()<10.0){
                 inList<<"合格";
             }else{
                 inList<<"不合格";
@@ -2553,7 +2554,7 @@ void ToolWidget::createDistanceMeasurementReport()
                 QList<QString>inList;
                 QString ID=QString::number(temp_id++);
                 inList<<ID<<data.max_error<<data.min_error<<data.average_error;
-                if(data.max_error.toDouble()<0.001){
+                if(data.max_error.toDouble()<10.0){
                     inList<<"合格";
                 }else{
                     inList<<"不合格";
