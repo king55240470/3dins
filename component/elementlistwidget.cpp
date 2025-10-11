@@ -409,28 +409,50 @@ void ElementListWidget::BtnClicked()
         QMessageBox::critical(this, "输入错误", "需要是双精度浮点类型数。");
         return;
     }
-    for(QTreeWidgetItem*item:selectedItems){
-        CObject *obj = item->data(0, Qt::UserRole).value<CObject*>();
-        int index=-1;
-        for(int i=0;i<m_pMainWin->getObjectListMgr()->getObjectList().size();i++){
-            if(m_pMainWin->getObjectListMgr()->getObjectList()[i]->GetObjectAutoName()==obj->GetObjectAutoName()){
-                index=i;
-            }
-        }
-        CAngle*angle;
-        CDistance* dis;
-        if(obj->GetUniqueType()==enAngle){
-            angle = (CAngle*)m_pMainWin->getObjectListMgr()->getObjectList()[index];
-            angle->setUptolerance(uper);
-            angle->setUndertolerance(downer);
-            angle->judge();
-        }else{
-            dis = dynamic_cast<CDistance*>(m_pMainWin->getObjectListMgr()->getObjectList()[index]);
-            dis->setUptolerance(uper);
-            dis->setUndertolerance(downer);
-            dis->judge();
+    QTreeWidgetItem*item = selectedItems[0];
+    // 修改objectlist
+    CObject *obj = item->data(0, Qt::UserRole).value<CObject*>();
+    int index=-1;
+    for(int i=0;i<m_pMainWin->getObjectListMgr()->getObjectList().size();i++){
+        if(m_pMainWin->getObjectListMgr()->getObjectList()[i]->GetObjectAutoName()==obj->GetObjectAutoName()){
+            index=i;
         }
     }
+    CAngle*angle;
+    CDistance* dis;
+    if(obj->GetUniqueType()==enAngle){
+        angle = (CAngle*)m_pMainWin->getObjectListMgr()->getObjectList()[index];
+        angle->setUptolerance(uper);
+        angle->setUndertolerance(downer);
+        angle->judge();
+    }else if(obj->GetUniqueType()==enDistance){
+        dis = dynamic_cast<CDistance*>(m_pMainWin->getObjectListMgr()->getObjectList()[index]);
+        dis->setUptolerance(uper);
+        dis->setUndertolerance(downer);
+        dis->judge();
+    }
+
+    // 修改entitylist
+    CAngle* ent_angle;
+    CDistance* ent_dis;
+    for(auto ent : m_pMainWin->getEntityListMgr()->getEntityList()){
+        if(ent->GetObjectAutoName() == obj->GetObjectAutoName()){
+            if(ent->GetUniqueType()==enAngle){
+                ent_angle = (CAngle*)ent;
+                ent_angle->setUptolerance(uper);
+                ent_angle->setUndertolerance(downer);
+                ent_angle->judge();
+            }else if(ent->GetUniqueType()==enDistance){
+                ent_dis = dynamic_cast<CDistance*>(ent);
+                ent_dis->setUptolerance(uper);
+                ent_dis->setUndertolerance(downer);
+                ent_dis->judge();
+            }
+        }
+    }
+    qDebug() << "设置公差后：" << ent_dis->getdistance() <<ent_dis->getUptolerance() << ent_dis->getUndertolerance()
+             << ent_dis->judge();
+
     m_pMainWin->NotifySubscribe();
     onItemClicked();
     QMessageBox::information(this,"ok","公差设置成功");
@@ -1172,7 +1194,7 @@ void ElementListWidget::UpdateDisNowFun(QVector<CEntity*>distancelist)
             CDistance*dis;
             if(entitylist[i]->GetUniqueType()==enAngle){
                 angle=dynamic_cast<CAngle*>(entitylist[i]);
-            }else{
+            }else if(entitylist[i]->GetUniqueType()==enDistance){
                 dis=dynamic_cast<CDistance*>(entitylist[i]);
             }
             if(position.size()==2){
@@ -1185,17 +1207,15 @@ void ElementListWidget::UpdateDisNowFun(QVector<CEntity*>distancelist)
                 if(entitylist[i]->GetUniqueType()==enAngle){
                     AngleConstructor Constructor;
                     CAngle*angles=Constructor.createAngle(plane[0],plane[1]);
-                    *angle=*angles;
-                }else{
+                    angles->setUptolerance(angle->getUptolerance());
+                    angles->setUndertolerance(angle->getUndertolerance());
+                    *angle = *angles;
+                }else if(entitylist[i]->GetUniqueType()==enDistance){
                     DistanceConstructor Constructor;
                     CDistance *diss=Constructor.createDistance(plane[0],plane[1]);
-                    auto uptol = dis->getUptolerance();
-                    auto undertol = dis->getUndertolerance();
-                    *dis=*diss;
-                    dis->setUndertolerance(undertol);
-                    dis->setUptolerance(uptol);
-                    //dis->setplane(*plane[0]);
-                    //dis->setplane(*plane[1]);
+                    diss->setUptolerance(dis->getUptolerance());
+                    diss->setUndertolerance(dis->getUndertolerance());
+                    *dis = *diss;
                 }
             }else if(line.size()==2){
                 CLine line1=*line[0];
@@ -1219,6 +1239,7 @@ void ElementListWidget::UpdateDisNowFun(QVector<CEntity*>distancelist)
             break;
         }
     }
+    // 更新objectlist
     QVector<CObject*> objlist=m_pMainWin->getObjectListMgr()->getObjectList();
     for(int i=0;i<objlist.size();i++){
         if(objlist[i]->GetObjectCName()==distancelist[distancelistIndex]->GetObjectCName()){
@@ -1267,6 +1288,7 @@ void ElementListWidget::UpdateDisNowFun(QVector<CEntity*>distancelist)
             break;
         }
     }
+
     qDebug()<<"进行到距离改变";
     currentIndex=0;
     list.clear();

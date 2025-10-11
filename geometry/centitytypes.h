@@ -700,7 +700,7 @@ public:
         end.z=0;
         uptolerance=0.0;
         undertolerance=0.0;
-        qualified=false;
+        qualified = true;
         plane=CPlane();
         circle=CCircle();
         line=CLine();
@@ -731,6 +731,7 @@ public:
     double getdistancecircle();
     double getdistanceline();
     double getdistance();
+    bool getqualified();
 
     void setdistance(double d);
     bool judge();
@@ -796,7 +797,7 @@ public:
         angleValue = 0.0;
         uptolerance = 0.0;
         undertolerance = 0.0;
-        qualified=false;
+        qualified=true;
         line1=CLine();
         line2=CLine();
         //m_strAutoName = QString("角度%1").arg(currentCAngleId);

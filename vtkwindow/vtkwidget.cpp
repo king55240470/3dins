@@ -1775,7 +1775,6 @@ void VtkWidget::onFilter()
 {
     auto& entityList = m_pMainWin->m_EntityListMgr->getEntityList();
     QVector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> clouds;
-    QString logInfo;
 
     // 收集选中的点云（确保不修改原始实体）
     for (int i = 0; i < entityList.size(); i++) {
@@ -1785,8 +1784,11 @@ void VtkWidget::onFilter()
             // 获取点云的共享指针，确保原数据不被释放
             auto pcEntity = static_cast<CPointCloud*>(entity);
             clouds.append(pcl::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>(pcEntity->m_pointCloud));
-            logInfo += ((CPointCloud*)entity)->m_strCName + " ";
         }
+    }
+    if(clouds.empty()){
+        m_pMainWin->getPWinVtkPresetWidget()->setWidget("请选择一个点云对象！");
+        return;
     }
 
     // 创建一个八叉树索引
@@ -1813,6 +1815,9 @@ void VtkWidget::onFilter()
                 filteredCloud->push_back(point);
             }
         }
+    }
+    if(filteredCloud->empty()){
+        m_pMainWin->getPWinVtkPresetWidget()->setWidget("滤波失败！");
     }
 
     auto cloudEntity = m_pMainWin->getPointCloudListMgr()->CreateFilterCloud(*cloud_filtered);

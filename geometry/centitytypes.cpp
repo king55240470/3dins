@@ -1358,6 +1358,11 @@ double CDistance::getdistance()
     return 0;
 }
 
+bool CDistance::getqualified()
+{
+    return qualified;
+}
+
 void CDistance::setdistance(double d)
 {
     distance=d;
@@ -1366,10 +1371,12 @@ void CDistance::setdistance(double d)
 
 bool CDistance::judge()
 {
-    if(distance<=uptolerance&&distance>=undertolerance){
-        qualified=true;
+    distance = abs(getdistance());
+    if(distance <= uptolerance && distance >= undertolerance){
+        qualified = true;
     }
     else qualified = false;
+    if(uptolerance == 0.0 && undertolerance == 0.0) qualified = true;
     return qualified;
 }
 
@@ -1436,9 +1443,11 @@ void CAngle::setQualified(bool value) {
 
 bool CAngle::judge()
 {
-    if(angleValue<=uptolerance&&angleValue>=undertolerance){
+    angleValue = abs(getAngleValue());
+    if(angleValue <= uptolerance && angleValue >= undertolerance){
         qualified=true;
     }
+    else if(uptolerance == 0.0 && undertolerance == 0.0) qualified = true;
     else qualified = false;
     return qualified;
 }
